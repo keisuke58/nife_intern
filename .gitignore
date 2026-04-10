@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+*.pyo
+
+# Large data / DB files
+data/PRJEB71108_fastq/
+data/metaphlan_db/
+data/metaphlan_db_user/
+data/metaphlan_profiles/
+
+# Personal documents
+Pflichtpraktikumsbescheinigung_Nishioka.pdf
+Praktikum Double Degree_Nishioka.pdf
+
+# Job logs (machine-specific)
+data/metaphlan_pipeline.err
+comets/pipeline_results/comets_BC.err
+comets/pipeline_results/sobol.err

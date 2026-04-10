@@ -1,0 +1,515 @@
+#!/usr/bin/env python3
+"""
+run_comets_pipeline.py
+======================
+A → B → C の COMETS パイプライン（順番に実行）
+
+  A: 5種 0D COMETS  healthy vs diseased  (well-mixed, grid 1×1)
+  B: 2D 空間 COMETS                      (grid NX×NZ, 拡散あり)
+  C: MetaPhlAn init_comp.json → 患者 A_3 初期値で COMETS
+
+Usage:
+  python nife/comets/run_comets_pipeline.py          # A のみ
+  python nife/comets/run_comets_pipeline.py --all    # A + B + C
+  python nife/comets/run_comets_pipeline.py --step B # B のみ
+  python nife/comets/run_comets_pipeline.py --step C --init-comp path/to/init_comp.json
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import warnings
+from pathlib import Path
+
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+
+warnings.filterwarnings("ignore")
+
+REPO = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(REPO))
+
+from nife.comets.oral_biofilm import (
+    OralBiofilmComets,
+    SPECIES,
+    INIT_FRACTIONS,
+    TOTAL_INIT_BIOMASS,
+    MEDIA_HEALTHY,
+    MEDIA_DISEASED,
+    compute_di,
+)
+
+COLORS = {
+    "So": "#2196F3",
+    "An": "#4CAF50",
+    "Vp": "#FF9800",
+    "Fn": "#9C27B0",
+    "Pg": "#F44336",
+}
+SPECIES_LABELS = {
+    "So": "S. oralis",
+    "An": "A. naeslundii",
+    "Vp": "V. parvula",
+    "Fn": "F. nucleatum",
+    "Pg": "P. gingivalis",
+}
+
+OUTDIR = Path(__file__).parent / "pipeline_results"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# A: 5種 0D
+# ─────────────────────────────────────────────────────────────────────────────
+
+def run_A(max_cycles: int = 500, time_step: float = 0.01, outdir: Path = OUTDIR):
+    """5種 0D COMETS: healthy vs diseased."""
+    print("\n=== STEP A: 5-species 0D COMETS ===")
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    sim = OralBiofilmComets(grid=(1, 1))
+    results = {}
+    for cond in ("healthy", "diseased"):
+        print(f"  Running {cond}...")
+        r = sim.run(
+            condition=cond,
+            max_cycles=max_cycles,
+            output_dir=outdir / "comets_0d",
+        )
+        results[cond] = r
+        print(f"  {cond}: {'COMETS' if not getattr(r, '_is_mock', False) else 'mock/cobra'} OK")
+
+    _plot_A(results, max_cycles, time_step, outdir)
+    print(f"  → {outdir}/A_0d_comparison.png")
+    return results
+
+
+def _plot_A(results: dict, max_cycles: int, time_step: float, outdir: Path):
+    t_unit = "h"
+    fig = plt.figure(figsize=(14, 10))
+    gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.45, wspace=0.35)
+
+    for col, cond in enumerate(("healthy", "diseased")):
+        r = results[cond]
+        bm = r.total_biomass
+        sp_cols = [c for c in bm.columns if c in SPECIES]
+        cycles = bm["cycle"].values
+        t = cycles * time_step
+
+        # Row 0: biomass stack
+        ax = fig.add_subplot(gs[0, col])
+        bottom = np.zeros(len(t))
+        for sp in SPECIES:
+            if sp not in sp_cols:
+                continue
+            vals = bm[sp].values
+            ax.fill_between(t, bottom, bottom + vals, color=COLORS[sp],
+                            alpha=0.75, label=SPECIES_LABELS[sp])
+            bottom += vals
+        ax.set_title(f"{cond.upper()}\nBiomass (stacked)", fontsize=10, fontweight="bold")
+        ax.set_xlabel(f"Time ({t_unit})")
+        ax.set_ylabel("Biomass (g)")
+        if col == 1:
+            ax.legend(loc="upper left", fontsize=7, ncol=2)
+
+        # Row 1: individual species lines
+        ax2 = fig.add_subplot(gs[1, col])
+        for sp in SPECIES:
+            if sp not in sp_cols:
+                continue
+            ax2.semilogy(t, np.maximum(bm[sp].values, 1e-15),
+                         color=COLORS[sp], label=SPECIES_LABELS[sp], lw=1.5)
+        ax2.set_title("Species (log scale)")
+        ax2.set_xlabel(f"Time ({t_unit})")
+        ax2.set_ylabel("Biomass (g)")
+        ax2.legend(fontsize=7, ncol=2)
+
+        # Row 2: DI
+        ax3 = fig.add_subplot(gs[2, col])
+        di_df = compute_di(bm)
+        ax3.plot(di_df["cycle"].values * time_step, di_df["DI"].values,
+                 color="k", lw=2)
+        ax3.axhline(0.5, color="gray", ls="--", lw=1, label="DI=0.5")
+        ax3.set_ylim(0, 1)
+        ax3.set_title("Dysbiosis Index (DI)")
+        ax3.set_xlabel(f"Time ({t_unit})")
+        ax3.set_ylabel("DI")
+        ax3.legend(fontsize=8)
+
+    fig.suptitle("5-species Oral Biofilm — COMETS 0D (A)", fontsize=13, fontweight="bold")
+    fig.savefig(outdir / "A_0d_comparison.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# B: 2D 空間 COMETS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def run_B(
+    nx: int = 10,
+    nz: int = 20,
+    max_cycles: int = 800,
+    time_step: float = 0.1,
+    outdir: Path = OUTDIR,
+):
+    """
+    2D spatial COMETS.
+    Grid: NX (lateral) × NZ (depth from bulk to surface).
+    z=0: GCF/bulk reservoir (nutrient source)
+    z=NZ-1: implant surface (bacteria start here)
+    """
+    print(f"\n=== STEP B: 2D spatial COMETS ({nx}×{nz} grid) ===")
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    import cometspy as c
+    import cobra
+
+    sim = OralBiofilmComets(grid=(nx, nz))
+    results_spatial = {}
+
+    for cond in ("healthy", "diseased"):
+        print(f"  Building spatial layout: {cond}...")
+        layout = c.layout()
+        layout.grid = [nx, nz]
+
+        # Diffusion coefficients (cm²/s × COMETS scale factor)
+        diff_coeffs = {
+            "glc_D[e]": 6e-6,
+            "o2[e]": 2.1e-5,
+            "lac_L[e]": 6e-6,
+            "succ[e]": 5e-6,
+            "pheme[e]": 1e-6,
+            "nh4[e]": 1.9e-5,
+            "pi[e]": 8e-6,
+            "h2o[e]": 1e-4,
+            "ca2[e]": 7e-6,
+            "mg2[e]": 7e-6,
+        }
+
+        media = MEDIA_HEALTHY if cond == "healthy" else MEDIA_DISEASED
+
+        # Set media at bulk (z=0 row) as Dirichlet source
+        for met, val in media.items():
+            layout.set_specific_metabolite(met, float(val))
+
+        # Set diffusion rates
+        for met, dcoeff in diff_coeffs.items():
+            if met in media:
+                layout.set_specific_metabolite_diffusion(met, dcoeff)
+
+        # Add species: place biomass near surface (z = NZ-1)
+        fracs = INIT_FRACTIONS[cond]
+        model_ids = {}
+        for sp_key, frac in fracs.items():
+            cobra_model = sim._load_agora_model(sp_key)
+            sp_model = c.model(cobra_model)
+            model_ids[sp_key] = cobra_model.id
+            # Distribute along surface row at z=NZ-1, spread across x
+            pop_list = []
+            for xi in range(nx):
+                pop_list.append([xi, nz - 1, TOTAL_INIT_BIOMASS * frac / nx])
+            sp_model.initial_pop = pop_list
+            sp_model.obj_style = "MAX_OBJECTIVE_MIN_TOTAL"
+            sp_model.change_optimizer("GLOP")
+            layout.add_model(sp_model)
+
+        log_rate = max(1, max_cycles // 4)
+        params = sim.build_params(
+            max_cycles=max_cycles,
+            time_step=time_step,
+            write_media_log=True,
+            write_biomass_log=True,
+            biomass_log_rate=log_rate,
+        )
+        params.set_param("numRunThreads", 4)
+        params.set_param("spatialKill", 1e-13)
+
+        run_dir = outdir / "comets_2d" / f"spatial_{cond}"
+        run_dir.mkdir(parents=True, exist_ok=True)
+
+        print(f"  Running spatial COMETS {cond}...")
+        try:
+            exp = c.comets(layout, params, relative_dir=str(run_dir.relative_to(Path.cwd())) + "/")
+            exp.run(delete_files=False)
+            bm = sim._rename_biomass_cols(exp.total_biomass)
+            results_spatial[cond] = {"total_biomass": bm, "exp": exp, "model_ids": model_ids, "log_rate": log_rate}
+            print(f"  {cond}: COMETS spatial OK, cycles={len(bm)}")
+        except Exception as e:
+            print(f"  WARNING: spatial COMETS failed ({e}), using 0D fallback")
+            r = sim.run(condition=cond, max_cycles=max_cycles, output_dir=outdir / "comets_0d")
+            results_spatial[cond] = {"total_biomass": r.total_biomass, "exp": None, "model_ids": model_ids, "log_rate": log_rate}
+
+    _plot_B(results_spatial, nx, nz, time_step, outdir, max_cycles)
+    print(f"  → {outdir}/B_spatial_comparison.png")
+    return results_spatial
+
+
+def _plot_B(results: dict, nx: int, nz: int, time_step: float, outdir: Path, max_cycles: int = 800):
+    # Determine snapshot cycles (25%, 50%, 100% of sim)
+    log_rate = results["healthy"].get("log_rate", max(1, max_cycles // 4))
+    snap_cycles = [
+        log_rate * max(1, max_cycles // (4 * log_rate)),
+        log_rate * max(1, max_cycles // (2 * log_rate)),
+        log_rate * (max_cycles // log_rate),
+    ]
+    snap_cycles = sorted(set(snap_cycles))
+
+    n_snaps = len(snap_cycles)
+    fig = plt.figure(figsize=(14, 4 + 3 * n_snaps))
+    n_rows = 2 + n_snaps
+    gs = gridspec.GridSpec(n_rows, 2, figure=fig, hspace=0.55, wspace=0.35)
+    fig.suptitle(f"5-species Oral Biofilm — COMETS 2D Spatial ({nx}×{nz}) (B)",
+                 fontsize=12, fontweight="bold")
+
+    for col, cond in enumerate(("healthy", "diseased")):
+        bm = results[cond]["total_biomass"]
+        sp_cols = [sp for sp in SPECIES if sp in bm.columns]
+        cycles = bm["cycle"].values
+        t = cycles * time_step
+
+        # Row 0: total biomass time series
+        ax = fig.add_subplot(gs[0, col])
+        for sp in SPECIES:
+            if sp not in sp_cols:
+                continue
+            ax.semilogy(t, np.maximum(bm[sp].values, 1e-15),
+                        color=COLORS[sp], label=SPECIES_LABELS[sp], lw=1.5)
+        ax.set_title(f"{cond.upper()} — Total Biomass")
+        ax.set_xlabel("Time (h)")
+        ax.set_ylabel("Biomass (g)")
+        ax.legend(fontsize=7, ncol=2)
+
+        # Row 1: DI time series
+        ax2 = fig.add_subplot(gs[1, col])
+        di_df = compute_di(bm)
+        ax2.plot(di_df["cycle"].values * time_step, di_df["DI"].values,
+                 color="k", lw=2)
+        ax2.axhline(0.5, color="gray", ls="--", lw=1)
+        ax2.set_ylim(0, 1)
+        ax2.set_title("Dysbiosis Index")
+        ax2.set_xlabel("Time (h)")
+        ax2.set_ylabel("DI")
+
+        # Rows 2+: spatial DI heatmaps at snapshot cycles
+        exp = results[cond].get("exp")
+        model_ids = results[cond].get("model_ids", {})
+        for ri, snap_c in enumerate(snap_cycles):
+            ax3 = fig.add_subplot(gs[2 + ri, col])
+            if exp is not None and model_ids:
+                try:
+                    # Collect biomass per species at this cycle → compute DI spatially
+                    grid_list = []
+                    for sp in list(SPECIES.keys()):
+                        mid = model_ids.get(sp)
+                        if mid is None:
+                            continue
+                        g = exp.get_biomass_image(mid, snap_c)
+                        grid_list.append(np.array(g, dtype=float))
+                    if grid_list:
+                        stacked = np.stack(grid_list, axis=0)  # (n_sp, nx, nz)
+                        total = stacked.sum(axis=0) + 1e-30
+                        fracs_grid = stacked / total
+                        # Shannon entropy DI
+                        with np.errstate(divide="ignore", invalid="ignore"):
+                            H = -np.nansum(fracs_grid * np.log(fracs_grid + 1e-30), axis=0)
+                        H_max = np.log(len(grid_list))
+                        di_grid = H / H_max if H_max > 0 else np.zeros_like(H)
+                        im = ax3.imshow(di_grid.T, origin="lower", aspect="auto",
+                                        cmap="RdYlGn_r", vmin=0, vmax=1)
+                        plt.colorbar(im, ax=ax3, fraction=0.046, pad=0.04)
+                        ax3.set_title(f"DI grid  t={snap_c * time_step:.0f}h")
+                    else:
+                        ax3.text(0.5, 0.5, "no data", ha="center", va="center", transform=ax3.transAxes)
+                except Exception as e_snap:
+                    ax3.text(0.5, 0.5, f"snap err\n{e_snap}", ha="center", va="center",
+                             transform=ax3.transAxes, fontsize=7)
+            else:
+                ax3.text(0.5, 0.5, "spatial N/A\n(0D fallback)", ha="center", va="center",
+                         transform=ax3.transAxes, fontsize=8)
+            ax3.set_xlabel("x")
+            ax3.set_ylabel("z (depth)")
+
+    fig.savefig(outdir / "B_spatial_comparison.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# C: MetaPhlAn init_comp.json → COMETS 初期値
+# ─────────────────────────────────────────────────────────────────────────────
+
+def run_C(
+    init_comp_path: Path,
+    max_cycles: int = 500,
+    time_step: float = 0.01,
+    outdir: Path = OUTDIR,
+):
+    """
+    患者 A_3 の MetaPhlAn 組成を COMETS 初期値として使用。
+    init_comp.json: {Str, Act, Vel, Hae, Rot, Fus, Por} → {So, An, Vp, Fn, Pg} にマップ
+    """
+    print(f"\n=== STEP C: MetaPhlAn init_comp → COMETS ===")
+
+    if not init_comp_path.exists():
+        print(f"  init_comp.json not found: {init_comp_path}")
+        print("  MetaPhlAn pipeline (PBS job 29511) が完了してから再実行してください。")
+        return None
+
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    with open(init_comp_path) as f:
+        ic = json.load(f)
+
+    # init_comp: Str/Act/Vel/Hae/Rot/Fus/Por → COMETS 5種へマッピング
+    # Hae (Haemophilus) と Rot (Rothia) は AGORA GEM なし → Fn に合算
+    sp_fracs = {
+        "So": ic.get("Str", 0.0),
+        "An": ic.get("Act", 0.0),
+        "Vp": ic.get("Vel", 0.0),
+        "Fn": ic.get("Fus", 0.0) + ic.get("Hae", 0.0) + ic.get("Rot", 0.0),
+        "Pg": ic.get("Por", 0.0),
+    }
+
+    # 正規化
+    total = sum(sp_fracs.values())
+    if total > 0:
+        sp_fracs = {k: v / total for k, v in sp_fracs.items()}
+
+    print(f"  Sample fractions: {json.dumps({k: round(v,3) for k,v in sp_fracs.items()})}")
+
+    sim = OralBiofilmComets(grid=(1, 1))
+
+    # Init fracs を一時的に上書き
+    import nife.comets.oral_biofilm as ob_mod
+    _orig = ob_mod.INIT_FRACTIONS.copy()
+    ob_mod.INIT_FRACTIONS["patient_A3"] = sp_fracs
+
+    # media: healthy を基準に
+    r = sim.run(
+        condition="healthy",
+        max_cycles=max_cycles,
+        output_dir=outdir / "comets_patient",
+    )
+
+    # patched fracs を手動で適用（fallback run_dfba_cobra 用）
+    if hasattr(r, "_is_cobra") or getattr(r, "_is_mock", False):
+        bm, med = sim.run_dfba_cobra.__func__(
+            sim, condition="healthy", max_cycles=max_cycles
+        )
+        # biomass 初期値だけ置き換え
+        import pandas as pd
+        init_bm = {sp: TOTAL_INIT_BIOMASS * sp_fracs[sp] for sp in SPECIES}
+        rows = [{"cycle": 0, **init_bm}]
+        for i in range(1, max_cycles):
+            # 差分で再スケール
+            prev_row = bm.iloc[i - 1]
+            curr_row = bm.iloc[i]
+            ratio = {
+                sp: (curr_row[sp] / prev_row[sp] if prev_row[sp] > 1e-15 else 1.0)
+                for sp in SPECIES if sp in bm.columns
+            }
+            new_bm = {sp: rows[-1][sp] * ratio.get(sp, 1.0) for sp in SPECIES}
+            rows.append({"cycle": i, **new_bm})
+        bm = pd.DataFrame(rows)
+        r_ns = type("NS", (), {"total_biomass": bm, "_is_patient": True})()
+        r = r_ns
+
+    ob_mod.INIT_FRACTIONS.update(_orig)
+
+    _plot_C(r, sp_fracs, time_step, outdir, init_comp_path.stem)
+    print(f"  → {outdir}/C_patient_A3.png")
+    return r
+
+
+def _plot_C(r, sp_fracs, time_step, outdir, label):
+    bm = r.total_biomass
+    sp_cols = [c for c in bm.columns if c in SPECIES]
+    cycles = bm["cycle"].values
+    t = cycles * time_step
+
+    fig, axes = plt.subplots(1, 3, figsize=(14, 4))
+    fig.suptitle(f"Patient A_3 (MetaPhlAn init) — COMETS 0D  (C)\n{label}",
+                 fontsize=11, fontweight="bold")
+
+    # 初期組成 pie
+    ax0 = axes[0]
+    vals = [sp_fracs[sp] for sp in SPECIES if sp_fracs[sp] > 0]
+    lbls = [SPECIES_LABELS[sp] for sp in SPECIES if sp_fracs[sp] > 0]
+    cols = [COLORS[sp] for sp in SPECIES if sp_fracs[sp] > 0]
+    ax0.pie(vals, labels=lbls, colors=cols, autopct="%1.0f%%", startangle=90, textprops={"fontsize": 8})
+    ax0.set_title("Initial composition\n(MetaPhlAn)")
+
+    # バイオマス time course
+    ax1 = axes[1]
+    for sp in SPECIES:
+        if sp not in sp_cols:
+            continue
+        ax1.semilogy(t, np.maximum(bm[sp].values, 1e-15),
+                     color=COLORS[sp], label=SPECIES_LABELS[sp], lw=1.5)
+    ax1.set_title("Biomass over time")
+    ax1.set_xlabel("Time (h)")
+    ax1.set_ylabel("Biomass (g)")
+    ax1.legend(fontsize=7)
+
+    # DI
+    ax2 = axes[2]
+    di_df = compute_di(bm)
+    ax2.plot(di_df["cycle"].values * time_step, di_df["DI"].values, color="k", lw=2)
+    ax2.axhline(0.5, color="gray", ls="--", lw=1, label="DI=0.5")
+    ax2.set_ylim(0, 1)
+    ax2.set_title("Dysbiosis Index")
+    ax2.set_xlabel("Time (h)")
+    ax2.set_ylabel("DI")
+    ax2.legend(fontsize=8)
+
+    plt.tight_layout()
+    fig.savefig(outdir / "C_patient_A3.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CLI
+# ─────────────────────────────────────────────────────────────────────────────
+
+def main(argv=None):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--step", choices=["A", "B", "C"], default=None,
+                    help="Run only this step")
+    ap.add_argument("--all", action="store_true", help="Run A + B + C")
+    ap.add_argument("--cycles", type=int, default=500)
+    ap.add_argument("--nx", type=int, default=10, help="Spatial grid X (for B)")
+    ap.add_argument("--nz", type=int, default=20, help="Spatial grid Z/depth (for B)")
+    ap.add_argument("--init-comp", type=Path,
+                    default=Path("/home/nishioka/IKM_Hiwi/nife/data/metaphlan_profiles/init_comp_ERR13166576_A_3.json"),
+                    help="init_comp.json path (for C)")
+    ap.add_argument("--outdir", type=Path, default=OUTDIR)
+    args = ap.parse_args(argv)
+
+    steps = []
+    if args.all:
+        steps = ["A", "B", "C"]
+    elif args.step:
+        steps = [args.step]
+    else:
+        steps = ["A"]  # デフォルトは A のみ
+
+    print(f"Running steps: {steps}")
+    print(f"Output dir: {args.outdir}")
+
+    if "A" in steps:
+        run_A(max_cycles=args.cycles, outdir=args.outdir)
+
+    if "B" in steps:
+        run_B(nx=args.nx, nz=args.nz, max_cycles=args.cycles, outdir=args.outdir)
+
+    if "C" in steps:
+        run_C(init_comp_path=args.init_comp, max_cycles=args.cycles, outdir=args.outdir)
+
+    print("\n=== All done ===")
+    print(f"Results in: {args.outdir}")
+
+
+if __name__ == "__main__":
+    main()

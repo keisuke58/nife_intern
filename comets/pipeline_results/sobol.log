@@ -1,0 +1,14 @@
+[Thu Apr  9 09:43:46 PM JST 2026] === Sobol sensitivity N=256 ===
+=== Sobol 感度解析 ===
+  Generating Saltelli sample (N=256, D=12)...
+  Running 3584 simulations (T=40h, dt=0.05h)...
+  Computing Sobol indices...
+  === Sobol ST ranking (total-order, anaerobic media) ===
+    1. Fn_mu_max            ST=0.493
+    2. So_mu_max            ST=0.298
+    3. Vp_Km_lac            ST=0.286
+    4. glc_init             ST=0.234
+    5. Vp_mu_max            ST=0.195
+  Saved: /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results/sobol_sensitivity.png
+[Thu Apr  9 09:44:36 PM JST 2026] Done
+-rw-r--r-- 1 nishioka nishioka 114K Apr  9 21:44 nife/comets/pipeline_results/sobol_sensitivity.png

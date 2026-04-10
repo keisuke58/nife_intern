@@ -1,0 +1,93 @@
+[Thu Apr  9 08:50:59 PM JST 2026] === Step B: 2D spatial COMETS ===
+Running steps: ['B']
+Output dir: /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results
+
+=== STEP B: 2D spatial COMETS (10×20 grid) ===
+  Building spatial layout: healthy...
+building empty layout model
+models will need to be added with layout.add_model()
+Warning: The added metabolite (glc_D[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (o2[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (lac_L[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (nh4[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (pi[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (h2o[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (ca2[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (mg2[e]) is not able to be taken up by any of the current models
+Warning: inputted parameter spatialKill does not exist
+  Running spatial COMETS healthy...
+GUROBI_HOME not found. Skipping Gurobi import.
+Warning: java class libraries cannot be found
+These are the expected locations for dependencies:
+Dependency 			 expected path
+__________ 			 _____________
+or_tools_linux			/home/nishioka/comets_linux/lib/or-tools/9.4.1874/*
+
+  You have two options to fix this problem:
+1.  set each class path correctly by doing:
+    comets.set_classpath(libraryname, path)
+    e.g.   comets.set_classpath('hamcrest', '/home/chaco001/comets/junit/hamcrest-core-1.3.jar')
+
+    note that versions dont always have to exactly match, but you're on your own if they don't
+
+2.  fully define the classpath yourself by overwriting comets.JAVA_CLASSPATH
+       look at the current comets.JAVA_CLASSPATH to see how this should look.
+
+Running COMETS simulation ...
+Done!
+  healthy: COMETS spatial OK, cycles=301
+  Building spatial layout: diseased...
+building empty layout model
+models will need to be added with layout.add_model()
+Warning: The added metabolite (glc_D[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (lac_L[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (succ[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (pheme[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (nh4[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (pi[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (h2o[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (ca2[e]) is not able to be taken up by any of the current models
+Warning: The added metabolite (mg2[e]) is not able to be taken up by any of the current models
+Warning: inputted parameter spatialKill does not exist
+  Running spatial COMETS diseased...
+GUROBI_HOME not found. Skipping Gurobi import.
+Warning: java class libraries cannot be found
+These are the expected locations for dependencies:
+Dependency 			 expected path
+__________ 			 _____________
+or_tools_linux			/home/nishioka/comets_linux/lib/or-tools/9.4.1874/*
+
+  You have two options to fix this problem:
+1.  set each class path correctly by doing:
+    comets.set_classpath(libraryname, path)
+    e.g.   comets.set_classpath('hamcrest', '/home/chaco001/comets/junit/hamcrest-core-1.3.jar')
+
+    note that versions dont always have to exactly match, but you're on your own if they don't
+
+2.  fully define the classpath yourself by overwriting comets.JAVA_CLASSPATH
+       look at the current comets.JAVA_CLASSPATH to see how this should look.
+
+Running COMETS simulation ...
+Done!
+  diseased: COMETS spatial OK, cycles=301
+  → /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results/B_spatial_comparison.png
+
+=== All done ===
+Results in: /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results
+[Thu Apr  9 08:54:23 PM JST 2026] === Step C: MetaPhlAn init_comp ===
+Running steps: ['C']
+Output dir: /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results
+
+=== STEP C: MetaPhlAn init_comp → COMETS ===
+  init_comp.json not found: /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results/../../../data/metaphlan_profiles/init_comp_ERR13166576_A_3.json
+  MetaPhlAn pipeline (PBS job 29511) が完了してから再実行してください。
+
+=== All done ===
+Results in: /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results
+[Thu Apr  9 08:54:24 PM JST 2026] === B + C done ===
+Results: /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results
+-rw-r--r-- 1 nishioka nishioka 195K Apr  9 18:55 /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results/A_0d_comparison.png
+-rw------- 1 nishioka nishioka  85K Apr  9 20:54 /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results/B_spatial_comparison.png
+-rw-r--r-- 1 nishioka nishioka 226K Apr  9 19:09 /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results/sweep_crossfeeding.png
+-rw-r--r-- 1 nishioka nishioka 152K Apr  9 19:09 /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results/sweep_glucose.png
+-rw-r--r-- 1 nishioka nishioka 208K Apr  9 19:09 /home/nishioka/IKM_Hiwi/nife/comets/pipeline_results/sweep_pg_init.png
