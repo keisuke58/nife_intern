@@ -19,6 +19,7 @@ data/parse_silva.log
 comets/pipeline_results/comets_BC.err
 comets/pipeline_results/sobol.err
 comets/pipeline_results/fem_pg_grid.log
+comets/pipeline_results/oed.log
 
 # Intermediate FEM fitting results
 _mukherjee2025_fig_extract/
