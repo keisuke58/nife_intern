@@ -381,10 +381,10 @@ def run_C(
 
     sim = OralBiofilmComets(grid=(1, 1))
 
-    # Init fracs を一時的に上書き
+    # Init fracs を一時的に "healthy" キーに上書き（COMETS / COBRApy 両方で有効）
     import nife.comets.oral_biofilm as ob_mod
-    _orig = ob_mod.INIT_FRACTIONS.copy()
-    ob_mod.INIT_FRACTIONS["patient_A3"] = sp_fracs
+    _orig_healthy = ob_mod.INIT_FRACTIONS["healthy"].copy()
+    ob_mod.INIT_FRACTIONS["healthy"] = sp_fracs
 
     # media: healthy を基準に
     r = sim.run(
@@ -392,31 +392,6 @@ def run_C(
         max_cycles=max_cycles,
         output_dir=outdir / "comets_patient",
     )
-
-    # patched fracs を手動で適用（fallback run_dfba_cobra 用）
-    if hasattr(r, "_is_cobra") or getattr(r, "_is_mock", False):
-        bm, med = sim.run_dfba_cobra.__func__(
-            sim, condition="healthy", max_cycles=max_cycles
-        )
-        # biomass 初期値だけ置き換え
-        import pandas as pd
-        init_bm = {sp: TOTAL_INIT_BIOMASS * sp_fracs[sp] for sp in SPECIES}
-        rows = [{"cycle": 0, **init_bm}]
-        for i in range(1, max_cycles):
-            # 差分で再スケール
-            prev_row = bm.iloc[i - 1]
-            curr_row = bm.iloc[i]
-            ratio = {
-                sp: (curr_row[sp] / prev_row[sp] if prev_row[sp] > 1e-15 else 1.0)
-                for sp in SPECIES if sp in bm.columns
-            }
-            new_bm = {sp: rows[-1][sp] * ratio.get(sp, 1.0) for sp in SPECIES}
-            rows.append({"cycle": i, **new_bm})
-        bm = pd.DataFrame(rows)
-        r_ns = type("NS", (), {"total_biomass": bm, "_is_patient": True})()
-        r = r_ns
-
-    ob_mod.INIT_FRACTIONS.update(_orig)
 
     _plot_C(r, sp_fracs, time_step, outdir, init_comp_path.stem)
     print(f"  → {outdir}/C_patient_A3.png")
@@ -453,19 +428,158 @@ def _plot_C(r, sp_fracs, time_step, outdir, label):
     ax1.set_ylabel("Biomass (g)")
     ax1.legend(fontsize=7)
 
-    # DI
+    # φ_Pg (Porphyromonas relative abundance)
     ax2 = axes[2]
-    di_df = compute_di(bm)
-    ax2.plot(di_df["cycle"].values * time_step, di_df["DI"].values, color="k", lw=2)
-    ax2.axhline(0.5, color="gray", ls="--", lw=1, label="DI=0.5")
+    sp_total = bm[sp_cols].sum(axis=1).replace(0, np.nan)
+    if "Pg" in sp_cols:
+        phi_pg = (bm["Pg"] / sp_total).fillna(0.0).values
+    else:
+        phi_pg = np.zeros(len(t))
+    ax2.plot(t, phi_pg, color=COLORS.get("Pg", "purple"), lw=2)
+    ax2.axhline(0.1, color="gray", ls="--", lw=1, label="φ_Pg=0.1")
     ax2.set_ylim(0, 1)
-    ax2.set_title("Dysbiosis Index")
+    ax2.set_title("φ_Pg (Porphyromonas fraction)")
     ax2.set_xlabel("Time (h)")
-    ax2.set_ylabel("DI")
+    ax2.set_ylabel("φ_Pg")
     ax2.legend(fontsize=8)
 
     plt.tight_layout()
     fig.savefig(outdir / "C_patient_A3.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step D: Mukherjee 2025 (DHNA) inspired in vitro–in silico comparison
+# ─────────────────────────────────────────────────────────────────────────────
+
+def run_D(
+    init_comp_path: Path,
+    max_cycles: int = 24 * 6,
+    time_step: float = 1.0,
+    outdir: Path = OUTDIR,
+):
+    """
+    Mukherjee et al. 2025 (Microbiol Spectr) の DHNA 条件に合わせた介入比較（Pg 単独系）:
+      baseline : hemin 添加培地 + Pg
+      dhna     : baseline + DHNA による Pg 成長促進（mu_max 上方補正の proxy）
+    """
+    import nife.comets.oral_biofilm as ob_mod
+
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    sp_fracs = ob_mod.INIT_FRACTIONS["pg_single"].copy()
+    print(f"  [D] Using pg_single init: {sp_fracs}")
+
+    SCENARIOS = {
+        "baseline": {"media_override": {}, "mu_scale": {"Pg": 1.0}},
+        "dhna": {"media_override": {}, "mu_scale": {"Pg": 1.2}},
+    }
+
+    results = {}
+    for name, cfg in SCENARIOS.items():
+        print(f"  [D] Running {name}...")
+
+        orig_frac = ob_mod.INIT_FRACTIONS["pg_single"].copy()
+        ob_mod.INIT_FRACTIONS["pg_single"] = sp_fracs.copy()
+
+        orig_media = ob_mod.MEDIA_PG_SINGLE.copy()
+        for k, v in cfg["media_override"].items():
+            ob_mod.MEDIA_PG_SINGLE[k] = v
+
+        orig_mu = {sp: ob_mod.MONOD_PARAMS[sp]["mu_max"] for sp in cfg["mu_scale"]}
+        for sp, scale in cfg["mu_scale"].items():
+            ob_mod.MONOD_PARAMS[sp]["mu_max"] *= scale
+
+        try:
+            sim = OralBiofilmComets(grid=(1, 1))
+            bm, med = sim.run_dfba_cobra(
+                condition="pg_single",
+                max_cycles=max_cycles,
+                time_step=time_step,
+            )
+
+            class _Result:
+                pass
+            r = _Result()
+            r.total_biomass = bm
+            r.media = med
+            r.is_cobra = True
+            results[name] = r
+        finally:
+            ob_mod.INIT_FRACTIONS["pg_single"] = orig_frac
+            ob_mod.MEDIA_PG_SINGLE.update(orig_media)
+            for sp, mu in orig_mu.items():
+                ob_mod.MONOD_PARAMS[sp]["mu_max"] = mu
+
+    _plot_D(results, sp_fracs, time_step=time_step, outdir=outdir)
+    print(f"  → {outdir}/D_intervention.png")
+
+
+def _plot_D(results: dict, sp_fracs: dict, time_step: float, outdir: Path):
+    scenario_styles = {
+        "baseline":      {"color": "#555555", "ls": "-",  "label": "Baseline"},
+        "dhna":          {"color": "#9C27B0", "ls": "--", "label": "DHNA (μmax×1.2)"},
+    }
+
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+    fig.suptitle("Step D — Mukherjee 2025 inspired: Pg single-species + DHNA proxy\n"
+                 "(COBRApy Monod dFBA; hemin present; NH4 tracked as assimilation marker)",
+                 fontsize=11, fontweight="bold")
+
+    # Panel 1: Pg biomass
+    ax0 = axes[0]
+    for name, r in results.items():
+        bm = r.total_biomass
+        t = bm["cycle"].values * time_step
+        pg = bm["Pg"].values if "Pg" in bm.columns else np.zeros(len(t))
+        s = scenario_styles[name]
+        ax0.semilogy(t, np.maximum(pg, 1e-15), color=s["color"], ls=s["ls"],
+                     lw=2, label=s["label"])
+    ax0.set_title("P. gingivalis biomass")
+    ax0.set_xlabel("Time (h)")
+    ax0.set_ylabel("Biomass (g)")
+    ax0.legend(fontsize=7)
+
+    # Panel 2: NH4 concentration
+    ax1 = axes[1]
+    for name, r in results.items():
+        med = r.media
+        if med is None or med.empty:
+            continue
+        nh4 = med[med["metabolite"] == "nh4[e]"]
+        if nh4.empty:
+            continue
+        t = nh4["cycle"].values * time_step
+        y = nh4["conc_mmol"].values
+        s = scenario_styles[name]
+        ax1.plot(t, y, color=s["color"], ls=s["ls"], lw=2, label=s["label"])
+    ax1.set_title("NH4 in conditioned medium")
+    ax1.set_xlabel("Time (h)")
+    ax1.set_ylabel("NH4 (mM)")
+    ax1.legend(fontsize=7)
+
+    # Panel 3: bar chart — final Pg biomass ratio
+    ax2 = axes[2]
+    names = list(results.keys())
+    final_pg = []
+    for name in names:
+        bm = results[name].total_biomass
+        pg_last = bm["Pg"].iloc[-1] if "Pg" in bm.columns else 0.0
+        final_pg.append(pg_last)
+    colors = [scenario_styles[n]["color"] for n in names]
+    bars = ax2.bar(names, final_pg, color=colors, edgecolor="k", linewidth=0.5)
+    ax2.set_ylim(0, max(max(final_pg) * 1.3, 1e-12))
+    ax2.set_title(f"Final Pg biomass (t={results['baseline'].total_biomass['cycle'].iloc[-1] * time_step:.0f}h)")
+    ax2.set_ylabel("Biomass (g)")
+    ax2.set_xticks(range(len(names)))
+    ax2.set_xticklabels([scenario_styles[n]["label"] for n in names],
+                        rotation=15, ha="right", fontsize=7)
+    for bar, val in zip(bars, final_pg):
+        ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + max(final_pg) * 0.02,
+                 f"{val:.2e}", ha="center", va="bottom", fontsize=7)
+
+    plt.tight_layout()
+    fig.savefig(outdir / "D_intervention.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -475,7 +589,7 @@ def _plot_C(r, sp_fracs, time_step, outdir, label):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--step", choices=["A", "B", "C"], default=None,
+    ap.add_argument("--step", choices=["A", "B", "C", "D"], default=None,
                     help="Run only this step")
     ap.add_argument("--all", action="store_true", help="Run A + B + C")
     ap.add_argument("--cycles", type=int, default=500)
@@ -506,6 +620,9 @@ def main(argv=None):
 
     if "C" in steps:
         run_C(init_comp_path=args.init_comp, max_cycles=args.cycles, outdir=args.outdir)
+
+    if "D" in steps:
+        run_D(init_comp_path=args.init_comp, max_cycles=24 * 6, time_step=1.0, outdir=args.outdir)
 
     print("\n=== All done ===")
     print(f"Results in: {args.outdir}")
