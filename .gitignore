@@ -14,5 +14,37 @@ Praktikum Double Degree_Nishioka.pdf
 
 # Job logs (machine-specific)
 data/metaphlan_pipeline.err
+data/minimap2_16s.log
+data/parse_silva.log
 comets/pipeline_results/comets_BC.err
 comets/pipeline_results/sobol.err
+comets/pipeline_results/fem_pg_grid.log
+
+# Intermediate FEM fitting results
+_mukherjee2025_fig_extract/
+mukherjee-et-al-2025-*.pdf
+comets/pipeline_results/fem_pg_demo.png
+comets/pipeline_results/fem_pg_fig2_compare*.png
+comets/pipeline_results/fem_pg_roughness_fit*.png
+comets/pipeline_results/fem_pg_fit_fig2.png
+comets/pipeline_results/fem_pg_fit_fig2_v2.png
+comets/pipeline_results/fem_pg_fit_fig2_v3.png
+comets/pipeline_results/fem_pg_fit_fig2_v4.png
+comets/pipeline_results/fem_pg_fit_fig2_v5.png
+comets/pipeline_results/fem_pg_fit_fig2_v6.png
+
+# Intermediate pipeline test runs
+comets/pipeline_results/step_C_test/
+comets/pipeline_results/step_C_test2/
+comets/pipeline_results/step_C_test3/
+comets/pipeline_results/step_C_ldpath/
+comets/pipeline_results/step_C_final/
+comets/pipeline_results/step_D_diseased/
+comets/pipeline_results/step_D_v2/
+
+# COMETS run output directories (reproducible)
+comets/pipeline_results/step_C_minimap2/comets_patient/
+comets/pipeline_results/step_D/comets_D_*/
+
+# Large DB / sequence data
+data/silva_db/

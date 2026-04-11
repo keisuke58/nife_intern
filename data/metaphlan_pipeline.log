@@ -1,5 +1,8 @@
-[Fri Apr 10 04:46:53 PM JST 2026] === MetaPhlAn pipeline start ===
-[Fri Apr 10 04:46:58 PM JST 2026] Using metaphlan: /home/nishioka/miniconda3/envs/metaphlan4/bin/metaphlan
-[Fri Apr 10 04:46:58 PM JST 2026] Using bowtie2-build: /home/nishioka/miniconda3/envs/metaphlan4/bin/bowtie2-build
-[Fri Apr 10 04:46:58 PM JST 2026] Index already complete, skipping build.
-[Fri Apr 10 04:46:58 PM JST 2026] Running MetaPhlAn on ERR13166576_A_3...
+[Fri Apr 10 06:05:28 PM JST 2026] === MetaPhlAn pipeline start ===
+[Fri Apr 10 06:05:29 PM JST 2026] Using metaphlan: /home/nishioka/miniconda3/envs/metaphlan4/bin/metaphlan
+[Fri Apr 10 06:05:29 PM JST 2026] Using bowtie2-build: /home/nishioka/miniconda3/envs/metaphlan4/bin/bowtie2-build
+[Fri Apr 10 06:05:29 PM JST 2026] Index already complete, skipping build.
+[Fri Apr 10 06:05:29 PM JST 2026] Running MetaPhlAn on ERR13166576_A_3...
+[Fri Apr 10 06:26:05 PM JST 2026] MetaPhlAn done: /home/nishioka/IKM_Hiwi/nife/data/metaphlan_profiles/ERR13166576_A_3.profile.txt
+[Fri Apr 10 06:26:05 PM JST 2026] Building feature_table.tsv...
+[Fri Apr 10 06:26:06 PM JST 2026] Generating init_comp.json...

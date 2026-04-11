@@ -1,6 +1,8 @@
 __pycache__/
 *.pyc
 *.pyo
+*.aux
+*.log
 comets_runs/
 spatial_history.npy
 .current_*

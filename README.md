@@ -2,6 +2,37 @@
 
 Computational oral biofilm pipeline developed during internship at [NIFE](https://nife-hannover.de/en/) (Niedersächsisches Institut für angewandte Zellgewebezüchtung), Hannover — part of the **SIIRI/TRR-298** consortium.
 
+## 日本語（簡易）
+
+このリポジトリは、患者メタゲノム（ショットガンNGS）の菌叢データから、口腔バイオフィルムの代謝モデル（dFBA/COMETS）までを一気通貫でつなぐ計算パイプラインです。
+
+```
+NGS（shotgun）→ MetaPhlAn 4（菌叢プロファイル）→ init_comp.json（属レベル割合）
+→ GEM（AGORAの代謝モデル）→ dFBA → COMETS（時間発展シミュレーション）
+```
+
+- まず試す: [COMETS_beginner.ipynb](./comets/notebooks/COMETS_beginner.ipynb)（最低限の動作・可視化）
+- パイプライン実行: [run_comets_pipeline.py](./comets/run_comets_pipeline.py)（Step A/B/C）
+- 菌叢側（MetaPhlAn）: [metaphlan_pipeline.sh](./data/metaphlan_pipeline.sh) → [metaphlan_feature_table_to_init_comp.py](./data/metaphlan_feature_table_to_init_comp.py)
+- 主な出力: `comets/pipeline_results/`（図、COMETSの入出力、比較結果）
+
+## 用語集（簡易）
+
+| 用語 | 意味（このrepoでの使い方） | 例（ファイル/コマンド） |
+|---|---|---|
+| NGS（shotgun） | メタゲノムのショットガンシーケンス。生データから菌叢組成を推定する入口 | `data/` |
+| MetaPhlAn 4 | リードから分類学的プロファイル（菌種/属の相対存在量）を推定 | `qsub data/metaphlan_pipeline.sh` |
+| taxonomic profile | サンプルごとの菌叢組成（相対存在量の表） | MetaPhlAn出力 |
+| init_comp.json | COMETS側の初期組成。対象7属の割合に正規化したJSON | `data/metaphlan_feature_table_to_init_comp.py` |
+| GEM | Genome-scale metabolic model（ゲノム規模代謝モデル） | `comets/agora_gems/` |
+| AGORA | ヒト腸内細菌などのGEMコレクション。ここでは口腔細菌GEMを利用 | `comets/agora_gems/*.xml` |
+| dFBA | 動的フラックスバランス解析。代謝（FBA）と環境（基質）の時間変化を結合 | `comets/oral_biofilm.py` |
+| COMETS | 複数菌種の代謝・増殖を（空間あり/なしで）シミュレートする枠組み | `comets/run_comets_pipeline.py` |
+| 0D / 2D | 0Dは空間なし（混合）。2Dは格子上で空間あり（拡散など） | Step A（0D）, Step B（2D） |
+| cross-feeding | ある菌が作った代謝産物を別の菌が利用する現象 | 乳酸（lactate）など |
+| Sobol感度解析 | パラメータの不確実性が結果へ与える寄与（全効果STなど）を推定 | `qsub comets/run_sobol.sh` |
+| qsub / PBS | クラスタ投入（ジョブスケジューラ） | `qsub ...` |
+
 ## Overview
 
 This repository implements an end-to-end computational pipeline connecting patient metagenomic sequencing data to mechanistic biofilm simulation:

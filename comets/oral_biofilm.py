@@ -177,6 +177,9 @@ MONOD_PARAMS: dict[str, dict] = {
             "succ[e]":  (3.0, 0.08, 0.10),
             "pheme[e]": (0.5, 0.005, 0.12),   # hemin: very high affinity (Km=5 µM)
         },
+        "uptake_aux": {
+            "nh4[e]": (1.0, 1.0, 0.0),
+        },
         "multi": "product",   # needs BOTH succinate AND hemin
         "o2_inhibit": True,
         "secretion": {},
@@ -214,10 +217,21 @@ MEDIA_DISEASED = {
     "mg2[e]": 1.0,
 }
 
+MEDIA_PG_SINGLE = {
+    "succ[e]": 0.10,
+    "pheme[e]": 0.50,
+    "nh4[e]": 12.0,
+    "pi[e]": 10.0,
+    "h2o[e]": 1000.0,
+    "ca2[e]": 2.0,
+    "mg2[e]": 1.0,
+}
+
 # Initial biomass fractions per condition (from Dieckow 2024, mean Week-1)
 INIT_FRACTIONS = {
     "healthy": {"So": 0.40, "An": 0.20, "Vp": 0.20, "Fn": 0.15, "Pg": 0.05},
     "diseased": {"So": 0.10, "An": 0.10, "Vp": 0.10, "Fn": 0.35, "Pg": 0.35},
+    "pg_single": {"So": 0.0, "An": 0.0, "Vp": 0.0, "Fn": 0.0, "Pg": 1.0},
 }
 
 TOTAL_INIT_BIOMASS = 1e-4   # g
@@ -624,7 +638,7 @@ class OralBiofilmComets:
     # ------------------------------------------------------------------
     def run_dfba_cobra(
         self,
-        condition: Literal["healthy", "diseased"] = "healthy",
+        condition: Literal["healthy", "diseased", "pg_single"] = "healthy",
         max_cycles: int = 500,
         time_step: float = 0.01,   # hours per cycle
         K_total: float = 0.01,     # g  total biomass carrying capacity
@@ -651,7 +665,13 @@ class OralBiofilmComets:
         from collections import defaultdict
 
         # Verify AGORA exchange reactions exist for key substrates (structural check)
-        if self.agora_dir:
+        try:
+            import cobra
+            cobra_available = True
+        except ModuleNotFoundError:
+            cobra_available = False
+
+        if self.agora_dir and cobra_available:
             for sp_key in SPECIES:
                 model = self._load_agora_model(sp_key)
                 ex_ids = {r.id for r in model.exchanges}
@@ -661,7 +681,12 @@ class OralBiofilmComets:
                         pass  # soft-warn only; AGORA models verified during download
 
         # Initial conditions
-        media_init = MEDIA_HEALTHY if condition == "healthy" else MEDIA_DISEASED
+        if condition == "healthy":
+            media_init = MEDIA_HEALTHY
+        elif condition == "diseased":
+            media_init = MEDIA_DISEASED
+        else:
+            media_init = MEDIA_PG_SINGLE
         media = dict(media_init)
         tracked: frozenset[str] = frozenset(media_init.keys())
 
@@ -696,6 +721,11 @@ class OralBiofilmComets:
                     conc = media.get(sub_key, 0.0)
                     q_sub[sub_key] = q_max * conc / (Km + conc + 1e-15)
 
+                q_aux: dict[str, float] = {}
+                for sub_key, (q_max, Km, _) in p.get("uptake_aux", {}).items():
+                    conc = media.get(sub_key, 0.0)
+                    q_aux[sub_key] = q_max * conc / (Km + conc + 1e-15)
+
                 # Growth rate from uptake fluxes × biomass yield
                 if p["multi"] == "product":
                     # All substrates required (multiplicative Monod)
@@ -722,6 +752,9 @@ class OralBiofilmComets:
                 primary = p.get("primary_sub")
                 for sub_key in p["uptake"]:
                     q = q_sub[sub_key]
+                    if sub_key in tracked:
+                        delta_media[sub_key] -= q * bm * time_step  # uptake < 0
+                for sub_key, q in q_aux.items():
                     if sub_key in tracked:
                         delta_media[sub_key] -= q * bm * time_step  # uptake < 0
 
