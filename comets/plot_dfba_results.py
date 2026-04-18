@@ -9,7 +9,7 @@ Produces two figures:
   2. nife_dfba_siiri.png  — SIIRI infection risk indicator (1-panel, presentation format)
 
 Usage:
-  python nife/comets/plot_dfba_results.py [--cycles 500] [--outdir nife/comets/]
+  python nife/comets/plot_dfba_results.py [--cycles 500] [--scenario default|heine2025] [--outdir nife/comets/]
 """
 from __future__ import annotations
 
@@ -68,17 +68,21 @@ plt.rcParams.update({
 
 # ── simulation ───────────────────────────────────────────────────────────────
 
-def run_both(max_cycles: int = 500):
+def run_both(max_cycles: int = 500, scenario: str = "default"):
     model = OralBiofilmComets()
-    print(f"Running healthy  ({max_cycles} cycles)...", flush=True)
-    rh = model.run("healthy",  max_cycles=max_cycles)
-    print(f"Running diseased ({max_cycles} cycles)...", flush=True)
-    rd = model.run("diseased", max_cycles=max_cycles)
+    if scenario == "heine2025":
+        cond_a, cond_b = "commensal", "dysbiotic"
+    else:
+        cond_a, cond_b = "healthy", "diseased"
+    print(f"Running {cond_a} ({max_cycles} cycles)...", flush=True)
+    rh = model.run(cond_a, max_cycles=max_cycles)
+    print(f"Running {cond_b} ({max_cycles} cycles)...", flush=True)
+    rd = model.run(cond_b, max_cycles=max_cycles)
     mode = "Monod dFBA" if getattr(rh, "_is_cobra", False) else "mock"
     print(f"Simulation mode: {mode}")
     dih = model.compute_di(rh.total_biomass)
     did = model.compute_di(rd.total_biomass)
-    return model, rh, rd, dih, did
+    return model, rh, rd, dih, did, cond_a, cond_b
 
 
 def get_media_df(result, condition: str):
@@ -134,7 +138,7 @@ def plot_species_abundance(ax, bm_df, condition_label: str, time_step: float = 0
         )
 
 
-def plot_di_trajectory(ax, dih, did, time_step: float = 0.01):
+def plot_di_trajectory(ax, dih, did, label_h: str, label_d: str, time_step: float = 0.01):
     th = _time_hours(dih["cycle"].values, time_step)
     td = _time_hours(did["cycle"].values, time_step)
 
@@ -145,8 +149,8 @@ def plot_di_trajectory(ax, dih, did, time_step: float = 0.01):
     ax.axhline(0.30, color="#4CAF50", lw=0.8, ls="--", alpha=0.6)
     ax.axhline(0.55, color="#FF9800", lw=0.8, ls="--", alpha=0.6)
 
-    ax.plot(th, dih["DI"], color="#2196F3", lw=2.2, label="Healthy (commensal)")
-    ax.plot(td, did["DI"], color="#F44336", lw=2.2, label="Peri-implantitis (diseased)")
+    ax.plot(th, dih["DI"], color="#2196F3", lw=2.2, label=label_h)
+    ax.plot(td, did["DI"], color="#F44336", lw=2.2, label=label_d)
 
     # Zone labels (right side)
     t_end = max(th[-1], td[-1])
@@ -262,7 +266,7 @@ def plot_cross_feed_diagram(ax):
 
 # ── main figure ───────────────────────────────────────────────────────────────
 
-def make_main_figure(model, rh, rd, dih, did, outpath: Path):
+def make_main_figure(model, rh, rd, dih, did, label_a: str, label_b: str, media_a: str, media_b: str, outpath: Path):
     fig = plt.figure(figsize=(14, 10))
     gs = gridspec.GridSpec(
         3, 3,
@@ -288,12 +292,12 @@ def make_main_figure(model, rh, rd, dih, did, outpath: Path):
     ax_leg.axis("off")
 
     # --- Plot ---
-    plot_species_abundance(ax_h, rh.total_biomass, "Healthy (commensal)")
-    plot_species_abundance(ax_d, rd.total_biomass, "Peri-implantitis (diseased)")
+    plot_species_abundance(ax_h, rh.total_biomass, label_a)
+    plot_species_abundance(ax_d, rd.total_biomass, label_b)
     plot_cross_feed_diagram(ax_net)
-    plot_di_trajectory(ax_di, dih, did)
-    plot_media_dynamics(ax_mh, rh.media, "healthy")
-    plot_media_dynamics(ax_md, rd.media, "diseased")
+    plot_di_trajectory(ax_di, dih, did, label_a, label_b)
+    plot_media_dynamics(ax_mh, rh.media, media_a)
+    plot_media_dynamics(ax_md, rd.media, media_b)
 
     # Legend
     handles = [
@@ -318,7 +322,7 @@ def make_main_figure(model, rh, rd, dih, did, outpath: Path):
     print(f"Saved: {outpath}")
 
 
-def make_siiri_figure(dih, did, outpath: Path):
+def make_siiri_figure(dih, did, label_a: str, label_b: str, outpath: Path):
     """Single-panel SIIRI infection risk indicator for presentations."""
     fig, ax = plt.subplots(figsize=(8, 4))
 
@@ -330,8 +334,8 @@ def make_siiri_figure(dih, did, outpath: Path):
     ax.axhspan(0.30, 0.55, alpha=0.12, color="#FF9800", zorder=0, label="__nolabel__")
     ax.axhspan(0.55, 1.00, alpha=0.12, color="#F44336", zorder=0, label="__nolabel__")
 
-    ax.plot(th, dih["DI"], color="#2196F3", lw=2.5, label="Healthy implant")
-    ax.plot(td, did["DI"], color="#F44336", lw=2.5, label="Peri-implantitis")
+    ax.plot(th, dih["DI"], color="#2196F3", lw=2.5, label=label_a)
+    ax.plot(td, did["DI"], color="#F44336", lw=2.5, label=label_b)
 
     # Zone labels
     ax.text(th[-1] * 0.85, 0.15, "Safe", fontsize=9, color="#2E7D32", fontweight="bold")
@@ -345,7 +349,7 @@ def make_siiri_figure(dih, did, outpath: Path):
     ax.set_xlabel("Time (h)", fontsize=11)
     ax.set_ylabel("Dysbiosis Index (DI)", fontsize=11)
     ax.set_title(
-        "SIIRI Infection Indicator: DI separates healthy vs peri-implantitis biofilm\n"
+        "SIIRI Infection Indicator: DI separates two biofilm states\n"
         "DI = H(φ) / log N   (normalized Shannon entropy, Nishioka et al. 2026)",
         fontsize=10,
     )
@@ -363,29 +367,44 @@ def make_siiri_figure(dih, did, outpath: Path):
 def main():
     parser = argparse.ArgumentParser(description="Generate NIFE dFBA figures")
     parser.add_argument("--cycles", type=int, default=500)
+    parser.add_argument("--scenario", type=str, default="default", choices=["default", "heine2025"])
     parser.add_argument("--outdir", type=Path,
                         default=Path(__file__).parent)
     args = parser.parse_args()
 
     args.outdir.mkdir(parents=True, exist_ok=True)
 
-    model, rh, rd, dih, did = run_both(args.cycles)
+    model, rh, rd, dih, did, cond_a, cond_b = run_both(args.cycles, scenario=args.scenario)
 
-    make_main_figure(model, rh, rd, dih, did,
-                     args.outdir / "nife_dfba_main.png")
-    make_siiri_figure(dih, did,
-                      args.outdir / "nife_dfba_siiri.png")
+    if args.scenario == "heine2025":
+        label_a, label_b = "Commensal (Heine 2025)", "Dysbiotic (Heine 2025)"
+        species_names = dict(SPECIES_NAMES)
+        species_names["Vp"] = "V. dispar / V. parvula"
+        globals()["SPECIES_NAMES"] = species_names
+        media_a, media_b = "diseased", "diseased"
+    else:
+        label_a, label_b = "Healthy (commensal)", "Peri-implantitis (diseased)"
+        media_a, media_b = "healthy", "diseased"
+
+    make_main_figure(
+        model, rh, rd, dih, did, label_a, label_b, media_a, media_b,
+        args.outdir / "nife_dfba_main.png",
+    )
+    make_siiri_figure(
+        dih, did, label_a, label_b,
+        args.outdir / "nife_dfba_siiri.png",
+    )
 
     # Summary stats
     sp = ["So", "An", "Vp", "Fn", "Pg"]
     print("\n=== Final species fractions ===")
-    for cond, bm in [("Healthy", rh.total_biomass), ("Diseased", rd.total_biomass)]:
+    for cond, bm in [(label_a, rh.total_biomass), (label_b, rd.total_biomass)]:
         totals = bm[sp].iloc[-1].sum()
         fracs = (bm[sp].iloc[-1] / totals * 100).round(1)
         print(f"  {cond}: " + ", ".join(f"{s}={fracs[s]}%" for s in sp))
 
     print("\n=== DI summary ===")
-    for cond, di in [("Healthy", dih), ("Diseased", did)]:
+    for cond, di in [(label_a, dih), (label_b, did)]:
         print(f"  {cond}: {di['DI'].iloc[0]:.3f} → {di['DI'].iloc[-1]:.3f}")
 
 

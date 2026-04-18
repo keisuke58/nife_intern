@@ -13,6 +13,8 @@ Oral multi-species biofilm COMETS model targeting NIFE / SIIRI project.
 Conditions:
   healthy    = aerobic surface, low Pg, dominated by So/An/Vp
   diseased   = anaerobic niche, Pg-enriched, peri-implantitis-like
+  commensal  = Heine 2025 commensal strain set (V. dispar + P. gingivalis DSM 20709)
+  dysbiotic  = Heine 2025 dysbiotic strain set (V. parvula + P. gingivalis W83)
 
 AGORA model IDs (download from https://vmh.life/#downloadview):
   So: Streptococcus_oralis_Uo5
@@ -89,6 +91,29 @@ SPECIES = {
     },
 }
 
+CONDITION_SPECIES_OVERRIDES: dict[str, dict[str, dict[str, str]]] = {
+    "commensal": {
+        "Vp": {
+            "name": "Veillonella dispar",
+            "agora_id": "Veillonella_dispar_DSM_20735",
+        },
+        "Pg": {
+            "name": "Porphyromonas gingivalis",
+            "agora_id": "Porphyromonas_gingivalis_DSM_20709",
+        },
+    },
+    "dysbiotic": {
+        "Vp": {
+            "name": "Veillonella parvula",
+            "agora_id": "Veillonella_parvula_Te3_DSM_2008",
+        },
+        "Pg": {
+            "name": "Porphyromonas gingivalis",
+            "agora_id": "Porphyromonas_gingivalis_W83",
+        },
+    },
+}
+
 # ---------------------------------------------------------------------------
 # Per-species: tracked metabolites to CLOSE (lb=0) for that species.
 # Only Vp is blocked from glucose — it is an OBLIGATE lactate fermenter.
@@ -116,6 +141,39 @@ OPEN_ALWAYS_KEYS: frozenset[str] = frozenset({
     "pyxnx[e]", "pyxn[e]", "adocbl[e]", "cbl1[e]", "btn[e]", "fol[e]",
     "no2[e]", "no3[e]",
 })
+
+# Additional metabolites required for AGORA v1.03 FBA feasibility in COMETS Java.
+# Computed as union of minimal_medium() for all 5 species minus OPEN_ALWAYS_KEYS.
+# These are set at AGORA_TRACE_CONC in build_layout() so FBA is feasible but
+# growth is still limited by the primary carbon sources (glc_D, lac_L, succ, pheme).
+# Carbon sources (glc_D, fru, stys, pullulan1200, glyc3p) are included at trace
+# concentration; they become limiting far earlier than the target GCF concentrations.
+AGORA_TRACE_METS: tuple[str, ...] = (
+    # Quinones (electron carriers)
+    "2dmmq8[e]", "mqn7[e]", "mqn8[e]", "q8[e]",
+    # Vitamins not in OPEN_ALWAYS_KEYS
+    "nmn[e]", "pydx[e]",
+    # Nucleosides / nucleobases
+    "ade[e]", "csn[e]", "cytd[e]", "dad_2[e]", "dcyt[e]", "dgsn[e]",
+    "gsn[e]", "gua[e]", "hxan[e]", "ins[e]", "uri[e]",
+    # Amino acids (essential for AGORA but absent from GCF medium)
+    "ala_L[e]", "arg_L[e]", "cys_L[e]", "gln_L[e]", "his_L[e]",
+    "ile_L[e]", "leu_L[e]", "lys_L[e]", "met_L[e]", "phe_L[e]",
+    "pro_L[e]", "ser_L[e]", "thr_L[e]", "trp_L[e]", "tyr_L[e]", "val_L[e]",
+    # Dipeptides (AGORA uses pre-assembled dipeptides for N/C)
+    "alagln[e]", "alahis[e]", "alathr[e]", "cgly[e]",
+    "glyasn[e]", "glycys[e]", "glygln[e]", "glyleu[e]", "glymet[e]",
+    "glytyr[e]", "metala[e]",
+    # Porphyrins / hemes
+    "pheme[e]", "sheme[e]",
+    # Polyamines / other organics
+    "26dap_M[e]", "3mop[e]", "4hbz[e]", "acgam[e]", "chtbs[e]",
+    "ddca[e]", "gam[e]", "glyc3p[e]", "gthrd[e]", "ocdca[e]",
+    "orn[e]", "phpyr[e]", "spmd[e]", "ttdca[e]",
+    # Alternative C-sources (AGORA artifacts — kept at trace so they don't dominate)
+    "fru[e]", "pullulan1200[e]", "stys[e]",
+)
+AGORA_TRACE_CONC: float = 0.01   # mM — saturates COMETS defaultKm (3 pM) so FBA is feasible
 
 # Backwards-compat alias used in some older code paths
 UNIVERSAL_INORGANIC = frozenset({"nh4[e]", "pi[e]", "h2o[e]", "ca2[e]", "mg2[e]"})
@@ -153,8 +211,8 @@ MONOD_PARAMS: dict[str, dict] = {
         "primary_sub": "glc_D[e]",
     },
     "Vp": {
-        "mu_max": 0.40,
-        "uptake": {"lac_L[e]": (10.0, 0.15, 0.07)},   # ONLY lactate
+        "mu_max": 0.15,   # GEM-derived: AGORA v1.03 mu_max_normalized=0.154 (was 0.40, ~2.5× overestimate)
+        "uptake": {"lac_L[e]": (2.2, 0.15, 0.07)},    # q_max scaled: mu_max/Y = 0.15/0.07 ≈ 2.2 mmol/gDW/h
         "multi": "sum",
         "o2_inhibit": True,   # strict anaerobe, O2 in healthy slows growth
         "secretion": {},
@@ -231,6 +289,8 @@ MEDIA_PG_SINGLE = {
 INIT_FRACTIONS = {
     "healthy": {"So": 0.40, "An": 0.20, "Vp": 0.20, "Fn": 0.15, "Pg": 0.05},
     "diseased": {"So": 0.10, "An": 0.10, "Vp": 0.10, "Fn": 0.35, "Pg": 0.35},
+    "commensal": {"So": 0.35, "An": 0.25, "Vp": 0.20, "Fn": 0.15, "Pg": 0.05},
+    "dysbiotic": {"So": 0.10, "An": 0.10, "Vp": 0.10, "Fn": 0.35, "Pg": 0.35},
     "pg_single": {"So": 0.0, "An": 0.0, "Vp": 0.0, "Fn": 0.0, "Pg": 1.0},
 }
 
@@ -257,7 +317,29 @@ def compute_di(biomass_df, species_order=None):
     -------
     pd.DataFrame with columns: cycle, DI
     """
-    import pandas as pd
+    try:
+        try:
+            import pandas as pd
+        except Exception:
+            pd = None
+    except Exception:
+        pd = None
+
+    if pd is None or isinstance(biomass_df, dict):
+        cycles = np.asarray(biomass_df.get("cycle"))
+        keys = [k for k in biomass_df.keys() if k != "cycle"]
+        if species_order is not None:
+            keys = [k for k in species_order if k in keys]
+        mat = np.vstack([np.asarray(biomass_df[k]) for k in keys]).T
+        totals = mat.sum(axis=1)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            fracs = np.where(totals[:, None] > 0, mat / totals[:, None], 0.0)
+            log_fracs = np.where(fracs > 0, np.log(fracs), 0.0)
+        n = fracs.shape[1]
+        log_n = np.log(n) if n > 1 else 1.0
+        shannon = -(fracs * log_fracs).sum(axis=1)
+        di = shannon / log_n
+        return {"cycle": cycles, "DI": di}
 
     df = biomass_df.copy()
     if "cycle" in df.columns:
@@ -355,11 +437,20 @@ class OralBiofilmComets:
         return None
 
     # ------------------------------------------------------------------
-    def _load_agora_model(self, species_key: str):
+    def _species_meta(self, species_key: str, condition: str) -> dict:
+        base = SPECIES[species_key]
+        ov = CONDITION_SPECIES_OVERRIDES.get(condition, {}).get(species_key, {})
+        if not ov:
+            return base
+        merged = dict(base)
+        merged.update(ov)
+        return merged
+
+    def _load_agora_model(self, species_key: str, condition: str):
         """Load AGORA GEM for species_key. Falls back to textbook E. coli."""
         import cobra
 
-        sp = SPECIES[species_key]
+        sp = self._species_meta(species_key, condition)
         if self.agora_dir:
             agora_path = self.agora_dir / f"{sp['agora_id']}.xml"
             if agora_path.exists():
@@ -397,7 +488,7 @@ class OralBiofilmComets:
     # ------------------------------------------------------------------
     def build_layout(
         self,
-        condition: Literal["healthy", "diseased"] = "healthy",
+        condition: Literal["healthy", "diseased", "commensal", "dysbiotic"] = "healthy",
     ):
         """
         Build a cometspy layout for the given condition.
@@ -411,15 +502,47 @@ class OralBiofilmComets:
         layout = c.layout()
         layout.grid = self.grid
 
-        # Set media
-        media = MEDIA_HEALTHY if condition == "healthy" else MEDIA_DISEASED
+        if condition == "healthy":
+            media = MEDIA_HEALTHY
+        else:
+            media = MEDIA_DISEASED
         for met, val in media.items():
             layout.set_specific_metabolite(met, float(val))
 
-        # Add species models
+        # Load all AGORA models first so we know which exchange metabolites exist.
+        # COMETS Java crashes (ArrayIndexOutOfBounds) if the layout contains
+        # metabolites that no model can consume — array size mismatch in FBACell.
         fracs = INIT_FRACTIONS[condition]
+        cobra_models = {sp: self._load_agora_model(sp, condition) for sp in fracs}
+
+        # Collect the INTERSECTION of exchange metabolite IDs across all models.
+        # COMETS 2.x FBACell uses the layout metabolite index directly to index
+        # into the per-model exchange array (size = n_exchanges of THAT model).
+        # Adding any metabolite that is absent from even one model causes
+        # ArrayIndexOutOfBoundsException at FBACell.java:1214.
+        # Using intersection ensures every layout metabolite is handled by all models.
+        shared_ex_bases: set[str] | None = None
+        for cm in cobra_models.values():
+            model_exs = {
+                rxn.id.replace("EX_", "").replace("(e)", "")
+                for rxn in cm.exchanges
+            }
+            if shared_ex_bases is None:
+                shared_ex_bases = model_exs
+            else:
+                shared_ex_bases &= model_exs  # intersection
+        shared_ex_bases = shared_ex_bases or set()
+
+        # Add trace cofactors only when present in ALL 5 models.
+        primary_C_keys = {k.replace("[e]", "") for k in media if "[e]" in k}
+        for met_key in AGORA_TRACE_METS:
+            base = met_key.replace("[e]", "")
+            if base in shared_ex_bases and base not in primary_C_keys:
+                layout.set_specific_metabolite(met_key, AGORA_TRACE_CONC)
+
+        # Add species models
         for sp_key, frac in fracs.items():
-            cobra_model = self._load_agora_model(sp_key)
+            cobra_model = cobra_models[sp_key]
             sp_model = c.model(cobra_model)
 
             # Distribute biomass spatially (center for 1x1, gradient for NxM)
@@ -432,6 +555,8 @@ class OralBiofilmComets:
             biomass = TOTAL_INIT_BIOMASS * frac
             sp_model.initial_pop = [x, y, biomass]
             sp_model.obj_style = "MAX_OBJECTIVE_MIN_TOTAL"
+            # GLOP (part of or-tools) is the only available solver on this cluster:
+            # Gurobi stub crashes (NoClassDefFoundError), GLPK JNI not compiled
             sp_model.change_optimizer("GLOP")
             layout.add_model(sp_model)
 
@@ -466,11 +591,11 @@ class OralBiofilmComets:
         return params
 
     # ------------------------------------------------------------------
-    def _rename_biomass_cols(self, df):
+    def _rename_biomass_cols(self, df, condition: str):
         """Rename COMETS biomass columns (long AGORA names) to short species codes."""
         rename = {}
         for sp_key, sp_info in SPECIES.items():
-            agora_id = sp_info["agora_id"]
+            agora_id = self._species_meta(sp_key, condition)["agora_id"]
             for col in df.columns:
                 if agora_id in col or agora_id.replace("_", "__") in col:
                     rename[col] = sp_key
@@ -480,7 +605,7 @@ class OralBiofilmComets:
     # ------------------------------------------------------------------
     def run(
         self,
-        condition: Literal["healthy", "diseased"] = "healthy",
+        condition: Literal["healthy", "diseased", "commensal", "dysbiotic"] = "healthy",
         max_cycles: int = 500,
         output_dir: str | Path = "comets_runs",
         delete_files: bool = False,
@@ -517,7 +642,23 @@ class OralBiofilmComets:
                     return types.SimpleNamespace(total_biomass=bm, media=med, _is_mock=True)
                 raise
 
-        import cometspy as c
+        try:
+            import cometspy as c
+        except ModuleNotFoundError as e:
+            if not fallback_mock:
+                raise e
+            try:
+                bm, med = self.run_dfba_cobra(condition=condition, max_cycles=max_cycles)
+                return types.SimpleNamespace(
+                    total_biomass=bm, media=med, _is_mock=False, _is_cobra=True
+                )
+            except Exception as cobra_err:
+                warnings.warn(
+                    f"COBRApy dFBA failed ({cobra_err}). Falling back to mock.",
+                    stacklevel=2,
+                )
+                bm, med = self.run_mock(condition=condition, max_cycles=max_cycles)
+                return types.SimpleNamespace(total_biomass=bm, media=med, _is_mock=True)
 
         layout = self.build_layout(condition)
         params = self.build_params(max_cycles=max_cycles)
@@ -529,7 +670,7 @@ class OralBiofilmComets:
         try:
             exp = c.comets(layout, params, relative_dir=str(run_dir) + "/")
             exp.run(delete_files=delete_files)
-            bm = self._rename_biomass_cols(exp.total_biomass)
+            bm = self._rename_biomass_cols(exp.total_biomass, condition)
 
             # Detect zero-growth output (COMETS GLOP silent failure)
             sp_cols = [c for c in bm.columns if c in SPECIES]
@@ -568,7 +709,7 @@ class OralBiofilmComets:
     # ------------------------------------------------------------------
     def run_mock(
         self,
-        condition: Literal["healthy", "diseased"] = "healthy",
+        condition: Literal["healthy", "diseased", "commensal", "dysbiotic"] = "healthy",
         max_cycles: int = 500,
         noise: float = 0.05,
     ):
@@ -582,16 +723,19 @@ class OralBiofilmComets:
         total_biomass : pd.DataFrame (columns: cycle, So, An, Vp, Fn, Pg)
         media : pd.DataFrame (columns: cycle, metabolite, conc_mmol)
         """
-        import pandas as pd
+        try:
+            import pandas as pd
+        except Exception:
+            pd = None
 
-        rng = np.random.default_rng(42 if condition == "healthy" else 7)
+        rng = np.random.default_rng(42 if condition in ("healthy", "commensal") else 7)
         t = np.arange(max_cycles)
         fracs = INIT_FRACTIONS[condition]
 
         # Species-specific growth rates (h^-1 equivalent per cycle)
         mu = {
             "So": 0.012, "An": 0.008, "Vp": 0.009,
-            "Fn": 0.010, "Pg": 0.006 if condition == "healthy" else 0.014,
+            "Fn": 0.010, "Pg": 0.006 if condition in ("healthy", "commensal") else 0.014,
         }
         K_total = 1e-2  # carrying capacity (g)
 
@@ -607,7 +751,10 @@ class OralBiofilmComets:
                 noise_val = rng.normal(0, noise * abs(growth))
                 biomass[sp][i] = max(b + growth + noise_val, 1e-12)
 
-        df = pd.DataFrame({"cycle": t, **{sp: biomass[sp] for sp in SPECIES}})
+        if pd is None:
+            df = {"cycle": t, **{sp: biomass[sp] for sp in SPECIES}}
+        else:
+            df = pd.DataFrame({"cycle": t, **{sp: biomass[sp] for sp in SPECIES}})
 
         # Mock media: glucose depletes, lactate accumulates
         media_init = MEDIA_HEALTHY if condition == "healthy" else MEDIA_DISEASED
@@ -619,7 +766,10 @@ class OralBiofilmComets:
         for i in range(0, max_cycles, 10):
             media_rows.append({"cycle": i, "metabolite": glc_key, "conc_mmol": glc[i]})
             media_rows.append({"cycle": i, "metabolite": lac_key, "conc_mmol": lac[i]})
-        media_df = pd.DataFrame(media_rows)
+        if pd is None:
+            media_df = media_rows
+        else:
+            media_df = pd.DataFrame(media_rows)
 
         return df, media_df
 
@@ -638,7 +788,7 @@ class OralBiofilmComets:
     # ------------------------------------------------------------------
     def run_dfba_cobra(
         self,
-        condition: Literal["healthy", "diseased", "pg_single"] = "healthy",
+        condition: Literal["healthy", "diseased", "commensal", "dysbiotic", "pg_single"] = "healthy",
         max_cycles: int = 500,
         time_step: float = 0.01,   # hours per cycle
         K_total: float = 0.01,     # g  total biomass carrying capacity
@@ -673,7 +823,7 @@ class OralBiofilmComets:
 
         if self.agora_dir and cobra_available:
             for sp_key in SPECIES:
-                model = self._load_agora_model(sp_key)
+                model = self._load_agora_model(sp_key, condition)
                 ex_ids = {r.id for r in model.exchanges}
                 for sub_key in MONOD_PARAMS[sp_key]["uptake"]:
                     rxn_id = "EX_" + sub_key.replace("[e]", "(e)")
@@ -683,7 +833,7 @@ class OralBiofilmComets:
         # Initial conditions
         if condition == "healthy":
             media_init = MEDIA_HEALTHY
-        elif condition == "diseased":
+        elif condition in ("diseased", "commensal", "dysbiotic"):
             media_init = MEDIA_DISEASED
         else:
             media_init = MEDIA_PG_SINGLE
