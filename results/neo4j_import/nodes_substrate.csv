@@ -1,0 +1,95 @@
+:ID,name:STRING,sub_type:STRING,HMDB_ID:STRING,HMDB_url:STRING,EC:STRING,KEGG:STRING,:LABEL
+sub_lactic_acid,lactic acid,metabolite,HMDB0000190,https://hmdb.ca/metabolites/HMDB0000190,n/a,n/a,Substrate
+sub_l_cysteine,L-cysteine,metabolite,HMDB0000574,https://hmdb.ca/metabolites/HMDB0000574,n/a,n/a,Substrate
+sub_pyridoxal,pyridoxal,metabolite,HMDB0001545,https://hmdb.ca/metabolites/HMDB0001545,n/a,n/a,Substrate
+sub_fucosidase,fucosidase,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_menaquinone,menaquinone,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_nitrite,nitrite,metabolite,HMDB0002786,https://hmdb.ca/metabolites/HMDB0002786,n/a,n/a,Substrate
+sub_nitrate,nitrate,metabolite,HMDB0002878,https://hmdb.ca/metabolites/HMDB0002878,n/a,n/a,Substrate
+sub_oxygen,oxygen,metabolite,HMDB0001377,https://hmdb.ca/metabolites/HMDB0001377,n/a,n/a,Substrate
+sub_adenine,adenine,metabolite,HMDB0000034,https://hmdb.ca/metabolites/HMDB0000034,n/a,n/a,Substrate
+sub_thymine,thymine,metabolite,HMDB0000262,https://hmdb.ca/metabolites/HMDB0000262,n/a,n/a,Substrate
+sub_proto_porphyrin,(proto)porphyrin,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_alkaline_phosphatase,alkaline phosphatase,enzyme,n/a,n/a,3.1.3.1,https://www.genome.jp/entry/3.1.3.1,Substrate
+sub_beta_galactosidase,beta-galactosidase,enzyme,n/a,n/a,3.2.1.23,https://www.genome.jp/entry/3.2.1.23,Substrate
+sub_cell_aggregates,cell aggregates,biofilm_component,n/a,n/a,n/a,n/a,Substrate
+sub_nitrate_reductase,nitrate reductase,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_alpha_lactose,alpha-lactose,metabolite,HMDB0000186,https://hmdb.ca/metabolites/HMDB0000186,n/a,n/a,Substrate
+sub_carbon_dioxide,carbon dioxide,metabolite,HMDB0001967,https://hmdb.ca/metabolites/HMDB0001967,n/a,n/a,Substrate
+sub_d_fructose,D-fructose,metabolite,HMDB0000660,https://hmdb.ca/metabolites/HMDB0000660,n/a,n/a,Substrate
+sub_d_galactose,D-galactose,metabolite,HMDB0000143,https://hmdb.ca/metabolites/HMDB0000143,n/a,n/a,Substrate
+sub_d_glucose,D-glucose,metabolite,HMDB0000122,https://hmdb.ca/metabolites/HMDB0000122,n/a,n/a,Substrate
+sub_d_maltose,D-maltose,metabolite,HMDB0000163,https://hmdb.ca/metabolites/HMDB0000163,n/a,n/a,Substrate
+sub_d_mannose,D-mannose,metabolite,HMDB0000169,https://hmdb.ca/metabolites/HMDB0000169,n/a,n/a,Substrate
+sub_hemin,hemin,metabolite,HMDB0000887,https://hmdb.ca/metabolites/HMDB0000887,n/a,n/a,Substrate
+sub_maltotriose,maltotriose,metabolite,HMDB0001262,https://hmdb.ca/metabolites/HMDB0001262,n/a,n/a,Substrate
+sub_nicotinamide_adenine_dinucleotide,nicotinamide adenine dinucleotide,metabolite,HMDB0000902,https://hmdb.ca/metabolites/HMDB0000902,n/a,n/a,Substrate
+sub_raffinose,raffinose,metabolite,HMDB0003213,https://hmdb.ca/metabolites/HMDB0003213,n/a,n/a,Substrate
+sub_sucrose,sucrose,metabolite,HMDB0000258,https://hmdb.ca/metabolites/HMDB0000258,n/a,n/a,Substrate
+sub_trehalose,trehalose,metabolite,HMDB0000775,https://hmdb.ca/metabolites/HMDB0000775,n/a,n/a,Substrate
+sub_gelatine,gelatine,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_saccharibacteria_bacterium_hmt_488,Saccharibacteria bacterium HMT-488,taxon,n/a,n/a,n/a,n/a,Substrate
+sub_saccharibacteria_bacterium_hmt_955,Saccharibacteria bacterium HMT-955,taxon,n/a,n/a,n/a,n/a,Substrate
+sub_alpha_galactosidase,alpha-galactosidase,enzyme,n/a,n/a,3.2.1.22,https://www.genome.jp/entry/3.2.1.22,Substrate
+sub_alpha_glucosidase,alpha-glucosidase,enzyme,n/a,n/a,3.2.1.20,https://www.genome.jp/entry/3.2.1.20,Substrate
+sub_enzyme_degrading_geletine,enzyme degrading geletine,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_esterase_c4,esterase (C4),enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_esterase_c8,esterase (C8),enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_hyaluronidase,hyaluronidase,enzyme,n/a,n/a,3.2.1.35,https://www.genome.jp/entry/3.2.1.35,Substrate
+sub_n_acetyl_beta_glucosaminidase,N-acetyl-beta-glucosaminidase,enzyme,n/a,n/a,3.2.1.52,https://www.genome.jp/entry/3.2.1.52,Substrate
+sub_propionic_acid,propionic acid,metabolite,HMDB0000237,https://hmdb.ca/metabolites/HMDB0000237,n/a,n/a,Substrate
+sub_salicin,salicin,metabolite,HMDB0003546,https://hmdb.ca/metabolites/HMDB0003546,n/a,n/a,Substrate
+sub_starch,starch,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_amino_acids,amino acids,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_pantothenic_acid,pantothenic acid,metabolite,HMDB0000210,https://hmdb.ca/metabolites/HMDB0000210,n/a,n/a,Substrate
+sub_riboflavin,riboflavin,metabolite,HMDB0000244,https://hmdb.ca/metabolites/HMDB0000244,n/a,n/a,Substrate
+sub_peptides,peptides,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_hydrogen_peroxide,hydrogen peroxide,metabolite,HMDB0003125,https://hmdb.ca/metabolites/HMDB0003125,n/a,n/a,Substrate
+sub_biofilm_scaffold,biofilm scaffold,biofilm_component,n/a,n/a,n/a,n/a,Substrate
+sub_catalase,catalase,enzyme,n/a,n/a,1.11.1.6,https://www.genome.jp/entry/1.11.1.6,Substrate
+sub_dextrin,dextrin,metabolite,HMDB0006857,https://hmdb.ca/metabolites/HMDB0006857,n/a,n/a,Substrate
+sub_nitric_oxide,nitric oxide,metabolite,HMDB0003378,https://hmdb.ca/metabolites/HMDB0003378,n/a,n/a,Substrate
+sub_proline_aminopeptidase,proline aminopeptidase,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_butyric_acid,butyric acid,metabolite,HMDB0000039,https://hmdb.ca/metabolites/HMDB0000039,n/a,n/a,Substrate
+sub_hydrogen_sulfide,hydrogen sulfide,metabolite,HMDB0003276,https://hmdb.ca/metabolites/HMDB0003276,n/a,n/a,Substrate
+sub_indole,indole,metabolite,HMDB0000738,https://hmdb.ca/metabolites/HMDB0000738,n/a,n/a,Substrate
+sub_l_lysine,L-lysine,metabolite,HMDB0000182,https://hmdb.ca/metabolites/HMDB0000182,n/a,n/a,Substrate
+sub_l_ornithine,L-ornithine,metabolite,HMDB0000214,https://hmdb.ca/metabolites/HMDB0000214,n/a,n/a,Substrate
+sub_urease,urease,enzyme,n/a,n/a,3.5.1.5,https://www.genome.jp/entry/3.5.1.5,Substrate
+sub_fumaric_acid,fumaric acid,metabolite,HMDB0000134,https://hmdb.ca/metabolites/HMDB0000134,n/a,n/a,Substrate
+sub_v_factor,V-factor,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_ammonia,ammonia,metabolite,HMDB0000051,https://hmdb.ca/metabolites/HMDB0000051,n/a,n/a,Substrate
+sub_catechol,catechol,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_shikimic_acid,shikimic acid,metabolite,HMDB0003070,https://hmdb.ca/metabolites/HMDB0003070,n/a,n/a,Substrate
+sub_acid,acid,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_beta_xylosidase,beta-xylosidase,enzyme,n/a,n/a,3.2.1.21,https://www.genome.jp/entry/3.2.1.21,Substrate
+sub_capsule,capsule,cell_component,n/a,n/a,n/a,n/a,Substrate
+sub_enzyme_generating_polysacharide_from_sucorse,enzyme generating polysacharide from sucorse,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_flagella,flagella,cell_component,n/a,n/a,n/a,n/a,Substrate
+sub_nitrite_reductase,nitrite reductase,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_oxidase,oxidase,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_polysacharide,polysacharide,biofilm_component,n/a,n/a,n/a,n/a,Substrate
+sub_growth_factors,growth factors,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_mannitol,mannitol,metabolite,HMDB0000765,https://hmdb.ca/metabolites/HMDB0000765,n/a,n/a,Substrate
+sub_urea,urea,metabolite,HMDB0000294,https://hmdb.ca/metabolites/HMDB0000294,n/a,n/a,Substrate
+sub_l_arginine,L-arginine,metabolite,HMDB0000517,https://hmdb.ca/metabolites/HMDB0000517,n/a,n/a,Substrate
+sub_thiamine,thiamine,metabolite,HMDB0000235,https://hmdb.ca/metabolites/HMDB0000235,n/a,n/a,Substrate
+sub_phenylacetic_acid,phenylacetic acid,metabolite,HMDB0000209,https://hmdb.ca/metabolites/HMDB0000209,n/a,n/a,Substrate
+sub_acid_phosphatase,acid phosphatase,enzyme,n/a,n/a,3.1.3.2,https://www.genome.jp/entry/3.1.3.2,Substrate
+sub_alanine_arylamidase,alanine arylamidase,enzyme,n/a,n/a,3.4.11.14,https://www.genome.jp/entry/3.4.11.14,Substrate
+sub_alpha_fucosidase,alpha-fucosidase,enzyme,n/a,n/a,3.2.1.51,https://www.genome.jp/entry/3.2.1.51,Substrate
+sub_enzyme_generating_glutamate_from_ammonia,enzyme generating glutamate from ammonia,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_enzyme_generating_vitamin_b12_from_proto_porphyrin,enzyme generating vitamin B12 from (proto)porphyrin,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_esterase,esterase,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_glutamyl_glutamic_acid_arylamidase,glutamyl glutamic acid arylamidase,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_leucine_arylamidase,leucine arylamidase,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_leucyl_glycine_arylamidase,leucyl glycine arylamidase,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_naphthol_as_bi_phosphohydrolase,naphthol-AS-BI-phosphohydrolase,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_dhna,DHNA,metabolite,HMDB0244212,https://hmdb.ca/metabolites/HMDB0244212,n/a,n/a,Substrate
+sub_iron,iron,metabolite,n/a,n/a,n/a,n/a,Substrate
+sub_actinobacteria,Actinobacteria,taxon,n/a,n/a,n/a,n/a,Substrate
+sub_dnase,DNAse,enzyme,n/a,n/a,n/a,n/a,Substrate
+sub_challisin,challisin,enzyme,n/a,n/a,3.4.21.96,https://www.genome.jp/entry/3.4.21.96,Substrate
+sub_iga1_protease,IgA1 protease,enzyme,n/a,n/a,3.4.21.-,n/a,Substrate
+sub_sialidase,sialidase,enzyme,n/a,n/a,3.2.1.18,https://www.genome.jp/entry/3.2.1.18,Substrate
+sub_hydrogen,hydrogen,metabolite,HMDB0001362,https://hmdb.ca/metabolites/HMDB0001362,n/a,n/a,Substrate

@@ -1,0 +1,21 @@
+{
+  "sample": "B_1",
+  "total_zmw": 15387,
+  "contamination_fraction": 0.9338402547605121,
+  "real_zmw": 1018,
+  "ccs_sequences": 1018,
+  "classified_reads": 1015,
+  "mean_identity": 98.51251231527094,
+  "top10_genera": {
+    "Streptococcus": 352,
+    "Neisseria": 190,
+    "Capnocytophaga": 139,
+    "Veillonella": 60,
+    "Fusobacterium": 60,
+    "Eikenella": 38,
+    "Prevotella": 34,
+    "Actinomyces": 31,
+    "Lachnoanaerobaculum": 19,
+    "Johnsonella": 19
+  }
+}

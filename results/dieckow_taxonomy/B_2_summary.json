@@ -1,0 +1,21 @@
+{
+  "sample": "B_2",
+  "total_zmw": 15408,
+  "contamination_fraction": 0.990978712357217,
+  "real_zmw": 139,
+  "ccs_sequences": 139,
+  "classified_reads": 136,
+  "mean_identity": 98.59411764705882,
+  "top10_genera": {
+    "Rothia": 44,
+    "Streptococcus": 38,
+    "Neisseria": 16,
+    "Capnocytophaga": 13,
+    "Veillonella": 8,
+    "Actinomyces": 5,
+    "Granulicatella": 3,
+    "Eikenella": 3,
+    "Abiotrophia": 2,
+    "Lachnoanaerobaculum": 2
+  }
+}

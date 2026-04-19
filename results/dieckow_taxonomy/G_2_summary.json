@@ -1,0 +1,21 @@
+{
+  "sample": "G_2",
+  "total_zmw": 10828,
+  "contamination_fraction": 0.17667159216845216,
+  "real_zmw": 8915,
+  "ccs_sequences": 8914,
+  "classified_reads": 8778,
+  "mean_identity": 98.33258145363409,
+  "top10_genera": {
+    "Streptococcus": 4258,
+    "Bifidobacterium": 1449,
+    "Actinomyces": 742,
+    "Capnocytophaga": 517,
+    "Abiotrophia": 323,
+    "Veillonella": 299,
+    "Neisseria": 164,
+    "Selenomonas": 154,
+    "Prevotella": 123,
+    "Rothia": 111
+  }
+}

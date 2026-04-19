@@ -1,0 +1,43 @@
+Hamilton A matrix sign verification vs Bergey/Dieckow SI predictions
+======================================================================
+
+Reference predictions:
+  A[So,An] expected + (strong) — Dieckow_SI (Neo4j)
+    An→nitrite→So (experimental); bidirectional cross-feeding
+
+  A[So,Vd] expected + (strong) — Dieckow_SI (Neo4j)
+    So→lactate→Vd (experimental) + Vd→nitrite/CO2→So (experimental); V.parvula aerobic lactate growth (Bergey)
+
+  A[So,Fn] expected + (strong) — Dieckow_SI (Neo4j)
+    So→L-ornithine→Fn (experimental, Streptococcus gordonii); ornithine fuels Fusobacterium growth
+
+  A[An,Vd] expected + (strong) — Dieckow_SI (Neo4j)
+    An→lactate→Vd (experimental); Actinomyces oris/israelii confirmed
+
+  A[An,Pg] expected + (moderate) — Dieckow_SI (Neo4j)
+    An→lactate/menaquinone→Pg pasteri (experimental); ⚠ evidence is for P.pasteri not P.gingivalis
+
+  A[Vd,Pg] expected + (moderate) — Dieckow_SI (Neo4j)
+    Vd→menaquinone→Pg pasteri (experimental); ⚠ evidence is for P.pasteri not P.gingivalis
+
+  A[So,Pg] expected - (weak) — DH_MAP_only (strain W83)
+    So→H2O2→Pg inhibition CONFLICTS with So→lactate→Pg cross-feeding; Net sign only negative in DH (Pg W83 gingipain strain); excluded from prior
+
+
+Cross-condition summary:
+    pair expected strength CS CH DH DS  n_match  n_total
+A[An,Pg]        + moderate  ✓  ✓  ✗  ✓        3        4
+A[An,Vd]        +   strong  ✓  ✓  ✓  ✓        4        4
+A[So,An]        +   strong  ✓  ✓  ✓  ✓        4        4
+A[So,Fn]        +   strong  ✓  ✓  ✗  ✓        3        4
+A[So,Pg]        -     weak  ✗  ✗  ✓  ✗        1        4
+A[So,Vd]        +   strong  ✓  ✓  ✓  ✓        4        4
+A[Vd,Pg]        + moderate  ✓  ✓  ✓  ✓        4        4
+
+Key finding for paper discussion:
+  - A[So,Vd]>0 confirmed in all 4 conditions (lactate cross-feeding)
+  - A[An,Vd]>0 confirmed in all 4 conditions (lactate mutualism)
+  - A[So,Pg]<0 only in DH (Pg W83 gingipain × So H2O2 competition)
+  - A[An,Pg]<0 only in DH (same mechanism, weaker)
+  - Strain switch (V.dispar↔V.parvula, Pg DSM20709↔W83) explains
+    condition-specific sign changes in Pg-involving interactions

@@ -1,0 +1,21 @@
+{
+  "sample": "K_1",
+  "total_zmw": 26170,
+  "contamination_fraction": 0.5972487581199847,
+  "real_zmw": 10540,
+  "ccs_sequences": 10540,
+  "classified_reads": 10438,
+  "mean_identity": 98.50600689787315,
+  "top10_genera": {
+    "Streptococcus": 6748,
+    "Rothia": 1164,
+    "Limosilactobacillus": 747,
+    "Veillonella": 431,
+    "Fusobacterium": 368,
+    "Actinomyces": 300,
+    "Haemophilus": 257,
+    "Granulicatella": 193,
+    "Parvimonas": 98,
+    "Gemella": 70
+  }
+}

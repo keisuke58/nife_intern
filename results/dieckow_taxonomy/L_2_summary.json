@@ -1,0 +1,20 @@
+{
+  "sample": "L_2",
+  "total_zmw": 18679,
+  "contamination_fraction": 0.9795492264039831,
+  "real_zmw": 382,
+  "ccs_sequences": 382,
+  "classified_reads": 377,
+  "mean_identity": 98.60371352785145,
+  "top10_genera": {
+    "Streptococcus": 154,
+    "Actinomyces": 103,
+    "Limosilactobacillus": 42,
+    "Granulicatella": 28,
+    "Haemophilus": 18,
+    "Corynebacterium": 14,
+    "Veillonella": 10,
+    "Gemella": 5,
+    "Aggregatibacter": 3
+  }
+}

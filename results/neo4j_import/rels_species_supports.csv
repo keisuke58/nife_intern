@@ -1,0 +1,80 @@
+:START_ID,:END_ID,:TYPE,oral:STRING,strain_details:STRING,co_culture:STRING,comments:STRING,reference:STRING
+sp_actinomyces_massiliensis,sp_saccharibacteria_tm7_sp_hmt_957,SUPPORTS,Yes,"strain F0489, Saccharibacterium (TM7) sp. HMT-957 is ectobiont",BHI-broth with 1:1 Gibco RPMI,Stable long-term binary in vitro co-cultures,Bor2020 (10.1177/0022034520905792)
+sp_actinomyces_oris,sp_tannerella_serpentiformis_hmt_286,SUPPORTS,Yes,,,,Vartoukian2016 (10.1177/0022034516651078)
+sp_actinomyces_sp_hmt_171,sp_saccharibacteria_tm7_sp_hmt_957,SUPPORTS,Yes,"strain F0337, Saccharibacterium (TM7) sp. HMT-957 is ectobiont",BHI-broth with 1:1 Gibco RPMI,Stable long-term binary in vitro co-cultures,Bor2020 (10.1177/0022034520905792)
+sp_actinomyces_sp_hmt_180,sp_saccharibacteria_tm7_sp_hmt_952,SUPPORTS,Yes,"strain F0310, Saccharibacterium (TM7) sp. HMT-952 is ectobiont",BHI-broth with 1:1 Gibco RPMI,Stable long-term binary in vitro co-cultures,Bor2020 (10.1177/0022034520905792)
+sp_actinomyces_sp_hmt_897,sp_saccharibacterium_tm7_sp_hmt_349,SUPPORTS,Yes,"strain F0631, Saccharibacterium (TM7) sp. HMT-349 is ectobiont",BHI-broth with 1:1 Gibco RPMI,Stable long-term binary in vitro co-cultures,Murugkar2023 (10.1080/20002297.2020.1814666)
+sp_actinomyces_sp_hmt_897,sp_saccharibacterium_tm7_sp_hmt_351,SUPPORTS,Yes,"strain ORNL0104, Saccharibacterium (TM7) sp. HMT-351 is ectobiont",BHI-broth with 1:1 Gibco RPMI,Stable long-term binary in vitro co-cultures,"Cross2019 (10.1038/s41587-019-0260-6), Cross2021 (10.1128/mra.00040-21)"
+sp_arachnia_propionica,sp_saccharibacteria_tm7_sp_hmt_488,SUPPORTS,Yes,"strains F0700, F0230, F0231, Saccharibacterium (TM7) sp. HMT-488 is ectobiont",TSBY-broth with 1:1 Gibco RPMI,Stable long-term binary in vitro co-cultures,"Bor2020 (10.1177/0022034520905792), Murugkar2023 (10.1080/20002297.2020.1814666)"
+sp_arachnia_propionica,sp_saccharibacteria_tm7_sp_hmt_955,SUPPORTS,Yes,"strain F0700, Saccharibacterium (TM7) sp. HMT-955 is ectobiont",TSBY-broth with 1:1 Gibco RPMI,Stable long-term binary in vitro co-cultures,"Bor2020 (10.1177/0022034520905792), Murugkar2023 (10.1080/20002297.2020.1814666)"
+sp_bacillus_sp,sp_synbiobacterium_thermophilum,SUPPORTS,No,S. thermophilumis a compost isolate,,,Ohno1999 (10.1271/bbb.63.1083)
+sp_bacillus_stearothermophilus,sp_synbiobacterium_thermophilum,SUPPORTS,No,S. thermophilumis a compost isolate,,,Ohno1999 (10.1271/bbb.63.1083)
+sp_bacillus_subtilis,sp_synbiobacterium_thermophilum,SUPPORTS,No,S. thermophilumis a compost isolate,,,Ohno1999 (10.1271/bbb.63.1083)
+sp_bacteroides_vulgatus,sp_phascolarctobacterium_sp,SUPPORTS,No,helper strain  strain  JCM 5826T,,Growth stimulated in presence of helper on lower soft agar layer after 7 days,Tanaka2015 (10.1111/1348-0421.12220)
+sp_bacteroides_dorei,sp_phascolarctobacterium_sp,SUPPORTS,No,helper strain  strain  JCM 13471T,,Growth stimulated in presence of helper on lower soft agar layer,Tanaka2015 (10.1111/1348-0421.12220)
+sp_bacteroides_fragilis,sp_phascolarctobacterium_sp,SUPPORTS,No,helper strain  JCM 11019T,,Growth stimulated in presence of helper on lower soft agar layer,Tanaka2015 (10.1111/1348-0421.12220)
+sp_bacteroides_massiliensis,sp_phascolarctobacterium_sp,SUPPORTS,No,helper strain  JCM 13223T,,Weak growth,Tanaka2015 (10.1111/1348-0421.12220)
+sp_bacteroides_sp,sp_phascolarctobacterium_sp,SUPPORTS,No,Phascolarctobacteriumsp. is a human gut isolate,,,Tanaka2015 (10.1111/1348-0421.12220)
+sp_cutibacterium_acnes,sp_bacteroidaceae_sp_hmt_272,SUPPORTS,Yes,helper strain  strain  ATCC 6919,,"Initially stimulated, later inhibited",Vartoukian2016 (10.1371/journal.pone.0146926)
+sp_cutibacterium_acnes,sp_bacteroidetes_sp_hmt_365,SUPPORTS,Yes,helper strain  strain  ATCC 6919,,"Single colony beside helper streak, followed by exponential growth stimulation on tertiary membranes; maintained reliance on C. acnes for 6 passages when sub-cultured on a membrane over C. acnes lawn (second passage)",Vartoukian2016 (10.1371/journal.pone.0146926)
+sp_cutibacterium_acnes,sp_fusobacterium_nucleatum,SUPPORTS,Yes,helper strain ATCC 6919,,,Kusugal2021 (10.4103/0973-029X.325125)
+sp_cutibacterium_acnes,sp_lachnospiraceae_sp_hmt_500,SUPPORTS,Yes,,Support on diverse media,Satellite growth on PPA agar,Thompson2015 (10.1128/AEM.02156-15)
+sp_cutibacterium_acnes,sp_new_isolates_of_slow_growing_strains,SUPPORTS,Yes,helper strain ATCC 6919,,Routine procedure for slow growing strains of new isolates which first form colonies after 7 days of incubation,Thompson2015 (10.1128/AEM.02156-15)
+sp_cutibacterium_acnes,sp_nonpigmented_prevotella_sp,SUPPORTS,Yes,helper strain ATCC 6919,,,Kusugal2021 (10.4103/0973-029X.325125)
+sp_cutibacterium_acnes,sp_odoribacter_denticanis,SUPPORTS,Yes,O.denticanisis a canine isolate,,,Davis2014 (10.1186/1471-2180-14-196)
+sp_cutibacterium_acnes,sp_porphyromonas_gingivalis,SUPPORTS,Yes,helper strain ATCC 6919,,,Kusugal2021 (10.4103/0973-029X.325125)
+sp_cutibacterium_acnes,sp_tannerella_forsythia,SUPPORTS,Yes,helper strain  strain DSM 1897,,,DSMZ (DSM 102835)
+sp_cutibacterium_acnes,sp_tannerella_serpentiformis_hmt_286,SUPPORTS,Yes,,,"Growth around ""helper"" streak or on membranes over “helper” lawns","Vartoukian2016 (10.1177/0022034516651078), Frey2018 (10.1093/femsle/fny180), Ansbro2020 (10.1099/ijsem.0.004229)"
+sp_cutibacterium_acnes,sp_unknown_oral_isolate,SUPPORTS,Yes,"helper strain  strain  ATCC 6919, growth limited to the surface of the helper",,,Vartoukian2016 (10.1371/journal.pone.0146926)
+sp_enterobacteriaceae_sp,sp_abiotrophia,SUPPORTS,Yes,"Nutritionally variant streptococci, pyridoxal hydrochloride-related",BBL Soy Trypticase agar/ Difco Heart Infusion agar/Pyridoxyl supplemented media,"Satellite growth after 24 h, larger colonies at the outer edge of the zone at 48h, non-hemolytic or alpha-hemolytic satellite growth around helpers","Frenkel1961 (10.1038/191728a0), Rouff1991 (10.1128/cmr.4.2.184)"
+sp_enterobacteriaceae_sp,sp_granulicatella,SUPPORTS,Yes,"Nutritionally variant streptococci, pyridoxal hydrochloride-related",BBL Soy Trypticase agar/ Difco Heart Infusion agar/Pyridoxyl supplemented media,"Satellite growth after 24 h, larger colonies at the outer edge of the zone at 48h, non-hemolytic or alpha-hemolytic satellite growth around helpers","Frenkel1961 (10.1038/191728a0), Rouff1991 (10.1128/cmr.4.2.184)"
+sp_escherichia_coli,sp_porphyromonas_pasteri,SUPPORTS,Yes,,,,Murugkar2023 (10.1080/20002297.2022.2143651)
+sp_escherichia_coli,sp_synbiobacterium_thermophilum,SUPPORTS,No,S. thermophilumis a compost isolate,,,Ohno1999 (10.1271/bbb.63.1083)
+sp_fusobacterium_nucleatum,sp_desulfobulbus_oralis_hmt_041,SUPPORTS,Yes,F. nucleatum strain ATCC 23726,,The nature of the critical component(s) provided to D. oralis by F. nucleatum remains unknown,Cross2018 (10.1128/mBio.02061-17)
+sp_fusobacterium_nucleatum,sp_tannerella_serpentiformis_hmt_286,SUPPORTS,Yes,,,Moderate growth stimulation,Vartoukian2016 (10.1177/0022034516651078)
+sp_fusobacterium_nucleatum_subsp_nucleatum,sp_fretibacterium_fastidiosum,SUPPORTS,Yes,helper strain  strain  ATCC 25586T,Cooked Meat Medium (CMM) with Mucin and Serum supplementation,Growth after 8 passages,"Vartoukian2010 (10.1111/j.1462-2920.2009.02135.x), Vartoukian2013 (10.1099/ijs.0.041038-0)"
+sp_fusobacterium_nucleatum_subsp_nucleatum,sp_lachnospiraceae_sp_hmt_500,SUPPORTS,Yes,,Support on diverse media,Satellite growth on PPA agar,Thompson2015 (10.1128/AEM.02156-15)
+sp_fusobacterium_nucleatum_subsp_polymorphum,sp_anaerolineae_sp_hmt_439,SUPPORTS,Yes,Helper was strain  NCTC 10562T,,"Growth around ""helper"" streak or on membranes over “helper” lawns",Vartoukian2016 (10.1371/journal.pone.0146926)
+sp_fusobacterium_nucleatum_subsp_polymorphum,sp_bacteroidetes_sp_hmt_365,SUPPORTS,Yes,helper strain  strain  NCTC 10562T,,Stronger growth near helper when first sub-cultured with it,Vartoukian2016 (10.1371/journal.pone.0146926)
+sp_fusobacterium_nucleatum_subsp_polymorphum,sp_prevotella_sp_hmt_376,SUPPORTS,Yes,helper strain  NCTC 10562T,,Limited self-satellitism next to streak rather than dependence on helpers,Vartoukian2016 (10.1371/journal.pone.0146926)
+sp_fusobacterium_periodonticum,sp_sr1_sp_hmt_875,SUPPORTS,Yes,,,,Cross2019 (10.1038/s41587-019-0260-6)
+sp_klebsiella_pneumoniae,sp_parabacteroides_sp,SUPPORTS,No,Parabacteroides sp. is a human gut isolate,,Increased growth,Tanaka2015 (10.1111/1348-0421.12220)
+sp_lachnoanaerobaculum_umeaense,sp_bacteroidaceae_sp_hmt_272,SUPPORTS,Yes,,,"Initially stimulated, later inhibited",Vartoukian2016 (10.1371/journal.pone.0146926)
+sp_multiple,sp_multiple,SUPPORTS,Yes,,Complex clinical biofilms were used as inocula for enrichment procedure in liquid medium,,Thompson2015 (10.1128/AEM.02156-15)
+sp_parvimonas_micra,sp_fretibacterium_fastidiosum,SUPPORTS,Yes,,Cooked Meat Medium (CMM) with Mucin and Serum supplementation,Growth after 8 passages,Vartoukian2010 (10.1111/j.1462-2920.2009.02135.x)
+sp_parvimonas_micra,sp_lachnospiraceae_sp_hmt_500,SUPPORTS,Yes,co-isolates,Support on diverse media,Satellite growth on PPA agar,Thompson2015 (10.1128/AEM.02156-15)
+sp_parvimonas_micra,sp_sr1_sp_hmt_875,SUPPORTS,Yes,,,,Cross2019 (10.1038/s41587-019-0260-6)
+sp_porphyromonas_gingivalis,sp_tannerella_serpentiformis_hmt_286,SUPPORTS,Yes,,,,Vartoukian2016 (10.1177/0022034516651078)
+sp_prevotella_intermedia,sp_tannerella_serpentiformis_hmt_286,SUPPORTS,Yes,,,Best growth on membranes over “helper” lawns,Vartoukian2016 (10.1177/0022034516651078)
+sp_schaalia_meyeri,sp_saccharibacteria_tm7_sp_hmt_952,SUPPORTS,Yes,"strain W712, Saccharibacterium (TM7) sp. HMT-952 is ectobiont",,,"Bor2020 (10.1177/0022034520905792), Murugkar2023 (10.1080/20002297.2020.1814666)"
+sp_schaalia_odontolytica,sp_anaerolineae_sp_hmt_439,SUPPORTS,Yes,,,"Initially stimulated, later inhibited",Vartoukian2016 (10.1371/journal.pone.0146926)
+sp_schaalia_odontolytica,sp_bacteroidaceae_sp_hmt_272,SUPPORTS,Yes,,,"Initially stimulated, later inhibited",Vartoukian2016 (10.1371/journal.pone.0146926)
+sp_schaalia_odontolytica,sp_saccharibacteria_tm7_sp_hmt_952,SUPPORTS,Yes,"strain XH001, Saccharibacterium (TM7) sp. HMT-952 is ectobiont",SHI solid agar medium-cultivated saliva samples,,"He2015 (10.1073/pnas.1419038112), Bor2020 (10.1177/0022034520905792)"
+sp_sphingomonas_sp,sp_catellibacterium_nectariphilum,SUPPORTS,No,C. nectariphilumis a sludge isolate,NPB medium with 10% (v/v) supernatant from an enrichment culture of whole activated sludge,Low molecular weight (<1000 Da)heat-stable non-peptide in helper supernatant promotes growth,Tanaka2004 (10.1099/ijs.0.02750-0)
+sp_staphylococcus_aureus,sp_fretibacterium_fastidiosum,SUPPORTS,Yes,,Cooked Meat Medium (CMM) with Mucin and Serum supplementation,Growth after 8 passages,Vartoukian2010 (10.1111/j.1462-2920.2009.02135.x)
+sp_staphylococcus_aureus,sp_new_isolates_of_slow_growing_strains,SUPPORTS,Yes,helper strain NCTC 6715,,Routine procedure for slow growing strains of new isolates which first form colonies after 7 days of incubation,Thompson2015 (10.1128/AEM.02156-15)
+sp_staphylococcus_aureus,sp_porphyromonas_gingivalis,SUPPORTS,Yes,,,,CCUG (CCUG  27724)
+sp_staphylococcus_aureus,sp_porphyromonas_sp,SUPPORTS,Yes,,,,CCUG (CCUG 47443)
+sp_staphylococcus_epidermidis,sp_lachnospiraceae_sp_hmt_500,SUPPORTS,Yes,,Support on diverse media,Satellite growth on PPA agar,Thompson2015 (10.1128/AEM.02156-15)
+sp_staphylococcus_hominis,sp_porphyromonas_pasteri,SUPPORTS,Yes,,,,Murugkar2023 (10.1080/20002297.2022.2143651)
+sp_staphylococcus_sp,sp_abiotrophia,SUPPORTS,Yes,"Nutritionally variant streptococci, pyridoxal hydrochloride-related",BBL Soy Trypticase agar/ Difco Heart Infusion agar/Pyridoxyl supplemented media,"Satellite growth after 24 h, larger colonies at the outer edge of the zone at 48h, non-hemolytic or alpha-hemolytic satellite growth around helpers","Frenkel1961 (10.1038/191728a0), Rouff1991 (10.1128/cmr.4.2.184)"
+sp_staphylococcus_sp,sp_aggregatibacter,SUPPORTS,Yes,,,"S. aureus-induced lysis of red blood cells (RBC) leads to the release of hemin and NAD, which act as nutrients and support the growth of H. influenzae","Nair2014 (10.1128/IAI.00059-14), Nørskov-Lauritsen2014 (10.1128/CMR.00103-13)"
+sp_staphylococcus_sp,sp_granulicatella,SUPPORTS,Yes,"Nutritionally variant streptococci, pyridoxal hydrochloride-related",BBL Soy Trypticase agar/ Difco Heart Infusion agar/Pyridoxyl supplemented media,"Satellite growth after 24 h, larger colonies at the outer edge of the zone at 48h, non-hemolytic or alpha-hemolytic satellite growth around helpers","Frenkel1961 (10.1038/191728a0), Rouff1991 (10.1128/cmr.4.2.184)"
+sp_staphylococcus_sp,sp_haemophilus,SUPPORTS,Yes,,,"S. aureus-induced lysis of red blood cells (RBC) leads to the release of hemin and NAD, which act as nutrients and support the growth of H. influenzae","Nair2014 (10.1128/IAI.00059-14), Nørskov-Lauritsen2014 (10.1128/CMR.00103-13)"
+sp_staphylococcus_sp,sp_tannerella_forsythia,SUPPORTS,Yes,,,Slight stimulation,CCUG (CCUG 21028)
+sp_streptococcus_sp,sp_abiotrophia,SUPPORTS,Yes,"Nutritionally variant streptococci, pyridoxal hydrochloride-related",BBL Soy Trypticase agar/ Difco Heart Infusion agar/Pyridoxyl supplemented media,Growth stimulated in presence of helpers with meida supplementation of Todd-Hewitt broth dialysate,"Frenkel1961 (10.1038/191728a0), Rouff1991 (10.1128/cmr.4.2.184)"
+sp_streptococcus_sp,sp_granulicatella,SUPPORTS,Yes,"Nutritionally variant streptococci, pyridoxal hydrochloride-related",BBL Soy Trypticase agar/ Difco Heart Infusion agar/Pyridoxyl supplemented media,Growth stimulated in presence of helpers with meida supplementation of Todd-Hewitt broth dialysate,"Frenkel1961 (10.1038/191728a0), Rouff1991 (10.1128/cmr.4.2.184)"
+sp_sutterella_sp,sp_bacteroides_fragilis,SUPPORTS,No,Sutterella sp. is a human gut isolate,,Partial dependence on helper presence for growth,Tanaka2015 (10.1111/1348-0421.12220)
+sp_tannerella_forsythia,sp_fretibacterium_fastidiosum,SUPPORTS,Yes,,Cooked Meat Medium (CMM) with Mucin and Serum supplementation,Weak growth,Vartoukian2010 (10.1111/j.1462-2920.2009.02135.x)
+sp_thermus_thermophilus,sp_synbiobacterium_thermophilum,SUPPORTS,No,S. thermophilumis a compost isolate,,,Ohno1999 (10.1271/bbb.63.1083)
+sp_unknown_oral_isolate,sp_alloprevotella_tannerae,SUPPORTS,Yes,,,,Murugkar2023 (10.1080/20002297.2022.2143651)
+sp_unknown_oral_isolate,sp_candidatus_peptostreptococcus_massiliae,SUPPORTS,Yes,,,,Murugkar2023 (10.1080/20002297.2022.2143651)
+sp_unknown_oral_isolate,sp_eubacterium_yurii_subsp_yurii,SUPPORTS,Yes,,,,Murugkar2023 (10.1080/20002297.2022.2143651)
+sp_unknown_oral_isolate,sp_lautropia_mirabilis,SUPPORTS,Yes,,,,Murugkar2023 (10.1080/20002297.2022.2143651)
+sp_unknown_oral_isolate,sp_peptostreptococcus_massiliae,SUPPORTS,Yes,,,,Murugkar2023 (10.1080/20002297.2022.2143651)
+sp_unknown_oral_isolate,sp_prevotella_oulorum,SUPPORTS,Yes,,,,Murugkar2023 (10.1080/20002297.2022.2143651)
+sp_unknown_oral_isolate,sp_solobacterium_moorei,SUPPORTS,Yes,,,,Murugkar2023 (10.1080/20002297.2022.2143651)
+sp_veillonella_dispar,sp_tannerella_serpentiformis_hmt_286,SUPPORTS,Yes,,,Weak growth stimulation,Vartoukian2016 (10.1177/0022034516651078)
+sp_veillonella_parvula_dispar,sp_lachnospiraceae_sp_hmt_500,SUPPORTS,Yes,co-isolates,Support on diverse media,Satellite growth on PPA agar,Thompson2015 (10.1128/AEM.02156-15)
+sp_yeasts,sp_abiotrophia,SUPPORTS,No,"Nutritionally variant streptococci, pyridoxal hydrochloride-related",BBL Soy Trypticase agar/ Difco Heart Infusion agar/Pyridoxyl supplemented media,"Satellite growth after 24 h, larger colonies at the outer edge of the zone at 48h, non-hemolytic or alpha-hemolytic satellite growth around helpers","Frenkel1961 (10.1038/191728a0), Rouff1991 (10.1128/cmr.4.2.184)"
+sp_yeasts,sp_granulicatella,SUPPORTS,No,"Nutritionally variant streptococci, pyridoxal hydrochloride-related",BBL Soy Trypticase agar/ Difco Heart Infusion agar/Pyridoxyl supplemented media,"Satellite growth after 24 h, larger colonies at the outer edge of the zone at 48h, non-hemolytic or alpha-hemolytic satellite growth around helpers","Frenkel1961 (10.1038/191728a0), Rouff1991 (10.1128/cmr.4.2.184)"

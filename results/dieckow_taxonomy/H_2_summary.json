@@ -1,0 +1,21 @@
+{
+  "sample": "H_2",
+  "total_zmw": 15638,
+  "contamination_fraction": 0.4705844737178667,
+  "real_zmw": 8279,
+  "ccs_sequences": 8279,
+  "classified_reads": 8190,
+  "mean_identity": 98.41677655677655,
+  "top10_genera": {
+    "Streptococcus": 1909,
+    "Aggregatibacter": 1273,
+    "Neisseria": 1097,
+    "Porphyromonas": 751,
+    "Actinomyces": 579,
+    "Rothia": 563,
+    "Corynebacterium": 439,
+    "Gemella": 261,
+    "Granulicatella": 252,
+    "Prevotella": 234
+  }
+}

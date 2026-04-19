@@ -1,0 +1,21 @@
+{
+  "sample": "F_2",
+  "total_zmw": 7386,
+  "contamination_fraction": 0.16774979691307879,
+  "real_zmw": 6147,
+  "ccs_sequences": 6147,
+  "classified_reads": 6009,
+  "mean_identity": 98.44296888001332,
+  "top10_genera": {
+    "Actinomyces": 1577,
+    "Bifidobacterium": 1526,
+    "Streptococcus": 1262,
+    "Veillonella": 601,
+    "Prevotella": 242,
+    "Atopobium": 193,
+    "Leptotrichia": 162,
+    "Limosilactobacillus": 152,
+    "Rothia": 76,
+    "Selenomonas": 44
+  }
+}

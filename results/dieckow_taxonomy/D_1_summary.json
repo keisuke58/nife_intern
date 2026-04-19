@@ -1,0 +1,21 @@
+{
+  "sample": "D_1",
+  "total_zmw": 19520,
+  "contamination_fraction": 0.9763831967213115,
+  "real_zmw": 461,
+  "ccs_sequences": 461,
+  "classified_reads": 455,
+  "mean_identity": 98.49868131868132,
+  "top10_genera": {
+    "Limosilactobacillus": 207,
+    "Lactiplantibacillus": 164,
+    "Streptococcus": 45,
+    "Veillonella": 12,
+    "Rothia": 7,
+    "Lacticaseibacillus": 7,
+    "Neisseria": 5,
+    "Peptoniphilus": 4,
+    "Prevotella": 1,
+    "Campylobacter": 1
+  }
+}

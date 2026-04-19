@@ -49,3 +49,9 @@ comets/pipeline_results/step_D/comets_D_*/
 
 # Large DB / sequence data
 data/silva_db/
+
+# Confidential / unpublished manuscripts
+Seidel_InReview_ISME_J_confidential/
+
+# Large external datasets (>1GB)
+Szafranski_Published_Work/

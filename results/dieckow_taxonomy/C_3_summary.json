@@ -1,0 +1,21 @@
+{
+  "sample": "C_3",
+  "total_zmw": 14678,
+  "contamination_fraction": 0.24144978879956397,
+  "real_zmw": 11134,
+  "ccs_sequences": 11134,
+  "classified_reads": 11031,
+  "mean_identity": 98.42523796573293,
+  "top10_genera": {
+    "Streptococcus": 3969,
+    "Haemophilus": 1960,
+    "Neisseria": 1530,
+    "Actinomyces": 737,
+    "Bifidobacterium": 593,
+    "Veillonella": 452,
+    "Granulicatella": 343,
+    "Selenomonas": 265,
+    "Capnocytophaga": 253,
+    "Atopobium": 247
+  }
+}

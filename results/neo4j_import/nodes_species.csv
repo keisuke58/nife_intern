@@ -1,0 +1,123 @@
+:ID,name:STRING,HMT:STRING,eHOMD:STRING,class:STRING,:LABEL
+sp_abiotrophia_defectiva,Abiotrophia defectiva,389,https://www.homd.org/taxa/tax_description?otid=389,,Species
+sp_actinomaces_sp_otu_14,Actinomaces sp. OTU_14,n/a,n/a,,Species
+sp_actinomyces_israelii,Actinomyces israelii,645,https://www.homd.org/taxa/tax_description?otid=645,,Species
+sp_actinomyces_oris,Actinomyces oris,893,https://www.homd.org/taxa/tax_description?otid=893,,Species
+sp_actinomyces_sp_hmt_169,Actinomyces sp. HMT-169,169,https://www.homd.org/taxa/tax_description?otid=169,,Species
+sp_aggregatibacter_aphrophilus,Aggregatibacter aphrophilus,545,https://www.homd.org/taxa/tax_description?otid=545,,Species
+sp_alloscardovia_omnicolens,Alloscardovia omnicolens,198,https://www.homd.org/taxa/tax_description?otid=198,,Species
+sp_arachnia_propionica,Arachnia propionica,739,https://www.homd.org/taxa/tax_description?otid=739,,Species
+sp_bifidobacterium_dentium,Bifidobacterium dentium,588,https://www.homd.org/taxa/tax_description?otid=588,,Species
+sp_bifidobacterium_longum,Bifidobacterium longum,862,https://www.homd.org/taxa/tax_description?otid=862,,Species
+sp_capnocytophaga_leadbetteri,Capnocytophaga leadbetteri,329,https://www.homd.org/taxa/tax_description?otid=329,,Species
+sp_capnocytophaga_sputigena,Capnocytophaga sputigena,775,https://www.homd.org/taxa/tax_description?otid=775,,Species
+sp_corynebacterium_matruchotii,Corynebacterium matruchotii,666,https://www.homd.org/taxa/tax_description?otid=666,,Species
+sp_eikenalla_corodens,Eikenalla corodens,577,https://www.homd.org/taxa/tax_description?otid=577,,Species
+sp_fusobacterium_sp_otu_27,Fusobacterium sp. OTU_27,n/a,n/a,,Species
+sp_granulicatella_adiacens,Granulicatella adiacens,534,https://www.homd.org/taxa/tax_description?otid=534,,Species
+sp_haemophilus_parainfluenzae,Haemophilus parainfluenzae,718,https://www.homd.org/taxa/tax_description?otid=718,,Species
+sp_kingella_oralis,Kingella oralis,706,https://www.homd.org/taxa/tax_description?otid=706,,Species
+sp_lactobacillus_sp_otu_19,Lactobacillus sp. OTU_19,n/a,n/a,,Species
+sp_lactobacillus_sp_otu_6,Lactobacillus sp. OTU_6,n/a,n/a,,Species
+sp_lancefieldella_parvulae,Lancefieldella parvulae,723,https://www.homd.org/taxa/tax_description?otid=723,,Species
+sp_lancefieldella_rimae,Lancefieldella rimae,750,https://www.homd.org/taxa/tax_description?otid=750,,Species
+sp_lautropia_mirabilis,Lautropia mirabilis,22,https://www.homd.org/taxa/tax_description?otid=022,,Species
+sp_limosilactobacillus_fermentum,Limosilactobacillus fermentum,608,https://www.homd.org/taxa/tax_description?otid=608,,Species
+sp_mogibacterium_sp_otu_21,Mogibacterium sp. OTU_21,n/a,n/a,,Species
+sp_neisseria_sicca,Neisseria sicca,764,https://www.homd.org/taxa/tax_description?otid=764,,Species
+sp_neisseria_sp_otu_4,Neisseria sp. OTU_4,n/a,n/a,,Species
+sp_porphyromonas_pasteri,Porphyromonas pasteri,279,https://www.homd.org/taxa/tax_description?otid=279,,Species
+sp_prevotella_histicola,Prevotella histicola,298,https://www.homd.org/taxa/tax_description?otid=298,,Species
+sp_prevotella_nanceiensis,Prevotella nanceiensis,299,https://www.homd.org/taxa/tax_description?otid=299,,Species
+sp_prevotella_salivae,Prevotella salivae,307,https://www.homd.org/taxa/tax_description?otid=307,,Species
+sp_rothia_dentocariosa,Rothia dentocariosa,587,https://www.homd.org/taxa/tax_description?otid=587,,Species
+sp_saccharibacteria_tm7_g_1_sp_hmt_347,Saccharibacteria (TM7) [G-1] sp. HMT-347,347,https://www.homd.org/taxa/tax_description?otid=347,,Species
+sp_schaalia_odontolytica,Schaalia odontolytica,701,https://www.homd.org/taxa/tax_description?otid=701,,Species
+sp_schaalia_sp_otu_7,Schaalia sp. OTU_7,n/a,n/a,,Species
+sp_schaalia_sp_hmt_172,Schaalia sp._HMT_172,172,https://www.homd.org/taxa/tax_description?otid=172,,Species
+sp_selenomonas_sp_otu_20,Selenomonas sp. OTU_20,n/a,n/a,,Species
+sp_streptocccus_sp_hmt_64,Streptocccus sp. HMT-64,64,https://www.homd.org/taxa/tax_description?otid=064,,Species
+sp_streptococcus_gordonii,Streptococcus gordonii,622,https://www.homd.org/taxa/tax_description?otid=622,,Species
+sp_streptococcus_mitis_oralis_group,Streptococcus mitis/oralis group,n/a,n/a,,Species
+sp_streptococcus_salivarius,Streptococcus salivarius,755,https://www.homd.org/taxa/tax_description?otid=755,,Species
+sp_streptococcus_sanguinis,Streptococcus sanguinis,758,https://www.homd.org/taxa/tax_description?otid=758,,Species
+sp_streptococcus_sp_otu_10,Streptococcus sp. OTU_10,n/a,n/a,,Species
+sp_streptococcus_sp_otu_13,Streptococcus sp. OTU_13,n/a,n/a,,Species
+sp_streptococcus_sp_otu_144,Streptococcus sp. OTU_144,n/a,n/a,,Species
+sp_streptococcus_sp_otu_17,Streptococcus sp. OTU_17,n/a,n/a,,Species
+sp_streptococcus_sp_otu_2,Streptococcus sp. OTU_2,n/a,n/a,,Species
+sp_streptococcus_sp_otu_9,Streptococcus sp. OTU_9,n/a,n/a,,Species
+sp_veillonella_parvula,Veillonella parvula,161,https://www.homd.org/taxa/tax_description?otid=161,,Species
+sp_veillonella_sp_otu_16,Veillonella sp. OTU_16,n/a,n/a,,Species
+sp_actinomyces_massiliensis,Actinomyces massiliensis,852,https://www.homd.org/taxa/tax_description?otid=852,Actinomycetia,Species
+sp_saccharibacteria_tm7_sp_hmt_957,Saccharibacteria (TM7) sp. HMT-957,957,https://www.homd.org/taxa/tax_description?otid=957,Saccharibacteria,Species
+sp_tannerella_serpentiformis_hmt_286,Tannerella serpentiformis HMT-286,286,https://www.homd.org/taxa/tax_description?otid=286,Bacteroidia,Species
+sp_actinomyces_sp_hmt_171,Actinomyces sp. HMT-171,17,https://www.homd.org/taxa/tax_description?otid=17,Actinomycetia,Species
+sp_actinomyces_sp_hmt_180,Actinomyces sp. HMT-180,180,https://www.homd.org/taxa/tax_description?otid=180,Actinomycetia,Species
+sp_saccharibacteria_tm7_sp_hmt_952,Saccharibacteria (TM7) sp. HMT-952,952,https://www.homd.org/taxa/tax_description?otid=952,Saccharibacteria,Species
+sp_actinomyces_sp_hmt_897,Actinomyces sp. HMT-897,897,https://www.homd.org/taxa/tax_description?otid=897,Actinomycetia,Species
+sp_saccharibacterium_tm7_sp_hmt_349,Saccharibacterium (TM7) sp. HMT-349,349,https://www.homd.org/taxa/tax_description?otid=349,Saccharibacteria,Species
+sp_saccharibacterium_tm7_sp_hmt_351,Saccharibacterium (TM7) sp. HMT-351,351,https://www.homd.org/taxa/tax_description?otid=351,Saccharibacteria,Species
+sp_saccharibacteria_tm7_sp_hmt_488,Saccharibacteria (TM7) sp. HMT-488,488,https://www.homd.org/taxa/tax_description?otid=488,Saccharibacteria,Species
+sp_saccharibacteria_tm7_sp_hmt_955,Saccharibacteria (TM7) sp. HMT-955,955,https://www.homd.org/taxa/tax_description?otid=955,Saccharibacteria,Species
+sp_bacillus_sp,Bacillus sp.,,,Bacilli,Species
+sp_synbiobacterium_thermophilum,Synbiobacterium thermophilum,,,Clostridia,Species
+sp_bacillus_stearothermophilus,Bacillus stearothermophilus,,,Bacilli,Species
+sp_bacillus_subtilis,Bacillus subtilis,468,https://www.homd.org/taxa/tax_description?otid=468,Bacilli,Species
+sp_bacteroides_vulgatus,Bacteroides  vulgatus,,,Bacteroidia,Species
+sp_phascolarctobacterium_sp,Phascolarctobacterium sp.,,,Negativicutes,Species
+sp_bacteroides_dorei,Bacteroides dorei,,,Bacteroidia,Species
+sp_bacteroides_fragilis,Bacteroides fragilis,,,Bacteroidia,Species
+sp_bacteroides_massiliensis,Bacteroides massiliensis,,,Bacteroidia,Species
+sp_bacteroides_sp,Bacteroides sp.,,,Bacteroidia,Species
+sp_cutibacterium_acnes,Cutibacterium acnes,530,https://www.homd.org/taxa/tax_description?otid=530,Actinomycetia,Species
+sp_bacteroidaceae_sp_hmt_272,Bacteroidaceae sp. HMT-272,272,https://www.homd.org/taxa/tax_description?otid=272,Bacteroidia,Species
+sp_bacteroidetes_sp_hmt_365,Bacteroidetes sp. HMT-365,365,https://www.homd.org/taxa/tax_description?otid=365,unassigned,Species
+sp_fusobacterium_nucleatum,Fusobacterium nucleatum,200,https://www.homd.org/taxa/tax_description?otid=200,Fusobacteriia,Species
+sp_lachnospiraceae_sp_hmt_500,Lachnospiraceae sp. HMT-500,500,https://www.homd.org/taxa/tax_description?otid=500,Clostridia,Species
+sp_new_isolates_of_slow_growing_strains,new isolates of slow growing strains,,,,Species
+sp_nonpigmented_prevotella_sp,nonpigmented Prevotella sp.,,,Bacteroidia,Species
+sp_odoribacter_denticanis,Odoribacter denticanis,,,Bacteroidia,Species
+sp_porphyromonas_gingivalis,Porphyromonas gingivalis,619,https://www.homd.org/taxa/tax_description?otid=619,Bacteroidia,Species
+sp_tannerella_forsythia,Tannerella forsythia,613,https://www.homd.org/taxa/tax_description?otid=613,Bacteroidia,Species
+sp_unknown_oral_isolate,unknown oral isolate,,,unassigned,Species
+sp_enterobacteriaceae_sp,Enterobacteriaceae sp.,,,Gammaproteobacteria,Species
+sp_abiotrophia,Abiotrophia,389,https://www.homd.org/taxa/tax_description?otid=389, Bacilli,Species
+sp_granulicatella,Granulicatella,,, Bacilli,Species
+sp_escherichia_coli,Escherichia coli,574,https://www.homd.org/taxa/tax_description?otid=574,Gammaproteobacteria,Species
+sp_desulfobulbus_oralis_hmt_041,Desulfobulbus oralis HMT-041,41,https://www.homd.org/taxa/tax_description?otid=41,Deltaproteobacteria,Species
+sp_fusobacterium_nucleatum_subsp_nucleatum,Fusobacterium nucleatum subsp. nucleatum,698,https://www.homd.org/taxa/tax_description?otid=698,Fusobacteriia,Species
+sp_fretibacterium_fastidiosum,Fretibacterium fastidiosum,363,https://www.homd.org/taxa/tax_description?otid=363, Synergistia,Species
+sp_fusobacterium_nucleatum_subsp_polymorphum,Fusobacterium nucleatum subsp. polymorphum,202,https://www.homd.org/taxa/tax_description?otid=202,Fusobacteriia,Species
+sp_anaerolineae_sp_hmt_439,Anaerolineae sp. HMT-439,439,https://www.homd.org/taxa/tax_description?otid=439,Chloroflexi,Species
+sp_prevotella_sp_hmt_376,Prevotella sp. HMT-376,376,https://www.homd.org/taxa/tax_description?otid=376,Bacteroidia,Species
+sp_fusobacterium_periodonticum,Fusobacterium periodonticum,201,https://www.homd.org/taxa/tax_description?otid=201,Fusobacteriia,Species
+sp_sr1_sp_hmt_875,SR1 sp. HMT-875,875,https://www.homd.org/taxa/tax_description?otid=875,SR1,Species
+sp_klebsiella_pneumoniae,Klebsiella pneumoniae,731,https://www.homd.org/taxa/tax_description?otid=731,Gammaproteobacteria,Species
+sp_parabacteroides_sp,Parabacteroides sp.,,,Bacteroidia,Species
+sp_lachnoanaerobaculum_umeaense,Lachnoanaerobaculum umeaense,107,https://www.homd.org/taxa/tax_description?otid=107,Clostridia,Species
+sp_multiple,multiple,,,,Species
+sp_parvimonas_micra,Parvimonas micra,111,https://www.homd.org/taxa/tax_description?otid=111, Clostridia,Species
+sp_prevotella_intermedia,Prevotella intermedia,643,https://www.homd.org/taxa/tax_description?otid=643,Bacteroidia,Species
+sp_schaalia_meyeri,Schaalia meyeri,671,https://www.homd.org/taxa/tax_description?otid=671,Actinomycetia,Species
+sp_sphingomonas_sp,Sphingomonas sp.,,,Alphaproteobacteria,Species
+sp_catellibacterium_nectariphilum,Catellibacterium nectariphilum,,,Alphaproteobacteria,Species
+sp_staphylococcus_aureus,Staphylococcus aureus,550,https://www.homd.org/taxa/tax_description?otid=550, Bacilli,Species
+sp_porphyromonas_sp,Porphyromonas sp.,,,Bacteroidia,Species
+sp_staphylococcus_epidermidis,Staphylococcus epidermidis,601,https://www.homd.org/taxa/tax_description?otid=601, Bacilli,Species
+sp_staphylococcus_hominis,Staphylococcus hominis,127,https://www.homd.org/taxa/tax_description?otid=127,Bacilli,Species
+sp_staphylococcus_sp,Staphylococcus sp.,,, Bacilli,Species
+sp_aggregatibacter,Aggregatibacter,,,Gammaproteobacteria,Species
+sp_haemophilus,Haemophilus,,,Gammaproteobacteria,Species
+sp_streptococcus_sp,Streptococcus sp.,,, Bacilli,Species
+sp_sutterella_sp,Sutterella sp.,,,Bacteroidia,Species
+sp_thermus_thermophilus,Thermus thermophilus,,,Deinococci,Species
+sp_alloprevotella_tannerae,Alloprevotella tannerae,,,Bacteroidia,Species
+sp_candidatus_peptostreptococcus_massiliae,Candidatus Peptostreptococcus massiliae,,,Clostridia,Species
+sp_eubacterium_yurii_subsp_yurii,Eubacterium yurii subsp. yurii,,,Clostridia,Species
+sp_peptostreptococcus_massiliae,Peptostreptococcus massiliae,,,Clostridia,Species
+sp_prevotella_oulorum,Prevotella oulorum,288,https://www.homd.org/taxa/tax_description?otid=288,Bacteroidia,Species
+sp_solobacterium_moorei,Solobacterium moorei,678,https://www.homd.org/taxa/tax_description?otid=678,Erysipelotrichia,Species
+sp_veillonella_dispar,Veillonella dispar,,,Negativicutes,Species
+sp_veillonella_parvula_dispar,Veillonella parvula/dispar,,,Negativicutes,Species
+sp_yeasts,Yeasts,,,,Species
