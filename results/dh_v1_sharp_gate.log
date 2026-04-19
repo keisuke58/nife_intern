@@ -1,0 +1,159 @@
+2026-02-25 03:38:43 WARNING __main__: Slack webhook URL is a placeholder. Notifications disabled.
+2026-02-25 03:38:43 INFO __main__: Slack notifications disabled (no webhook URL)
+2026-02-25 03:38:43 INFO __main__: Output directory: /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/dh_v1_sharp_gate
+2026-02-25 03:38:43 INFO __main__: Loading experimental data...
+2026-02-25 03:38:43 INFO __main__: Loading Dysbiotic HOBIC data: 6 timepoints, days=[1, 3, 6, 10, 15, 21]
+2026-02-25 03:38:43 INFO __main__: Auto-calculated day_scale: 0.011310
+2026-02-25 03:38:43 INFO __main__: Experimental days: [ 1  3  6 10 15 21]
+2026-02-25 03:38:43 INFO __main__: Model indices: [ 113  339  679 1131 1696 2375]
+2026-02-25 03:38:43 INFO __main__: Data (absolute volumes):
+[[0.018   0.0045  0.423   0.00225 0.00225]
+ [0.012   0.004   0.388   0.002   0.002  ]
+ [0.0525  0.09    0.6375  0.00375 0.00375]
+ [0.0744  0.093   0.465   0.0496  0.0031 ]
+ [0.012   0.21    0.21    0.12    0.012  ]
+ [0.006   0.21    0.15    0.18    0.108  ]]
+2026-02-25 03:38:43 INFO __main__: Checkpointing enabled: saving every 2 stages to /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/dh_v1_sharp_gate/checkpoints
+2026-02-25 03:38:43 INFO __main__: Running parameter estimation...
+2026-02-25 03:38:43 INFO __main__: Nishioka Algorithm: Retrieving bounds and locked indices for Dysbiotic HOBIC...
+2026-02-25 03:38:43 INFO __main__: Nishioka Algorithm: Locking indices [] to 0.0
+2026-02-25 03:38:43 INFO __main__: Reduced parameter space to 20 parameters: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+2026-02-25 03:38:43 INFO __main__: Using sigma_obs = 0.23209876543209873
+2026-02-25 03:38:43 INFO __main__: Data shape: (6, 5)
+2026-02-25 03:38:43 INFO __main__: idx_sparse: [ 113  339  679 1131 1696 2375]
+2026-02-25 03:38:43 INFO __main__: Starting TMCMC estimation...
+2026-02-25 03:38:43 INFO core.tmcmc: [Dysbiotic_HOBIC] Running 1 TMCMC chains (β tempering + linearization update)...
+2026-02-25 03:38:43 INFO core.tmcmc: Chain 1/1
+2026-02-25 03:38:43 INFO tmcmc_5species_tsm: TSM5S Linearization Point Updated (# 1)
+2026-02-25 03:38:43 INFO core.evaluator: TSM initialized (linearization disabled initially for exploration)
+2026-02-25 03:38:43 INFO core.tmcmc: [Chain 1] Initial linearization point set
+2026-02-25 03:38:43 INFO core.tmcmc: [Dysbiotic_HOBIC_chain1] Parallelization: n_jobs=12 (effective=12), use_threads=False, n_particles=1000
+2026-02-25 03:51:04 INFO debug.logger:       [TMCMC] Initial LogL: min=-20.3, max=9.8
+2026-02-25 03:51:04 INFO debug.logger:       [TMCMC] Model: Dysbiotic_HOBIC_chain1
+2026-02-25 03:51:04 INFO debug.logger:       [TMCMC] Starting TMCMC with 1000 particles, 12 stages...
+2026-02-25 03:51:04 INFO debug.logger:       [TMCMC] Stage 1/12 starting...
+2026-02-25 03:51:04 INFO core.tmcmc:       [TMCMC] Stage 1: β=0.0000 → 0.1469 (Δ=0.146857), ESS=500.0/500.0 (actual=500.0), logL range=[-20.35, 9.76], log_w range=4.42, w[min,max]=[5.74e-05,4.78e-03]
+2026-02-25 03:51:04 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=473/1000 (unique_ratio=0.473)
+2026-02-25 03:51:04 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=2.93e+01, trace(cov)=1.13e+02, scale=1.46e+00, nugget=1.47e-06, tempered_scale=1.93e+00, adapt_scale=2.00x, cond(cov)=1.71e+02
+2026-02-26 01:03:14 INFO core.tmcmc: [Dysbiotic_HOBIC_chain1] Mutation Stage 1: 5000 proposals evaluated in parallel (n_jobs=12), 2569 accepted (rate=0.5138), time=76329.55s
+2026-02-26 01:03:14 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈993/1000 (unique_ratio≈0.993)
+2026-02-26 01:03:14 INFO debug.logger:       [TMCMC] Stage 1: β=0.1469 (+0.1469)
+2026-02-26 01:03:14 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-26 01:03:14 INFO debug.logger:       [TMCMC] Stage 2/12 starting...
+2026-02-26 01:03:14 INFO core.tmcmc:       [TMCMC] Stage 2: β=0.1469 → 0.4713 (Δ=0.324397), ESS=500.0/500.0 (actual=500.0), logL range=[-20.82, 10.33], log_w range=10.10, w[min,max]=[2.05e-07,5.02e-03]
+2026-02-26 01:03:14 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=472/1000 (unique_ratio=0.472)
+2026-02-26 01:03:14 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=2.68e+01, trace(cov)=3.22e+01, scale=1.34e+00, nugget=1.35e-06, tempered_scale=6.01e-01, adapt_scale=2.00x, cond(cov)=1.81e+02
+2026-02-26 22:20:05 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈983/1000 (unique_ratio≈0.983)
+2026-02-26 22:20:05 INFO debug.logger:       [TMCMC] Stage 2: β=0.4713 (+0.3244)
+2026-02-26 22:20:05 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-26 22:20:05 INFO debug.logger:       [TMCMC] Stage 3/12 starting...
+2026-02-26 22:20:05 INFO core.tmcmc:       [TMCMC] Stage 3: β=0.4713 → 0.9713 (Δ=0.500000), ESS=695.6/500.0 (actual=713.5), logL range=[-6.14, 10.37], log_w range=8.26, w[min,max]=[9.31e-07,3.58e-03]
+2026-02-26 22:20:05 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=554/1000 (unique_ratio=0.554)
+2026-02-26 22:20:05 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=2.57e+01, trace(cov)=1.50e+01, scale=1.29e+00, nugget=1.30e-06, tempered_scale=2.92e-01, adapt_scale=2.00x, cond(cov)=2.04e+02
+2026-02-27 19:29:46 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈977/1000 (unique_ratio≈0.977)
+2026-02-27 19:29:46 INFO debug.logger:       [TMCMC] Computing ROM errors for 5/1000 particles (observation-based update)...
+2026-02-27 19:30:19 INFO debug.logger:       [TMCMC] Scale check: logL=[-6.14, 7.80, 10.37], log_penalty=[0.0000, 0.0000, 0.0000], log_post=[-5.96, 7.58, 10.08], obs_score=[-5.96, 7.58, 10.08]
+2026-02-27 19:30:19 WARNING debug.logger:       [TMCMC] Observation penalty may be too weak (max_penalty/max_logL_range=0.0000 < 0.01)
+2026-02-27 19:30:19 INFO debug.logger:       [TMCMC] Observation-corrected MAP matches standard MAP (no correction effect)
+2026-02-27 19:30:19 INFO debug.logger:       [TMCMC] ROM errors: mean=0.000000, min=0.000000, max=0.000000
+2026-02-27 19:30:19 INFO debug.logger:       [TMCMC] Posterior MAP-WeightedMean distance: 5.253786, WeightedMean shift (obs-corrected): 0.000000
+2026-02-27 19:30:19 WARNING debug.logger:       [TMCMC] Keeping linearization OFF (unstable): ε_ROM(MAP)=0.618467 > 0.050000 (β=0.9713, threshold=0.750)
+2026-02-27 19:30:23 WARNING debug.logger:       [TMCMC] ROM error sufficiently small (ε_ROM=0.000000 < 0.01)
+2026-02-27 19:30:23 INFO debug.logger:       [TMCMC]    where ε_ROM = || φ̄_ROM(t_obs) − φ̄_FOM(t_obs) ||₂ / || φ̄_FOM(t_obs) ||₂
+2026-02-27 19:30:23 INFO debug.logger:       [TMCMC] Stage 3: β=0.9713 (+0.5000)
+2026-02-27 19:30:23 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-27 19:30:23 INFO debug.logger:       [TMCMC] Stage 4/12 starting...
+2026-02-27 19:30:23 INFO core.tmcmc:       [TMCMC] Stage 4: β=0.9713 → 1.0000 (Δ=0.028746), ESS=999.2/500.0 (actual=999.2), logL range=[1.87, 10.60], log_w range=0.25, w[min,max]=[8.29e-04,1.06e-03]
+2026-02-27 19:30:23 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=635/1000 (unique_ratio=0.635)
+2026-02-27 19:30:23 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=2.54e+01, trace(cov)=1.44e+01, scale=1.27e+00, nugget=1.28e-06, tempered_scale=2.83e-01, adapt_scale=2.00x, cond(cov)=1.97e+02
+2026-02-28 05:55:21 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈991/1000 (unique_ratio≈0.991)
+2026-02-28 05:55:21 INFO debug.logger:       [TMCMC] Stage 4: β=1.0000 (+0.0287)
+2026-02-28 05:55:21 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-28 05:55:21 INFO debug.logger:       [TMCMC] Stage 5/12 starting...
+2026-02-28 05:55:21 INFO core.tmcmc:       [TMCMC] Stage 5: β=1.0000 → 1.0000 (Δ=0.000000), ESS=1000.0/500.0 (actual=1000.0), logL range=[3.88, 10.66], log_w range=0.00, w[min,max]=[1.00e-03,1.00e-03]
+2026-02-28 05:55:21 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=634/1000 (unique_ratio=0.634)
+2026-02-28 05:55:21 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=2.58e+01, trace(cov)=1.46e+01, scale=1.29e+00, nugget=1.30e-06, tempered_scale=2.83e-01, adapt_scale=2.00x, cond(cov)=2.53e+02
+2026-02-28 11:16:37 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈985/1000 (unique_ratio≈0.985)
+2026-02-28 11:16:37 INFO debug.logger:       [TMCMC] Stage 5: β=1.0000 (+0.0000)
+2026-02-28 11:16:37 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-28 11:16:37 INFO debug.logger:       [TMCMC] ✓ Converged! β reached 1.0
+2026-02-28 11:16:37 INFO debug.logger:       [TMCMC] ✅ TMCMC complete! Final β=1.0000
+2026-02-28 11:16:37 INFO debug.logger:       [TMCMC] 🎯 MAP (posterior (observation-corrected)): [ 1.75456591  1.84790403  0.85311609  0.1815705   1.42634853  1.0034489
+  2.72238178  0.3554113   0.04350713  0.46268006 -1.10202234 -0.43017414
+  3.10182378  2.50826266  0.32160661  0.36201644  1.87347603  0.34051135
+  3.28934853  2.26207135]
+2026-02-28 11:16:37 INFO core.tmcmc: [Chain 1] Global MAP updated from 1 chains
+2026-02-28 11:16:37 INFO core.tmcmc: [Dysbiotic_HOBIC] TMCMC Summary:
+2026-02-28 11:16:37 INFO core.tmcmc: Converged chains: 1/1
+2026-02-28 11:16:37 INFO core.tmcmc: Global MAP: [ 0.39052853  0.41457839  0.10850106  0.72973411  2.36738353  0.50893765
+  2.85218605  1.69327432  3.82882206  2.44830422 -0.68098327 -0.16134787
+  4.62601552  2.59026979  0.28523273  0.18238857  0.44898056 -0.41575096
+  4.53039092  1.68084046]
+2026-02-28 11:16:37 INFO __main__: TMCMC completed in 286673.65 seconds
+2026-02-28 11:16:37 INFO __main__: Computing enhanced convergence diagnostics...
+2026-02-28 11:16:37 WARNING __main__: R-hat requires at least 2 chains. Returning NaN.
+/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/main/estimate_reduced_nishioka.py:341: RuntimeWarning: All-NaN slice encountered
+  "rhat": rhat,
+2026-02-28 11:16:37 INFO __main__: R-hat max: nan (target < 1.1)
+2026-02-28 11:16:37 INFO __main__: ESS min: 656.2 (target > 100)
+2026-02-28 11:16:37 INFO __main__: Convergence (R-hat): False
+2026-02-28 11:16:37 INFO __main__: Convergence (ESS): True
+2026-02-28 11:16:37 INFO __main__: Computing 95% HDI and credible intervals...
+2026-02-28 11:16:37 INFO __main__: HDI computed for all parameters
+2026-02-28 11:16:37 INFO __main__: Checkpoints cleared after successful completion
+2026-02-28 11:16:37 INFO visualization.helpers: Exported diagnostics tables for Dysbiotic_HOBIC to /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/dh_v1_sharp_gate/diagnostics_tables
+2026-02-28 11:16:37 INFO __main__: Exported TMCMC diagnostics tables
+2026-02-28 11:16:37 INFO __main__: Generating plots...
+2026-02-28 11:16:37 INFO __main__: Running simulations for MAP and Mean estimates...
+2026-02-28 11:16:37 INFO visualization.plot_manager: Saved figure: TSM_simulation_Dysbiotic_HOBIC_MAP_Fit_with_data.png
+2026-02-28 11:16:38 INFO visualization.plot_manager: Saved figure: TSM_simulation_Dysbiotic_HOBIC_Mean_Fit_with_data.png
+2026-02-28 11:16:38 INFO visualization.plot_manager: Saved figure: residuals_Dysbiotic_HOBIC_Residuals.png
+2026-02-28 11:16:42 INFO visualization.plot_manager: Saved figure: parameter_distributions_Dysbiotic_HOBIC_Params.png
+2026-02-28 11:16:57 INFO visualization.plot_manager: Saved figure: corner_plot_Dysbiotic_HOBIC_Corner.png
+2026-02-28 11:16:57 INFO __main__: Generating posterior predictive plots (sampling 50 trajectories)...
+2026-02-28 11:17:04 INFO visualization.plot_manager: Saved figure: posterior_predictive_Dysbiotic_HOBIC_PosteriorBand.png
+2026-02-28 11:17:07 INFO visualization.plot_manager: Saved figure: posterior_predictive_spaghetti_Dysbiotic_HOBIC_PosteriorSpaghetti.png
+2026-02-28 11:17:07 INFO visualization.plot_manager: Saved figure: Fig01_TMCMC_beta_schedule_Dysbiotic_HOBIC.png
+2026-02-28 11:17:07 INFO __main__: Saved fit metrics to fit_metrics.json
+2026-02-28 11:17:07 INFO visualization.plot_manager: Saved manifest: FIGURES_MANIFEST.json (8 figures)
+2026-02-28 11:17:07 INFO __main__: Estimation complete. Results saved to /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/dh_v1_sharp_gate
+
+================================================================================
+ESTIMATION SUMMARY (Nishioka v2)
+================================================================================
+Condition: Dysbiotic HOBIC
+Elapsed Time: 286673.65s
+--------------------------------------------------------------------------------
+CONVERGENCE DIAGNOSTICS:
+  R-hat max:     nan ✗ (target < 1.1)
+  ESS min:       656.2 ✓ (target > 100)
+  Overall:       NOT CONVERGED
+--------------------------------------------------------------------------------
+PARAMETER ESTIMATES (with 95% HDI):
+--------------------------------------------------------------------------------
+Name            MAP       Mean    HDI_low   HDI_high    R-hat      ESS
+--------------------------------------------------------------------------------
+a11          0.3905     2.3746     0.2407     4.9873      N/A   1000.0
+a12          0.4146     1.1385    -0.4991     2.6857      N/A   1000.0
+a22          0.1085     1.8534     0.0041     4.2605      N/A   1000.0
+b1           0.7297     1.4751     0.0194     2.8693      N/A    791.5
+b2           2.3674     1.5028     0.0597     2.9070      N/A   1000.0
+a33          0.5089     2.1268     0.0862     4.3132      N/A   1000.0
+a34          2.8522     1.4113    -0.2882     2.9925      N/A   1000.0
+a44          1.6933     1.9924     0.0236     4.5067      N/A   1000.0
+b3           3.8288     2.3161     0.0170     4.7450      N/A    656.2
+b4           2.4483     1.4146     0.0025     2.8218      N/A    785.8
+a13         -0.6810     0.3822    -2.6994     2.9435      N/A   1000.0
+a14         -0.1613     1.0766    -0.4983     2.7554      N/A    925.6
+a23          4.6260     4.2180     2.8429     4.9970      N/A   1000.0
+a24          2.5903     1.3153    -0.3424     2.9482      N/A    939.0
+a55          0.2852     1.5757     0.0014     3.9856      N/A   1000.0
+b5           0.1824     0.2386     0.0005     0.4752      N/A    837.9
+a15          0.4490     1.1374    -0.4570     2.8003      N/A   1000.0
+a25         -0.4158     1.2597    -0.3987     2.9048      N/A   1000.0
+a35          4.5304     3.1875     0.6941     4.9946      N/A   1000.0
+a45          1.6808     2.0240     0.0028     4.3909      N/A    986.0
+================================================================================
+
+Results saved to: /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/dh_v1_sharp_gate
+================================================================================

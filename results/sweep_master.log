@@ -1,0 +1,27 @@
+==========================================
+ P.g. Weighted Likelihood + Hill Sweep
+ Started: Tue Feb 17 08:09:34 AM JST 2026
+ Log dir: /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/sweep_pg_20260217_080934
+==========================================
+[08:09:34] Launching dh_baseline ...
+  PID=2104565  log=/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/sweep_pg_20260217_080934/dh_baseline.log
+[08:09:34] Launching dh_hill005 ...
+  PID=2104567  log=/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/sweep_pg_20260217_080934/dh_hill005.log
+[08:09:34] Launching dh_hill005_wpg5_wlate3 ...
+  PID=2104569  log=/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/sweep_pg_20260217_080934/dh_hill005_wpg5_wlate3.log
+[08:09:34] Launching dh_hill002_wpg5_wlate3 ...
+  PID=2104571  log=/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/sweep_pg_20260217_080934/dh_hill002_wpg5_wlate3.log
+[08:09:34] Launching dh_hill010_wpg5_wlate3 ...
+  PID=2104573  log=/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/sweep_pg_20260217_080934/dh_hill010_wpg5_wlate3.log
+
+All 5 runs launched. PIDs saved to /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/sweep_pg_20260217_080934/pids.txt
+
+Monitor progress:
+  tail -f /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/sweep_pg_20260217_080934/*.log
+
+Check status:
+  ps -p 2104565,2104567,2104569,2104571,2104573 -o pid,stat,etime,cmd
+
+Wait for all:
+  wait 2104565 2104567 2104569 2104571 2104573 && echo 'ALL DONE'
+

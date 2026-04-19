@@ -1,0 +1,139 @@
+2026-02-26 01:59:18 INFO __main__: ============================================================
+2026-02-26 01:59:18 INFO __main__: BATCH PROCESSING MODE
+2026-02-26 01:59:18 INFO __main__: ============================================================
+2026-02-26 01:59:18 INFO __main__: Starting batch estimation for 4 conditions...
+2026-02-26 01:59:18 INFO __main__: Conditions: [('Commensal', 'Static'), ('Commensal', 'HOBIC'), ('Dysbiotic', 'Static'), ('Dysbiotic', 'HOBIC')]
+2026-02-26 01:59:18 INFO __main__: Mode: SEQUENTIAL
+2026-02-26 01:59:18 INFO __main__: 
+============================================================
+2026-02-26 01:59:18 INFO __main__: [1/4] Running: Commensal_Static
+2026-02-26 01:59:18 INFO __main__: ============================================================
+2026-02-26 01:59:18 INFO __main__: Loading Commensal Static data: 6 timepoints, days=[np.int64(1), np.int64(3), np.int64(6), np.int64(10), np.int64(15), np.int64(21)]
+2026-02-26 01:59:18 INFO __main__: Data normalized to species fractions (sum=1 per timepoint)
+2026-02-26 01:59:18 INFO __main__: Auto-calculated day_scale: 0.011310
+2026-02-26 01:59:18 INFO __main__: Using per-species initial conditions: [0.17560976 0.00487805 0.8097561  0.00487805 0.00487805]
+2026-02-26 01:59:18 INFO __main__: Nishioka Algorithm: Retrieving bounds and locked indices for Commensal Static...
+2026-02-26 01:59:18 INFO __main__: Nishioka Algorithm: Locking indices [9, 15, 6, 7, 11, 13, 14, 16, 17, 18, 19] to 0.0
+2026-02-26 01:59:18 INFO __main__: Reduced parameter space to 9 parameters: [0, 1, 2, 3, 4, 5, 8, 10, 12]
+2026-02-26 01:59:18 INFO __main__: Re-applying locks to theta_base to ensure locked parameters [9, 15, 6, 7, 11, 13, 14, 16, 17, 18, 19] remain 0.0
+2026-02-26 01:59:18 INFO __main__: Using sigma_obs = 0.34542314335060437
+2026-02-26 01:59:18 INFO __main__: Data shape: (6, 5)
+2026-02-26 01:59:18 INFO __main__: idx_sparse: [ 113  339  679 1131 1696 2375]
+2026-02-26 01:59:18 INFO __main__: Weighted likelihood enabled: lambda_pg=2.0, lambda_late=1.5, n_late=2
+2026-02-26 01:59:18 INFO __main__: Weight matrix:
+[[1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.5 1.5 1.5 1.5 3. ]
+ [1.5 1.5 1.5 1.5 3. ]]
+INFO:2026-02-26 01:59:19,152:jax._src.xla_bridge:834: Unable to initialize backend 'tpu': INTERNAL: Failed to open libtpu.so: libtpu.so: cannot open shared object file: No such file or directory
+2026-02-26 01:59:19 INFO jax._src.xla_bridge: Unable to initialize backend 'tpu': INTERNAL: Failed to open libtpu.so: libtpu.so: cannot open shared object file: No such file or directory
+2026-02-26 01:59:22 INFO __main__: DeepONet surrogate loaded from /home/nishioka/IKM_Hiwi/Tmcmc202601/deeponet/checkpoints_Commensal_Static
+2026-02-26 01:59:22 INFO __main__: Starting TMCMC estimation...
+2026-02-26 01:59:22 INFO core.tmcmc: [Commensal_Static] Running 2 TMCMC chains (β tempering + linearization update)...
+2026-02-26 01:59:22 INFO core.tmcmc: Chain 1/2
+2026-02-26 01:59:22 INFO core.tmcmc: [Chain 1] Initial linearization point set
+2026-02-26 01:59:22 INFO core.tmcmc: [Commensal_Static_chain1] Parallelization: n_jobs=1 (effective=1), use_threads=False, n_particles=1000
+2026-02-26 01:59:22 ERROR __main__: [Commensal_Static] Failed: index 113 is out of bounds for axis 0 with size 100
+2026-02-26 01:59:22 INFO __main__: 
+============================================================
+2026-02-26 01:59:22 INFO __main__: [2/4] Running: Commensal_HOBIC
+2026-02-26 01:59:22 INFO __main__: ============================================================
+2026-02-26 01:59:22 INFO __main__: Loading Commensal HOBIC data: 6 timepoints, days=[np.int64(1), np.int64(3), np.int64(6), np.int64(10), np.int64(15), np.int64(21)]
+2026-02-26 01:59:22 INFO __main__: Data normalized to species fractions (sum=1 per timepoint)
+2026-02-26 01:59:22 INFO __main__: Auto-calculated day_scale: 0.011310
+2026-02-26 01:59:22 INFO __main__: Using per-species initial conditions: [0.74626866 0.04975124 0.09950249 0.09950249 0.00497512]
+2026-02-26 01:59:22 INFO __main__: Nishioka Algorithm: Retrieving bounds and locked indices for Commensal HOBIC...
+2026-02-26 01:59:22 INFO __main__: Nishioka Algorithm: Locking indices [6, 12, 13, 16, 17, 15, 18] to 0.0
+2026-02-26 01:59:22 INFO __main__: Reduced parameter space to 13 parameters: [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 14, 19]
+2026-02-26 01:59:22 INFO __main__: Re-applying locks to theta_base to ensure locked parameters [6, 12, 13, 16, 17, 15, 18] remain 0.0
+2026-02-26 01:59:22 INFO __main__: Using sigma_obs = 0.48491790759832
+2026-02-26 01:59:22 INFO __main__: Data shape: (6, 5)
+2026-02-26 01:59:22 INFO __main__: idx_sparse: [ 113  339  679 1131 1696 2375]
+2026-02-26 01:59:22 INFO __main__: Weighted likelihood enabled: lambda_pg=2.0, lambda_late=1.5, n_late=2
+2026-02-26 01:59:22 INFO __main__: Weight matrix:
+[[1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.5 1.5 1.5 1.5 3. ]
+ [1.5 1.5 1.5 1.5 3. ]]
+2026-02-26 01:59:22 INFO __main__: DeepONet surrogate loaded from /home/nishioka/IKM_Hiwi/Tmcmc202601/deeponet/checkpoints_Commensal_HOBIC
+2026-02-26 01:59:22 INFO __main__: Starting TMCMC estimation...
+2026-02-26 01:59:22 INFO core.tmcmc: [Commensal_HOBIC] Running 2 TMCMC chains (β tempering + linearization update)...
+2026-02-26 01:59:22 INFO core.tmcmc: Chain 1/2
+2026-02-26 01:59:22 INFO core.tmcmc: [Chain 1] Initial linearization point set
+2026-02-26 01:59:22 INFO core.tmcmc: [Commensal_HOBIC_chain1] Parallelization: n_jobs=1 (effective=1), use_threads=False, n_particles=1000
+2026-02-26 01:59:22 ERROR __main__: [Commensal_HOBIC] Failed: index 113 is out of bounds for axis 0 with size 100
+2026-02-26 01:59:22 INFO __main__: 
+============================================================
+2026-02-26 01:59:22 INFO __main__: [3/4] Running: Dysbiotic_Static
+2026-02-26 01:59:22 INFO __main__: ============================================================
+2026-02-26 01:59:22 INFO __main__: Loading Dysbiotic Static data: 6 timepoints, days=[np.int64(1), np.int64(3), np.int64(6), np.int64(10), np.int64(15), np.int64(21)]
+2026-02-26 01:59:22 INFO __main__: Data normalized to species fractions (sum=1 per timepoint)
+2026-02-26 01:59:22 INFO __main__: Auto-calculated day_scale: 0.011310
+2026-02-26 01:59:22 INFO __main__: Using per-species initial conditions: [0.15306122 0.08163265 0.6122449  0.05102041 0.10204082]
+2026-02-26 01:59:22 INFO __main__: Nishioka Algorithm: Retrieving bounds and locked indices for Dysbiotic Static...
+2026-02-26 01:59:22 INFO __main__: Nishioka Algorithm: Locking indices [6, 12, 13, 16, 17] to 0.0
+2026-02-26 01:59:22 INFO __main__: Reduced parameter space to 15 parameters: [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 14, 15, 18, 19]
+2026-02-26 01:59:22 INFO __main__: Re-applying locks to theta_base to ensure locked parameters [6, 12, 13, 16, 17] remain 0.0
+2026-02-26 01:59:22 INFO __main__: Using sigma_obs = 0.5742176284811944
+2026-02-26 01:59:22 INFO __main__: Data shape: (6, 5)
+2026-02-26 01:59:22 INFO __main__: idx_sparse: [ 113  339  679 1131 1696 2375]
+2026-02-26 01:59:22 INFO __main__: Weighted likelihood enabled: lambda_pg=2.0, lambda_late=1.5, n_late=2
+2026-02-26 01:59:22 INFO __main__: Weight matrix:
+[[1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.5 1.5 1.5 1.5 3. ]
+ [1.5 1.5 1.5 1.5 3. ]]
+2026-02-26 01:59:23 INFO __main__: DeepONet surrogate loaded from /home/nishioka/IKM_Hiwi/Tmcmc202601/deeponet/checkpoints_Dysbiotic_Static
+2026-02-26 01:59:23 INFO __main__: Starting TMCMC estimation...
+2026-02-26 01:59:23 INFO core.tmcmc: [Dysbiotic_Static] Running 2 TMCMC chains (β tempering + linearization update)...
+2026-02-26 01:59:23 INFO core.tmcmc: Chain 1/2
+2026-02-26 01:59:23 INFO core.tmcmc: [Chain 1] Initial linearization point set
+2026-02-26 01:59:23 INFO core.tmcmc: [Dysbiotic_Static_chain1] Parallelization: n_jobs=1 (effective=1), use_threads=False, n_particles=1000
+2026-02-26 01:59:23 ERROR __main__: [Dysbiotic_Static] Failed: index 113 is out of bounds for axis 0 with size 100
+2026-02-26 01:59:23 INFO __main__: 
+============================================================
+2026-02-26 01:59:23 INFO __main__: [4/4] Running: Dysbiotic_HOBIC
+2026-02-26 01:59:23 INFO __main__: ============================================================
+2026-02-26 01:59:23 INFO __main__: Loading Dysbiotic HOBIC data: 6 timepoints, days=[np.int64(1), np.int64(3), np.int64(6), np.int64(10), np.int64(15), np.int64(21)]
+2026-02-26 01:59:23 INFO __main__: Data normalized to species fractions (sum=1 per timepoint)
+2026-02-26 01:59:23 INFO __main__: Auto-calculated day_scale: 0.011310
+2026-02-26 01:59:23 INFO __main__: Using per-species initial conditions: [0.04  0.01  0.94  0.005 0.005]
+2026-02-26 01:59:23 INFO __main__: Nishioka Algorithm: Retrieving bounds and locked indices for Dysbiotic HOBIC...
+2026-02-26 01:59:23 INFO __main__: Nishioka Algorithm: Locking indices [] to 0.0
+2026-02-26 01:59:23 INFO __main__: Reduced parameter space to 20 parameters: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+2026-02-26 01:59:23 INFO __main__: Using sigma_obs = 0.4071908165475416
+2026-02-26 01:59:23 INFO __main__: Data shape: (6, 5)
+2026-02-26 01:59:23 INFO __main__: idx_sparse: [ 113  339  679 1131 1696 2375]
+2026-02-26 01:59:23 INFO __main__: Weighted likelihood enabled: lambda_pg=2.0, lambda_late=1.5, n_late=2
+2026-02-26 01:59:23 INFO __main__: Weight matrix:
+[[1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.  1.  1.  1.  2. ]
+ [1.5 1.5 1.5 1.5 3. ]
+ [1.5 1.5 1.5 1.5 3. ]]
+2026-02-26 01:59:23 INFO __main__: DeepONet surrogate loaded from /home/nishioka/IKM_Hiwi/Tmcmc202601/deeponet/checkpoints
+2026-02-26 01:59:23 INFO __main__: Starting TMCMC estimation...
+2026-02-26 01:59:23 INFO core.tmcmc: [Dysbiotic_HOBIC] Running 2 TMCMC chains (β tempering + linearization update)...
+2026-02-26 01:59:23 INFO core.tmcmc: Chain 1/2
+2026-02-26 01:59:23 INFO core.tmcmc: [Chain 1] Initial linearization point set
+2026-02-26 01:59:23 INFO core.tmcmc: [Dysbiotic_HOBIC_chain1] Parallelization: n_jobs=1 (effective=1), use_threads=False, n_particles=1000
+2026-02-26 01:59:23 ERROR __main__: [Dysbiotic_HOBIC] Failed: index 113 is out of bounds for axis 0 with size 100
+2026-02-26 01:59:23 INFO __main__: Batch summary saved to /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/batch_20260226_015918/batch_summary.json
+
+======================================================================
+BATCH PROCESSING COMPLETE
+======================================================================
+Results: 0/4 successful
+----------------------------------------------------------------------
+  ✗ Commensal_Static: FAILED - index 113 is out of bounds for axis 0 with size 100
+  ✗ Commensal_HOBIC: FAILED - index 113 is out of bounds for axis 0 with size 100
+  ✗ Dysbiotic_Static: FAILED - index 113 is out of bounds for axis 0 with size 100
+  ✗ Dysbiotic_HOBIC: FAILED - index 113 is out of bounds for axis 0 with size 100
+======================================================================

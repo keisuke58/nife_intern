@@ -1,0 +1,6 @@
+model,chain,stage,accept_rate
+Dysbiotic_HOBIC,1,0,0.5138
+Dysbiotic_HOBIC,1,1,0.3854
+Dysbiotic_HOBIC,1,2,0.4306
+Dysbiotic_HOBIC,1,3,0.4494
+Dysbiotic_HOBIC,1,4,0.469

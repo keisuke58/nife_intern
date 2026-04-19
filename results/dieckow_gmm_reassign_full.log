@@ -1,0 +1,73 @@
+JAX devices: [CpuDevice(id=0)]
+
+=== A) Patient F anomaly diagnosis ===
+  b_F: {'So': np.float64(10.992), 'An': np.float64(0.584), 'Vd': np.float64(13.524), 'Fn': np.float64(13.306), 'Pg': np.float64(11.392)}
+  Obs week1: Fn=0.0126  Pg=0.0000  (effectively 3-sp)
+
+  Attractor (full b_F, from week1 IC):
+    {'So': np.float64(0.0323), 'An': np.float64(0.8769), 'Vd': np.float64(0.0294), 'Fn': np.float64(0.0309), 'Pg': np.float64(0.0305)}
+
+  Attractor (b_Fn=b_Pg=0.01, suppress phantom):
+    {'So': np.float64(0.0005), 'An': np.float64(0.0011), 'Vd': np.float64(0.0005), 'Fn': np.float64(0.5343), 'Pg': np.float64(0.4637)}
+
+  Attractor (IC with Fn=Pg=0):
+    {'So': np.float64(0.0323), 'An': np.float64(0.8769), 'Vd': np.float64(0.0294), 'Fn': np.float64(0.0309), 'Pg': np.float64(0.0305)}
+
+  Attractor (avg b, excl. F, from F week1 IC):
+    {'So': np.float64(0.6897), 'An': np.float64(0.0821), 'Vd': np.float64(0.0809), 'Fn': np.float64(0.0764), 'Pg': np.float64(0.0709)}
+
+  Saved: /home/nishioka/IKM_Hiwi/nife/results/dieckow_gmm/patF_trajectory.png
+
+  DIAGNOSIS:
+  Patient F has Fn=0, Pg≈0 throughout → effectively a 3-species system.
+  High b_Fn=13.3 and b_Vd=13.5 learned by TMCMC to prevent Fn/Pg growth.
+  With full b_F, ODE attractor is degenerate (uniform ~0.03/sp).
+  → Patient F is an outlier: 5-sp model is misspecified for this patient.
+  → Recommend: flag as "Fn/Pg-absent" subtype, exclude from attractor mapping.
+
+=== B) GMM re-assignment with in vivo θ ===
+  Szafranski samples: 127
+  Columns: ['sample_id', 'diagnosis', 'phi0_So', 'phi0_An', 'phi0_Vd', 'phi0_Fn', 'phi0_Pg', 'gmm_cluster', 'gmm_attractor', 'nn_attractor', 'gmm_nn_agree', 'prob_CS', 'prob_CH', 'prob_DH', 'prob_DS', 'PC1_clr', 'PC2_clr']
+
+  Computing Heine in vitro attractors...
+    commensal_static: So=0.065 Fn=0.071 Pg=0.059
+    commensal_hobic: So=0.055 Fn=0.047 Pg=0.050
+    dh_baseline: So=0.849 Fn=0.024 Pg=0.033
+    dysbiotic_static: So=0.700 Fn=0.080 Pg=0.077
+
+  Running 127 Szafranski samples through in vivo ODE...
+    20/127 done
+    40/127 done
+    60/127 done
+    80/127 done
+    100/127 done
+    120/127 done
+
+  Running same samples through Heine DH theta...
+
+  In vivo attractor centroids (k=4):
+    CS (n=93): So=0.690 An=0.082 Vd=0.081 Fn=0.076 Pg=0.071
+    DH (n=19): So=0.090 An=0.089 Vd=0.087 Fn=0.654 Pg=0.079
+    CH (n=10): So=0.094 An=0.091 Vd=0.092 Fn=0.089 Pg=0.634
+    DS (n=5): So=0.089 An=0.084 Vd=0.670 Fn=0.081 Pg=0.076
+
+  Agreement with original GMM: 23/127 (18.1%)
+
+  In vivo attractor assignment by diagnosis:
+    PIH (n=56): {'CS': np.int64(48), 'DH': np.int64(4), 'DS': np.int64(3), 'CH': np.int64(1)}
+    PIM (n=39): {'CS': np.int64(33), 'DH': np.int64(4), 'CH': np.int64(1), 'DS': np.int64(1)}
+    PI (n=32): {'CS': np.int64(12), 'DH': np.int64(11), 'CH': np.int64(8), 'DS': np.int64(1)}
+
+  In vitro vs in vivo offset:
+  Condition             So_invitro   So_invivo       ΔSo
+  CS                         0.065       0.094    +0.030
+  CH                         0.055       0.094    +0.039
+  DH                         0.849       0.690    -0.159
+  DS                         0.700       0.690    -0.010
+
+  Saved: /home/nishioka/IKM_Hiwi/nife/results/dieckow_gmm/gmm_reassign_scatter.png
+  Saved: /home/nishioka/IKM_Hiwi/nife/results/dieckow_gmm/gmm_reassign_bars.png
+  Saved: /home/nishioka/IKM_Hiwi/nife/results/dieckow_gmm/gmm_reassigned.csv
+  Saved: /home/nishioka/IKM_Hiwi/nife/results/dieckow_gmm/invitro_invivo_offset.json
+
+All outputs → /home/nishioka/IKM_Hiwi/nife/results/dieckow_gmm
