@@ -1,0 +1,10 @@
+{
+  "n_samples": 127,
+  "n_steps_opt": 500,
+  "lr": 0.02,
+  "lambda_A": 0.1,
+  "lambda_b": 0.01,
+  "rmse_Ab_joint": 0.07525166333683522,
+  "rmse_b_only": 0.0753,
+  "rmse_baseline": 0.0836
+}
