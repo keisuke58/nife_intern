@@ -1,0 +1,13 @@
+2026-02-26 07:08:28 WARNING __main__: Slack webhook URL is a placeholder. Notifications disabled.
+2026-02-26 07:08:28 INFO __main__: Slack notifications disabled (no webhook URL)
+2026-02-26 07:08:28 INFO __main__: Output directory: /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/deeponet_Commensal_Static
+2026-02-26 07:08:28 INFO __main__: Loading experimental data...
+Traceback (most recent call last):
+  File "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/main/estimate_reduced_nishioka.py", line 3106, in <module>
+    main()
+  File "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/main/estimate_reduced_nishioka.py", line 2455, in main
+    data, t_days, sigma_obs_est, phi_init_exp, metadata = load_experimental_data(
+                                                          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/main/estimate_reduced_nishioka.py", line 1651, in load_experimental_data
+    raise FileNotFoundError(f"Could not find boxplot data. Checked: {[str(f) for f in possible_boxplot_files]}")
+FileNotFoundError: Could not find boxplot data. Checked: ['/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/data/boxplot_Commensal_Static.csv', '/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/data/experiment_data/boxplot_Commensal_Static.csv', '/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/data/biofilm_boxplot_data.csv', '/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/data/experiment_data/biofilm_boxplot_data.csv']

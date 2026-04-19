@@ -1,0 +1,32 @@
+[Fri Apr 17 08:32:38 AM JST 2026] Starting K_3 (ERR13166600)
+[K_3] Loading subreads...
+[K_3] 15787 ZMWs, 634396 subreads
+[K_3] Aligning to SILVA...
+  Written 634396 subreads to FASTA
+  Aligning to SILVA (12 threads)...
+[K_3] Classifying ZMWs (contaminant vs real)...
+  Looking up 13904 SILVA references...
+[K_3] Real: 10867, Contaminant: 4920 (31.2% contamination)
+[K_3] Computing SPOA consensus for 10867 real ZMWs...
+[K_3] Got 10867 CCS sequences
+[K_3] VSEARCH taxonomy...
+[K_3] Identity: mean=98.4%
+
+=== K_3: 10753 classified reads (after decontam) ===
+  Streptococcus                           : 4384 (40.8%)
+  Actinomyces                             : 2254 (21.0%)
+  Rothia                                  : 1166 (10.8%)
+  Limosilactobacillus                     :  842 (7.8%)
+  Veillonella                             :  465 (4.3%)
+  Kingella                                :  265 (2.5%)
+  Haemophilus                             :  258 (2.4%)
+  Prevotella                              :  234 (2.2%)
+  Granulicatella                          :  201 (1.9%)
+  Lacticaseibacillus                      :  147 (1.4%)
+  Parvimonas                              :  114 (1.1%)
+  Fusobacterium                           :   99 (0.9%)
+  Capnocytophaga                          :   94 (0.9%)
+  Atopobium                               :   93 (0.9%)
+  Gemella                                 :   55 (0.5%)
+Written: /home/nishioka/IKM_Hiwi/nife/results/dieckow_taxonomy/K_3_taxonomy.tsv
+[Fri Apr 17 10:30:44 AM JST 2026] Done K_3

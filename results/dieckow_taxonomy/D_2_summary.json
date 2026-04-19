@@ -1,0 +1,21 @@
+{
+  "sample": "D_2",
+  "total_zmw": 17230,
+  "contamination_fraction": 0.8398723157283807,
+  "real_zmw": 2759,
+  "ccs_sequences": 2759,
+  "classified_reads": 2739,
+  "mean_identity": 98.60416210295728,
+  "top10_genera": {
+    "Lactiplantibacillus": 1956,
+    "Streptococcus": 298,
+    "Rothia": 263,
+    "Lacticaseibacillus": 115,
+    "Limosilactobacillus": 56,
+    "Actinomyces": 28,
+    "Veillonella": 15,
+    "Gemella": 3,
+    "Kingella": 2,
+    "Haemophilus": 1
+  }
+}

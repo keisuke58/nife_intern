@@ -1,0 +1,21 @@
+{
+  "sample": "D_3",
+  "total_zmw": 14520,
+  "contamination_fraction": 0.9714187327823691,
+  "real_zmw": 415,
+  "ccs_sequences": 415,
+  "classified_reads": 411,
+  "mean_identity": 98.36715328467153,
+  "top10_genera": {
+    "Limosilactobacillus": 117,
+    "Streptococcus": 90,
+    "Actinomyces": 39,
+    "Atopobium": 35,
+    "Cardiobacterium": 29,
+    "Veillonella": 28,
+    "Lactiplantibacillus": 21,
+    "Rothia": 18,
+    "Haemophilus": 12,
+    "Corynebacterium": 10
+  }
+}

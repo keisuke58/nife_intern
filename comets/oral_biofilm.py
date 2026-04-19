@@ -117,6 +117,39 @@ OPEN_ALWAYS_KEYS: frozenset[str] = frozenset({
     "no2[e]", "no3[e]",
 })
 
+# Additional metabolites required for AGORA v1.03 FBA feasibility in COMETS Java.
+# Computed as union of minimal_medium() for all 5 species minus OPEN_ALWAYS_KEYS.
+# These are set at AGORA_TRACE_CONC in build_layout() so FBA is feasible but
+# growth is still limited by the primary carbon sources (glc_D, lac_L, succ, pheme).
+# Carbon sources (glc_D, fru, stys, pullulan1200, glyc3p) are included at trace
+# concentration; they become limiting far earlier than the target GCF concentrations.
+AGORA_TRACE_METS: tuple[str, ...] = (
+    # Quinones (electron carriers)
+    "2dmmq8[e]", "mqn7[e]", "mqn8[e]", "q8[e]",
+    # Vitamins not in OPEN_ALWAYS_KEYS
+    "nmn[e]", "pydx[e]",
+    # Nucleosides / nucleobases
+    "ade[e]", "csn[e]", "cytd[e]", "dad_2[e]", "dcyt[e]", "dgsn[e]",
+    "gsn[e]", "gua[e]", "hxan[e]", "ins[e]", "uri[e]",
+    # Amino acids (essential for AGORA but absent from GCF medium)
+    "ala_L[e]", "arg_L[e]", "cys_L[e]", "gln_L[e]", "his_L[e]",
+    "ile_L[e]", "leu_L[e]", "lys_L[e]", "met_L[e]", "phe_L[e]",
+    "pro_L[e]", "ser_L[e]", "thr_L[e]", "trp_L[e]", "tyr_L[e]", "val_L[e]",
+    # Dipeptides (AGORA uses pre-assembled dipeptides for N/C)
+    "alagln[e]", "alahis[e]", "alathr[e]", "cgly[e]",
+    "glyasn[e]", "glycys[e]", "glygln[e]", "glyleu[e]", "glymet[e]",
+    "glytyr[e]", "metala[e]",
+    # Porphyrins / hemes
+    "pheme[e]", "sheme[e]",
+    # Polyamines / other organics
+    "26dap_M[e]", "3mop[e]", "4hbz[e]", "acgam[e]", "chtbs[e]",
+    "ddca[e]", "gam[e]", "glyc3p[e]", "gthrd[e]", "ocdca[e]",
+    "orn[e]", "phpyr[e]", "spmd[e]", "ttdca[e]",
+    # Alternative C-sources (AGORA artifacts — kept at trace so they don't dominate)
+    "fru[e]", "pullulan1200[e]", "stys[e]",
+)
+AGORA_TRACE_CONC: float = 0.01   # mM — saturates COMETS defaultKm (3 pM) so FBA is feasible
+
 # Backwards-compat alias used in some older code paths
 UNIVERSAL_INORGANIC = frozenset({"nh4[e]", "pi[e]", "h2o[e]", "ca2[e]", "mg2[e]"})
 
@@ -153,8 +186,8 @@ MONOD_PARAMS: dict[str, dict] = {
         "primary_sub": "glc_D[e]",
     },
     "Vp": {
-        "mu_max": 0.40,
-        "uptake": {"lac_L[e]": (10.0, 0.15, 0.07)},   # ONLY lactate
+        "mu_max": 0.15,   # GEM-derived: AGORA v1.03 mu_max_normalized=0.154 (was 0.40, ~2.5× overestimate)
+        "uptake": {"lac_L[e]": (2.2, 0.15, 0.07)},    # q_max scaled: mu_max/Y = 0.15/0.07 ≈ 2.2 mmol/gDW/h
         "multi": "sum",
         "o2_inhibit": True,   # strict anaerobe, O2 in healthy slows growth
         "secretion": {},
@@ -411,15 +444,45 @@ class OralBiofilmComets:
         layout = c.layout()
         layout.grid = self.grid
 
-        # Set media
+        # Set primary GCF media (carbon sources + main ions)
         media = MEDIA_HEALTHY if condition == "healthy" else MEDIA_DISEASED
         for met, val in media.items():
             layout.set_specific_metabolite(met, float(val))
 
-        # Add species models
+        # Load all AGORA models first so we know which exchange metabolites exist.
+        # COMETS Java crashes (ArrayIndexOutOfBounds) if the layout contains
+        # metabolites that no model can consume — array size mismatch in FBACell.
         fracs = INIT_FRACTIONS[condition]
+        cobra_models = {sp: self._load_agora_model(sp) for sp in fracs}
+
+        # Collect the INTERSECTION of exchange metabolite IDs across all models.
+        # COMETS 2.x FBACell uses the layout metabolite index directly to index
+        # into the per-model exchange array (size = n_exchanges of THAT model).
+        # Adding any metabolite that is absent from even one model causes
+        # ArrayIndexOutOfBoundsException at FBACell.java:1214.
+        # Using intersection ensures every layout metabolite is handled by all models.
+        shared_ex_bases: set[str] | None = None
+        for cm in cobra_models.values():
+            model_exs = {
+                rxn.id.replace("EX_", "").replace("(e)", "")
+                for rxn in cm.exchanges
+            }
+            if shared_ex_bases is None:
+                shared_ex_bases = model_exs
+            else:
+                shared_ex_bases &= model_exs  # intersection
+        shared_ex_bases = shared_ex_bases or set()
+
+        # Add trace cofactors only when present in ALL 5 models.
+        primary_C_keys = {k.replace("[e]", "") for k in media if "[e]" in k}
+        for met_key in AGORA_TRACE_METS:
+            base = met_key.replace("[e]", "")
+            if base in shared_ex_bases and base not in primary_C_keys:
+                layout.set_specific_metabolite(met_key, AGORA_TRACE_CONC)
+
+        # Add species models
         for sp_key, frac in fracs.items():
-            cobra_model = self._load_agora_model(sp_key)
+            cobra_model = cobra_models[sp_key]
             sp_model = c.model(cobra_model)
 
             # Distribute biomass spatially (center for 1x1, gradient for NxM)
@@ -432,6 +495,8 @@ class OralBiofilmComets:
             biomass = TOTAL_INIT_BIOMASS * frac
             sp_model.initial_pop = [x, y, biomass]
             sp_model.obj_style = "MAX_OBJECTIVE_MIN_TOTAL"
+            # GLOP (part of or-tools) is the only available solver on this cluster:
+            # Gurobi stub crashes (NoClassDefFoundError), GLPK JNI not compiled
             sp_model.change_optimizer("GLOP")
             layout.add_model(sp_model)
 

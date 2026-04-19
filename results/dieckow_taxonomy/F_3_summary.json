@@ -1,0 +1,21 @@
+{
+  "sample": "F_3",
+  "total_zmw": 13894,
+  "contamination_fraction": 0.16741039297538507,
+  "real_zmw": 11568,
+  "ccs_sequences": 11566,
+  "classified_reads": 11340,
+  "mean_identity": 98.24613756613756,
+  "top10_genera": {
+    "Streptococcus": 4787,
+    "Actinomyces": 2613,
+    "Veillonella": 1229,
+    "Bifidobacterium": 757,
+    "Alloprevotella": 345,
+    "Prevotella": 326,
+    "Rothia": 274,
+    "Limosilactobacillus": 188,
+    "Selenomonas": 187,
+    "Kingella": 176
+  }
+}

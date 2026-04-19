@@ -1,0 +1,21 @@
+{
+  "sample": "L_1",
+  "total_zmw": 21221,
+  "contamination_fraction": 0.9780877432731728,
+  "real_zmw": 465,
+  "ccs_sequences": 465,
+  "classified_reads": 461,
+  "mean_identity": 98.35661605206074,
+  "top10_genera": {
+    "Limosilactobacillus": 248,
+    "Lacticaseibacillus": 93,
+    "Streptococcus": 67,
+    "Bifidobacterium": 14,
+    "Granulicatella": 13,
+    "Rothia": 9,
+    "Fusobacterium": 8,
+    "Actinomyces": 4,
+    "Aggregatibacter": 2,
+    "Parvimonas": 1
+  }
+}

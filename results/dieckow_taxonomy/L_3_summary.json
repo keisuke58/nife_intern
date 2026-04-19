@@ -1,0 +1,21 @@
+{
+  "sample": "L_3",
+  "total_zmw": 12951,
+  "contamination_fraction": 0.3531773608215582,
+  "real_zmw": 8377,
+  "ccs_sequences": 8376,
+  "classified_reads": 8074,
+  "mean_identity": 98.37701263314342,
+  "top10_genera": {
+    "Limosilactobacillus": 3768,
+    "Streptococcus": 3184,
+    "Veillonella": 331,
+    "Rothia": 177,
+    "Atopobium": 162,
+    "Actinomyces": 132,
+    "Lacticaseibacillus": 91,
+    "Haemophilus": 52,
+    "Granulicatella": 52,
+    "Prevotella": 43
+  }
+}

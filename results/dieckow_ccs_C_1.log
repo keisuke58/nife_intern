@@ -1,0 +1,32 @@
+[Fri Apr 17 03:52:35 AM JST 2026] Starting C_1 (ERR13166580)
+[C_1] Loading subreads...
+[C_1] 15194 ZMWs, 608768 subreads
+[C_1] Aligning to SILVA...
+  Written 608768 subreads to FASTA
+  Aligning to SILVA (12 threads)...
+[C_1] Classifying ZMWs (contaminant vs real)...
+  Looking up 14417 SILVA references...
+[C_1] Real: 11715, Contaminant: 3479 (22.9% contamination)
+[C_1] Computing SPOA consensus for 11715 real ZMWs...
+[C_1] Got 11715 CCS sequences
+[C_1] VSEARCH taxonomy...
+[C_1] Identity: mean=98.3%
+
+=== C_1: 11614 classified reads (after decontam) ===
+  Streptococcus                           : 3571 (30.7%)
+  Haemophilus                             : 1774 (15.3%)
+  Bifidobacterium                         : 1492 (12.8%)
+  Neisseria                               : 1483 (12.8%)
+  Actinomyces                             : 1415 (12.2%)
+  Veillonella                             :  406 (3.5%)
+  Capnocytophaga                          :  212 (1.8%)
+  Granulicatella                          :  196 (1.7%)
+  Rothia                                  :  165 (1.4%)
+  Lachnoanaerobaculum                     :  144 (1.2%)
+  Selenomonas                             :  122 (1.1%)
+  Gemella                                 :  109 (0.9%)
+  Atopobium                               :  108 (0.9%)
+  Prevotella                              :  102 (0.9%)
+  Oribacterium                            :   58 (0.5%)
+Written: /home/nishioka/IKM_Hiwi/nife/results/dieckow_taxonomy/C_1_taxonomy.tsv
+[Fri Apr 17 05:56:27 AM JST 2026] Done C_1

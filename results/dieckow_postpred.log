@@ -1,0 +1,6 @@
+JAX devices: [CpuDevice(id=0)]
+Szafranski samples: 127
+Posterior samples:  100
+
+Running 127 × 100 posterior ODE evaluations...
+Terminated

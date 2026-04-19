@@ -1,0 +1,46 @@
+==========================================
+ P.g. Weighted Likelihood + Hill Sweep
+ Started: Tue Feb 17 08:14:59 AM JST 2026
+ Sweep dir: /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/sweep_pg_20260217_081459
+==========================================
+[08:14:59] Launching dh_baseline ...
+  PID=2129495
+[08:14:59] Launching dh_hill005 ...
+  PID=2129497
+[08:14:59] Launching dh_hill005_wpg5_wlate3 ...
+  PID=2129499
+[08:14:59] Launching dh_hill002_wpg5_wlate3 ...
+  PID=2129502
+[08:14:59] Launching dh_hill010_wpg5_wlate3 ...
+  PID=2129505
+
+All 5 runs launched. PIDs: 2129495 2129497 2129499 2129502 2129505
+
+Monitor:  tail -f /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/sweep_pg_20260217_081459/*.log
+Status:   ps -p 2129495,2129497,2129499,2129502,2129505 -o pid,stat,etime,cmd
+
+==========================================
+ All runs finished at Tue Feb 17 08:43:43 PM JST 2026
+==========================================
+
+=== Results Summary ===
+  dh_baseline:
+    Evidence: log(evidence) = 8.61
+    RMSE:     N/A
+    P.g.last2: N/A
+  dh_hill002_wpg5_wlate3:
+    Evidence: log(evidence) = 32.22
+    RMSE:     N/A
+    P.g.last2: N/A
+  dh_hill005:
+    Evidence: log(evidence) = 8.78
+    RMSE:     N/A
+    P.g.last2: N/A
+  dh_hill005_wpg5_wlate3:
+    Evidence: log(evidence) = 33.30
+    RMSE:     N/A
+    P.g.last2: N/A
+  dh_hill010_wpg5_wlate3:
+    Evidence: log(evidence) = 33.93
+    RMSE:     N/A
+    P.g.last2: N/A

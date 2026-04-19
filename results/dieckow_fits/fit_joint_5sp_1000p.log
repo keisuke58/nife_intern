@@ -1,0 +1,18 @@
+Loaded cache: 10 patients, genera=['Streptococcus', 'Actinomyces', 'Veillonella', 'Fusobacterium', 'Porphyromonas']
+  n_sp=5, n_params=65 (A=15, b=50)
+  n_patients=10, n_particles=1000, mutation=rw
+  sign_prior=OFF
+  JIT compile: 24.4s
+  Init: 56.3s
+  Stage  1: beta=0.0268, accept=0.05, ESS=500, logL=[-435.5,-228.9], 28.2s
+  Stage  2: beta=0.0633, accept=0.07, ESS=500, logL=[-353.2,-222.6], 29.9s
+  Stage  3: beta=0.1037, accept=0.14, ESS=500, logL=[-320.3,-213.4], 31.7s
+  Stage  4: beta=0.1736, accept=0.41, ESS=500, logL=[-282.0,-207.5], 39.8s
+  Stage  5: beta=0.3043, accept=0.60, ESS=500, logL=[-243.7,-205.7], 47.2s
+  Stage  6: beta=0.4537, accept=0.63, ESS=500, logL=[-234.0,-205.1], 50.8s
+  Stage  7: beta=0.6428, accept=0.63, ESS=500, logL=[-229.4,-203.5], 53.4s
+  Stage  8: beta=0.9010, accept=0.66, ESS=500, logL=[-224.8,-202.8], 55.6s
+  Stage  9: beta=1.0000, accept=0.64, ESS=923, logL=[-224.8,-202.7], 53.3s
+  Stage 10: beta=1.0000, accept=0.64, ESS=1000, logL=[-230.1,-202.5], 54.4s
+  MAP RMSE: 0.1006
+  Saved: results/dieckow_fits/fit_joint_5sp_1000p.json

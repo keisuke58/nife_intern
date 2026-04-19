@@ -1,0 +1,21 @@
+{
+  "sample": "A_1",
+  "total_zmw": 18839,
+  "contamination_fraction": 0.5915919103986411,
+  "real_zmw": 7694,
+  "ccs_sequences": 7693,
+  "classified_reads": 7594,
+  "mean_identity": 98.41353700289703,
+  "top10_genera": {
+    "Bifidobacterium": 3258,
+    "Streptococcus": 1091,
+    "Atopobium": 565,
+    "Gemella": 335,
+    "Actinomyces": 331,
+    "Veillonella": 329,
+    "Haemophilus": 319,
+    "Abiotrophia": 241,
+    "Mogibacterium": 185,
+    "Prevotella": 177
+  }
+}

@@ -1,0 +1,32 @@
+[Fri Apr 17 04:52:42 AM JST 2026] Starting G_3 (ERR13166594)
+[G_3] Loading subreads...
+[G_3] 23353 ZMWs, 929303 subreads
+[G_3] Aligning to SILVA...
+  Written 929303 subreads to FASTA
+  Aligning to SILVA (12 threads)...
+[G_3] Classifying ZMWs (contaminant vs real)...
+  Looking up 15177 SILVA references...
+[G_3] Real: 17262, Contaminant: 6091 (26.1% contamination)
+[G_3] Computing SPOA consensus for 17262 real ZMWs...
+[G_3] Got 17262 CCS sequences
+[G_3] VSEARCH taxonomy...
+[G_3] Identity: mean=98.5%
+
+=== G_3: 17156 classified reads (after decontam) ===
+  Streptococcus                           : 11560 (67.4%)
+  Rothia                                  : 2116 (12.3%)
+  Neisseria                               :  995 (5.8%)
+  Abiotrophia                             :  830 (4.8%)
+  Actinomyces                             :  680 (4.0%)
+  Bifidobacterium                         :  360 (2.1%)
+  Capnocytophaga                          :  127 (0.7%)
+  Granulicatella                          :   99 (0.6%)
+  Kingella                                :   85 (0.5%)
+  Haemophilus                             :   76 (0.4%)
+  Gemella                                 :   75 (0.4%)
+  Veillonella                             :   40 (0.2%)
+  Atopobium                               :   15 (0.1%)
+  Cryptobacterium                         :   13 (0.1%)
+  Eikenella                               :   13 (0.1%)
+Written: /home/nishioka/IKM_Hiwi/nife/results/dieckow_taxonomy/G_3_taxonomy.tsv
+[Fri Apr 17 08:04:25 AM JST 2026] Done G_3

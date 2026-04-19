@@ -1,0 +1,15 @@
+Starting 1000p TMCMC on marinos01 at Wed Feb 25 03:20:25 AM JST 2026
+=================================================
+[CH] Starting Commensal HOBIC (1000p)...
+[CH] PID=1107869
+[DS] Starting Dysbiotic Static (1000p)...
+[DS] PID=1107871
+
+Running in background:
+  CH: PID=1107869
+  DS: PID=1107871
+
+Monitor: tail -f /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/*_1000p.log
+Check:   ps aux | grep estimate_reduced
+
+Both conditions completed on marinos01 at Sat Feb 28 10:01:35 PM JST 2026

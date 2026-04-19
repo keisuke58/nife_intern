@@ -1,0 +1,209 @@
+2026-02-25 02:46:02 WARNING __main__: Slack webhook URL is a placeholder. Notifications disabled.
+2026-02-25 02:46:02 INFO __main__: Slack notifications disabled (no webhook URL)
+2026-02-25 02:46:02 INFO __main__: Output directory: /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/commensal_static_posterior
+2026-02-25 02:46:02 INFO __main__: Loading experimental data...
+2026-02-25 02:46:02 INFO __main__: Loading Commensal Static data: 6 timepoints, days=[np.int64(1), np.int64(3), np.int64(6), np.int64(10), np.int64(15), np.int64(21)]
+2026-02-25 02:46:02 INFO __main__: Auto-calculated day_scale: 0.011310
+2026-02-25 02:46:02 INFO __main__: Experimental days: [ 1  3  6 10 15 21]
+2026-02-25 02:46:02 INFO __main__: Model indices: [ 113  339  679 1131 1696 2375]
+2026-02-25 02:46:02 INFO __main__: Data (absolute volumes):
+[[0.0756  0.0021  0.3486  0.0021  0.0021 ]
+ [0.21    0.024   0.06    0.0015  0.0015 ]
+ [0.255   0.017   0.068   0.0017  0.0017 ]
+ [0.21    0.03    0.075   0.0015  0.0015 ]
+ [0.1102  0.0725  0.116   0.00145 0.00145]
+ [0.098   0.098   0.084   0.0014  0.0014 ]]
+2026-02-25 02:46:02 INFO __main__: Checkpointing enabled: saving every 2 stages to /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/commensal_static_posterior/checkpoints
+2026-02-25 02:46:02 INFO __main__: Running parameter estimation...
+2026-02-25 02:46:02 INFO __main__: Nishioka Algorithm: Retrieving bounds and locked indices for Commensal Static...
+2026-02-25 02:46:02 INFO __main__: Nishioka Algorithm: Locking indices [9, 15, 6, 7, 11, 13, 14, 16, 17, 18, 19] to 0.0
+2026-02-25 02:46:02 INFO __main__: Reduced parameter space to 9 parameters: [0, 1, 2, 3, 4, 5, 8, 10, 12]
+2026-02-25 02:46:02 INFO __main__: Re-applying locks to theta_base to ensure locked parameters [9, 15, 6, 7, 11, 13, 14, 16, 17, 18, 19] remain 0.0
+2026-02-25 02:46:02 INFO __main__: Using sigma_obs = 0.11111111111111109
+2026-02-25 02:46:02 INFO __main__: Data shape: (6, 5)
+2026-02-25 02:46:02 INFO __main__: idx_sparse: [ 113  339  679 1131 1696 2375]
+2026-02-25 02:46:02 INFO __main__: Starting TMCMC estimation...
+2026-02-25 02:46:02 INFO core.tmcmc: [Commensal_Static] Running 2 TMCMC chains (β tempering + linearization update)...
+2026-02-25 02:46:02 INFO core.tmcmc: Chain 1/2
+2026-02-25 02:46:02 INFO tmcmc_5species_tsm: TSM5S Linearization Point Updated (# 1)
+2026-02-25 02:46:02 INFO core.evaluator: TSM initialized (linearization disabled initially for exploration)
+2026-02-25 02:46:02 INFO core.tmcmc: [Chain 1] Initial linearization point set
+2026-02-25 02:46:02 INFO core.tmcmc: [Commensal_Static_chain1] Parallelization: n_jobs=4 (effective=4), use_threads=False, n_particles=150
+2026-02-25 02:48:40 INFO debug.logger:       [TMCMC] Initial LogL: min=-22.3, max=28.6
+2026-02-25 02:48:40 INFO debug.logger:       [TMCMC] Model: Commensal_Static_chain1
+2026-02-25 02:48:40 INFO debug.logger:       [TMCMC] Starting TMCMC with 150 particles, 8 stages...
+2026-02-25 02:48:40 INFO debug.logger:       [TMCMC] Stage 1/8 starting...
+2026-02-25 02:48:40 INFO core.tmcmc:       [TMCMC] Stage 1: β=0.0000 → 0.0881 (Δ=0.088100), ESS=75.0/75.0 (actual=75.0), logL range=[-22.32, 28.64], log_w range=4.49, w[min,max]=[2.59e-04,2.30e-02]
+2026-02-25 02:48:40 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=67/150 (unique_ratio=0.447)
+2026-02-25 02:48:40 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=6.31e+00, trace(cov)=3.57e+01, scale=3.15e-01, nugget=3.25e-07, tempered_scale=2.83e+00, adapt_scale=2.00x, cond(cov)=2.34e+07
+2026-02-25 03:01:07 INFO core.tmcmc: [Commensal_Static_chain1] Mutation Stage 1: 750 proposals evaluated in parallel (n_jobs=4), 339 accepted (rate=0.4520), time=746.53s
+2026-02-25 03:01:07 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈150/150 (unique_ratio≈1.000)
+2026-02-25 03:01:07 INFO debug.logger:       [TMCMC] Stage 1: β=0.0881 (+0.0881)
+2026-02-25 03:01:07 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-25 03:01:07 INFO debug.logger:       [TMCMC] Stage 2/8 starting...
+2026-02-25 03:01:07 INFO core.tmcmc:       [TMCMC] Stage 2: β=0.0881 → 0.4518 (Δ=0.363735), ESS=75.0/75.0 (actual=75.0), logL range=[-1.74, 29.49], log_w range=11.36, w[min,max]=[3.07e-07,2.64e-02]
+2026-02-25 03:01:07 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=65/150 (unique_ratio=0.433)
+2026-02-25 03:01:07 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=5.22e+00, trace(cov)=6.54e+00, scale=2.61e-01, nugget=2.71e-07, tempered_scale=6.27e-01, adapt_scale=2.00x, cond(cov)=5.55e+06
+2026-02-25 03:13:28 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈147/150 (unique_ratio≈0.980)
+2026-02-25 03:13:28 INFO debug.logger:       [TMCMC] Stage 2: β=0.4518 (+0.3637)
+2026-02-25 03:13:28 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-25 03:13:28 INFO debug.logger:       [TMCMC] Stage 3/8 starting...
+2026-02-25 03:13:28 INFO core.tmcmc:       [TMCMC] Stage 3: β=0.4518 → 0.9518 (Δ=0.500000), ESS=115.4/75.0 (actual=118.9), logL range=[14.89, 29.62], log_w range=7.36, w[min,max]=[8.84e-06,1.40e-02]
+2026-02-25 03:13:28 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=90/150 (unique_ratio=0.600)
+2026-02-25 03:13:28 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=4.50e+00, trace(cov)=2.68e+00, scale=2.25e-01, nugget=2.35e-07, tempered_scale=2.98e-01, adapt_scale=2.00x, cond(cov)=2.54e+06
+2026-02-25 03:25:54 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈150/150 (unique_ratio≈1.000)
+2026-02-25 03:25:54 INFO debug.logger:       [TMCMC] Computing ROM errors for 5/150 particles (observation-based update)...
+2026-02-25 03:26:13 INFO debug.logger:       [TMCMC] Scale check: logL=[14.89, 28.16, 29.62], log_penalty=[0.0000, 0.0000, 0.0000], log_post=[14.17, 26.80, 28.19], obs_score=[14.17, 26.80, 28.19]
+2026-02-25 03:26:13 WARNING debug.logger:       [TMCMC] Observation penalty may be too weak (max_penalty/max_logL_range=0.0000 < 0.01)
+2026-02-25 03:26:13 INFO debug.logger:       [TMCMC] Observation-corrected MAP matches standard MAP (no correction effect)
+2026-02-25 03:26:13 INFO debug.logger:       [TMCMC] ROM errors: mean=0.000000, min=0.000000, max=0.000000
+2026-02-25 03:26:13 INFO debug.logger:       [TMCMC] Posterior MAP-WeightedMean distance: 1.998841, WeightedMean shift (obs-corrected): 0.000000
+2026-02-25 03:26:13 WARNING debug.logger:       [TMCMC] Keeping linearization OFF (unstable): ε_ROM(MAP)=1.803011 > 0.050000 (β=0.9518, threshold=0.750)
+2026-02-25 03:26:15 WARNING debug.logger:       [TMCMC] ROM error sufficiently small (ε_ROM=0.000000 < 0.01)
+2026-02-25 03:26:15 INFO debug.logger:       [TMCMC]    where ε_ROM = || φ̄_ROM(t_obs) − φ̄_FOM(t_obs) ||₂ / || φ̄_FOM(t_obs) ||₂
+2026-02-25 03:26:15 INFO debug.logger:       [TMCMC] Stage 3: β=0.9518 (+0.5000)
+2026-02-25 03:26:15 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-25 03:26:15 INFO debug.logger:       [TMCMC] Stage 4/8 starting...
+2026-02-25 03:26:15 INFO core.tmcmc:       [TMCMC] Stage 4: β=0.9518 → 1.0000 (Δ=0.048165), ESS=149.7/75.0 (actual=149.7), logL range=[25.69, 29.71], log_w range=0.19, w[min,max]=[5.84e-03,7.09e-03]
+2026-02-25 03:26:15 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=95/150 (unique_ratio=0.633)
+2026-02-25 03:26:15 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=4.64e+00, trace(cov)=2.63e+00, scale=2.32e-01, nugget=2.42e-07, tempered_scale=2.83e-01, adapt_scale=2.00x, cond(cov)=2.82e+06
+2026-02-25 03:32:23 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈150/150 (unique_ratio≈1.000)
+2026-02-25 03:32:23 INFO debug.logger:       [TMCMC] Stage 4: β=1.0000 (+0.0482)
+2026-02-25 03:32:23 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-25 03:32:23 INFO debug.logger:       [TMCMC] Stage 5/8 starting...
+2026-02-25 03:32:23 INFO core.tmcmc:       [TMCMC] Stage 5: β=1.0000 → 1.0000 (Δ=0.000000), ESS=150.0/75.0 (actual=150.0), logL range=[22.40, 29.65], log_w range=0.00, w[min,max]=[6.67e-03,6.67e-03]
+2026-02-25 03:32:23 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=93/150 (unique_ratio=0.620)
+2026-02-25 03:32:23 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=4.69e+00, trace(cov)=2.65e+00, scale=2.34e-01, nugget=2.44e-07, tempered_scale=2.83e-01, adapt_scale=2.00x, cond(cov)=2.85e+06
+2026-02-25 03:38:39 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈150/150 (unique_ratio≈1.000)
+2026-02-25 03:38:39 INFO debug.logger:       [TMCMC] Stage 5: β=1.0000 (+0.0000)
+2026-02-25 03:38:39 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-25 03:38:39 INFO debug.logger:       [TMCMC] ✓ Converged! β reached 1.0
+2026-02-25 03:38:39 INFO debug.logger:       [TMCMC] ✅ TMCMC complete! Final β=1.0000
+2026-02-25 03:38:39 INFO debug.logger:       [TMCMC] 🎯 MAP (posterior (observation-corrected)): [ 0.07911137  1.27065659 -0.92227152  2.14663775  1.47777929  0.57885624
+  0.          0.          0.14201297  0.         -0.65980824  0.
+  0.33116923  0.          0.          0.          0.          0.
+  0.          0.        ]
+2026-02-25 03:38:39 INFO core.tmcmc: [Chain 1] Global MAP updated from 1 chains
+2026-02-25 03:38:39 INFO core.tmcmc: Chain 2/2
+2026-02-25 03:38:39 INFO core.tmcmc: [Chain 2] Using global MAP from previous chains
+2026-02-25 03:38:39 INFO tmcmc_5species_tsm: TSM5S Linearization Point Updated (# 1)
+2026-02-25 03:38:39 INFO core.evaluator: TSM initialized (linearization disabled initially for exploration)
+2026-02-25 03:38:39 INFO core.tmcmc: [Chain 2] Initial linearization point set
+2026-02-25 03:38:39 INFO core.tmcmc: [Commensal_Static_chain2] Parallelization: n_jobs=4 (effective=4), use_threads=False, n_particles=150
+2026-02-25 03:41:15 INFO debug.logger:       [TMCMC] Initial LogL: min=-24.2, max=29.6
+2026-02-25 03:41:15 INFO debug.logger:       [TMCMC] Model: Commensal_Static_chain2
+2026-02-25 03:41:15 INFO debug.logger:       [TMCMC] Starting TMCMC with 150 particles, 8 stages...
+2026-02-25 03:41:15 INFO debug.logger:       [TMCMC] Stage 1/8 starting...
+2026-02-25 03:41:15 INFO core.tmcmc:       [TMCMC] Stage 1: β=0.0000 → 0.0763 (Δ=0.076302), ESS=75.0/75.0 (actual=75.0), logL range=[-24.19, 29.65], log_w range=4.11, w[min,max]=[4.10e-04,2.50e-02]
+2026-02-25 03:41:15 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=73/150 (unique_ratio=0.487)
+2026-02-25 03:41:15 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=6.36e+00, trace(cov)=3.60e+01, scale=3.18e-01, nugget=3.28e-07, tempered_scale=2.83e+00, adapt_scale=2.00x, cond(cov)=2.04e+07
+2026-02-25 03:53:40 INFO core.tmcmc: [Commensal_Static_chain2] Mutation Stage 1: 750 proposals evaluated in parallel (n_jobs=4), 420 accepted (rate=0.5600), time=744.79s
+2026-02-25 03:53:40 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈150/150 (unique_ratio≈1.000)
+2026-02-25 03:53:40 INFO debug.logger:       [TMCMC] Stage 1: β=0.0763 (+0.0763)
+2026-02-25 03:53:40 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-25 03:53:40 INFO debug.logger:       [TMCMC] Stage 2/8 starting...
+2026-02-25 03:53:40 INFO core.tmcmc:       [TMCMC] Stage 2: β=0.0763 → 0.2542 (Δ=0.177898), ESS=75.0/75.0 (actual=75.0), logL range=[-16.36, 29.39], log_w range=8.14, w[min,max]=[6.09e-06,2.08e-02]
+2026-02-25 03:53:40 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=71/150 (unique_ratio=0.473)
+2026-02-25 03:53:40 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=4.92e+00, trace(cov)=1.10e+01, scale=2.46e-01, nugget=2.56e-07, tempered_scale=1.11e+00, adapt_scale=2.00x, cond(cov)=9.32e+06
+2026-02-25 04:05:59 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈143/150 (unique_ratio≈0.953)
+2026-02-25 04:05:59 INFO debug.logger:       [TMCMC] Stage 2: β=0.2542 (+0.1779)
+2026-02-25 04:05:59 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-25 04:05:59 INFO debug.logger:       [TMCMC] Stage 3/8 starting...
+2026-02-25 04:05:59 INFO core.tmcmc:       [TMCMC] Stage 3: β=0.2542 → 0.7542 (Δ=0.500000), ESS=77.0/75.0 (actual=93.6), logL range=[5.69, 29.67], log_w range=11.99, w[min,max]=[1.13e-07,1.82e-02]
+2026-02-25 04:05:59 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=75/150 (unique_ratio=0.500)
+2026-02-25 04:05:59 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=4.72e+00, trace(cov)=3.55e+00, scale=2.36e-01, nugget=2.46e-07, tempered_scale=3.76e-01, adapt_scale=2.00x, cond(cov)=3.50e+06
+2026-02-25 04:18:08 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈148/150 (unique_ratio≈0.987)
+2026-02-25 04:18:08 INFO debug.logger:       [TMCMC] Computing ROM errors for 9/150 particles (observation-based update)...
+2026-02-25 04:18:27 INFO debug.logger:       [TMCMC] Scale check: logL=[5.69, 27.37, 29.67], log_penalty=[0.0000, 0.0000, 0.0000], log_post=[4.29, 20.65, 22.38], obs_score=[4.29, 20.65, 22.38]
+2026-02-25 04:18:27 WARNING debug.logger:       [TMCMC] Observation penalty may be too weak (max_penalty/max_logL_range=0.0000 < 0.01)
+2026-02-25 04:18:27 INFO debug.logger:       [TMCMC] Observation-corrected MAP matches standard MAP (no correction effect)
+2026-02-25 04:18:27 INFO debug.logger:       [TMCMC] ROM errors: mean=0.000000, min=0.000000, max=0.000000
+2026-02-25 04:18:27 INFO debug.logger:       [TMCMC] Posterior MAP-WeightedMean distance: 2.618372, WeightedMean shift (obs-corrected): 0.000000
+2026-02-25 04:18:27 WARNING debug.logger:       [TMCMC] Keeping linearization OFF (unstable): ε_ROM(MAP)=1.893787 > 0.050000 (β=0.7542, threshold=0.750)
+2026-02-25 04:18:29 WARNING debug.logger:       [TMCMC] ROM error sufficiently small (ε_ROM=0.000000 < 0.01)
+2026-02-25 04:18:29 INFO debug.logger:       [TMCMC]    where ε_ROM = || φ̄_ROM(t_obs) − φ̄_FOM(t_obs) ||₂ / || φ̄_FOM(t_obs) ||₂
+2026-02-25 04:18:29 INFO debug.logger:       [TMCMC] Stage 3: β=0.7542 (+0.5000)
+2026-02-25 04:18:29 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-25 04:18:29 INFO debug.logger:       [TMCMC] Stage 4/8 starting...
+2026-02-25 04:18:29 INFO core.tmcmc:       [TMCMC] Stage 4: β=0.7542 → 1.0000 (Δ=0.245801), ESS=143.9/75.0 (actual=143.9), logL range=[21.46, 29.67], log_w range=2.02, w[min,max]=[1.14e-03,8.59e-03]
+2026-02-25 04:18:29 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=95/150 (unique_ratio=0.633)
+2026-02-25 04:18:29 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=4.75e+00, trace(cov)=2.69e+00, scale=2.37e-01, nugget=2.47e-07, tempered_scale=2.83e-01, adapt_scale=2.00x, cond(cov)=2.98e+06
+2026-02-25 04:24:40 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈150/150 (unique_ratio≈1.000)
+2026-02-25 04:24:40 INFO debug.logger:       [TMCMC] Stage 4: β=1.0000 (+0.2458)
+2026-02-25 04:24:40 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-25 04:24:40 INFO debug.logger:       [TMCMC] Stage 5/8 starting...
+2026-02-25 04:24:40 INFO core.tmcmc:       [TMCMC] Stage 5: β=1.0000 → 1.0000 (Δ=0.000000), ESS=150.0/75.0 (actual=150.0), logL range=[25.99, 29.73], log_w range=0.00, w[min,max]=[6.67e-03,6.67e-03]
+2026-02-25 04:24:40 INFO debug.logger:       [TMCMC] Resample degeneracy: unique=86/150 (unique_ratio=0.573)
+2026-02-25 04:24:40 INFO debug.logger:       [TMCMC] Proposal cov stats: trace(cov_base)=4.36e+00, trace(cov)=2.47e+00, scale=2.18e-01, nugget=2.28e-07, tempered_scale=2.83e-01, adapt_scale=2.00x, cond(cov)=2.95e+06
+2026-02-25 04:30:51 INFO debug.logger:       [TMCMC] Post-mutation diversity: unique≈150/150 (unique_ratio≈1.000)
+2026-02-25 04:30:51 INFO debug.logger:       [TMCMC] Stage 5: β=1.0000 (+0.0000)
+2026-02-25 04:30:51 INFO debug.logger:       [TMCMC] Likelihood health (cumulative): {'n_calls': 0, 'n_tsm_fail': 0, 'n_output_nonfinite': 0, 'n_var_raw_negative': 0, 'n_var_raw_nonfinite': 0, 'n_var_total_clipped': 0}
+2026-02-25 04:30:51 INFO debug.logger:       [TMCMC] ✓ Converged! β reached 1.0
+2026-02-25 04:30:51 INFO debug.logger:       [TMCMC] ✅ TMCMC complete! Final β=1.0000
+2026-02-25 04:30:51 INFO debug.logger:       [TMCMC] 🎯 MAP (posterior (observation-corrected)): [ 0.71396825  0.54602863 -0.54357209  2.54732106  0.37103844  0.75145293
+  0.          0.          0.46415513  0.          1.99557397  0.
+ -0.76869077  0.          0.          0.          0.          0.
+  0.          0.        ]
+2026-02-25 04:30:51 INFO core.tmcmc: [Chain 2] Global MAP updated from 2 chains
+2026-02-25 04:30:51 INFO core.tmcmc: [Commensal_Static] TMCMC Summary:
+2026-02-25 04:30:51 INFO core.tmcmc: Converged chains: 2/2
+2026-02-25 04:30:51 INFO core.tmcmc: Global MAP: [ 0.13149896  1.18666462 -0.68758507  1.93275982  0.72571624  0.78098944
+  0.          0.          0.27847059  0.          0.56471977  0.
+  1.18696453  0.          0.          0.          0.          0.
+  0.          0.        ]
+2026-02-25 04:30:51 INFO __main__: TMCMC completed in 6288.20 seconds
+2026-02-25 04:30:51 INFO __main__: Computing enhanced convergence diagnostics...
+/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/main/estimate_reduced_nishioka.py:281: RuntimeWarning: invalid value encountered in divide
+  acf = acf / acf[0]  # Normalize
+2026-02-25 04:30:51 INFO __main__: R-hat max: 1.0166 (target < 1.1)
+2026-02-25 04:30:51 INFO __main__: ESS min: 178.7 (target > 100)
+2026-02-25 04:30:51 INFO __main__: Convergence (R-hat): True
+2026-02-25 04:30:51 INFO __main__: Convergence (ESS): False
+2026-02-25 04:30:51 INFO __main__: Computing 95% HDI and credible intervals...
+2026-02-25 04:30:51 INFO __main__: HDI computed for all parameters
+2026-02-25 04:30:51 INFO __main__: Checkpoints cleared after successful completion
+2026-02-25 04:30:51 INFO visualization.helpers: Exported diagnostics tables for Commensal_Static to /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/commensal_static_posterior/diagnostics_tables
+2026-02-25 04:30:51 INFO __main__: Exported TMCMC diagnostics tables
+2026-02-25 04:30:51 INFO __main__: Generating plots...
+2026-02-25 04:30:51 INFO __main__: Running simulations for MAP and Mean estimates...
+2026-02-25 04:30:51 INFO visualization.plot_manager: Saved figure: TSM_simulation_Commensal_Static_MAP_Fit_with_data.png
+2026-02-25 04:30:52 INFO visualization.plot_manager: Saved figure: TSM_simulation_Commensal_Static_Mean_Fit_with_data.png
+2026-02-25 04:30:52 INFO visualization.plot_manager: Saved figure: residuals_Commensal_Static_Residuals.png
+2026-02-25 04:30:56 INFO visualization.plot_manager: Saved figure: parameter_distributions_Commensal_Static_Params.png
+2026-02-25 04:31:10 INFO visualization.plot_manager: Saved figure: corner_plot_Commensal_Static_Corner.png
+2026-02-25 04:31:10 INFO __main__: Generating posterior predictive plots (sampling 50 trajectories)...
+2026-02-25 04:31:16 INFO visualization.plot_manager: Saved figure: posterior_predictive_Commensal_Static_PosteriorBand.png
+2026-02-25 04:31:19 INFO visualization.plot_manager: Saved figure: posterior_predictive_spaghetti_Commensal_Static_PosteriorSpaghetti.png
+2026-02-25 04:31:20 INFO visualization.plot_manager: Saved figure: Fig01_TMCMC_beta_schedule_Commensal_Static.png
+2026-02-25 04:31:20 INFO __main__: Saved fit metrics to fit_metrics.json
+2026-02-25 04:31:20 INFO visualization.plot_manager: Saved manifest: FIGURES_MANIFEST.json (8 figures)
+2026-02-25 04:31:20 INFO __main__: Estimation complete. Results saved to /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/commensal_static_posterior
+
+================================================================================
+ESTIMATION SUMMARY (Nishioka v2)
+================================================================================
+Condition: Commensal Static
+Elapsed Time: 6288.20s
+--------------------------------------------------------------------------------
+CONVERGENCE DIAGNOSTICS:
+  R-hat max:     1.0166 ✓ (target < 1.1)
+  ESS min:       178.7 ✗ (target > 100)
+  Overall:       NOT CONVERGED
+--------------------------------------------------------------------------------
+PARAMETER ESTIMATES (with 95% HDI):
+--------------------------------------------------------------------------------
+Name            MAP       Mean    HDI_low   HDI_high    R-hat      ESS
+--------------------------------------------------------------------------------
+a11          0.1315     0.3145    -0.9721     1.2877    1.001    300.0
+a12          1.1867     0.4886    -0.9949     1.4944    1.011    300.0
+a22         -0.6876    -0.3431    -0.9954     0.5899    1.001    178.7
+b1           1.9328     1.6071     0.2119     2.9851    1.017    282.9
+b2           0.7257     1.4006     0.1019     2.9225    0.997    300.0
+a33          0.7810     0.1309    -0.9654     1.0336    0.998    300.0
+b3           0.2785     0.7316     0.0000     0.0000    0.000      nan
+a13          0.5647     0.7734     0.0000     0.0000    0.000      nan
+a23          1.1870     0.6876     0.0023     1.5443    1.005    300.0
+================================================================================
+
+Results saved to: /home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/commensal_static_posterior
+================================================================================

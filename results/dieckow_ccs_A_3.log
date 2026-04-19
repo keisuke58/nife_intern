@@ -1,0 +1,32 @@
+[Fri Apr 17 03:21:22 AM JST 2026] Starting A_3 (ERR13166576)
+[A_3] Loading subreads...
+[A_3] 18385 ZMWs, 743838 subreads
+[A_3] Aligning to SILVA...
+  Written 743838 subreads to FASTA
+  Aligning to SILVA (12 threads)...
+[A_3] Classifying ZMWs (contaminant vs real)...
+  Looking up 10224 SILVA references...
+[A_3] Real: 246, Contaminant: 18139 (98.7% contamination)
+[A_3] Computing SPOA consensus for 246 real ZMWs...
+[A_3] Got 246 CCS sequences
+[A_3] VSEARCH taxonomy...
+[A_3] Identity: mean=98.5%
+
+=== A_3: 245 classified reads (after decontam) ===
+  Neisseria                               :  104 (42.4%)
+  Capnocytophaga                          :   29 (11.8%)
+  Streptococcus                           :   24 (9.8%)
+  Fusobacterium                           :   12 (4.9%)
+  Gemella                                 :   10 (4.1%)
+  Aerococcus                              :   10 (4.1%)
+  Campylobacter                           :    8 (3.3%)
+  Finegoldia                              :    8 (3.3%)
+  Veillonella                             :    8 (3.3%)
+  Actinomyces                             :    6 (2.4%)
+  Haemophilus                             :    5 (2.0%)
+  Abiotrophia                             :    5 (2.0%)
+  Leptotrichia                            :    4 (1.6%)
+  Eikenella                               :    3 (1.2%)
+  Anaerococcus                            :    3 (1.2%)
+Written: /home/nishioka/IKM_Hiwi/nife/results/dieckow_taxonomy/A_3_taxonomy.tsv
+[Fri Apr 17 03:40:05 AM JST 2026] Done A_3

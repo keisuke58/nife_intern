@@ -1,0 +1,26 @@
+[Fri Apr 17 09:45:23 AM JST 2026] Starting L_2 (ERR13166602)
+[L_2] Loading subreads...
+[L_2] 18679 ZMWs, 757388 subreads
+[L_2] Aligning to SILVA...
+  Written 757388 subreads to FASTA
+  Aligning to SILVA (12 threads)...
+[L_2] Classifying ZMWs (contaminant vs real)...
+  Looking up 10416 SILVA references...
+[L_2] Real: 382, Contaminant: 18297 (98.0% contamination)
+[L_2] Computing SPOA consensus for 382 real ZMWs...
+[L_2] Got 382 CCS sequences
+[L_2] VSEARCH taxonomy...
+[L_2] Identity: mean=98.6%
+
+=== L_2: 377 classified reads (after decontam) ===
+  Streptococcus                           :  154 (40.8%)
+  Actinomyces                             :  103 (27.3%)
+  Limosilactobacillus                     :   42 (11.1%)
+  Granulicatella                          :   28 (7.4%)
+  Haemophilus                             :   18 (4.8%)
+  Corynebacterium                         :   14 (3.7%)
+  Veillonella                             :   10 (2.7%)
+  Gemella                                 :    5 (1.3%)
+  Aggregatibacter                         :    3 (0.8%)
+Written: /home/nishioka/IKM_Hiwi/nife/results/dieckow_taxonomy/L_2_taxonomy.tsv
+[Fri Apr 17 09:59:22 AM JST 2026] Done L_2

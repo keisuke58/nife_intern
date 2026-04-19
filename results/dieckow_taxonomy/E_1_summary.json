@@ -1,0 +1,21 @@
+{
+  "sample": "E_1",
+  "total_zmw": 19652,
+  "contamination_fraction": 0.7376857317321392,
+  "real_zmw": 5155,
+  "ccs_sequences": 5155,
+  "classified_reads": 5086,
+  "mean_identity": 98.52882422335823,
+  "top10_genera": {
+    "Streptococcus": 2179,
+    "Selenomonas": 716,
+    "Prevotella": 564,
+    "Actinomyces": 463,
+    "Gemella": 357,
+    "Veillonella": 258,
+    "Granulicatella": 155,
+    "Haemophilus": 113,
+    "Mogibacterium": 84,
+    "Rothia": 60
+  }
+}

@@ -1,0 +1,29 @@
+[Fri Apr 17 03:52:32 AM JST 2026] Starting B_2 (ERR13166578)
+[B_2] Loading subreads...
+[B_2] 15408 ZMWs, 622693 subreads
+[B_2] Aligning to SILVA...
+  Written 622693 subreads to FASTA
+  Aligning to SILVA (12 threads)...
+[B_2] Classifying ZMWs (contaminant vs real)...
+  Looking up 7834 SILVA references...
+[B_2] Real: 139, Contaminant: 15269 (99.1% contamination)
+[B_2] Computing SPOA consensus for 139 real ZMWs...
+[B_2] Got 139 CCS sequences
+[B_2] VSEARCH taxonomy...
+[B_2] Identity: mean=98.6%
+
+=== B_2: 136 classified reads (after decontam) ===
+  Rothia                                  :   44 (32.4%)
+  Streptococcus                           :   38 (27.9%)
+  Neisseria                               :   16 (11.8%)
+  Capnocytophaga                          :   13 (9.6%)
+  Veillonella                             :    8 (5.9%)
+  Actinomyces                             :    5 (3.7%)
+  Granulicatella                          :    3 (2.2%)
+  Eikenella                               :    3 (2.2%)
+  Abiotrophia                             :    2 (1.5%)
+  Lachnoanaerobaculum                     :    2 (1.5%)
+  Aerococcus                              :    1 (0.7%)
+  Fusobacterium                           :    1 (0.7%)
+Written: /home/nishioka/IKM_Hiwi/nife/results/dieckow_taxonomy/B_2_taxonomy.tsv
+[Fri Apr 17 04:03:30 AM JST 2026] Done B_2
