@@ -102,14 +102,24 @@ k=3 クラスター:
 
 **解釈**: BIC は「4アトラクター仮説は過分割」と判定。in vivo ではPIH→PI 遷移が**連続スペクトル**に見える可能性。ただし k=3 の C0/C1 重心が近すぎ（局所解疑い）→ Dieckow in vivo θ で再評価が必要。
 
+### GMM re-assignment with in vivo θ (2026-04-19)
+**スクリプト**: `dieckow_gmm_reassign.py`
+**出力**: `results/dieckow_gmm/`
+
+- Dieckow MAP A 行列 + 患者平均 b → Szafranski 127サンプル × 20週 ODE → k-means(k=4)
+- Heine in vitro DH attractor: So=0.849 Fn=0.024 Pg=0.033 → **in vivo よりはるかに So 優位**
+- 結果: `gmm_reassigned.csv`, `invitro_invivo_offset.json`
+
 ### 保留事項
 - [x] EM/GMM で attractor basin assignment → 完了
 - [x] ペリイン2クラスターが DH vs DS と対応するか検証 → DH(59%) + DS(3%)で確認
 - [x] BIC k 選択 → k=3 最適（過分割疑い）
+- [x] Dieckow n_sp=5 shared-A フィッティング後にin vivo アトラクター位置を再推定 → 完了(2026-04-19)
+- [x] GMM re-assignment with in vivo θ → 完了(2026-04-19)
 - [ ] Szafranski 論文のCT label (論文PDF本体から手動で取得が必要)
-- [ ] Dieckow n_sp=5 shared-A フィッティング後にin vivo アトラクター位置を再推定
-- [ ] Hamilton ODE のin vitro vs in vivo オフセットを定量化
+- [ ] Hamilton ODE のin vitro vs in vivo オフセットを定量化（全4条件 → gmm_reassign 再実行で取得）
 - [ ] GMM 逆問題 (C) — ODE 評価がボトルネック → JAX で高速化してから再挑戦
+- [ ] Posterior predictive check (Dieckow 1000p → Szafranski 127サンプル予測分布)
 
 ---
 
@@ -152,16 +162,48 @@ total: 65 params / 100 data = 1.54×
 - 横断データの各サンプル → ODEアトラクターに割り当て
 - 縦断データ(Dieckow)でθを推定 → 横断データを予測
 
-### 実装状況
-- `dieckow_hamilton_fit.py` — glue script骨格（n_sp=10で書いてある → n_sp=5に修正必要）
-- `dieckow_batch_submit.sh` — 全30サンプル一括PBS投入スクリプト（ready）
+### 実装状況 (2026-04-19 更新)
+- `dieckow_hamilton_fit.py` — n_sp=5 shared-A GPU TMCMC **完成・実行済み**
 - `dieckow_manifest.tsv` — ERR ↔ 患者×週 対応表（完成）
+- **taxonomy**: 全30サンプル完了 (`results/dieckow_taxonomy/`)
+- **1000p fit**: RMSE=0.1006, 10 stages, MAP完了 (`results/dieckow_fits/fit_joint_5sp_1000p.json`)
+
+### TMCMC結果サマリー (2026-04-18完了)
+| 項目 | 値 |
+|------|-----|
+| RMSE (sign_prior=OFF) | 0.1006 |
+| RMSE (sign_prior=ON)  | 0.1008 (Δ=+0.0001) |
+| ステージ数 | 10 |
+| Per-patient RMSE | best=G(0.050), worst=L(0.119) |
+| Posterior samples | (1000, 65) |
+
+### 符号プライア vs データ矛盾（重要知見, 2026-04-19）
+Bergey/Dieckow 文献予測と in vivo TMCMC posterior の比較:
+
+| パラメータ | 期待符号 | comply OFF | comply ON | 解釈 |
+|-----------|---------|------------|-----------|------|
+| A[So,An]  | + | 100% | 100% | ✓ 一致 |
+| A[So,Vd]  | + | 97.7% | 100% | ✓ 一致 |
+| A[So,Fn]  | + | 100% | 100% | ✓ 一致 |
+| **A[An,Vd]** | + | **1.3%** | **0.0%** | ✗ **競合が共生を凌駕** |
+| A[An,Pg]  | + | 93.4% | 100% | ✓ 一致 |
+| **A[Vd,Pg]** | + | **0.0%** | **0.0%** | ✗ **Vd-Pg 空間競合** |
+
+→ in vivo では An-Vd 間・Vd-Pg 間が負の相互作用 → 文献の in vitro 予測と乖離
+→ 論文主張: **in vivo キャリブレーションにより生態系相互作用の再評価が可能**
+
+### 患者F 異常診断 (2026-04-19)
+- 観測データ: Fn≈0, Pg≈0 全3週 → 実質3菌種システム
+- b_Fn=13.3, b_Vd=13.5 が高く、平均 b で回すと Health様 attractor (So=0.69) に正常収束
+- MAP b_An=0.584（極端に低い）→ An支配 degenerate attractor (An=0.877)
+- **推奨**: 患者F を "Fn/Pg-absent" サブタイプとして flag、attractor 解析から除外
 
 ### 保留事項
-- [ ] `dieckow_hamilton_fit.py` を n_sp=5, shared A 設計に修正
-- [ ] job 39803 (A_3 whitelist fix) 完了後 Streptococcus 1位を確認
-- [ ] 確認後 `bash dieckow_batch_submit.sh --skip-done` で残り29投入
-- [ ] mSystems 5属データのアトラクター解析と照合
+- [x] n_sp=5 shared-A TMCMC 実装・実行 → 完了
+- [x] 全30サンプル taxonomy → 完了
+- [x] mSystems 5属データとの attractor 比較 → dieckow_gmm_reassign.py で実施
+- [ ] GMM re-assignment 全4条件 Heine θ で再実行（CS/CH/DS theta_MAP をvancouver01に転送済み）
+- [ ] Posterior predictive check (Dieckow 1000p → Szafranski 127サンプル予測分布)
 
 ---
 
@@ -174,15 +216,11 @@ total: 65 params / 100 data = 1.54×
 
 ---
 
-## 4. ジョブ状況
+## 4. ジョブ状況 (2026-04-19更新)
 
 | Job | Sample | Status | 備考 |
 |-----|--------|--------|------|
-| 39802 | A_3 | 完了(失敗) | blacklistアプローチ → Klebsiella 27% |
-| **39803** | A_3 | **実行中** | whitelistアプローチ (eHOMD) |
+| 39804-39832 | dc_A_1〜dc_L_3 各種 | **PBS MOM断絶・自然完了待ち** | taxonomy TSV は全30サンプル完了済み |
 
-完了後確認コマンド:
-```bash
-cat /home/nishioka/IKM_Hiwi/nife/results/dieckow_ccs_A_3.log | tail -20
-```
-期待: Streptococcus ~35% が1位
+- PBS サーバーがノードを `down` 認識 → qdel 不可 → 放置（実害なし）
+- 全30サンプルの taxonomy TSV は既に `results/dieckow_taxonomy/` に存在
