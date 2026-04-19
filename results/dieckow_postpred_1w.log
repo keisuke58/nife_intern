@@ -1,0 +1,25 @@
+JAX devices: [cuda(id=0)]
+2026-04-19 17:12:34.548644: W external/xla/xla/service/gpu/nvptx_compiler.cc:765] The NVIDIA driver's CUDA version is 12.4 which is older than the ptxas CUDA version (12.6.77). Because the driver is older than the ptxas version, XLA is disabling parallel compilation, which may slow down compilation. You should update your NVIDIA driver or use the NVIDIA-provided CUDA forward compatibility packages.
+Szafranski samples: 127
+Posterior samples:  20
+
+Running 127 × 20 ODE evaluations (GPU vmap, batch=127)...
+  First batch compiled+ran in 13.2s
+  1/20 done (13.22s/batch)
+  10/20 done (6.50s/batch)
+  20/20 done (6.51s/batch)
+Saved: /home/nishioka/IKM_Hiwi/nife/results/dieckow_postpred/pred_endpoints.npy
+
+90% CI coverage:
+  So: 0.8%
+  An: 0.8%
+  Vd: 0.0%
+  Fn: 0.8%
+  Pg: 0.0%
+  Overall: 0.5%
+  RMSE [PIH]: 0.0799  (n=56)
+  RMSE [PIM]: 0.0893  (n=39)
+  RMSE [PI]: 0.0826  (n=32)
+  RMSE [ALL]: 0.0836
+
+All outputs → /home/nishioka/IKM_Hiwi/nife/results/dieckow_postpred

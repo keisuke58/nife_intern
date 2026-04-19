@@ -40,7 +40,7 @@ SP_COLORS   = ['#e63946', '#457b9d', '#2a9d8f', '#e9c46a', '#264653']
 DIAG_COLORS = {'PIH': '#1565C0', 'PIM': '#2E7D32', 'PI': '#B71C1C'}
 
 
-def _ode_endpoint_single(theta20, phi0, n_weeks=10):
+def _ode_endpoint_single(theta20, phi0, n_weeks=1):
     """Run ODE n_weeks from phi0, return final composition (pure JAX)."""
     phi = phi0
     for _ in range(n_weeks):
