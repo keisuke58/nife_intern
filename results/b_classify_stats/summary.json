@@ -1,0 +1,31 @@
+{
+  "n_samples": 127,
+  "classification": {
+    "LogReg": {
+      "accuracy": 0.4316923076923077,
+      "accuracy_std": 0.08906935001686066,
+      "auroc_macro": 0.4638018397151524
+    },
+    "SVM-RBF": {
+      "accuracy": 0.5107692307692308,
+      "accuracy_std": 0.0707290856034196,
+      "auroc_macro": 0.4760859628274489
+    }
+  },
+  "significant_pairs_bonf005": [
+    {
+      "species": "An",
+      "group1": "PIH",
+      "group2": "PI",
+      "p_value": 0.0011602872833973439,
+      "r_biserial": 0.4185267857142857
+    },
+    {
+      "species": "Vd",
+      "group1": "PIH",
+      "group2": "PI",
+      "p_value": 0.0018728978155606712,
+      "r_biserial": 0.4006696428571429
+    }
+  ]
+}
