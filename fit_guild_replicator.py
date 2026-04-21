@@ -17,7 +17,7 @@ from guild_replicator_dieckow import (
 RESULTS_DIR = Path(__file__).parent / 'results' / 'dieckow_cr'
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 PHI_NPY    = Path(__file__).parent / 'results' / 'dieckow_otu' / 'phi_guild.npy'
-LAMBDA_REG = 0.01
+LAMBDA_REG = 1e-4
 PATIENTS   = list('ABCDEFGHKL')
 
 _call_count = [0]
