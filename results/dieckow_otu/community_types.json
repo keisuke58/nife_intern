@@ -1,0 +1,46 @@
+{
+  "k": 2,
+  "silhouette_scores": {
+    "2": 0.5929140069700283,
+    "3": 0.5531789328685164,
+    "4": 0.4294673189097321
+  },
+  "patient_ct": {
+    "A": 2,
+    "B": 2,
+    "C": 2,
+    "D": 1,
+    "E": 1,
+    "F": 2,
+    "G": 1,
+    "H": 2,
+    "K": 1,
+    "L": 1
+  },
+  "ct_mean_composition": {
+    "CT1": {
+      "Actinobacteria": 0.1337755694935106,
+      "Bacilli": 0.7317995594433719,
+      "Bacteroidia": 0.025060150515733175,
+      "Betaproteobacteria": 0.021146875954446344,
+      "Clostridia": 0.00569314482807247,
+      "Coriobacteriia": 0.009933131552763005,
+      "Fusobacteriia": 0.005986374097673705,
+      "Gammaproteobacteria": 0.015346079599276646,
+      "Negativicutes": 0.05009224111099993,
+      "Other": 0.001166873404152246
+    },
+    "CT2": {
+      "Actinobacteria": 0.27176822518887983,
+      "Bacilli": 0.3628665958800381,
+      "Bacteroidia": 0.06969354350029157,
+      "Betaproteobacteria": 0.13489583132791788,
+      "Clostridia": 0.01899984983236776,
+      "Coriobacteriia": 0.021798121293804935,
+      "Fusobacteriia": 0.017386686638321297,
+      "Gammaproteobacteria": 0.0401469926009153,
+      "Negativicutes": 0.05862440968040411,
+      "Other": 0.0038197440570592297
+    }
+  }
+}
