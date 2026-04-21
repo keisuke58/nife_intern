@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIFE — Biofilm Ecological Inference</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d29922;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header { border-bottom: 1px solid var(--border); padding: 24px 0; }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  h1 { font-size: 28px; font-weight: 700; color: var(--text); }
+  h1 span { color: var(--accent); }
+  .subtitle { color: var(--muted); margin-top: 6px; font-size: 14px; }
+
+  nav { display: flex; gap: 24px; margin-top: 16px; font-size: 14px; }
+  nav a { color: var(--muted); }
+  nav a:hover { color: var(--text); }
+
+  section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+
+  h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
+  h3 { font-size: 16px; font-weight: 600; margin: 24px 0 8px; color: var(--accent); }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .badge-green { background: #1f3d2a; color: var(--green); }
+  .badge-blue  { background: #1a3150; color: var(--accent); }
+  .badge-orange{ background: #3d2b1a; color: var(--orange); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+  .metric { text-align: center; padding: 16px; }
+  .metric-val { font-size: 32px; font-weight: 700; color: var(--accent); }
+  .metric-lab { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 12px; background: var(--surface); color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 8px 12px; border-bottom: 1px solid #21262d; }
+  tr:hover td { background: #1c2129; }
+  .best { color: var(--green); font-weight: 700; }
+
+  .figure-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 24px; }
+  .figure-block img { width: 100%; display: block; }
+  .figure-cap { padding: 12px 16px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); }
+  .figure-cap strong { color: var(--text); }
+
+  .pipeline { display: flex; flex-wrap: wrap; gap: 0; align-items: center; margin: 16px 0; }
+  .pipeline-step { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 14px; font-size: 13px; white-space: nowrap; }
+  .pipeline-arrow { color: var(--muted); padding: 0 8px; font-size: 18px; }
+
+  .guild-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .guild-chip { border-radius: 4px; padding: 6px 8px; font-size: 11px; text-align: center; font-weight: 600; }
+
+  footer { padding: 24px 0; color: var(--muted); font-size: 13px; text-align: center; }
+  code { background: #21262d; border-radius: 4px; padding: 1px 6px; font-size: 13px; font-family: "SFMono-Regular", Consolas, monospace; }
+
+  .condition-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (max-width: 600px) { .condition-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>NIFE <span>Biofilm</span></h1>
+    <p class="subtitle">Ecological inference for peri-implant and in-vitro oral biofilm — gLV &amp; Hamilton ODE</p>
+    <nav>
+      <a href="#dieckow">Dieckow in-vivo</a>
+      <a href="#heine">Heine in-vitro</a>
+      <a href="#pipeline">Data Pipeline</a>
+      <a href="https://github.com/keisuke58/nife_intern">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ── Dieckow ─────────────────────────────────────────────── -->
+<section id="dieckow">
+  <div class="container">
+    <h2>Dieckow 2025 — Peri-implant In-vivo Analysis</h2>
+    <p style="color:var(--muted); margin-bottom:24px">
+      10-patient longitudinal cohort (ENA: PRJEB71108) &middot; PacBio full-length 16S &middot; 3 weekly time points
+      &middot; <a href="https://www.nature.com/articles/s41522-025-00000-0">npj Biofilms &amp; Microbiomes</a>
+    </p>
+
+    <!-- metrics -->
+    <div class="card-grid" style="margin-bottom:24px">
+      <div class="card metric">
+        <div class="metric-val">0.055</div>
+        <div class="metric-lab">RMSE — 10-guild gLV (W2/W3 pred.)</div>
+      </div>
+      <div class="card metric">
+        <div class="metric-val">0.954</div>
+        <div class="metric-lab">Pearson r — predicted vs observed</div>
+      </div>
+      <div class="card metric">
+        <div class="metric-val">0.101</div>
+        <div class="metric-lab">RMSE — 5-sp Hamilton TMCMC (N=1000)</div>
+      </div>
+      <div class="card metric">
+        <div class="metric-val">0.59</div>
+        <div class="metric-lab">Silhouette — 2 community types</div>
+      </div>
+    </div>
+
+    <!-- guild gLV figure -->
+    <h3>10-Guild gLV Model — Interaction Matrix &amp; Fit Quality</h3>
+    <div class="figure-block">
+      <img src="../results/dieckow_cr/guild_glv_paper.png" alt="Guild gLV paper figure">
+      <div class="figure-cap">
+        <strong>Figure.</strong>
+        (a) Inferred 10&times;10 guild interaction matrix A (RdBu colormap; red = cooperative, blue = competitive).
+        Dominant interaction: Actinobacteria&rarr;Bacilli (A&nbsp;=&nbsp;+0.38).
+        (b) Predicted vs observed relative abundance for weeks 2 and 3 (all 10 patients, all 10 guilds;
+        RMSE = 0.055, r = 0.954).
+        (c) Per-patient stacked bars: observed (solid) and predicted (hatched) for weeks 1&ndash;3.
+        Model fitted by JAX Adam (5000 epochs, &lambda; = 10<sup>&minus;3</sup>).
+      </div>
+    </div>
+
+    <!-- guild mapping -->
+    <h3>10-Guild Classification (Dieckow Fig. 4a)</h3>
+    <div class="guild-grid" style="margin-bottom:24px">
+      <div class="guild-chip" style="background:#3b1e1e;color:#e88">Actinobacteria<br><small>Actinomyces, Bifidobacterium, Rothia</small></div>
+      <div class="guild-chip" style="background:#1e3b1e;color:#8e8">Bacilli<br><small>Streptococcus, Gemella, Granulicatella</small></div>
+      <div class="guild-chip" style="background:#1e2e3b;color:#88e">Bacteroidia<br><small>Prevotella, Porphyromonas</small></div>
+      <div class="guild-chip" style="background:#2e2e1e;color:#ee8">Betaproteobacteria<br><small>Neisseria, Eikenella</small></div>
+      <div class="guild-chip" style="background:#2a1e3b;color:#c8e">Clostridia<br><small>Parvimonas, Mogibacterium</small></div>
+      <div class="guild-chip" style="background:#3b2a1e;color:#ec8">Coriobacteriia<br><small>Atopobium, Olsenella</small></div>
+      <div class="guild-chip" style="background:#1e3a2a;color:#8ec">Fusobacteriia<br><small>Fusobacterium, Leptotrichia</small></div>
+      <div class="guild-chip" style="background:#1e2a3a;color:#8ce">Gammaproteobacteria<br><small>Haemophilus</small></div>
+      <div class="guild-chip" style="background:#3a2a1e;color:#eca">Negativicutes<br><small>Veillonella, Dialister</small></div>
+      <div class="guild-chip" style="background:#282828;color:#aaa">Other<br><small>Campylobacter, Treponema</small></div>
+    </div>
+
+    <!-- prediction accuracy table -->
+    <h3>Prediction Accuracy — Hamilton 5-species TMCMC</h3>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Prior</th><th>RMSE</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>TMCMC joint (N=1000)</td><td>Flat</td><td class="best">0.101</td><td>Shared A, patient-specific b</td></tr>
+          <tr><td>TMCMC joint (N=1000)</td><td>Bergey sign</td><td class="best">0.101</td><td>Sign-constrained A</td></tr>
+          <tr><td>TMCMC joint (N=500)</td><td>Flat</td><td>0.107</td><td>Fewer particles</td></tr>
+          <tr><td>Adam per-patient</td><td>L2 λ=0.01</td><td>0.112</td><td>Separate A per patient</td></tr>
+          <tr><td>MAP baseline</td><td>—</td><td>0.113</td><td>Heine DH fixed b</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- cross prediction table -->
+    <h3>Cross-Prediction: Heine in-vitro A on Dieckow in-vivo Data</h3>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>A source</th><th>b source</th><th>RMSE</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Dieckow TMCMC (self)</td><td>Dieckow patient-specific</td><td class="best">0.101</td></tr>
+          <tr><td>Heine CS A</td><td>Dieckow patient-specific</td><td>0.102</td></tr>
+          <tr><td>Heine CH A</td><td>Dieckow patient-specific</td><td>0.102</td></tr>
+          <tr><td>Heine DS A</td><td>Dieckow patient-specific</td><td>0.103</td></tr>
+          <tr><td>Heine DH A</td><td>Dieckow patient-specific</td><td>0.103</td></tr>
+          <tr><td>Heine CS A+b (fixed)</td><td>Heine CS fixed</td><td>0.112</td></tr>
+          <tr><td>Heine DH A+b (fixed)</td><td>Heine DH fixed</td><td>0.136</td></tr>
+        </tbody>
+      </table>
+      <p style="color:var(--muted);font-size:12px;margin-top:10px">
+        &Delta;RMSE &lt; 0.002 when patient-specific b is retained — confirms conserved interaction backbone across in-vitro and in-vivo.
+      </p>
+    </div>
+
+    <!-- community types -->
+    <h3>Community Types (Ward Clustering, k=2, Silhouette=0.59)</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="badge badge-green" style="margin-bottom:8px">CT1 — Bacilli dominant</div>
+        <p style="font-size:13px">Patients D, E, G, K, L &nbsp;|&nbsp; Bacilli 85±6% &nbsp;|&nbsp; Actinobacteria &lt;10%</p>
+        <p style="font-size:12px;color:var(--muted);margin-top:6px">Streptococcal pioneers rapidly fill the niche.</p>
+      </div>
+      <div class="card">
+        <div class="badge badge-orange" style="margin-bottom:8px">CT2 — Actinobacteria enriched</div>
+        <p style="font-size:13px">Patients A, B, C, F, H &nbsp;|&nbsp; Bacilli 65±12% &nbsp;|&nbsp; Actinobacteria 25±8%</p>
+        <p style="font-size:12px;color:var(--muted);margin-top:6px">Delayed streptococcal dominance; stronger Actinomyces co-colonization.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Heine ───────────────────────────────────────────────── -->
+<section id="heine">
+  <div class="container">
+    <h2>Heine 2025 — In-vitro gLV Fit</h2>
+    <p style="color:var(--muted);margin-bottom:24px">
+      5-species oral biofilm &middot; 4 conditions (Commensal/Dysbiotic × Static/HOBIC) &middot;
+      N=9 replicates &middot; 6 time points (d1,3,6,10,15,21)
+    </p>
+
+    <div class="figure-block">
+      <img src="../results/heine2025/glv_heine_fit_paper.png" alt="Heine gLV paper figure">
+      <div class="figure-cap">
+        <strong>Figure.</strong>
+        Top row: gLV replicator trajectory fits (lines) with observed IQR (shading) and median (dots)
+        for 4 conditions.
+        Bottom row: Inferred 5&times;5 interaction matrix A per condition.
+        Colorbar: interaction strength A<sub>ij</sub>.
+      </div>
+    </div>
+
+    <div class="condition-grid">
+      <div class="card">
+        <div class="badge badge-green" style="margin-bottom:8px">CS — Commensal Static</div>
+        <div style="font-size:22px;font-weight:700;color:var(--accent)">RMSE 0.0318</div>
+        <p style="font-size:12px;color:var(--muted)">S. oralis / A. naeslundii / V. dispar / F. nucleatum / P. gingivalis 20709</p>
+      </div>
+      <div class="card">
+        <div class="badge badge-green" style="margin-bottom:8px">CH — Commensal HOBIC</div>
+        <div style="font-size:22px;font-weight:700;color:var(--accent)">RMSE 0.0243</div>
+        <p style="font-size:12px;color:var(--muted)">Flow reactor; stronger So dominance</p>
+      </div>
+      <div class="card">
+        <div class="badge badge-orange" style="margin-bottom:8px">DS — Dysbiotic Static</div>
+        <div style="font-size:22px;font-weight:700;color:var(--accent)">RMSE 0.0113</div>
+        <p style="font-size:12px;color:var(--muted)">V. parvula / P. gingivalis W83 (virulent strain)</p>
+      </div>
+      <div class="card">
+        <div class="badge badge-orange" style="margin-bottom:8px">DH — Dysbiotic HOBIC</div>
+        <div style="font-size:22px;font-weight:700;color:var(--accent)">RMSE 0.0217</div>
+        <p style="font-size:12px;color:var(--muted)">Highest pathogen pressure; Pg W83</p>
+      </div>
+    </div>
+
+    <h3>Conserved Mutualistic Backbone (all 5 conditions)</h3>
+    <div class="card">
+      <table>
+        <thead><tr><th>Pair</th><th>Sign (all 5)</th><th>Mechanism</th></tr></thead>
+        <tbody>
+          <tr><td><strong>So–An</strong></td><td class="best">+ (5/5)</td><td>Co-aggregation; metabolic complementarity</td></tr>
+          <tr><td><strong>Vd–Pg</strong></td><td class="best">+ (5/5)</td><td>Menaquinone supply → Pg anaerobic respiration</td></tr>
+          <tr><td><strong>Fn–Pg</strong></td><td class="best">+ (5/5)</td><td>Cooperative proteolytic cross-feeding</td></tr>
+          <tr><td>An–Vd</td><td style="color:var(--red)">+ (4/5), &minus; Dieckow</td><td>V. dispar / V. parvula strain switch</td></tr>
+          <tr><td>So–Pg</td><td style="color:var(--orange)">+ (4/5), &minus; DH only</td><td>H₂O₂ inhibition of virulent Pg W83</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Pipeline ───────────────────────────────────────────── -->
+<section id="pipeline">
+  <div class="container">
+    <h2>Data Processing Pipeline</h2>
+
+    <h3>Dieckow 16S Processing</h3>
+    <div class="pipeline">
+      <div class="pipeline-step">PacBio FASTQ<br><small>ERR13166574–603</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">ZMW grouping<br><small>subreads</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">minimap2<br><small>-a --secondary=no</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">SPOA consensus<br><small>CCS</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">VSEARCH 97%<br><small>SILVA 138.1 NR99</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Genus TSV<br><small>30 samples</small></div>
+    </div>
+
+    <div class="pipeline" style="margin-top:8px">
+      <div class="pipeline-step">Genus TSV</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">5-sp φ<br><small>(10×3×5) npy</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Hamilton TMCMC<br><small>d=65, N=1000</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">RMSE 0.101</div>
+    </div>
+
+    <div class="pipeline" style="margin-top:8px">
+      <div class="pipeline-step">Genus TSV</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">10-guild φ<br><small>(10×3×10) npy</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">gLV JAX Adam<br><small>λ=1e-3, 5000ep</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">r=0.954</div>
+    </div>
+
+    <h3 style="margin-top:32px">Key Files</h3>
+    <div class="card">
+      <table>
+        <thead><tr><th>File</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>fit_guild_replicator.py</code></td><td>10-guild gLV fit (L-BFGS-B, λ=1e-4)</td></tr>
+          <tr><td><code>fit_glv_heine.py</code></td><td>Heine 5-species gLV fit (4 conditions)</td></tr>
+          <tr><td><code>plot_guild_glv_paper.py</code></td><td>Paper-quality 3-panel figure (A-matrix, scatter, bars)</td></tr>
+          <tr><td><code>plot_glv_heine_paper.py</code></td><td>Paper-quality Heine trajectory + heatmap figure</td></tr>
+          <tr><td><code>aggregate_dieckow_guilds.py</code></td><td>Genus → 10-guild aggregation</td></tr>
+          <tr><td><code>dieckow_ccs_pipeline.py</code></td><td>PacBio CCS → taxonomy TSV</td></tr>
+          <tr><td><code>results/dieckow_cr/DATA_PROCESSING.md</code></td><td>Full pipeline documentation</td></tr>
+          <tr><td><code>results/dieckow_cr/fit_guild.json</code></td><td>10-guild A matrix + b_all + RMSE</td></tr>
+          <tr><td><code>results/heine2025/fit_glv_heine.json</code></td><td>4-condition Heine A matrices</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Sample Metadata</h3>
+    <div class="card">
+      <table>
+        <thead><tr><th>Item</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td>Patients</td><td>A, B, C, D, E, F, G, H, K, L (10; I and J excluded)</td></tr>
+          <tr><td>Time points</td><td>Week 1, 2, 3 (30 samples total)</td></tr>
+          <tr><td>ENA accession</td><td>PRJEB71108 (ERR13166574–ERR13166603)</td></tr>
+          <tr><td>Sequencer</td><td>PacBio (long-read full-length 16S)</td></tr>
+          <tr><td>Reads/sample</td><td>~7,000–15,000 (exception: D_1 = 452, 97.6% host contamination)</td></tr>
+          <tr><td>Classification</td><td>VSEARCH 97% identity vs SILVA 138.1 NR99</td></tr>
+          <tr><td>Mean identity</td><td>~98.4% (CCS vs SILVA)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Nishioka et al. &mdash; Leibniz Universität Hannover, Institute of Continuum Mechanics</p>
+    <p style="margin-top:4px"><a href="https://github.com/keisuke58/nife_intern">keisuke58/nife_intern</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
