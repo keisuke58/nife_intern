@@ -40,11 +40,25 @@ HEINE_CONDS = {'CS': 'commensal_static', 'CH': 'commensal_hobic',
                'DS': 'dysbiotic_static', 'DH': 'dh_baseline'}
 
 RC = {
-    'font.size': 9, 'axes.titlesize': 10, 'axes.labelsize': 9,
-    'xtick.labelsize': 8, 'ytick.labelsize': 8,
-    'legend.fontsize': 8, 'figure.dpi': 150,
-    'axes.spines.top': False, 'axes.spines.right': False,
-    'font.family': 'sans-serif',
+    'font.family':       'sans-serif',
+    'font.sans-serif':   ['Arial', 'Helvetica', 'DejaVu Sans'],
+    'font.size':         9,
+    'axes.titlesize':    10,
+    'axes.labelsize':    9,
+    'xtick.labelsize':   8,
+    'ytick.labelsize':   8,
+    'legend.fontsize':   8,
+    'axes.linewidth':    0.8,
+    'xtick.major.width': 0.8,
+    'ytick.major.width': 0.8,
+    'xtick.major.size':  3.5,
+    'ytick.major.size':  3.5,
+    'lines.linewidth':   1.5,
+    'figure.dpi':        300,
+    'pdf.fonttype':      42,
+    'ps.fonttype':       42,
+    'axes.spines.top':   False,
+    'axes.spines.right': False,
 }
 plt.rcParams.update(RC)
 
@@ -95,7 +109,7 @@ run_week_jit = jax.jit(lambda t, p: simulate_0d_nsp(
 def fig1_patient_predictions(phi_obs, valid_patients, theta_map):
     N = len(valid_patients)
     ncols = 5; nrows = (N + ncols - 1) // ncols
-    fig, axes = plt.subplots(nrows, ncols, figsize=(14, nrows * 2.8),
+    fig, axes = plt.subplots(nrows, ncols, figsize=(12, nrows * 2.4),
                              sharex=True, sharey=True)
     axes = axes.flatten()
     weeks = [1, 2, 3]
@@ -154,14 +168,14 @@ def fig1_patient_predictions(phi_obs, valid_patients, theta_map):
     plt.tight_layout(rect=[0, 0.04, 1, 1])
     out = OUT_DIR / 'fig1_patient_predictions.pdf'
     fig.savefig(out, bbox_inches='tight')
-    fig.savefig(str(out).replace('.pdf','.png'), dpi=150, bbox_inches='tight')
+    fig.savefig(str(out).replace('.pdf','.png'), dpi=300, bbox_inches='tight')
     plt.close()
     print(f'Saved: {out}')
 
 
 # ── Fig 2: A matrix heatmaps (Dieckow + 4 Heine) ─────────────────────────────
 def fig2_A_heatmaps(theta_dieckow_flat, theta_dieckow_sign):
-    fig, axes = plt.subplots(2, 3, figsize=(13, 9))
+    fig, axes = plt.subplots(2, 3, figsize=(11, 7.5))
 
     def plot_heatmap(ax, A, title, vmax=None):
         vm = vmax or max(abs(A).max(), 0.5)
@@ -220,7 +234,7 @@ def fig2_A_heatmaps(theta_dieckow_flat, theta_dieckow_sign):
     plt.tight_layout(rect=[0, 0, 0.95, 1])
     out = OUT_DIR / 'fig2_A_heatmaps.pdf'
     fig.savefig(out, bbox_inches='tight')
-    fig.savefig(str(out).replace('.pdf','.png'), dpi=150, bbox_inches='tight')
+    fig.savefig(str(out).replace('.pdf','.png'), dpi=300, bbox_inches='tight')
     plt.close()
     print(f'Saved: {out}')
 
@@ -238,7 +252,7 @@ def fig3_cross_prediction():
     corr_mat = np.array(d['A_corr_matrix'])
 
     # Fig 3: RMSE bar
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
 
     keys   = list(results.keys())
     values = list(results.values())
@@ -283,7 +297,7 @@ def fig3_cross_prediction():
     plt.tight_layout()
     out = OUT_DIR / 'fig3_cross_prediction.pdf'
     fig.savefig(out, bbox_inches='tight')
-    fig.savefig(str(out).replace('.pdf','.png'), dpi=150, bbox_inches='tight')
+    fig.savefig(str(out).replace('.pdf','.png'), dpi=300, bbox_inches='tight')
     plt.close()
     print(f'Saved: {out}')
 
@@ -326,7 +340,7 @@ def fig4_metabolic_network():
         ('Vd', 'Nitrate',      'use'),
     ]
 
-    fig, ax = plt.subplots(figsize=(9, 6))
+    fig, ax = plt.subplots(figsize=(7.5, 5.5))
     ax.set_xlim(-0.25, 1.25)
     ax.set_ylim(-0.05, 1.15)
     ax.axis('off')
@@ -389,7 +403,7 @@ def fig4_metabolic_network():
     plt.tight_layout()
     out = OUT_DIR / 'fig4_metabolic_network.pdf'
     fig.savefig(out, bbox_inches='tight')
-    fig.savefig(str(out).replace('.pdf', '.png'), dpi=150, bbox_inches='tight')
+    fig.savefig(str(out).replace('.pdf', '.png'), dpi=300, bbox_inches='tight')
     plt.close()
     print(f'Saved: {out}')
 
@@ -417,7 +431,7 @@ def fig5_sign_comparison(theta_dieckow_flat):
     conserved_pos = np.all(sign_mat > 0, axis=1)
     conserved_neg = np.all(sign_mat < 0, axis=1)
 
-    fig, ax = plt.subplots(figsize=(8, 8))
+    fig, ax = plt.subplots(figsize=(7, 7))
     cmap = matplotlib.colors.ListedColormap(['#d7191c', '#ffffbf', '#2c7bb6'])
     bounds = [-1.5, -0.5, 0.5, 1.5]
     norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
@@ -454,7 +468,7 @@ def fig5_sign_comparison(theta_dieckow_flat):
     plt.tight_layout()
     out = OUT_DIR / 'fig5_sign_comparison.pdf'
     fig.savefig(out, bbox_inches='tight')
-    fig.savefig(str(out).replace('.pdf','.png'), dpi=150, bbox_inches='tight')
+    fig.savefig(str(out).replace('.pdf','.png'), dpi=300, bbox_inches='tight')
     plt.close()
     print(f'Saved: {out}')
 

@@ -11,6 +11,16 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+plt.rcParams.update({
+    'font.family': 'sans-serif', 'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
+    'font.size': 9, 'axes.titlesize': 10, 'axes.labelsize': 9,
+    'xtick.labelsize': 8, 'ytick.labelsize': 8, 'legend.fontsize': 8,
+    'axes.linewidth': 0.8, 'xtick.major.width': 0.8, 'ytick.major.width': 0.8,
+    'xtick.major.size': 3.5, 'ytick.major.size': 3.5, 'lines.linewidth': 1.8,
+    'figure.dpi': 300, 'pdf.fonttype': 42, 'ps.fonttype': 42,
+    'axes.spines.top': False, 'axes.spines.right': False,
+})
+
 PHI_NPY  = Path(__file__).parent / 'results' / 'dieckow_otu' / 'phi_obs_raw.npy'
 OUT_DIR  = Path(__file__).parent / 'results' / 'dieckow_otu'
 
@@ -30,7 +40,7 @@ FULL_NAMES = {
 def main():
     phi = np.load(PHI_NPY)   # (10, 3, 5)
 
-    fig, axes = plt.subplots(2, 5, figsize=(14, 5.5), sharey=True)
+    fig, axes = plt.subplots(2, 5, figsize=(12, 4.8), sharey=True)
     axes = axes.ravel()
 
     for i, (p, ax) in enumerate(zip(PATIENTS, axes)):
@@ -56,7 +66,7 @@ def main():
 
     for ext in ('pdf', 'png'):
         out = OUT_DIR / f'timeseries.{ext}'
-        fig.savefig(out, bbox_inches='tight', dpi=150)
+        fig.savefig(out, bbox_inches='tight', dpi=300)
         print(f'Saved: {out}')
 
     plt.close(fig)

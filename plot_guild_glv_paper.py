@@ -115,9 +115,9 @@ def main():
     im   = ax_A.imshow(A, cmap='RdBu_r', vmin=-vmax, vmax=vmax, aspect='equal')
 
     ax_A.set_xticks(range(N_G))
-    ax_A.set_xticklabels(GUILD_SHORT, rotation=45, ha='right', fontsize=6.5)
+    ax_A.set_xticklabels(GUILD_SHORT, rotation=45, ha='right', fontsize=7.5)
     ax_A.set_yticks(range(N_G))
-    ax_A.set_yticklabels(GUILD_SHORT, fontsize=6.5)
+    ax_A.set_yticklabels(GUILD_SHORT, fontsize=7.5)
     ax_A.tick_params(length=0)
     ax_A.set_xlabel('Source guild', labelpad=4)
     ax_A.set_ylabel('Target guild', labelpad=4)
@@ -127,11 +127,11 @@ def main():
         for j in range(N_G):
             c = 'white' if abs(A[i, j]) > thresh else '#222222'
             ax_A.text(j, i, f'{A[i,j]:.2f}', ha='center', va='center',
-                      fontsize=4.8, color=c)
+                      fontsize=6.0, color=c)
 
     cbar = plt.colorbar(im, ax=ax_A, fraction=0.040, pad=0.03, shrink=0.85)
-    cbar.ax.tick_params(labelsize=6)
-    cbar.set_label('Interaction strength $A_{ij}$', fontsize=7)
+    cbar.ax.tick_params(labelsize=7)
+    cbar.set_label('Interaction strength $A_{ij}$', fontsize=8)
 
     ax_A.text(-0.14, 1.04, 'a', transform=ax_A.transAxes,
               fontsize=11, fontweight='bold', va='top')
@@ -143,8 +143,8 @@ def main():
     for g in range(N_G):
         obs  = np.concatenate([phi_obs[:, 1, g], phi_obs[:, 2, g]])
         pred = np.concatenate([pred_W2[:, g],    pred_W3[:, g]])
-        ax_sc.scatter(obs, pred, color=COLORS[g], s=18, alpha=0.82,
-                      linewidths=0.3, edgecolors='white', zorder=3)
+        ax_sc.scatter(obs, pred, color=COLORS[g], s=24, alpha=0.85,
+                      linewidths=0.4, edgecolors='white', zorder=3)
 
     lim = 1.02
     ax_sc.plot([0, lim], [0, lim], 'k--', lw=0.8, alpha=0.6)
@@ -167,7 +167,7 @@ def main():
                bbox=dict(boxstyle='round,pad=0.3', fc='white', ec='#cccccc', lw=0.6))
 
     legend_patches = [Patch(color=COLORS[g], label=GUILD_SHORT[g]) for g in range(N_G)]
-    ax_sc.legend(handles=legend_patches, ncol=2, fontsize=5.8,
+    ax_sc.legend(handles=legend_patches, ncol=2, fontsize=7,
                  frameon=False, loc='lower right',
                  handlelength=1.0, handletextpad=0.4, labelspacing=0.25)
 
@@ -222,13 +222,13 @@ def main():
         # week labels below bars
         for xi, lbl in zip(xs, ['W1', 'W2\nobs', 'W2\npred', 'W3\nobs', 'W3\npred']):
             ax_bar.text(xi, -0.07, lbl, ha='center', va='top',
-                        fontsize=4.5, transform=ax_bar.get_xaxis_transform(),
+                        fontsize=6.5, transform=ax_bar.get_xaxis_transform(),
                         color='#444444')
 
     ax_bar.set_xlim(-0.5, xs[-1] + bw)
     ax_bar.set_ylim(0, 1.08)
     ax_bar.set_xticks(x_ticks)
-    ax_bar.set_xticklabels(x_labels, fontsize=7)
+    ax_bar.set_xticklabels(x_labels, fontsize=8)
     ax_bar.set_ylabel('Relative abundance')
     ax_bar.set_title('Per-patient community composition: observed vs. predicted', pad=6)
     ax_bar.tick_params(axis='x', length=0)
@@ -240,7 +240,7 @@ def main():
         Patch(facecolor='#cccccc', label='Observed', linewidth=0.5, edgecolor='white'),
         Patch(facecolor='#cccccc', hatch='///', label='Predicted', linewidth=0.5, edgecolor='white'),
     ]
-    ax_bar.legend(handles=leg_patches + leg_extra, ncol=6, fontsize=6,
+    ax_bar.legend(handles=leg_patches + leg_extra, ncol=6, fontsize=7,
                   frameon=False, loc='upper right',
                   handlelength=1.1, handletextpad=0.4, labelspacing=0.3,
                   bbox_to_anchor=(1.0, 1.12))

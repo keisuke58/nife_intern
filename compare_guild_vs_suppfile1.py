@@ -15,6 +15,16 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+plt.rcParams.update({
+    'font.family': 'sans-serif', 'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
+    'font.size': 9, 'axes.titlesize': 10, 'axes.labelsize': 9,
+    'xtick.labelsize': 8, 'ytick.labelsize': 8, 'legend.fontsize': 8,
+    'axes.linewidth': 0.8, 'xtick.major.width': 0.8, 'ytick.major.width': 0.8,
+    'xtick.major.size': 3.5, 'ytick.major.size': 3.5,
+    'figure.dpi': 300, 'pdf.fonttype': 42, 'ps.fonttype': 42,
+    'axes.spines.top': False, 'axes.spines.right': False,
+})
+
 SUPPFILE = Path('/home/nishioka/IKM_Hiwi/nife/Szafranski_Published_Work/'
                'Szafranski_Published_Work/public_data/Dieckow/'
                'Supplementary_File_1_microbe_metabolite_enzyme_interactions.tsv')
@@ -106,15 +116,15 @@ def main():
 
     # ── Figure: 3-panel comparison ────────────────────────────────────────────
     short = [g[:6] for g in GUILD_ORDER]
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    fig, axes = plt.subplots(1, 3, figsize=(13, 4.5))
 
     vmax_A = max(abs(A[~np.eye(N_G, dtype=bool)]).max(), 0.01)
 
     # Panel 1: inferred A
     ax = axes[0]
     im = ax.imshow(A, cmap='RdBu_r', vmin=-vmax_A, vmax=vmax_A, aspect='auto')
-    ax.set_xticks(range(N_G)); ax.set_xticklabels(short, rotation=45, ha='right', fontsize=7)
-    ax.set_yticks(range(N_G)); ax.set_yticklabels(short, fontsize=7)
+    ax.set_xticks(range(N_G)); ax.set_xticklabels(short, rotation=45, ha='right', fontsize=7.5)
+    ax.set_yticks(range(N_G)); ax.set_yticklabels(short, fontsize=7.5)
     ax.set_title('Inferred A matrix\n(JAX Adam, RMSE=0.055)', fontsize=9)
     ax.set_xlabel('Source'); ax.set_ylabel('Target')
     plt.colorbar(im, ax=ax, shrink=0.7)
@@ -123,8 +133,8 @@ def main():
     vmax_f = max(abs(net_flow).max(), 1)
     ax = axes[1]
     im2 = ax.imshow(net_flow, cmap='RdBu_r', vmin=-vmax_f, vmax=vmax_f, aspect='auto')
-    ax.set_xticks(range(N_G)); ax.set_xticklabels(short, rotation=45, ha='right', fontsize=7)
-    ax.set_yticks(range(N_G)); ax.set_yticklabels(short, fontsize=7)
+    ax.set_xticks(range(N_G)); ax.set_xticklabels(short, rotation=45, ha='right', fontsize=7.5)
+    ax.set_yticks(range(N_G)); ax.set_yticklabels(short, fontsize=7.5)
     ax.set_title('Supp File 1 predicted\nnet metabolite flow (pos–neg)', fontsize=9)
     ax.set_xlabel('Source (producer)')
     plt.colorbar(im2, ax=ax, shrink=0.7)
@@ -132,7 +142,7 @@ def main():
         for j in range(N_G):
             if net_flow[i,j] != 0:
                 ax.text(j, i, str(net_flow[i,j]), ha='center', va='center',
-                        fontsize=6, color='white' if abs(net_flow[i,j])>vmax_f*0.5 else 'black')
+                        fontsize=7, color='white' if abs(net_flow[i,j])>vmax_f*0.5 else 'black')
 
     # Panel 3: sign agreement
     ax = axes[2]
@@ -146,8 +156,8 @@ def main():
 
     cmap3 = matplotlib.colors.ListedColormap(['#d62728', '#cccccc', '#2ca02c'])
     im3 = ax.imshow(agreement, cmap=cmap3, vmin=-1, vmax=1, aspect='auto')
-    ax.set_xticks(range(N_G)); ax.set_xticklabels(short, rotation=45, ha='right', fontsize=7)
-    ax.set_yticks(range(N_G)); ax.set_yticklabels(short, fontsize=7)
+    ax.set_xticks(range(N_G)); ax.set_xticklabels(short, rotation=45, ha='right', fontsize=7.5)
+    ax.set_yticks(range(N_G)); ax.set_yticklabels(short, fontsize=7.5)
     ax.set_title('Sign agreement\n(green=agree, red=disagree, grey=no SF1 pred)', fontsize=9)
     ax.set_xlabel('Source')
 
@@ -161,7 +171,7 @@ def main():
 
     for ext in ('pdf', 'png'):
         out = OUT_DIR / f'guild_vs_suppfile1.{ext}'
-        fig.savefig(out, bbox_inches='tight', dpi=150)
+        fig.savefig(out, bbox_inches='tight', dpi=300)
         print(f'Saved: {out}')
     plt.close(fig)
 

@@ -14,6 +14,16 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+
+plt.rcParams.update({
+    'font.family': 'sans-serif', 'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
+    'font.size': 9, 'axes.titlesize': 10, 'axes.labelsize': 9,
+    'xtick.labelsize': 8, 'ytick.labelsize': 8, 'legend.fontsize': 7.5,
+    'axes.linewidth': 0.8, 'xtick.major.width': 0.8, 'ytick.major.width': 0.8,
+    'xtick.major.size': 3.5, 'ytick.major.size': 3.5,
+    'figure.dpi': 300, 'pdf.fonttype': 42, 'ps.fonttype': 42,
+    'axes.spines.top': False, 'axes.spines.right': False,
+})
 from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
 from scipy.spatial.distance import pdist
 from sklearn.metrics import silhouette_score
@@ -63,7 +73,7 @@ def main():
         print(f'  Patient {p} → CT{ct}')
 
     # ── Figure layout ─────────────────────────────────────────────────────────
-    fig = plt.figure(figsize=(14, 9))
+    fig = plt.figure(figsize=(12, 7.5))
     gs  = gridspec.GridSpec(2, 2, figure=fig, hspace=0.45, wspace=0.35,
                             height_ratios=[1, 1.4])
 
@@ -150,7 +160,7 @@ def main():
 
     for ext in ('pdf', 'png'):
         out = OUT_DIR / f'community_types.{ext}'
-        fig.savefig(out, bbox_inches='tight', dpi=150)
+        fig.savefig(out, bbox_inches='tight', dpi=300)
         print(f'Saved: {out}')
     plt.close(fig)
 
