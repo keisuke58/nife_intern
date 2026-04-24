@@ -1,0 +1,19 @@
+|--- log_b_An <= 1.96
+|   |--- log_b_Fn <= 2.22
+|   |   |--- log_b_Fn <= 2.06
+|   |   |   |--- class: PIH
+|   |   |--- log_b_Fn >  2.06
+|   |   |   |--- class: PIH
+|   |--- log_b_Fn >  2.22
+|   |   |--- log_b_So <= 1.50
+|   |   |   |--- class: PI
+|   |   |--- log_b_So >  1.50
+|   |   |   |--- class: PIH
+|--- log_b_An >  1.96
+|   |--- log_b_Pg <= 2.46
+|   |   |--- log_b_Fn <= 2.23
+|   |   |   |--- class: PIM
+|   |   |--- log_b_Fn >  2.23
+|   |   |   |--- class: PI
+|   |--- log_b_Pg >  2.46
+|   |   |--- class: PI
