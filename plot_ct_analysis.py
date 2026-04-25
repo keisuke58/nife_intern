@@ -33,7 +33,8 @@ from guild_replicator_dieckow import (
 ROOT    = _here
 CR_DIR  = ROOT / 'results' / 'dieckow_cr'
 OTU_DIR = ROOT / 'results' / 'dieckow_otu'
-FIGS    = Path(__file__).resolve().parents[1] / 'docs' / 'figures' / 'dieckow'
+FIGS_DOCS = Path(__file__).resolve().parents[1] / 'docs' / 'figures' / 'dieckow'
+FIGS      = CR_DIR   # primary output: nife/results/dieckow_cr/
 
 PHI_NPY  = OTU_DIR / 'phi_guild_excel_class.npy'
 FIT_GLV  = CR_DIR  / 'fit_guild_excel_class.json'
@@ -113,6 +114,7 @@ ax.legend(handles=[bars_h, bars_t, ct1_patch, ct2_patch],
 plt.tight_layout()
 for ext in ('pdf', 'png'):
     fig.savefig(FIGS / f'fig15_loo_cv.{ext}', dpi=150, bbox_inches='tight')
+    fig.savefig(FIGS_DOCS / f'fig15_loo_cv.{ext}', dpi=150, bbox_inches='tight')
 plt.close()
 print('  saved fig15_loo_cv', flush=True)
 
@@ -203,6 +205,7 @@ plt.suptitle('Community-type-stratified gLV interaction matrices\n'
 plt.tight_layout()
 for ext in ('pdf', 'png'):
     fig.savefig(FIGS / f'fig16_ct_Amatrix.{ext}', dpi=150, bbox_inches='tight')
+    fig.savefig(FIGS_DOCS / f'fig16_ct_Amatrix.{ext}', dpi=150, bbox_inches='tight')
 plt.close()
 print('  saved fig16_ct_Amatrix', flush=True)
 
