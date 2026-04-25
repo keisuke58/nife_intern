@@ -15,8 +15,12 @@ Usage:
   python loo_cv_dieckow.py [--model glv|hamilton|both]
 """
 
-import argparse, json, sys, time
+import argparse, json, os, sys, time
 from pathlib import Path
+
+# Force CPU to avoid GPU OOM during JAX compilation of LOO-CV loops
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+os.environ.setdefault("JAX_PLATFORMS", "cpu")
 
 import numpy as np
 from scipy.optimize import minimize
