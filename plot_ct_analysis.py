@@ -25,6 +25,7 @@ from scipy.optimize import minimize
 
 _here = Path(__file__).resolve().parent
 sys.path.insert(0, str(_here))
+import pub_style; pub_style.apply()
 from guild_replicator_dieckow import (
     GUILD_ORDER, N_G, GUILD_COLORS_LIST,
     default_A, pack, unpack, rmse_guild, predict_trajectory,
@@ -98,23 +99,23 @@ ax.axhline(loo_glv['loo_rmse_mean'] * 100, color='k', ls='--', lw=1.4,
            label=f'Mean LOO RMSE = {loo_glv["loo_rmse_mean"]*100:.2f}%')
 
 ax.set_xticks(x)
-ax.set_xticklabels([f'Pat {p}' for p in PATIENTS], fontsize=9)
-ax.set_ylabel('RMSE (relative abundance, %)', fontsize=10)
+ax.set_xticklabels([f'Pat {p}' for p in PATIENTS], fontsize=11)
+ax.set_ylabel('RMSE (relative abundance, %)', fontsize=12)
 ax.set_title('Leave-one-patient-out cross-validation — gLV+struct\n'
              '(solid = held-out patient; hatched = 7-patient train set)',
-             fontsize=10, fontweight='bold')
+             fontsize=12, fontweight='bold')
 ax.set_ylim(0, max(held_rmse.max(), train_rmse.max()) * 100 * 1.25)
 ax.grid(axis='y', alpha=0.3)
 
 ct1_patch = mpatches.Patch(color='#2196F3', label='CT1 (Bacilli-dominant): E, G, K')
 ct2_patch = mpatches.Patch(color='#FF5722', label='CT2 (diverse): A, B, C, F, H')
 ax.legend(handles=[bars_h, bars_t, ct1_patch, ct2_patch],
-          fontsize=8, loc='upper right', frameon=True)
+          fontsize=10, loc='upper right', frameon=True)
 
 plt.tight_layout()
 for ext in ('pdf', 'png'):
-    fig.savefig(FIGS / f'fig15_loo_cv.{ext}', dpi=150, bbox_inches='tight')
-    fig.savefig(FIGS_DOCS / f'fig15_loo_cv.{ext}', dpi=150, bbox_inches='tight')
+    fig.savefig(FIGS / f'fig15_loo_cv.{ext}', dpi=300, bbox_inches='tight')
+    fig.savefig(FIGS_DOCS / f'fig15_loo_cv.{ext}', dpi=300, bbox_inches='tight')
 plt.close()
 print('  saved fig15_loo_cv', flush=True)
 
@@ -177,9 +178,9 @@ def heatmap(ax, A, title, vmax, cmap):
     ax.set_xticks(range(N_G)); ax.set_yticks(range(N_G))
     ax.set_xticklabels(SHORT, rotation=45, ha='right', fontsize=7)
     ax.set_yticklabels(SHORT, fontsize=7)
-    ax.set_title(title, fontsize=10, fontweight='bold')
-    ax.set_xlabel('Source guild $j$', fontsize=8)
-    ax.set_ylabel('Target guild $i$', fontsize=8)
+    ax.set_title(title, fontsize=12, fontweight='bold')
+    ax.set_xlabel('Source guild $j$', fontsize=10)
+    ax.set_ylabel('Target guild $i$', fontsize=10)
     for i in range(N_G):
         for j in range(N_G):
             v = A[i, j]
@@ -201,11 +202,11 @@ plt.colorbar(im3, ax=axes[2], shrink=0.75, label='$\\Delta A_{ij}$')
 
 plt.suptitle('Community-type-stratified gLV interaction matrices\n'
              'CT1 = Bacilli-dominant (health-associated), CT2 = diverse (disease-enriched)',
-             fontsize=11, fontweight='bold', y=1.01)
+             fontsize=13, fontweight='bold', y=1.01)
 plt.tight_layout()
 for ext in ('pdf', 'png'):
-    fig.savefig(FIGS / f'fig16_ct_Amatrix.{ext}', dpi=150, bbox_inches='tight')
-    fig.savefig(FIGS_DOCS / f'fig16_ct_Amatrix.{ext}', dpi=150, bbox_inches='tight')
+    fig.savefig(FIGS / f'fig16_ct_Amatrix.{ext}', dpi=300, bbox_inches='tight')
+    fig.savefig(FIGS_DOCS / f'fig16_ct_Amatrix.{ext}', dpi=300, bbox_inches='tight')
 plt.close()
 print('  saved fig16_ct_Amatrix', flush=True)
 

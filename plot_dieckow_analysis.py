@@ -19,6 +19,7 @@ from matplotlib.patches import FancyArrowPatch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pub_style; pub_style.apply()
 from guild_replicator_dieckow import (
     GUILD_ORDER, GUILD_COLORS, GUILD_SHORT, predict_trajectory
 )
@@ -77,10 +78,10 @@ for ax, var, title in zip(axes2, variables, titles):
                 mat[r, w] = v
     im = ax.imshow(mat, aspect='auto', cmap='YlOrRd')
     ax.set_xticks([0, 1, 2])
-    ax.set_xticklabels(['W1', 'W2', 'W3'], fontsize=10)
+    ax.set_xticklabels(['W1', 'W2', 'W3'], fontsize=12)
     ax.set_yticks(range(12))
-    ax.set_yticklabels(all_pats, fontsize=9)
-    ax.set_title(title, fontsize=11, fontweight='bold')
+    ax.set_yticklabels(all_pats, fontsize=11)
+    ax.set_title(title, fontsize=13, fontweight='bold')
     plt.colorbar(im, ax=ax, shrink=0.8)
     for r in range(12):
         for c in range(3):
@@ -88,10 +89,10 @@ for ax, var, title in zip(axes2, variables, titles):
                 ax.text(c, r, f'{mat[r,c]:.1f}', ha='center', va='center',
                         fontsize=6.5, color='white' if mat[r, c] > np.nanmax(mat) * 0.6 else 'black')
 
-fig2.suptitle('CLSM structural data — 12 patients × 3 weeks', fontsize=13, fontweight='bold')
+fig2.suptitle('CLSM structural data — 12 patients × 3 weeks', fontsize=15, fontweight='bold')
 fig2.tight_layout()
-fig2.savefig(OTU_DIR / 'structural_heatmap.pdf', bbox_inches='tight', dpi=150)
-fig2.savefig(OTU_DIR / 'structural_heatmap.png', bbox_inches='tight', dpi=150)
+fig2.savefig(OTU_DIR / 'structural_heatmap.pdf', bbox_inches='tight', dpi=300)
+fig2.savefig(OTU_DIR / 'structural_heatmap.png', bbox_inches='tight', dpi=300)
 print('  saved structural_heatmap', flush=True)
 
 # occupancy line plot
@@ -107,15 +108,15 @@ for r in range(12):
     if not np.all(np.isnan(row)):
         ax2b.plot([1, 2, 3], row, marker='o', linewidth=1.5,
                   label=all_pats[r], alpha=0.85)
-ax2b.set_xlabel('Week', fontsize=11)
-ax2b.set_ylabel('Occupancy (norm.)', fontsize=11)
-ax2b.set_title('Live biovolume occupancy = VolumeLive/TotalArea (normalised)', fontsize=11)
+ax2b.set_xlabel('Week', fontsize=13)
+ax2b.set_ylabel('Occupancy (norm.)', fontsize=13)
+ax2b.set_title('Live biovolume occupancy = VolumeLive/TotalArea (normalised)', fontsize=13)
 ax2b.set_xticks([1, 2, 3])
-ax2b.legend(fontsize=8, ncol=4, loc='upper right')
+ax2b.legend(fontsize=10, ncol=4, loc='upper right')
 ax2b.grid(alpha=0.3)
 fig2b.tight_layout()
-fig2b.savefig(OTU_DIR / 'structural_occupancy.pdf', bbox_inches='tight', dpi=150)
-fig2b.savefig(OTU_DIR / 'structural_occupancy.png', bbox_inches='tight', dpi=150)
+fig2b.savefig(OTU_DIR / 'structural_occupancy.pdf', bbox_inches='tight', dpi=300)
+fig2b.savefig(OTU_DIR / 'structural_occupancy.png', bbox_inches='tight', dpi=300)
 print('  saved structural_occupancy', flush=True)
 plt.close('all')
 
@@ -145,19 +146,19 @@ for ax, A, ng, title in [
     short_ng = [GUILD_SHORT.get(g, g) for g in GUILD_ORDER[:ng]]
     vmax = max(abs(A).max(), 0.01)
     im = ax.imshow(A, cmap='RdBu_r', vmin=-vmax, vmax=vmax, aspect='auto')
-    ax.set_xticks(range(ng)); ax.set_xticklabels(short_ng, rotation=45, ha='right', fontsize=9)
-    ax.set_yticks(range(ng)); ax.set_yticklabels(short_ng, fontsize=9)
-    ax.set_title(title, fontsize=12, fontweight='bold')
+    ax.set_xticks(range(ng)); ax.set_xticklabels(short_ng, rotation=45, ha='right', fontsize=11)
+    ax.set_yticks(range(ng)); ax.set_yticklabels(short_ng, fontsize=11)
+    ax.set_title(title, fontsize=14, fontweight='bold')
     plt.colorbar(im, ax=ax, shrink=0.85)
     for i in range(ng):
         for j in range(ng):
             c = 'white' if abs(A[i, j]) > vmax * 0.6 else 'black'
             ax.text(j, i, f'{A[i,j]:.2f}', ha='center', va='center', fontsize=6, color=c)
 
-fig3.suptitle('A-matrix (guild interactions)', fontsize=13, fontweight='bold')
+fig3.suptitle('A-matrix (guild interactions)', fontsize=15, fontweight='bold')
 fig3.tight_layout()
-fig3.savefig(CR_DIR / 'guild_Amatrix_comparison.pdf', bbox_inches='tight', dpi=150)
-fig3.savefig(CR_DIR / 'guild_Amatrix_comparison.png', bbox_inches='tight', dpi=150)
+fig3.savefig(CR_DIR / 'guild_Amatrix_comparison.pdf', bbox_inches='tight', dpi=300)
+fig3.savefig(CR_DIR / 'guild_Amatrix_comparison.png', bbox_inches='tight', dpi=300)
 print('  saved guild_Amatrix_comparison', flush=True)
 plt.close('all')
 
@@ -182,9 +183,9 @@ for p_idx, pat in enumerate(PATIENTS):
         ax.plot([1, 2, 3], obs[:, g] * 100,  color=col, lw=2.0, marker='o', ms=5)
         ax.plot([1, 2, 3], pred[:, g] * 100, color=col, lw=1.5, ls='--', marker='s', ms=4, alpha=0.8)
 
-    ax.set_title(f'Patient {pat}', fontsize=10, fontweight='bold')
-    ax.set_xticks([1, 2, 3]); ax.set_xticklabels(['W1', 'W2', 'W3'], fontsize=9)
-    ax.set_ylabel('%', fontsize=8)
+    ax.set_title(f'Patient {pat}', fontsize=12, fontweight='bold')
+    ax.set_xticks([1, 2, 3]); ax.set_xticklabels(['W1', 'W2', 'W3'], fontsize=11)
+    ax.set_ylabel('%', fontsize=10)
     ax.set_ylim(-2, 100)
     ax.grid(alpha=0.25)
 
@@ -198,12 +199,12 @@ handles += [
     plt.Line2D([0], [0], color='k', lw=1.5, ls='--', marker='s', ms=4, label='Predicted'),
 ]
 fig4.legend(handles=handles, loc='lower right', bbox_to_anchor=(0.99, 0.01),
-            fontsize=8, ncol=3, frameon=True)
+            fontsize=10, ncol=3, frameon=True)
 fig4.suptitle(f'Predicted vs observed — gLV fit (RMSE={fit_glv["rmse"]:.4f})',
-              fontsize=13, fontweight='bold', y=1.01)
+              fontsize=15, fontweight='bold', y=1.01)
 fig4.tight_layout()
-fig4.savefig(CR_DIR / 'guild_trajectory.pdf', bbox_inches='tight', dpi=150)
-fig4.savefig(CR_DIR / 'guild_trajectory.png', bbox_inches='tight', dpi=150)
+fig4.savefig(CR_DIR / 'guild_trajectory.pdf', bbox_inches='tight', dpi=300)
+fig4.savefig(CR_DIR / 'guild_trajectory.png', bbox_inches='tight', dpi=300)
 print('  saved guild_trajectory', flush=True)
 plt.close('all')
 
@@ -237,20 +238,20 @@ for ax, obs, pred, title in [
     ax.plot([0, lim], [0, lim], 'k--', lw=1.2, alpha=0.5)
     r = float(np.corrcoef(obs, pred)[0, 1])
     rmse = float(np.sqrt(np.mean((obs - pred) ** 2)))
-    ax.set_xlabel('Observed (%)', fontsize=11)
-    ax.set_ylabel('Predicted (%)', fontsize=11)
-    ax.set_title(f'{title}\nr={r:.3f}  RMSE={rmse:.3f}%', fontsize=11, fontweight='bold')
+    ax.set_xlabel('Observed (%)', fontsize=13)
+    ax.set_ylabel('Predicted (%)', fontsize=13)
+    ax.set_title(f'{title}\nr={r:.3f}  RMSE={rmse:.3f}%', fontsize=13, fontweight='bold')
     ax.set_xlim(-1, lim); ax.set_ylim(-1, lim)
     ax.grid(alpha=0.25)
 
 handles5 = [mpatches.Patch(facecolor=GCOLS[g], label=SHORT[g]) for g in range(N_G)]
 fig5.legend(handles=handles5, loc='lower right', bbox_to_anchor=(0.99, 0.01),
-            fontsize=9, ncol=2, frameon=True)
+            fontsize=11, ncol=2, frameon=True)
 fig5.suptitle(f'Cross-prediction scatter — gLV (n={N_P} patients × {N_G} guilds)',
-              fontsize=13, fontweight='bold')
+              fontsize=15, fontweight='bold')
 fig5.tight_layout()
-fig5.savefig(CR_DIR / 'guild_cross_prediction.pdf', bbox_inches='tight', dpi=150)
-fig5.savefig(CR_DIR / 'guild_cross_prediction.png', bbox_inches='tight', dpi=150)
+fig5.savefig(CR_DIR / 'guild_cross_prediction.pdf', bbox_inches='tight', dpi=300)
+fig5.savefig(CR_DIR / 'guild_cross_prediction.png', bbox_inches='tight', dpi=300)
 print('  saved guild_cross_prediction', flush=True)
 plt.close('all')
 
@@ -297,7 +298,7 @@ for i in range(N):
                        edgecolor='white')
     ax6.add_patch(circ)
     ax6.text(x * 1.3, y * 1.3, SHORT[i], ha='center', va='center',
-             fontsize=9, fontweight='bold',
+             fontsize=11, fontweight='bold',
              path_effects=[pe.withStroke(linewidth=2.5, foreground='white')])
 
 # legend
@@ -305,13 +306,13 @@ leg_handles = [
     mpatches.Patch(color='#d62728', label='Positive (promotion)'),
     mpatches.Patch(color='#1f77b4', label='Negative (inhibition)'),
 ]
-ax6.legend(handles=leg_handles, loc='lower left', fontsize=10, frameon=True)
+ax6.legend(handles=leg_handles, loc='lower left', fontsize=12, frameon=True)
 ax6.set_title(f'Guild interaction network — gLV A-matrix (|A_ij| ≥ {threshold:.3f})',
-              fontsize=12, fontweight='bold', pad=12)
+              fontsize=14, fontweight='bold', pad=12)
 ax6.set_xlim(-1.7, 1.7); ax6.set_ylim(-1.7, 1.7)
 fig6.tight_layout()
-fig6.savefig(CR_DIR / 'guild_network.pdf', bbox_inches='tight', dpi=150)
-fig6.savefig(CR_DIR / 'guild_network.png', bbox_inches='tight', dpi=150)
+fig6.savefig(CR_DIR / 'guild_network.pdf', bbox_inches='tight', dpi=300)
+fig6.savefig(CR_DIR / 'guild_network.png', bbox_inches='tight', dpi=300)
 print('  saved guild_network', flush=True)
 plt.close('all')
 

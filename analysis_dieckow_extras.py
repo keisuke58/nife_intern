@@ -23,6 +23,8 @@ from matplotlib.colors import TwoSlopeNorm
 
 _here = Path(__file__).resolve().parent
 sys.path.insert(0, str(_here))
+import pub_style; pub_style.apply()
+sys.path.insert(0, str(_here))
 from guild_replicator_dieckow import GUILD_ORDER, GUILD_COLORS_LIST, integrate_step
 from load_structure_dieckow import load_structural_data, build_occupancy
 
@@ -91,15 +93,15 @@ fig, axes = plt.subplots(1, 2, figsize=(11, 5), gridspec_kw={'width_ratios': [1,
 ax = axes[0]
 norm = TwoSlopeNorm(vmin=-1, vcenter=0, vmax=1)
 im = ax.imshow(corr_mat, aspect='auto', cmap='RdBu_r', norm=norm)
-ax.set_xticks([0, 1]); ax.set_xticklabels(['Occupancy\n(ω̃)', 'PerLive\n(q)'], fontsize=9)
-ax.set_yticks(range(n_g)); ax.set_yticklabels(guilds, fontsize=8)
-ax.set_title('Spearman ρ\nStructure × Composition', fontsize=9)
+ax.set_xticks([0, 1]); ax.set_xticklabels(['Occupancy\n(ω̃)', 'PerLive\n(q)'], fontsize=11)
+ax.set_yticks(range(n_g)); ax.set_yticklabels(guilds, fontsize=10)
+ax.set_title('Spearman ρ\nStructure × Composition', fontsize=11)
 plt.colorbar(im, ax=ax, fraction=0.05)
 # mark significant (p<0.05) with *
 for g in range(n_g):
     for c, pv in enumerate([pval_occ[g], pval_pl[g]]):
         if pv < 0.05:
-            ax.text(c, g, '*', ha='center', va='center', fontsize=12, color='black')
+            ax.text(c, g, '*', ha='center', va='center', fontsize=14, color='black')
 
 # scatter per guild, color by sign
 ax2 = axes[1]
@@ -108,21 +110,21 @@ w_bar = 0.38
 bars1 = ax2.bar(x - w_bar/2, corr_occ, w_bar, label='Occupancy ω̃', color='steelblue', alpha=0.8)
 bars2 = ax2.bar(x + w_bar/2, corr_pl,  w_bar, label='PerLive q',   color='tomato',    alpha=0.8)
 ax2.axhline(0, color='k', lw=0.7)
-ax2.set_xticks(x); ax2.set_xticklabels(guilds, rotation=40, ha='right', fontsize=8)
-ax2.set_ylabel('Spearman ρ', fontsize=9)
-ax2.set_title('Per-guild correlation with CLSM structural parameters', fontsize=9)
-ax2.legend(fontsize=8)
+ax2.set_xticks(x); ax2.set_xticklabels(guilds, rotation=40, ha='right', fontsize=10)
+ax2.set_ylabel('Spearman ρ', fontsize=11)
+ax2.set_title('Per-guild correlation with CLSM structural parameters', fontsize=11)
+ax2.legend(fontsize=10)
 ax2.set_ylim(-1, 1)
 # p-value markers
 for g in range(n_g):
     if pval_occ[g] < 0.05:
-        ax2.text(g - w_bar/2, corr_occ[g] + 0.03 * np.sign(corr_occ[g]), '*', ha='center', fontsize=9)
+        ax2.text(g - w_bar/2, corr_occ[g] + 0.03 * np.sign(corr_occ[g]), '*', ha='center', fontsize=11)
     if pval_pl[g] < 0.05:
-        ax2.text(g + w_bar/2, corr_pl[g]  + 0.03 * np.sign(corr_pl[g]),  '*', ha='center', fontsize=9)
+        ax2.text(g + w_bar/2, corr_pl[g]  + 0.03 * np.sign(corr_pl[g]),  '*', ha='center', fontsize=11)
 
 plt.tight_layout()
-fig.savefig(OUT / 'fig_struct_composition_corr.pdf', dpi=150, bbox_inches='tight')
-fig.savefig(OUT / 'fig_struct_composition_corr.png', dpi=150, bbox_inches='tight')
+fig.savefig(OUT / 'fig_struct_composition_corr.pdf', dpi=300, bbox_inches='tight')
+fig.savefig(OUT / 'fig_struct_composition_corr.png', dpi=300, bbox_inches='tight')
 plt.close()
 print(f'  saved fig_struct_composition_corr', flush=True)
 
@@ -186,8 +188,8 @@ fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
 ax = axes[0]
 ax.scatter(eigvals.real, eigvals.imag, c='steelblue', s=60, zorder=3)
 ax.axvline(0, color='r', lw=1, ls='--')
-ax.set_xlabel('Re(λ)', fontsize=9); ax.set_ylabel('Im(λ)', fontsize=9)
-ax.set_title(f'gLV A eigenvalues\n({"all stable" if stable_fixed else "unstable present"})', fontsize=9)
+ax.set_xlabel('Re(λ)', fontsize=11); ax.set_ylabel('Im(λ)', fontsize=11)
+ax.set_title(f'gLV A eigenvalues\n({"all stable" if stable_fixed else "unstable present"})', fontsize=11)
 ax.grid(True, alpha=0.3)
 
 # community type bar chart
@@ -200,9 +202,9 @@ for g in range(n_g_fit):
            label=guilds[g] if g < n_g else f'g{g}')
     bottom += np.array(vals)
 ax.set_xticks(range(n_ct))
-ax.set_xticklabels([f'CT{i+1}\n(n={ct_counts[i]})' for i in range(n_ct)], fontsize=8)
-ax.set_ylabel('Guild fraction', fontsize=9)
-ax.set_title(f'Attractor community types (N={N_IC} ICs)', fontsize=9)
+ax.set_xticklabels([f'CT{i+1}\n(n={ct_counts[i]})' for i in range(n_ct)], fontsize=10)
+ax.set_ylabel('Guild fraction', fontsize=11)
+ax.set_title(f'Attractor community types (N={N_IC} ICs)', fontsize=11)
 ax.legend(loc='upper right', fontsize=6, ncol=2)
 
 # attractor scatter (PCA of attractor_phi)
@@ -211,14 +213,14 @@ pca = PCA(n_components=2)
 Z2  = pca.fit_transform(attractor_phi)
 ax  = axes[2]
 sc  = ax.scatter(Z2[:, 0], Z2[:, 1], c=labels, cmap='tab10', s=20, alpha=0.7)
-ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.0f}%)', fontsize=9)
-ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.0f}%)', fontsize=9)
-ax.set_title(f'Attractor PCA ({n_ct} clusters)', fontsize=9)
+ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.0f}%)', fontsize=11)
+ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.0f}%)', fontsize=11)
+ax.set_title(f'Attractor PCA ({n_ct} clusters)', fontsize=11)
 plt.colorbar(sc, ax=ax, label='Community type')
 
 plt.tight_layout()
-fig.savefig(OUT / 'fig_stability.pdf', dpi=150, bbox_inches='tight')
-fig.savefig(OUT / 'fig_stability.png', dpi=150, bbox_inches='tight')
+fig.savefig(OUT / 'fig_stability.pdf', dpi=300, bbox_inches='tight')
+fig.savefig(OUT / 'fig_stability.png', dpi=300, bbox_inches='tight')
 plt.close()
 print(f'  saved fig_stability', flush=True)
 
@@ -252,31 +254,31 @@ fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
 ax = axes[0]
 for i, pat in enumerate(patients):
     ax.scatter(X_pca[i, 0], X_pca[i, 1], s=120, zorder=3)
-    ax.text(X_pca[i, 0] + 0.05, X_pca[i, 1], pat, fontsize=9)
-ax.set_xlabel(f'PC1 ({pca2.explained_variance_ratio_[0]*100:.0f}%)', fontsize=9)
-ax.set_ylabel(f'PC2 ({pca2.explained_variance_ratio_[1]*100:.0f}%)', fontsize=9)
-ax.set_title('Patient PCA\n(struct + W1 composition)', fontsize=9)
+    ax.text(X_pca[i, 0] + 0.05, X_pca[i, 1], pat, fontsize=11)
+ax.set_xlabel(f'PC1 ({pca2.explained_variance_ratio_[0]*100:.0f}%)', fontsize=11)
+ax.set_ylabel(f'PC2 ({pca2.explained_variance_ratio_[1]*100:.0f}%)', fontsize=11)
+ax.set_title('Patient PCA\n(struct + W1 composition)', fontsize=11)
 ax.grid(True, alpha=0.3)
 
 # k=2 clustering
 ax = axes[1]
 sc = ax.scatter(X_pca[:, 0], X_pca[:, 1], c=km2.labels_, cmap='Set1', s=120, zorder=3)
 for i, pat in enumerate(patients):
-    ax.text(X_pca[i, 0] + 0.05, X_pca[i, 1], pat, fontsize=9)
-ax.set_xlabel(f'PC1 ({pca2.explained_variance_ratio_[0]*100:.0f}%)', fontsize=9)
-ax.set_title('KMeans k=2', fontsize=9); ax.grid(True, alpha=0.3)
+    ax.text(X_pca[i, 0] + 0.05, X_pca[i, 1], pat, fontsize=11)
+ax.set_xlabel(f'PC1 ({pca2.explained_variance_ratio_[0]*100:.0f}%)', fontsize=11)
+ax.set_title('KMeans k=2', fontsize=11); ax.grid(True, alpha=0.3)
 
 # k=3 clustering
 ax = axes[2]
 sc = ax.scatter(X_pca[:, 0], X_pca[:, 1], c=km3.labels_, cmap='Set2', s=120, zorder=3)
 for i, pat in enumerate(patients):
-    ax.text(X_pca[i, 0] + 0.05, X_pca[i, 1], pat, fontsize=9)
-ax.set_xlabel(f'PC1 ({pca2.explained_variance_ratio_[0]*100:.0f}%)', fontsize=9)
-ax.set_title('KMeans k=3', fontsize=9); ax.grid(True, alpha=0.3)
+    ax.text(X_pca[i, 0] + 0.05, X_pca[i, 1], pat, fontsize=11)
+ax.set_xlabel(f'PC1 ({pca2.explained_variance_ratio_[0]*100:.0f}%)', fontsize=11)
+ax.set_title('KMeans k=3', fontsize=11); ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
-fig.savefig(OUT / 'fig_patient_clustering.pdf', dpi=150, bbox_inches='tight')
-fig.savefig(OUT / 'fig_patient_clustering.png', dpi=150, bbox_inches='tight')
+fig.savefig(OUT / 'fig_patient_clustering.pdf', dpi=300, bbox_inches='tight')
+fig.savefig(OUT / 'fig_patient_clustering.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 # PCA loadings: top features for PC1/PC2
@@ -323,9 +325,9 @@ fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
 ax = axes[0]
 for p, pat in enumerate(patients):
     ax.plot(weeks, H_obs[p], 'o-', lw=1.5, ms=6, label=pat)
-ax.set_xticks(weeks); ax.set_xlabel('Week', fontsize=9)
-ax.set_ylabel("Shannon H", fontsize=9)
-ax.set_title('Shannon diversity per patient (observed)', fontsize=9)
+ax.set_xticks(weeks); ax.set_xlabel('Week', fontsize=11)
+ax.set_ylabel("Shannon H", fontsize=11)
+ax.set_title('Shannon diversity per patient (observed)', fontsize=11)
 ax.legend(fontsize=7, ncol=2); ax.grid(True, alpha=0.3)
 
 # Mean ± SD observed vs predicted
@@ -334,23 +336,23 @@ H_mean = H_obs.mean(axis=0); H_std = H_obs.std(axis=0)
 P_mean = H_pred.mean(axis=0); P_std = H_pred.std(axis=0)
 ax.errorbar(weeks, H_mean, yerr=H_std, fmt='o-', color='steelblue', lw=2, capsize=4, label='Observed')
 ax.errorbar(weeks, P_mean, yerr=P_std, fmt='s--', color='tomato',    lw=2, capsize=4, label='gLV predicted')
-ax.set_xticks(weeks); ax.set_xlabel('Week', fontsize=9)
-ax.set_ylabel("Shannon H", fontsize=9)
-ax.set_title('Shannon diversity: observed vs gLV predicted\n(mean ± SD)', fontsize=9)
-ax.legend(fontsize=8); ax.grid(True, alpha=0.3)
+ax.set_xticks(weeks); ax.set_xlabel('Week', fontsize=11)
+ax.set_ylabel("Shannon H", fontsize=11)
+ax.set_title('Shannon diversity: observed vs gLV predicted\n(mean ± SD)', fontsize=11)
+ax.legend(fontsize=10); ax.grid(True, alpha=0.3)
 
 # Simpson D1 per patient
 ax = axes[2]
 for p, pat in enumerate(patients):
     ax.plot(weeks, D_obs[p], 'o-', lw=1.5, ms=6, label=pat)
-ax.set_xticks(weeks); ax.set_xlabel('Week', fontsize=9)
-ax.set_ylabel('Simpson 1−D', fontsize=9)
-ax.set_title('Simpson diversity per patient (observed)', fontsize=9)
+ax.set_xticks(weeks); ax.set_xlabel('Week', fontsize=11)
+ax.set_ylabel('Simpson 1−D', fontsize=11)
+ax.set_title('Simpson diversity per patient (observed)', fontsize=11)
 ax.legend(fontsize=7, ncol=2); ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
-fig.savefig(OUT / 'fig_diversity.pdf', dpi=150, bbox_inches='tight')
-fig.savefig(OUT / 'fig_diversity.png', dpi=150, bbox_inches='tight')
+fig.savefig(OUT / 'fig_diversity.pdf', dpi=300, bbox_inches='tight')
+fig.savefig(OUT / 'fig_diversity.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 # stats
