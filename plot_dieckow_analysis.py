@@ -30,7 +30,7 @@ CR_DIR  = ROOT / 'results' / 'dieckow_cr'
 
 PHI_NPY    = OTU_DIR / 'phi_guild_excel_class.npy'
 FIT_GLV    = CR_DIR  / 'fit_guild_excel_class.json'
-FIT_HAM    = CR_DIR  / 'fit_guild_hamilton.json'
+FIT_HAM    = CR_DIR  / 'fit_guild_hamilton_masked.json'
 STRUCT_XLS = ROOT / 'Datasets' / 'Abutment_Structure vs composition.xlsx'
 
 phi_all = np.load(PHI_NPY)           # (n_p, 3, n_g)  — may be 8 patients
