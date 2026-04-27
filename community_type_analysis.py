@@ -30,16 +30,14 @@ from sklearn.metrics import silhouette_score
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parent))
-from guild_replicator_dieckow import GUILD_ORDER, N_G, GUILD_COLORS_LIST, GUILD_SHORT_LIST
+from guild_replicator_dieckow import GUILD_ORDER, GUILD_COLORS
 
 PHI_NPY = Path(__file__).parent / 'results' / 'dieckow_otu' / 'phi_guild.npy'
 OUT_DIR = Path(__file__).parent / 'results' / 'dieckow_otu'
+GUILD_SUMMARY_JSON = OUT_DIR / 'guild_summary.json'
 
 PATIENTS = list('ABCDEFGHKL')
-SHORT    = GUILD_SHORT_LIST
 CT_COLORS = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3']
-
-GUILD_COLORS = GUILD_COLORS_LIST
 
 
 def best_k(X, Z, k_range=(2, 4)):
@@ -57,6 +55,21 @@ def main():
     phi = np.load(PHI_NPY)
     # Feature: mean across weeks → (10, N)
     X = phi.mean(axis=1)
+    n_g = int(X.shape[1])
+
+    guilds = None
+    if GUILD_SUMMARY_JSON.exists():
+        try:
+            d = json.loads(GUILD_SUMMARY_JSON.read_text())
+            if isinstance(d, dict) and isinstance(d.get('guilds'), list):
+                if len(d['guilds']) == n_g:
+                    guilds = [str(g) for g in d['guilds']]
+        except Exception:
+            guilds = None
+    if guilds is None:
+        guilds = list(GUILD_ORDER)[:n_g]
+
+    guild_colors = [GUILD_COLORS.get(g, '#808080') for g in guilds]
 
     # Hierarchical clustering (Ward, Bray-Curtis-like = Euclidean on compositions)
     dist = pdist(X, metric='euclidean')
@@ -106,14 +119,12 @@ def main():
     ct_means = np.array(ct_means)
 
     bottom = np.zeros(len(ct_ids))
-    for g, (col, name) in enumerate(zip(GUILD_COLORS, GUILD_ORDER)):
-        ax_ct.bar([f'CT{ct}' for ct in ct_ids], ct_means[:, g],
-                  bottom=bottom, color=col, label=name[:12])
+    for g, (col, name) in enumerate(zip(guild_colors, guilds)):
+        ax_ct.bar([f'CT{ct}' for ct in ct_ids], ct_means[:, g], bottom=bottom, color=col)
         bottom += ct_means[:, g]
     ax_ct.set_ylim(0, 1.05)
     ax_ct.set_ylabel('Mean relative abundance')
     ax_ct.set_title('c  Guild composition per community type', fontsize=10, loc='left')
-    ax_ct.legend(loc='upper right', fontsize=6, ncol=2, frameon=False)
     ax_ct.spines['top'].set_visible(False)
     ax_ct.spines['right'].set_visible(False)
 
@@ -125,7 +136,7 @@ def main():
     sorted_X        = X[order]
 
     bottom = np.zeros(len(PATIENTS))
-    for g, (col, name) in enumerate(zip(GUILD_COLORS, GUILD_ORDER)):
+    for g, col in enumerate(guild_colors):
         ax_pat.bar(range(len(PATIENTS)), sorted_X[:, g],
                    bottom=bottom, color=col, width=0.7)
         bottom += sorted_X[:, g]
@@ -151,7 +162,7 @@ def main():
     ax_pat.spines['top'].set_visible(False)
     ax_pat.spines['right'].set_visible(False)
 
-    fig.suptitle('Dieckow 2024 — Community type analysis (10-guild, Ward clustering)',
+    fig.suptitle(f'Dieckow 2024 — Community type analysis ({n_g}-guild, Ward clustering)',
                  fontsize=11)
 
     for ext in ('pdf', 'png'):
@@ -168,8 +179,7 @@ def main():
             'silhouette_scores': {str(k): float(v) for k, v in sil_scores.items()},
             'patient_ct': {p: int(ct) for p, ct in zip(PATIENTS, labels)},
             'ct_mean_composition': {
-                f'CT{ct}': {g: float(ct_means[i, j])
-                             for j, g in enumerate(GUILD_ORDER)}
+                f'CT{ct}': {g: float(ct_means[i, j]) for j, g in enumerate(guilds)}
                 for i, ct in enumerate(ct_ids)
             },
         }, f, indent=2)
