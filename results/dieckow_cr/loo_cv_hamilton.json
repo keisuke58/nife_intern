@@ -1,0 +1,38 @@
+{
+  "loo_rmse_mean": 0.08551352926362299,
+  "per_patient": [
+    {
+      "patient": "A",
+      "rmse": 0.1321121499527021
+    },
+    {
+      "patient": "B",
+      "rmse": 0.1305179691206871
+    },
+    {
+      "patient": "C",
+      "rmse": 0.1113990908882194
+    },
+    {
+      "patient": "E",
+      "rmse": 0.05989275594542944
+    },
+    {
+      "patient": "F",
+      "rmse": 0.0643997023318687
+    },
+    {
+      "patient": "G",
+      "rmse": 0.039277620370841974
+    },
+    {
+      "patient": "H",
+      "rmse": 0.05605513153188784
+    },
+    {
+      "patient": "K",
+      "rmse": 0.09045381396734739
+    }
+  ],
+  "model": "Hamilton+struct LOO-CV (approx: A fixed, b refitted)"
+}

@@ -1,0 +1,38 @@
+{
+  "loo_rmse_mean": 0.05784512857335691,
+  "per_patient": [
+    {
+      "patient": "A",
+      "rmse": 0.0912279716639693
+    },
+    {
+      "patient": "B",
+      "rmse": 0.09022899414695798
+    },
+    {
+      "patient": "C",
+      "rmse": 0.045086760573141614
+    },
+    {
+      "patient": "E",
+      "rmse": 0.01995877919712304
+    },
+    {
+      "patient": "F",
+      "rmse": 0.03678401761322339
+    },
+    {
+      "patient": "G",
+      "rmse": 0.05871870725907705
+    },
+    {
+      "patient": "H",
+      "rmse": 0.05182067568006595
+    },
+    {
+      "patient": "K",
+      "rmse": 0.06893512245329697
+    }
+  ],
+  "model": "gLV pure LOO-CV (8 patients, 11 guilds)"
+}
