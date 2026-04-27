@@ -1,0 +1,125 @@
+{
+  "agora_key_pair_agree": 2,
+  "agora_key_pair_total": 3,
+  "agora_key_pair_pct": 66.7,
+  "note": "AGORA pFBA confirms cross-feeding potential for key literature pairs. Inhibitory interactions (H2O2, competition) require community-level modeling.",
+  "secretions": {
+    "Actinobacteria": {
+      "acetate": 49.8116171245962,
+      "formate": 53.6869656267772,
+      "nitrite": 3.0,
+      "succinate": 39.199912112098204
+    },
+    "Coriobacteriia": {
+      "acetate": 25.073557100659635,
+      "CO2": 0.5374687619847085,
+      "ethanol": 1.5346377936335625,
+      "formate": 13.257109476257202
+    },
+    "Bacilli": {
+      "acetate": 920.995561177223,
+      "ethanol": 1000.0,
+      "formate": 1000.0,
+      "lactate": 981.9736899611565,
+      "propionate": 1000.0,
+      "succinate": 18.174245974201856
+    },
+    "Clostridia": {
+      "acetate": 150.09648707482896,
+      "CO2": 5.317686103012605
+    },
+    "Negativicutes": {
+      "acetate": 1000.0,
+      "CO2": 1000.0,
+      "formate": 971.7848400241769,
+      "nitrite": 3.0,
+      "propionate": 832.3995282580622,
+      "succinate": 1000.0
+    },
+    "Bacteroidia": {
+      "acetate": 17.38086496302847,
+      "formate": 18.42757102980601,
+      "succinate": 9.542908847398847
+    },
+    "Flavobacteriia": {
+      "acetate": 7.791478214937831,
+      "CO2": 11.048643274527093
+    },
+    "Fusobacteriia": {
+      "acetate": 46.846920582192126,
+      "formate": 40.20236236738984,
+      "succinate": 16.074121852197955
+    },
+    "Betaproteobacteria": {
+      "acetate": 68.22431927316882,
+      "CO2": 66.77244287182373,
+      "formate": 74.15570099962622,
+      "nitrite": 3.0,
+      "succinate": 53.09086986173335
+    },
+    "Gammaproteobacteria": {
+      "acetate": 839.4694817971421,
+      "CO2": 1000.0,
+      "formate": 576.1976965644517,
+      "succinate": 236.88590153842324
+    }
+  },
+  "key_pairs": [
+    {
+      "guild_i": "Negativicutes",
+      "guild_j": "Bacilli",
+      "driver_met": "lactate",
+      "A_ij": 0.04040430618824149,
+      "glv_sign": "+",
+      "j_secretes_driver": true,
+      "i_can_consume_driver": true,
+      "agora_supported": true,
+      "literature": "Sims1979,Kolenbrander2010"
+    },
+    {
+      "guild_i": "Fusobacteriia",
+      "guild_j": "Bacteroidia",
+      "driver_met": "succinate",
+      "A_ij": -0.008154181651101119,
+      "glv_sign": "-",
+      "j_secretes_driver": true,
+      "i_can_consume_driver": true,
+      "agora_supported": true,
+      "literature": "Kapatral2002"
+    },
+    {
+      "guild_i": "Fusobacteriia",
+      "guild_j": "Betaproteobacteria",
+      "driver_met": "succinate",
+      "A_ij": 0.13838257127709014,
+      "glv_sign": "+",
+      "j_secretes_driver": true,
+      "i_can_consume_driver": true,
+      "agora_supported": true,
+      "literature": "Kapatral2002"
+    },
+    {
+      "guild_i": "Actinobacteria",
+      "guild_j": "Gammaproteobacteria",
+      "driver_met": "lactate",
+      "A_ij": 0.440769923840422,
+      "glv_sign": "+",
+      "j_secretes_driver": false,
+      "i_can_consume_driver": true,
+      "agora_supported": false,
+      "literature": "Kolenbrander2010"
+    },
+    {
+      "guild_i": "Bacilli",
+      "guild_j": "Actinobacteria",
+      "driver_met": "coaggregation",
+      "A_ij": 4.513226421853878,
+      "glv_sign": "+",
+      "j_secretes_driver": false,
+      "i_can_consume_driver": false,
+      "agora_supported": false,
+      "literature": "Kolenbrander2010"
+    }
+  ],
+  "model": "AGORA v1.03 (With Mucins) pFBA, oral-fluid medium, carbon-capped"
+}
