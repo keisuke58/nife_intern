@@ -248,7 +248,17 @@ def run_hamilton_kegg(phi_all, net_flow):
         return
     d = json.load(open(warm))
     A_warm = np.array(d['A'])[:n_sp, :n_sp]
-    b_warm = np.array(d['b_all'])[:n_p, :n_sp]
+    b_warm_raw = np.array(d['b_all'])
+    if b_warm_raw.ndim != 2:
+        b_warm_raw = np.asarray(b_warm_raw).reshape(n_p, -1)
+    if b_warm_raw.shape[0] < n_p:
+        b_warm_raw = np.vstack([b_warm_raw, np.full((n_p - b_warm_raw.shape[0], b_warm_raw.shape[1]), 0.1)])
+    if b_warm_raw.shape[1] < n_sp:
+        b_pad = np.full((n_p, n_sp), 0.1, dtype=float)
+        b_pad[:, :b_warm_raw.shape[1]] = b_warm_raw[:n_p, :]
+        b_warm = b_pad
+    else:
+        b_warm = b_warm_raw[:n_p, :n_sp]
 
     def pack_upper(A):
         return np.array([A[i, j] for j in range(n_sp) for i in range(j + 1)])
