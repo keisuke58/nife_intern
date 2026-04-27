@@ -3,6 +3,48 @@
 
 ---
 
+## 0. 次のプラン（CT1/CT2予測・Consumer Resource比較・COMETS dFBA拡張）
+
+### 0.1 CT1/CT2 予測（分類木：解釈重視）
+- **目的**: Dieckow患者の community type（CT1/CT2）を予測し、「どの特徴が閾値で分かれるか」を明示的ルールとして得る。
+- **ラベル定義（固定）**:
+  - `nife/community_type_analysis.py` のクラスタ結果をラベルとして利用
+  - 出力: `nife/results/dieckow_otu/community_types.json`（patient_ct と CT1/CT2 平均組成）
+- **特徴量候補（同一患者で揃うものから）**:
+  - Week1（または初期）組成（guild/属/OTU、相対存在量、CLRやlog比など）
+  - DI などの集約指標（計算可能なら）
+  - モデル由来特徴量（例: Dieckow fit の患者別 b、CR fit の b など）
+- **モデル**: DecisionTreeClassifier（浅めの木 + 剪定）を第一候補。比較としてLogReg（L1）も並走すると解釈が安定。
+- **評価**: 小標本のため LOO（leave-one-patient-out）または層化CV。AccuracyだけでなくCT2のrecallも確認。
+- **成果物**: ルール（木の分岐）・混同行列・重要特徴量ランキング・外れ患者の診断。
+
+### 0.2 Consumer-resource（CR）model 比較（CR vs Hamilton/GLV系）
+- **目的**: 予測精度・解釈性・汎化の観点で、CRモデルが既存のA行列モデルに対して何を説明できるかを定量比較する。
+- **CR実装（現状）**:
+  - モデル: `nife/consumer_resource_dieckow.py`
+  - フィット: `nife/fit_cr_dieckow.py` → `nife/results/dieckow_cr/fit_cr.json`
+  - CRからの有効相互作用: `effective_A_from_cr(theta_cr)`（等組成点でのヤコビアン近似）
+- **比較対象（A行列ベースの予測枠組み）**:
+  - Dieckow week2/3予測RMSE比較の型: `nife/dieckow_cross_prediction.py`
+- **比較軸（最低限）**:
+  - Week1 → Week2/3 の予測RMSE（in-sample + LOO）
+  - CR由来の A_effective と、A行列モデル推定（MAPなど）の相関・符号整合
+  - パラメータ数・初期値依存・安定性（局所解/感度）
+
+### 0.3 COMETS dFBA 拡張（CT差・CR仮説検証と接続）
+- **目的**: GEM+dFBA（COMETS）で、healthy/diseasedの再現に加え、CT1/CT2差や代謝仮説（cross-feeding、O2制約など）を再現・検証できる状態にする。
+- **入口（現状）**:
+  - パイプライン実行: `nife/comets/run_comets_pipeline.py`
+  - 5種モデル/媒体/交換制約: `nife/comets/oral_biofilm.py`
+  - 2D Monod dFBA（COMETSとは別系の自前モデル）: `nife/comets/spatial_dfba.py`
+- **拡張の優先順位**:
+  - CT1/CT2ごとの「初期組成・媒体条件」のプリセットを用意し、0D/2Dで差が出るか検証
+  - 出力を週スケールに合わせたサマリ（Week1/2/3相当、DI、主要代謝物）に統一
+  - 空間（2D）で O2 勾配・乳酸勾配と Vp/Pg の棲み分けが成立するかを確認
+- **接続の形**:
+  - 分類木が拾う「閾値特徴（例: Week1の特定属の比率）」を、COMETS側の初期/媒体条件として再現可能かを探索
+  - CR/Hamiltonで示唆される相互作用の符号（促進/阻害）を、dFBAの代謝フラックス（交換・分泌）として整合させる
+
 ## 1. Szafranski 2025 横断データ (5-genera subset)
 
 **論文**: Szafranski et al. 2025, ecoPreprint  

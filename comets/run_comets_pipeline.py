@@ -36,11 +36,13 @@ sys.path.insert(0, str(REPO))
 from nife.comets.oral_biofilm import (
     OralBiofilmComets,
     SPECIES,
+    SPECIES_ORDER,
     INIT_FRACTIONS,
     TOTAL_INIT_BIOMASS,
     MEDIA_HEALTHY,
     MEDIA_DISEASED,
     compute_di,
+    metabolic_interaction_prior,
 )
 
 COLORS = {
@@ -154,6 +156,7 @@ def run_B(
     max_cycles: int = 800,
     time_step: float = 0.1,
     outdir: Path = OUTDIR,
+    force_cobra: bool = False,
 ):
     """
     2D spatial COMETS.
@@ -164,13 +167,22 @@ def run_B(
     print(f"\n=== STEP B: 2D spatial COMETS ({nx}×{nz} grid) ===")
     outdir.mkdir(parents=True, exist_ok=True)
 
-    import cometspy as c
-    import cobra
-
     sim = OralBiofilmComets(grid=(nx, nz))
     results_spatial = {}
 
     for cond in ("healthy", "diseased"):
+        if force_cobra or sim.comets_home is None:
+            if sim.comets_home is None:
+                print("  COMETS_HOME not found → running COBRApy dFBA (0D fallback)", flush=True)
+            else:
+                print("  force_cobra=True → running COBRApy dFBA (0D fallback)", flush=True)
+            r = sim.run(condition=cond, max_cycles=max_cycles, output_dir=outdir / "comets_0d")
+            results_spatial[cond] = {"total_biomass": r.total_biomass, "exp": None, "model_ids": {}, "log_rate": 1}
+            continue
+
+        import cometspy as c
+        import cobra
+
         print(f"  Building spatial layout: {cond}...")
         layout = c.layout()
         layout.grid = [nx, nz]
@@ -204,7 +216,7 @@ def run_B(
         fracs = INIT_FRACTIONS[cond]
         model_ids = {}
         for sp_key, frac in fracs.items():
-            cobra_model = sim._load_agora_model(sp_key)
+            cobra_model = sim._load_agora_model(sp_key, cond)
             sp_model = c.model(cobra_model)
             model_ids[sp_key] = cobra_model.id
             # Distribute along surface row at z=NZ-1, spread across x
@@ -225,7 +237,6 @@ def run_B(
             biomass_log_rate=log_rate,
         )
         params.set_param("numRunThreads", 4)
-        params.set_param("spatialKill", 1e-13)
 
         run_dir = outdir / "comets_2d" / f"spatial_{cond}"
         run_dir.mkdir(parents=True, exist_ok=True)
@@ -245,6 +256,216 @@ def run_B(
     _plot_B(results_spatial, nx, nz, time_step, outdir, max_cycles)
     print(f"  → {outdir}/B_spatial_comparison.png")
     return results_spatial
+
+
+def run_B_sweep_o2(
+    o2_values: list[float],
+    nx: int = 10,
+    nz: int = 20,
+    max_cycles: int = 800,
+    time_step: float = 0.1,
+    outdir: Path = OUTDIR,
+    force_cobra: bool = False,
+):
+    print(f"\n=== STEP B-sweep: o2 sweep ({len(o2_values)} points) ===")
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    sim = OralBiofilmComets(grid=(nx, nz))
+
+    def _get_last_di(bm):
+        di_df = compute_di(bm)
+        if isinstance(di_df, dict):
+            return float(np.asarray(di_df["DI"])[-1])
+        return float(di_df["DI"].iloc[-1])
+
+    def _get_last_phi_pg(bm):
+        if "Pg" not in bm.columns:
+            return 0.0
+        sp_cols = [sp for sp in SPECIES if sp in bm.columns]
+        denom = float(bm[sp_cols].iloc[-1].sum()) if sp_cols else 0.0
+        return float(bm["Pg"].iloc[-1] / denom) if denom > 0 else 0.0
+
+    sweep_out = outdir / "comets_2d_sweep_o2"
+    sweep_out.mkdir(parents=True, exist_ok=True)
+
+    summary = {"nx": nx, "nz": nz, "max_cycles": max_cycles, "time_step": time_step, "points": []}
+
+    for o2 in o2_values:
+        print(f"  o2={o2} ...")
+        point = {"o2": float(o2), "healthy": {}, "diseased": {}}
+
+        for cond in ("healthy", "diseased"):
+            if force_cobra or sim.comets_home is None:
+                bm, _ = sim.run_dfba_cobra(
+                    condition=cond,
+                    max_cycles=max_cycles,
+                    time_step=time_step,
+                    media_override={"o2[e]": float(o2)},
+                )
+                point[cond] = {
+                    "di_last": _get_last_di(bm),
+                    "phi_pg_last": _get_last_phi_pg(bm),
+                    "biomass_total_last": float(bm[[sp for sp in SPECIES if sp in bm.columns]].iloc[-1].sum()),
+                }
+                continue
+
+            import cometspy as c
+            import cobra
+
+            layout = c.layout()
+            layout.grid = [nx, nz]
+
+            diff_coeffs = {
+                "glc_D[e]": 6e-6,
+                "o2[e]": 2.1e-5,
+                "lac_L[e]": 6e-6,
+                "succ[e]": 5e-6,
+                "pheme[e]": 1e-6,
+                "nh4[e]": 1.9e-5,
+                "pi[e]": 8e-6,
+                "h2o[e]": 1e-4,
+                "ca2[e]": 7e-6,
+                "mg2[e]": 7e-6,
+            }
+
+            media = dict(MEDIA_HEALTHY if cond == "healthy" else MEDIA_DISEASED)
+            media["o2[e]"] = float(o2)
+
+            for met, val in media.items():
+                layout.set_specific_metabolite(met, float(val))
+            for met, dcoeff in diff_coeffs.items():
+                if met in media:
+                    layout.set_specific_metabolite_diffusion(met, dcoeff)
+
+            fracs = INIT_FRACTIONS[cond]
+            model_ids = {}
+            for sp_key, frac in fracs.items():
+                cobra_model = sim._load_agora_model(sp_key, cond)
+                sp_model = c.model(cobra_model)
+                model_ids[sp_key] = cobra_model.id
+                pop_list = []
+                for xi in range(nx):
+                    pop_list.append([xi, nz - 1, TOTAL_INIT_BIOMASS * frac / nx])
+                sp_model.initial_pop = pop_list
+                sp_model.obj_style = "MAX_OBJECTIVE_MIN_TOTAL"
+                sp_model.change_optimizer("GLOP")
+                layout.add_model(sp_model)
+
+            log_rate = max(1, max_cycles // 4)
+            params = sim.build_params(
+                max_cycles=max_cycles,
+                time_step=time_step,
+                write_media_log=True,
+                write_biomass_log=True,
+                biomass_log_rate=log_rate,
+            )
+            params.set_param("numRunThreads", 4)
+            params.set_param("spatialKill", 1e-13)
+
+            run_dir = sweep_out / f"o2_{o2:g}" / f"spatial_{cond}"
+            run_dir.mkdir(parents=True, exist_ok=True)
+
+            try:
+                exp = c.comets(layout, params, relative_dir=str(run_dir.relative_to(Path.cwd())) + "/")
+                exp.run(delete_files=False)
+                bm = sim._rename_biomass_cols(exp.total_biomass)
+            except Exception as e:
+                print(f"    {cond}: WARNING spatial failed ({e}); fallback to 0D/cobrapy")
+                r = sim.run(condition=cond, max_cycles=max_cycles, output_dir=outdir / "comets_0d")
+                bm = r.total_biomass
+
+            point[cond] = {
+                "di_last": _get_last_di(bm),
+                "phi_pg_last": _get_last_phi_pg(bm),
+                "biomass_total_last": float(bm[[sp for sp in SPECIES if sp in bm.columns]].iloc[-1].sum()),
+            }
+
+        summary["points"].append(point)
+
+    out_json = outdir / "B_sweep_o2_summary.json"
+    with open(out_json, "w") as f:
+        json.dump(summary, f, indent=2)
+
+    _plot_B_sweep_o2(summary, outdir)
+    print(f"  → {out_json}")
+    print(f"  → {outdir}/B_sweep_o2_phase.png")
+    return summary
+
+
+def _plot_B_sweep_o2(summary: dict, outdir: Path):
+    pts = summary.get("points", [])
+    if not pts:
+        return
+    o2 = np.array([p["o2"] for p in pts], dtype=float)
+    di_h = np.array([p["healthy"]["di_last"] for p in pts], dtype=float)
+    di_d = np.array([p["diseased"]["di_last"] for p in pts], dtype=float)
+    pg_h = np.array([p["healthy"]["phi_pg_last"] for p in pts], dtype=float)
+    pg_d = np.array([p["diseased"]["phi_pg_last"] for p in pts], dtype=float)
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    ax0, ax1 = axes
+
+    ax0.plot(o2, di_h, marker="o", color="#2E7D32", label="healthy")
+    ax0.plot(o2, di_d, marker="o", color="#C62828", label="diseased")
+    ax0.set_xscale("log")
+    ax0.set_ylim(0, 1)
+    ax0.set_xlabel("Bulk O2 (mM) [log]")
+    ax0.set_ylabel("DI (last)")
+    ax0.set_title("DI vs O2")
+    ax0.legend()
+    ax0.grid(alpha=0.25)
+
+    ax1.plot(o2, pg_h, marker="o", color="#2E7D32", label="healthy")
+    ax1.plot(o2, pg_d, marker="o", color="#C62828", label="diseased")
+    ax1.set_xscale("log")
+    ax1.set_ylim(0, 1)
+    ax1.set_xlabel("Bulk O2 (mM) [log]")
+    ax1.set_ylabel("φ_Pg (last)")
+    ax1.set_title("Pg fraction vs O2")
+    ax1.legend()
+    ax1.grid(alpha=0.25)
+
+    fig.suptitle(f"COMETS sweep (nx={summary.get('nx')}, nz={summary.get('nz')})", fontweight="bold")
+    fig.savefig(outdir / "B_sweep_o2_phase.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+def run_E_metabolic_prior(outdir: Path = OUTDIR):
+    outdir.mkdir(parents=True, exist_ok=True)
+    for cond in ("healthy", "diseased"):
+        prof = metabolic_interaction_prior(cond, flux_threshold=1e-7, min_count=1)
+        out_json = outdir / f"E_metabolic_prior_{cond}.json"
+        with open(out_json, "w") as f:
+            json.dump(prof, f, indent=2)
+
+        sign = np.array(prof["prior"]["sign"], dtype=float)
+        cross = np.array(prof["prior"]["crossfeed_count"], dtype=float)
+        comp = np.array(prof["prior"]["competition_count"], dtype=float)
+        score = cross - comp
+
+        fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+        ax0, ax1 = axes
+        im0 = ax0.imshow(score, cmap="bwr", vmin=-max(1.0, np.max(np.abs(score))), vmax=max(1.0, np.max(np.abs(score))))
+        ax0.set_title(f"{cond}: cross - competition")
+        ax0.set_xticks(range(len(SPECIES_ORDER)))
+        ax0.set_yticks(range(len(SPECIES_ORDER)))
+        ax0.set_xticklabels(list(SPECIES_ORDER))
+        ax0.set_yticklabels(list(SPECIES_ORDER))
+        plt.colorbar(im0, ax=ax0, fraction=0.046, pad=0.04)
+
+        im1 = ax1.imshow(sign, cmap="bwr", vmin=-1, vmax=1)
+        ax1.set_title(f"{cond}: sign prior")
+        ax1.set_xticks(range(len(SPECIES_ORDER)))
+        ax1.set_yticks(range(len(SPECIES_ORDER)))
+        ax1.set_xticklabels(list(SPECIES_ORDER))
+        ax1.set_yticklabels(list(SPECIES_ORDER))
+        plt.colorbar(im1, ax=ax1, fraction=0.046, pad=0.04)
+
+        fig.suptitle("Metabolic interaction prior (COBRApy; AGORA exchanges)", fontweight="bold")
+        fig.savefig(outdir / f"E_metabolic_prior_{cond}.png", dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        print(f"  → {out_json}")
+        print(f"  → {outdir}/E_metabolic_prior_{cond}.png")
 
 
 def _plot_B(results: dict, nx: int, nz: int, time_step: float, outdir: Path, max_cycles: int = 800):
@@ -316,7 +537,7 @@ def _plot_B(results: dict, nx: int, nz: int, time_step: float, outdir: Path, max
                         with np.errstate(divide="ignore", invalid="ignore"):
                             H = -np.nansum(fracs_grid * np.log(fracs_grid + 1e-30), axis=0)
                         H_max = np.log(len(grid_list))
-                        di_grid = H / H_max if H_max > 0 else np.zeros_like(H)
+                        di_grid = 1.0 - H / H_max if H_max > 0 else np.zeros_like(H)
                         im = ax3.imshow(di_grid.T, origin="lower", aspect="auto",
                                         cmap="RdYlGn_r", vmin=0, vmax=1)
                         plt.colorbar(im, ax=ax3, fraction=0.046, pad=0.04)
@@ -589,12 +810,16 @@ def _plot_D(results: dict, sp_fracs: dict, time_step: float, outdir: Path):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--step", choices=["A", "B", "C", "D"], default=None,
+    ap.add_argument("--step", choices=["A", "B", "C", "D", "E"], default=None,
                     help="Run only this step")
     ap.add_argument("--all", action="store_true", help="Run A + B + C")
     ap.add_argument("--cycles", type=int, default=500)
     ap.add_argument("--nx", type=int, default=10, help="Spatial grid X (for B)")
     ap.add_argument("--nz", type=int, default=20, help="Spatial grid Z/depth (for B)")
+    ap.add_argument("--sweep-o2", default=None,
+                    help="Comma-separated bulk O2 values (mM) for STEP B sweep (e.g. 0.001,0.01,0.1,1)")
+    ap.add_argument("--force-cobra", action="store_true",
+                    help="Skip COMETS Java run and use COBRApy dFBA fallback (useful for quick sweeps)")
     ap.add_argument("--init-comp", type=Path,
                     default=Path("/home/nishioka/IKM_Hiwi/nife/data/metaphlan_profiles/init_comp_ERR13166576_A_3.json"),
                     help="init_comp.json path (for C)")
@@ -616,13 +841,33 @@ def main(argv=None):
         run_A(max_cycles=args.cycles, outdir=args.outdir)
 
     if "B" in steps:
-        run_B(nx=args.nx, nz=args.nz, max_cycles=args.cycles, outdir=args.outdir)
+        if args.sweep_o2:
+            o2_values = [float(x) for x in args.sweep_o2.split(",") if x.strip()]
+            run_B_sweep_o2(
+                o2_values=o2_values,
+                nx=args.nx,
+                nz=args.nz,
+                max_cycles=args.cycles,
+                outdir=args.outdir,
+                force_cobra=args.force_cobra,
+            )
+        else:
+            run_B(
+                nx=args.nx,
+                nz=args.nz,
+                max_cycles=args.cycles,
+                outdir=args.outdir,
+                force_cobra=args.force_cobra,
+            )
 
     if "C" in steps:
         run_C(init_comp_path=args.init_comp, max_cycles=args.cycles, outdir=args.outdir)
 
     if "D" in steps:
         run_D(init_comp_path=args.init_comp, max_cycles=24 * 6, time_step=1.0, outdir=args.outdir)
+
+    if "E" in steps:
+        run_E_metabolic_prior(outdir=args.outdir)
 
     print("\n=== All done ===")
     print(f"Results in: {args.outdir}")

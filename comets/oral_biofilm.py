@@ -91,6 +91,8 @@ SPECIES = {
     },
 }
 
+SPECIES_ORDER: tuple[str, ...] = tuple(SPECIES.keys())
+
 CONDITION_SPECIES_OVERRIDES: dict[str, dict[str, dict[str, str]]] = {
     "commensal": {
         "Vp": {
@@ -304,7 +306,8 @@ TOTAL_INIT_BIOMASS = 1e-4   # g
 
 def compute_di(biomass_df, species_order=None):
     """
-    Compute DI (normalized Shannon entropy) from COMETS total_biomass DataFrame.
+    Compute DI (dysbiosis index) from COMETS total_biomass DataFrame.
+    compute di from comets total_biomass DataFrame.
 
     Parameters
     ----------
@@ -338,7 +341,7 @@ def compute_di(biomass_df, species_order=None):
         n = fracs.shape[1]
         log_n = np.log(n) if n > 1 else 1.0
         shannon = -(fracs * log_fracs).sum(axis=1)
-        di = shannon / log_n
+        di = 1.0 - shannon / log_n
         return {"cycle": cycles, "DI": di}
 
     df = biomass_df.copy()
@@ -361,9 +364,162 @@ def compute_di(biomass_df, species_order=None):
         log_fracs = np.where(fracs > 0, np.log(fracs), 0.0)
 
     shannon = -(fracs.values * log_fracs).sum(axis=1)
-    di = shannon / log_n
+    di = 1.0 - shannon / log_n
 
     return pd.DataFrame({"cycle": cycles, "DI": di})
+
+
+def _exchange_id_from_media_key(met_key: str) -> str:
+    if not met_key.endswith("[e]"):
+        raise ValueError(f"Expected external metabolite key like 'glc_D[e]': {met_key}")
+    return "EX_" + met_key[:-3] + "(e)"
+
+
+def _apply_cobra_medium(model, media: dict[str, float]):
+    ex_by_id = {rxn.id: rxn for rxn in model.exchanges}
+    for rxn in model.exchanges:
+        rxn.lower_bound = 0.0
+        rxn.upper_bound = 1000.0
+
+    for met, conc in media.items():
+        rxn_id = _exchange_id_from_media_key(met)
+        rxn = ex_by_id.get(rxn_id)
+        if rxn is None:
+            continue
+        rxn.lower_bound = -1000.0 if float(conc) > 0.0 else 0.0
+
+
+def metabolic_exchange_profile(
+    condition: Literal["healthy", "diseased", "commensal", "dysbiotic"] = "healthy",
+    *,
+    flux_threshold: float = 1e-7,
+    media_override: dict[str, float] | None = None,
+) -> dict:
+    base_media = dict(MEDIA_HEALTHY if condition in ("healthy", "commensal") else MEDIA_DISEASED)
+    if media_override:
+        for k, v in media_override.items():
+            base_media[k] = float(v)
+
+    sim = OralBiofilmComets(grid=(1, 1))
+    required: set[str] = set()
+    required.update(OPEN_ALWAYS_KEYS)
+    required.update(AGORA_TRACE_METS)
+
+    if condition in ("healthy", "diseased", "commensal", "dysbiotic"):
+        try:
+            from cobra.medium import minimal_medium
+            for sp in SPECIES_ORDER:
+                m0 = sim._load_agora_model(sp, condition)
+                for rxn in m0.exchanges:
+                    rxn.lower_bound = -1000.0
+                    rxn.upper_bound = 1000.0
+                mm = minimal_medium(m0, min_objective_value=0.1, open_exchanges=True)
+                if mm is None:
+                    continue
+                for rxn_id in getattr(mm, "index", []):
+                    mk = OralBiofilmComets._exchange_to_media_key(str(rxn_id))
+                    if mk:
+                        required.add(mk)
+        except Exception:
+            pass
+
+    media = dict(base_media)
+    for met in required:
+        media.setdefault(met, AGORA_TRACE_CONC)
+
+    out: dict[str, dict] = {"condition": condition, "media": media, "species": {}}
+    for sp in SPECIES_ORDER:
+        m = sim._load_agora_model(sp, condition)
+        _apply_cobra_medium(m, media)
+        sol = m.optimize()
+
+        uptake: dict[str, float] = {}
+        secretion: dict[str, float] = {}
+        if sol.status == "optimal":
+            f = sol.fluxes
+            for rxn in m.exchanges:
+                v = float(f.get(rxn.id, 0.0))
+                if v < -flux_threshold:
+                    mk = OralBiofilmComets._exchange_to_media_key(rxn.id)
+                    if mk:
+                        uptake[mk] = v
+                elif v > flux_threshold:
+                    mk = OralBiofilmComets._exchange_to_media_key(rxn.id)
+                    if mk:
+                        secretion[mk] = v
+
+        out["species"][sp] = {
+            "agora_id": sim._species_meta(sp, condition)["agora_id"],
+            "status": sol.status,
+            "objective": float(sol.objective_value) if sol.objective_value is not None else None,
+            "uptake": uptake,
+            "secretion": secretion,
+        }
+
+    return out
+
+
+def metabolic_interaction_prior(
+    condition: Literal["healthy", "diseased", "commensal", "dysbiotic"] = "healthy",
+    *,
+    flux_threshold: float = 1e-7,
+    min_count: int = 1,
+    media_override: dict[str, float] | None = None,
+) -> dict:
+    prof = metabolic_exchange_profile(
+        condition=condition,
+        flux_threshold=flux_threshold,
+        media_override=media_override,
+    )
+
+    n = len(SPECIES_ORDER)
+    cross = np.zeros((n, n), dtype=int)
+    comp = np.zeros((n, n), dtype=int)
+    sign = np.zeros((n, n), dtype=int)
+    met_cross: list[list[list[str]]] = [[[] for _ in range(n)] for _ in range(n)]
+    met_comp: list[list[list[str]]] = [[[] for _ in range(n)] for _ in range(n)]
+
+    ignore = set(OPEN_ALWAYS_KEYS).union(set(AGORA_TRACE_METS))
+    uptake_sets = {
+        sp: {m for m in prof["species"][sp]["uptake"].keys() if m not in ignore}
+        for sp in SPECIES_ORDER
+    }
+    secr_sets = {
+        sp: {m for m in prof["species"][sp]["secretion"].keys() if m not in ignore}
+        for sp in SPECIES_ORDER
+    }
+    if all(len(uptake_sets[sp]) == 0 and len(secr_sets[sp]) == 0 for sp in SPECIES_ORDER):
+        uptake_sets = {sp: set(MONOD_PARAMS[sp]["uptake"].keys()) for sp in SPECIES_ORDER}
+        secr_sets = {sp: set(MONOD_PARAMS[sp].get("secretion", {}).keys()) for sp in SPECIES_ORDER}
+
+    for i, sp_i in enumerate(SPECIES_ORDER):
+        for j, sp_j in enumerate(SPECIES_ORDER):
+            if i == j:
+                continue
+            cx = sorted(secr_sets[sp_i].intersection(uptake_sets[sp_j]))
+            cp = sorted(uptake_sets[sp_i].intersection(uptake_sets[sp_j]))
+            cross[i, j] = len(cx)
+            comp[i, j] = len(cp)
+            met_cross[i][j] = cx
+            met_comp[i][j] = cp
+
+            if cross[i, j] >= min_count or comp[i, j] >= min_count:
+                if cross[i, j] > comp[i, j] and cross[i, j] >= min_count:
+                    sign[i, j] = 1
+                elif comp[i, j] > cross[i, j] and comp[i, j] >= min_count:
+                    sign[i, j] = -1
+
+    prof["prior"] = {
+        "species_order": list(SPECIES_ORDER),
+        "flux_threshold": float(flux_threshold),
+        "min_count": int(min_count),
+        "crossfeed_count": cross.tolist(),
+        "competition_count": comp.tolist(),
+        "sign": sign.tolist(),
+        "crossfeed_mets": met_cross,
+        "competition_mets": met_comp,
+    }
+    return prof
 
 
 # ---------------------------------------------------------------------------
@@ -452,10 +608,23 @@ class OralBiofilmComets:
 
         sp = self._species_meta(species_key, condition)
         if self.agora_dir:
-            agora_path = self.agora_dir / f"{sp['agora_id']}.xml"
-            if agora_path.exists():
-                return cobra.io.read_sbml_model(str(agora_path))
-            warnings.warn(f"AGORA model not found: {agora_path}. Using textbook fallback.")
+            candidates: list[str] = []
+            override_id = sp.get("agora_id")
+            if override_id:
+                candidates.append(str(override_id))
+            base_id = SPECIES.get(species_key, {}).get("agora_id")
+            if base_id and str(base_id) not in candidates:
+                candidates.append(str(base_id))
+
+            for cid in candidates:
+                agora_path = self.agora_dir / f"{cid}.xml"
+                if agora_path.exists():
+                    return cobra.io.read_sbml_model(str(agora_path))
+
+            if candidates:
+                warnings.warn(
+                    f"AGORA model not found for {species_key}/{condition}: tried {candidates}. Using textbook fallback."
+                )
 
         # Fallback: textbook E. coli with species-specific bound modifications
         m = cobra.io.load_model("textbook")
@@ -625,6 +794,19 @@ class OralBiofilmComets:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
 
+        if self.comets_home is not None:
+            import os
+            os.environ["COMETS_HOME"] = str(self.comets_home)
+            ortools_dir = Path(self.comets_home) / "lib" / "or-tools" / "9.4.1874"
+            ld = os.environ.get("LD_LIBRARY_PATH", "")
+            add = str(ortools_dir)
+            if add and add not in ld.split(":"):
+                os.environ["LD_LIBRARY_PATH"] = (add + (":" + ld if ld else ""))
+            jto = os.environ.get("JAVA_TOOL_OPTIONS", "")
+            flag = f"-Djava.library.path={ortools_dir}"
+            if flag not in jto:
+                os.environ["JAVA_TOOL_OPTIONS"] = (flag + (" " + jto if jto else ""))
+
         if self.comets_home is None:
             # No COMETS: try COBRApy dFBA first, then mock
             try:
@@ -668,7 +850,18 @@ class OralBiofilmComets:
         run_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            exp = c.comets(layout, params, relative_dir=str(run_dir) + "/")
+            try:
+                rel = str(run_dir.relative_to(Path.cwd())) + "/"
+            except Exception:
+                import os
+                rel = os.path.relpath(str(run_dir), str(Path.cwd())) + "/"
+            exp = c.comets(layout, params, relative_dir=rel)
+            ort_dir = Path(self.comets_home) / "lib" / "or-tools" / "9.4.1874"
+            ort_java = ort_dir / "ortools-java-9.4.1874.jar"
+            if ort_dir.exists():
+                exp.set_classpath("or_tools_linux", str(ort_dir) + "/*")
+            if ort_java.exists():
+                exp.set_classpath("or_tools_java", str(ort_java))
             exp.run(delete_files=delete_files)
             bm = self._rename_biomass_cols(exp.total_biomass, condition)
 
@@ -793,6 +986,7 @@ class OralBiofilmComets:
         time_step: float = 0.01,   # hours per cycle
         K_total: float = 0.01,     # g  total biomass carrying capacity
         o2_inhibit_factor: float = 2.0,   # fold growth suppression under O2 for strict anaerobes
+        media_override: dict[str, float] | None = None,
     ):
         """
         AGORA-calibrated Monod dFBA.
@@ -838,7 +1032,10 @@ class OralBiofilmComets:
         else:
             media_init = MEDIA_PG_SINGLE
         media = dict(media_init)
-        tracked: frozenset[str] = frozenset(media_init.keys())
+        if media_override:
+            for k, v in media_override.items():
+                media[k] = float(v)
+        tracked: frozenset[str] = frozenset(media.keys())
 
         o2_conc = media.get("o2[e]", 0.0)   # 0 in diseased → anaerobes benefit
         fracs = INIT_FRACTIONS[condition]

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Community type (CT) analysis of Dieckow 10 patients.
-Clusters patients by mean 10-guild composition (Szafranski 2025 preprint style).
+Clusters patients by mean guild composition (Szafranski 2025 preprint style).
 
 Output:
   results/dieckow_otu/community_types.pdf + .png
@@ -30,20 +30,16 @@ from sklearn.metrics import silhouette_score
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parent))
-from guild_replicator_dieckow import GUILD_ORDER, N_G
+from guild_replicator_dieckow import GUILD_ORDER, N_G, GUILD_COLORS_LIST, GUILD_SHORT_LIST
 
 PHI_NPY = Path(__file__).parent / 'results' / 'dieckow_otu' / 'phi_guild.npy'
 OUT_DIR = Path(__file__).parent / 'results' / 'dieckow_otu'
 
 PATIENTS = list('ABCDEFGHKL')
-SHORT    = [g[:6] for g in GUILD_ORDER]
+SHORT    = GUILD_SHORT_LIST
 CT_COLORS = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3']
 
-GUILD_COLORS = [
-    '#8B4513', '#2ca02c', '#ff7f0e', '#1f77b4',
-    '#17becf', '#bcbd22', '#ffbb78', '#aec7e8',
-    '#98df8a', '#999999',
-]
+GUILD_COLORS = GUILD_COLORS_LIST
 
 
 def best_k(X, Z, k_range=(2, 4)):
@@ -58,8 +54,8 @@ def best_k(X, Z, k_range=(2, 4)):
 
 
 def main():
-    phi = np.load(PHI_NPY)          # (10, 3, 10)
-    # Feature: mean across weeks → (10, 10)
+    phi = np.load(PHI_NPY)
+    # Feature: mean across weeks → (10, N)
     X = phi.mean(axis=1)
 
     # Hierarchical clustering (Ward, Bray-Curtis-like = Euclidean on compositions)
@@ -106,8 +102,8 @@ def main():
     ct_means = []
     for ct in ct_ids:
         mask = (labels == ct)
-        ct_means.append(X[mask].mean(axis=0))   # (10,)
-    ct_means = np.array(ct_means)   # (k, 10)
+        ct_means.append(X[mask].mean(axis=0))
+    ct_means = np.array(ct_means)
 
     bottom = np.zeros(len(ct_ids))
     for g, (col, name) in enumerate(zip(GUILD_COLORS, GUILD_ORDER)):

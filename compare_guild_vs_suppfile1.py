@@ -8,12 +8,15 @@ Supp File 1: species-level PRODUCES/USES/IS_INHIBITED_BY
 """
 
 import json
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent))
+from guild_replicator_dieckow import GUILD_ORDER, GUILD_SHORT_LIST
 
 plt.rcParams.update({
     'font.family': 'sans-serif', 'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
@@ -31,11 +34,6 @@ SUPPFILE = Path('/home/nishioka/IKM_Hiwi/nife/Szafranski_Published_Work/'
 FIT_JSON = Path('/home/nishioka/IKM_Hiwi/nife/results/dieckow_cr/fit_guild.json')
 OUT_DIR  = Path('/home/nishioka/IKM_Hiwi/nife/results/dieckow_otu')
 
-GUILD_ORDER = [
-    'Actinobacteria', 'Bacilli', 'Bacteroidia', 'Betaproteobacteria',
-    'Clostridia', 'Coriobacteriia', 'Fusobacteriia', 'Gammaproteobacteria',
-    'Negativicutes', 'Other',
-]
 N_G = len(GUILD_ORDER)
 
 # Genus → Guild (same as aggregate_dieckow_guilds.py)
@@ -46,7 +44,7 @@ GENUS_GUILD = {
     'Abiotrophia':'Bacilli','Lactiplantibacillus':'Bacilli',
     'Prevotella':'Bacteroidia','Porphyromonas':'Bacteroidia',
     'Tannerella':'Bacteroidia','Alloprevotella':'Bacteroidia',
-    'Capnocytophaga':'Bacteroidia',
+    'Capnocytophaga':'Flavobacteriia',
     'Neisseria':'Betaproteobacteria','Eikenella':'Betaproteobacteria',
     'Aggregatibacter':'Betaproteobacteria',
     'Fusobacterium':'Fusobacteriia','Leptotrichia':'Fusobacteriia',
@@ -115,7 +113,7 @@ def main():
     A = np.array(fit['A'])
 
     # ── Figure: 3-panel comparison ────────────────────────────────────────────
-    short = [g[:6] for g in GUILD_ORDER]
+    short = GUILD_SHORT_LIST
     fig, axes = plt.subplots(1, 3, figsize=(13, 4.5))
 
     vmax_A = max(abs(A[~np.eye(N_G, dtype=bool)]).max(), 0.01)

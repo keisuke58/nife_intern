@@ -38,7 +38,9 @@ FITS_DIR = Path('/home/nishioka/IKM_Hiwi/nife/results/dieckow_fits')
 OBS_JSON = Path('/home/nishioka/IKM_Hiwi/nife/results/dieckow_obs_matrix_5sp.json')
 GUILD_FIT_JSON = Path('/home/nishioka/IKM_Hiwi/nife/results/dieckow_cr/fit_guild.json')
 OUT_DIR  = Path('/home/nishioka/IKM_Hiwi/docs/figures/dieckow')
+CR_DIR   = Path('/home/nishioka/IKM_Hiwi/nife/results/dieckow_cr')
 OUT_DIR.mkdir(parents=True, exist_ok=True)
+CR_DIR.mkdir(parents=True, exist_ok=True)
 
 SHORT    = ['So', 'An', 'Vd', 'Fn', 'Pg']
 PATIENTS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'K', 'L']
@@ -179,68 +181,121 @@ def fig1_patient_predictions(phi_obs, valid_patients, theta_map):
         raise RuntimeError('JAX is required for Fig1 patient predictions.')
     N = len(valid_patients)
     ncols = 5; nrows = (N + ncols - 1) // ncols
-    fig, axes = plt.subplots(nrows, ncols, figsize=(12, nrows * 2.4),
-                             sharex=True, sharey=True)
-    axes = axes.flatten()
-    weeks = [1, 2, 3]
 
-    # JIT warm-up
-    _ = run_week_jit(jnp.array(theta_map[0]), jnp.array(phi_obs[0, 0]))
+    # ── Compute predictions ───────────────────────────────────────────────────
+    _ = run_week_jit(jnp.array(theta_map[0]), jnp.array(phi_obs[0, 0]))  # warm-up
+
+    phi_pred = []  # list of (3, N_SP) arrays: [W1-obs, W2-pred, W3-pred]
+    rmse_list = []
+    for pi in range(N):
+        theta_p = theta_map[pi]
+        phi_ic  = jnp.array(phi_obs[pi, 0])
+        raw2 = run_week_jit(jnp.array(theta_p), phi_ic)
+        phi_w2 = np.array(raw2 / jnp.maximum(raw2.sum(), 1e-12))
+        raw3 = run_week_jit(jnp.array(theta_p), raw2)
+        phi_w3 = np.array(raw3 / jnp.maximum(raw3.sum(), 1e-12))
+        phi_pred.append(np.stack([phi_obs[pi, 0], phi_w2, phi_w3]))
+        rmse_list.append(float(np.sqrt(np.mean(
+            (np.stack([phi_w2, phi_w3]) - phi_obs[pi, 1:]) ** 2))))
+
+    # ── Layout: 2×5 grid, each panel = stacked-bar composition timeline ───────
+    # 5 bars per panel: W1-obs | W2-obs | W2-pred | W3-obs | W3-pred
+    # Species stacked with consistent colors; clear obs/pred pairing
+    fig, axes = plt.subplots(nrows, ncols,
+                             figsize=(14, nrows * 3.2),
+                             gridspec_kw={'hspace': 0.45, 'wspace': 0.15})
+    axes = axes.flatten()
+
+    bw = 0.72          # bar width
+    # x-positions: W1 | gap | W2-obs, W2-pred | gap | W3-obs, W3-pred
+    x_w1   = 0.0
+    x_w2_o = 1.6;  x_w2_p = x_w2_o + bw + 0.06
+    x_w3_o = 3.4;  x_w3_p = x_w3_o + bw + 0.06
+    xs_obs  = [x_w1,   x_w2_o, x_w3_o]
+    xs_pred = [x_w2_p, x_w3_p]
+
+    HATCHES = ['////', '////']  # predicted bars use diagonal hatch
 
     for pi, p in enumerate(valid_patients):
-        pidx = PATIENTS.index(p)
-        theta_p = theta_map[pidx]
-        phi_ic = phi_obs[pi, 0]
+        ax   = axes[pi]
+        obs  = phi_obs[pi]       # (3, N_SP)  W1, W2, W3 observed
+        pred = phi_pred[pi]      # (3, N_SP)  W1, W2-pred, W3-pred
 
-        phi_w2_j = run_week_jit(jnp.array(theta_p), jnp.array(phi_ic))
-        phi_w2 = np.array(phi_w2_j / jnp.maximum(phi_w2_j.sum(), 1e-12))
-        phi_w3_j = run_week_jit(jnp.array(theta_p), phi_w2_j)
-        phi_w3 = np.array(phi_w3_j / jnp.maximum(phi_w3_j.sum(), 1e-12))
-        pred = np.stack([phi_obs[pi, 0], phi_w2, phi_w3])
+        # draw stacked obs bars (W1, W2, W3)
+        for wi, x0 in enumerate(xs_obs):
+            bottom = 0.0
+            for si in range(N_SP):
+                ax.bar(x0, obs[wi, si], bw, bottom=bottom,
+                       color=SPECIES_COLORS[si],
+                       alpha=0.88, linewidth=0)
+                bottom += obs[wi, si]
 
-        ax = axes[pi]
-        x = np.arange(N_SP)
-        width = 0.3
-        for w, (obs_w, pred_w) in enumerate(zip(phi_obs[pi], pred)):
-            offset = (w - 1) * width
-            ax.bar(x + offset, obs_w, width=width, color=SPECIES_COLORS,
-                   alpha=0.75, label='obs' if w == 0 else None)
-            ax.plot(x + offset, pred_w, 'x', ms=6, color='k',
-                    mew=1.5, label='MAP' if (pi == 0 and w == 0) else None)
+        # draw stacked pred bars (W2-pred, W3-pred) — hatched, lighter
+        for wi, x0 in enumerate(xs_pred):
+            bottom = 0.0
+            for si in range(N_SP):
+                h = pred[wi + 1, si]   # W2-pred (wi=0) or W3-pred (wi=1)
+                ax.bar(x0, h, bw, bottom=bottom,
+                       color=SPECIES_COLORS[si],
+                       alpha=0.42, linewidth=0.6,
+                       edgecolor=SPECIES_COLORS[si],
+                       hatch='////')
+                bottom += h
 
-        ax.set_title(f'Patient {p}', fontsize=11, fontweight='bold')
-        ax.set_xticks(x)
-        ax.set_xticklabels(SHORT, fontsize=7)
-        ax.set_ylim(0, 1)
+        # x-axis ticks and labels
+        tick_x = [x_w1, (x_w2_o + x_w2_p) / 2, (x_w3_o + x_w3_p) / 2]
+        ax.set_xticks(tick_x)
+        ax.set_xticklabels(['W1', 'W2', 'W3'], fontsize=9)
+        ax.set_xlim(-0.55, x_w3_p + 0.55)
+        ax.set_ylim(0, 1.08)
+        ax.set_yticks([0, 0.5, 1.0])
         if pi % ncols == 0:
-            ax.set_ylabel('φ fraction', fontsize=10)
+            ax.set_ylabel('Relative abundance', fontsize=9)
+        else:
+            ax.set_yticklabels([])
 
-        rmse_p = float(np.sqrt(np.mean(
-            (np.stack([phi_w2, phi_w3]) - phi_obs[pi, 1:]) ** 2)))
-        ax.text(0.97, 0.97, f'RMSE={rmse_p:.3f}', transform=ax.transAxes,
-                ha='right', va='top', fontsize=7, color='gray')
+        # thin vertical dividers between week pairs
+        for xd in [1.25, 3.05]:
+            ax.axvline(xd, color='#cccccc', lw=0.7, ls='--', zorder=0)
+
+        # RMSE annotation
+        ax.text(0.97, 0.97, f'RMSE={rmse_list[pi]:.3f}',
+                transform=ax.transAxes, ha='right', va='top',
+                fontsize=8, color='#555555',
+                bbox=dict(boxstyle='round,pad=0.2', fc='white', ec='none', alpha=0.7))
+
+        ax.set_title(f'Patient {p}', fontsize=10, fontweight='bold', pad=4)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
 
     for ax in axes[N:]: ax.set_visible(False)
 
-    # week indicator: shade week columns
+    # ── Legend ────────────────────────────────────────────────────────────────
     from matplotlib.patches import Patch
-    week_labels = [Patch(color='gray', alpha=0.3, label=f'Wk{w+1} bar offset')
-                   for w in range(3)]
-    sp_patches  = [Patch(color=c, alpha=0.6, label=s)
-                   for c, s in zip(SPECIES_COLORS, SHORT)]
-    fig.legend(handles=sp_patches, loc='lower center', ncol=N_SP,
-               bbox_to_anchor=(0.5, 0), frameon=False, fontsize=10)
-    fig.text(0.5, 0.01, 'Week1 (left bar) → Week2 (mid) → Week3 (right bar); × = MAP prediction',
-             ha='center', fontsize=7, color='gray')
-    fig.suptitle('Per-patient MAP predictions: Dieckow 10-patient in-vivo\n'
-                 '(shared A, patient-specific b; TMCMC N_p=1000)',
-                 fontsize=13, y=1.01)
-    plt.tight_layout(rect=[0, 0.04, 1, 1])
-    out = OUT_DIR / 'fig1_patient_predictions.pdf'
-    fig.savefig(out, bbox_inches='tight')
-    fig.savefig(str(out).replace('.pdf','.png'), dpi=300, bbox_inches='tight')
+    sp_patches = [Patch(color=c, alpha=0.88, label=s)
+                  for c, s in zip(SPECIES_COLORS, SHORT)]
+    obs_patch  = Patch(color='#888888', alpha=0.88,   label='Observed')
+    pred_patch = Patch(color='#888888', alpha=0.42,   label='Predicted (MAP)',
+                       hatch='////')
+    fig.legend(handles=sp_patches + [obs_patch, pred_patch],
+               loc='lower center', ncol=N_SP + 2,
+               bbox_to_anchor=(0.5, -0.01), frameon=False, fontsize=9,
+               handlelength=1.4)
+    fig.text(0.5, -0.025,
+             'Solid = observed, hatched = MAP prediction.  '
+             'W1 = initial condition (not predicted).',
+             ha='center', fontsize=7.5, color='#666666')
+
+    fig.suptitle('Per-patient MAP predictions — Dieckow 10-patient in-vivo\n'
+                 '(Hamilton ODE, shared A, patient-specific b; TMCMC N_p=1 000)',
+                 fontsize=12, fontweight='bold', y=1.01)
+
+    for d in (OUT_DIR, CR_DIR):
+        out = d / 'fig1b_patient_predictions_stacked.pdf'
+        fig.savefig(out, dpi=300, bbox_inches='tight')
+        fig.savefig(str(out).replace('.pdf', '.png'), dpi=300, bbox_inches='tight')
     plt.close()
-    print(f'Saved: {out}')
+    print(f'Saved: fig1b_patient_predictions_stacked (docs + results/dieckow_cr)')
 
 
 # ── Fig 2: A matrix heatmaps (Dieckow + 4 Heine) ─────────────────────────────

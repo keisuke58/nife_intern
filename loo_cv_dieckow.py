@@ -18,9 +18,8 @@ Usage:
 import argparse, json, os, sys, time
 from pathlib import Path
 
-# Force CPU to avoid GPU OOM during JAX compilation of LOO-CV loops
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
-os.environ.setdefault("JAX_PLATFORMS", "cpu")
+# Avoid pre-allocating entire GPU memory (prevents OOM during XLA compilation)
+os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 
 import numpy as np
 from scipy.optimize import minimize
@@ -181,17 +180,16 @@ def run_loo_hamilton(phi_all, pl_arr, patients, n_g, occ_norm):
         import jax
         import jax.numpy as jnp
         jax.config.update('jax_enable_x64', True)
-        import optax
     except ImportError:
-        print('JAX/optax not available — skipping Hamilton LOO-CV', flush=True)
+        print('JAX not available — skipping Hamilton LOO-CV', flush=True)
         return None
 
     sys.path.insert(0, str(_here.parent / 'Tmcmc202601' / 'data_5species' / 'main'))
-    from hamilton_ode_jax_nsp import simulate_0d_nsp, count_params, theta_to_matrices
+    from hamilton_ode_jax_nsp import simulate_0d_nsp
 
     n_sp = n_g
     n_A = n_sp * (n_sp + 1) // 2
-    n_params_total = n_A + n_sp
+    LAM_H = 1e-4
 
     warm = _here / 'results' / 'dieckow_cr' / 'fit_guild_hamilton_masked.json'
     if not warm.exists():
@@ -218,112 +216,109 @@ def run_loo_hamilton(phi_all, pl_arr, patients, n_g, occ_norm):
         return A
 
     N_STEPS = 2500
-    LR = 3e-3
-    EPOCHS = 800
-    LAM_H = 1e-4
 
-    def simulate_patient(A_upper_jax, b_p_jax, phi_init, psi_val, alpha_val):
-        theta = jnp.concatenate([A_upper_jax, b_p_jax])
+    # Compile forward simulation once — avoids recompilation per call.
+    # No autodiff; use scipy numerical gradients instead.
+    @jax.jit
+    def _sim_jit(theta, phi_init, psi_val, alpha_val):
         phibar = simulate_0d_nsp(theta, n_sp=n_sp, n_steps=N_STEPS, dt=1e-4,
                                  phi_init=phi_init, psi_init=psi_val,
                                  c_const=25.0, alpha_const=alpha_val)
         eq = phibar[-1]; s = eq.sum()
         return jnp.where(s > 1e-10, eq / s, jnp.ones(n_sp) / n_sp)
 
-    simulate_jit = jax.jit(simulate_patient)
+    print('  Pre-compiling Hamilton forward pass...', flush=True)
+    _dummy = np.ones(n_A + n_sp) * 0.1
+    _ = np.array(_sim_jit(jnp.array(_dummy), jnp.ones(n_sp) / n_sp,
+                          jnp.array(0.5), jnp.array(50.0)))
+    print('  Compilation done.', flush=True)
 
-    def loss_train(A_upper, b_mat, phi_train, occ_train, pl_train):
+    def simulate_np(A_up, b_p, phi_init, psi_val, alpha_val):
+        theta = np.concatenate([A_up, b_p])
+        return np.array(_sim_jit(jnp.array(theta), jnp.array(phi_init),
+                                 jnp.array(float(psi_val)), jnp.array(float(alpha_val))))
+
+    def mse_train(theta_flat, phi_tr, occ_tr, pl_tr):
+        n_tr = phi_tr.shape[0]
+        A_up = theta_flat[:n_A]
+        b_mat = theta_flat[n_A:].reshape(n_tr, n_sp)
         total = 0.0
-        n_tr = phi_train.shape[0]
         for p in range(n_tr):
-            phi_w1 = jnp.array(phi_train[p, 0]) * occ_train[p, 0]
-            psi_w1 = jnp.clip(pl_train[p, 0], 1e-4, 0.9999)
-            alpha_w1 = 100.0 * (0.5 + 0.5 * pl_train[p, 0])
-            pred_w2 = simulate_jit(A_upper, b_mat[p], phi_w1, psi_w1, alpha_w1)
-            phi_w2_abs = pred_w2 * occ_train[p, 1]
-            psi_w2 = jnp.clip(pl_train[p, 1], 1e-4, 0.9999)
-            alpha_w2 = 100.0 * (0.5 + 0.5 * pl_train[p, 1])
-            pred_w3 = simulate_jit(A_upper, b_mat[p], phi_w2_abs, psi_w2, alpha_w2)
-            obs_w2 = jnp.array(phi_train[p, 1])
-            obs_w3 = jnp.array(phi_train[p, 2])
-            total = total + jnp.mean((pred_w2 - obs_w2)**2) + jnp.mean((pred_w3 - obs_w3)**2)
-        reg = LAM_H * jnp.sum(A_upper**2)
-        return total / n_tr + reg
+            phi_w1 = phi_tr[p, 0] * occ_tr[p, 0]
+            psi_w1 = float(np.clip(pl_tr[p, 0], 1e-4, 0.9999))
+            alpha_w1 = 100.0 * (0.5 + 0.5 * pl_tr[p, 0])
+            pred_w2 = simulate_np(A_up, b_mat[p], phi_w1, psi_w1, alpha_w1)
+            phi_w2_abs = pred_w2 * occ_tr[p, 1]
+            psi_w2 = float(np.clip(pl_tr[p, 1], 1e-4, 0.9999))
+            alpha_w2 = 100.0 * (0.5 + 0.5 * pl_tr[p, 1])
+            pred_w3 = simulate_np(A_up, b_mat[p], phi_w2_abs, psi_w2, alpha_w2)
+            total += (np.mean((pred_w2 - phi_tr[p, 1])**2) +
+                      np.mean((pred_w3 - phi_tr[p, 2])**2))
+        return total / n_tr + LAM_H * np.sum(A_up**2)
 
-    def fit_train(phi_tr, occ_tr, pl_tr, A_init_up, b_init_tr):
-        A_up = jnp.array(A_init_up)
-        b_mat = jnp.array(b_init_tr)
-        opt = optax.adam(LR)
-        params = (A_up, b_mat)
-        opt_state = opt.init(params)
-        grad_fn = jax.jit(jax.value_and_grad(
-            lambda p: loss_train(p[0], p[1], phi_tr, occ_tr, pl_tr), argnums=0))
-        for _ in range(EPOCHS):
-            (val, grads) = grad_fn(params)
-            updates, opt_state2 = opt.update(grads, opt_state)
-            params = optax.apply_updates(params, updates)
-            opt_state = opt_state2
-        return np.array(params[0]), np.array(params[1])
+    def mse_held(b_p, A_up, phi_ph, occ_ph, pl_ph):
+        phi_w1 = phi_ph[0] * occ_ph[0]
+        psi_w1 = float(np.clip(pl_ph[0], 1e-4, 0.9999))
+        alpha_w1 = 100.0 * (0.5 + 0.5 * pl_ph[0])
+        pred_w2 = simulate_np(A_up, b_p, phi_w1, psi_w1, alpha_w1)
+        phi_w2_abs = pred_w2 * occ_ph[1]
+        psi_w2 = float(np.clip(pl_ph[1], 1e-4, 0.9999))
+        alpha_w2 = 100.0 * (0.5 + 0.5 * pl_ph[1])
+        pred_w3 = simulate_np(A_up, b_p, phi_w2_abs, psi_w2, alpha_w2)
+        return (np.mean((pred_w2 - phi_ph[1])**2) +
+                np.mean((pred_w3 - phi_ph[2])**2))
 
     loo_rmses, results = [], []
     for p_held in range(n_p):
         t0 = time.time()
         train_idx = [i for i in range(n_p) if i != p_held]
+        n_tr = len(train_idx)
         phi_tr = phi_all[train_idx]
         occ_tr = occ_norm[train_idx]
         pl_tr = pl_arr[train_idx]
         A_up0 = pack_upper(A_warm[:n_g, :n_g])
-        b_tr0 = b_warm[train_idx, :n_g] if b_warm.shape[0] >= n_p else np.full((len(train_idx), n_g), 0.1)
+        if b_warm.shape[0] >= n_p and b_warm.shape[1] >= n_g:
+            b_tr0 = b_warm[train_idx, :n_g]
+        else:
+            b_tr0 = np.full((n_tr, n_g), 0.1)
+        theta0 = np.concatenate([A_up0, b_tr0.ravel()])
 
-        A_up_fit, b_tr_fit = fit_train(phi_tr, occ_tr, pl_tr, A_up0, b_tr0)
+        res = minimize(mse_train, theta0, args=(phi_tr, occ_tr, pl_tr),
+                       method='L-BFGS-B',
+                       options={'maxiter': 300, 'ftol': 1e-10, 'gtol': 1e-6})
+        A_up_fit = res.x[:n_A]
+        b_tr_fit = res.x[n_A:].reshape(n_tr, n_sp)
+        train_rmse = float(np.sqrt(mse_train(res.x, phi_tr, occ_tr, pl_tr)))
 
-        # fit b for held-out
-        b_held0 = (b_warm[p_held, :n_g] if b_warm.shape[0] > p_held
-                   else np.full(n_g, 0.1))
-        b_held = jnp.array(b_held0)
-        A_up_f = jnp.array(A_up_fit)
-        opt2 = optax.adam(LR)
-        params2 = b_held
-        opt_state2 = opt2.init(params2)
+        if b_warm.shape[0] > p_held and b_warm.shape[1] >= n_g:
+            b_held0 = b_warm[p_held, :n_g]
+        else:
+            b_held0 = np.full(n_g, 0.1)
+        res2 = minimize(mse_held, b_held0,
+                        args=(A_up_fit, phi_all[p_held], occ_norm[p_held], pl_arr[p_held]),
+                        method='L-BFGS-B',
+                        options={'maxiter': 200, 'ftol': 1e-10, 'gtol': 1e-6})
+        b_p_final = res2.x
+
         phi_ph = phi_all[p_held]
         occ_ph = occ_norm[p_held]
         pl_ph = pl_arr[p_held]
-        def loss_b(b_p):
-            phi_w1 = jnp.array(phi_ph[0]) * occ_ph[0]
-            psi_w1 = jnp.clip(pl_ph[0], 1e-4, 0.9999)
-            alpha_w1 = 100.0 * (0.5 + 0.5 * pl_ph[0])
-            pred_w2 = simulate_jit(A_up_f, b_p, phi_w1, psi_w1, alpha_w1)
-            phi_w2_abs = pred_w2 * occ_ph[1]
-            psi_w2 = jnp.clip(pl_ph[1], 1e-4, 0.9999)
-            alpha_w2 = 100.0 * (0.5 + 0.5 * pl_ph[1])
-            pred_w3 = simulate_jit(A_up_f, b_p, phi_w2_abs, psi_w2, alpha_w2)
-            return (jnp.mean((pred_w2 - jnp.array(phi_ph[1]))**2) +
-                    jnp.mean((pred_w3 - jnp.array(phi_ph[2]))**2))
-        grad_b = jax.jit(jax.value_and_grad(loss_b))
-        for _ in range(400):
-            val, g = grad_b(params2)
-            upd, opt_state2 = opt2.update(g, opt_state2)
-            params2 = optax.apply_updates(params2, upd)
-
-        b_p_final = np.array(params2)
-        A_final = unpack_upper(A_up_fit)
         phi_w1 = phi_ph[0] * occ_ph[0]
-        pred_w2 = np.array(simulate_jit(
-            jnp.array(A_up_fit), jnp.array(b_p_final),
-            jnp.array(phi_w1), float(np.clip(pl_ph[0], 1e-4, 0.9999)),
-            100.0 * (0.5 + 0.5 * float(pl_ph[0]))))
+        pred_w2 = simulate_np(A_up_fit, b_p_final, phi_w1,
+                              float(np.clip(pl_ph[0], 1e-4, 0.9999)),
+                              100.0 * (0.5 + 0.5 * pl_ph[0]))
         phi_w2_abs = pred_w2 * occ_ph[1]
-        pred_w3 = np.array(simulate_jit(
-            jnp.array(A_up_fit), jnp.array(b_p_final),
-            jnp.array(phi_w2_abs), float(np.clip(pl_ph[1], 1e-4, 0.9999)),
-            100.0 * (0.5 + 0.5 * float(pl_ph[1]))))
-        n_g_local = phi_ph.shape[1]
+        pred_w3 = simulate_np(A_up_fit, b_p_final, phi_w2_abs,
+                              float(np.clip(pl_ph[1], 1e-4, 0.9999)),
+                              100.0 * (0.5 + 0.5 * pl_ph[1]))
         rmse_p = float(np.sqrt(
             (np.sum((pred_w2 - phi_ph[1])**2) + np.sum((pred_w3 - phi_ph[2])**2))
-            / (2 * n_g_local)))
+            / (2 * n_sp)))
         loo_rmses.append(rmse_p)
-        results.append({'patient': patients[p_held], 'rmse': rmse_p})
-        print(f'  {patients[p_held]} held-out RMSE={rmse_p:.5f}  ({time.time()-t0:.1f}s)', flush=True)
+        results.append({'patient': patients[p_held], 'rmse': rmse_p,
+                        'train_rmse': train_rmse})
+        print(f'  {patients[p_held]} held-out RMSE={rmse_p:.5f}  train={train_rmse:.5f}'
+              f'  ({time.time()-t0:.1f}s)', flush=True)
 
     loo_mean = float(np.mean(loo_rmses))
     print(f'\nLOO mean RMSE (Hamilton+struct): {loo_mean:.5f}', flush=True)

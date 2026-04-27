@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-10-guild Hamilton ODE fit to Dieckow phi_guild.npy.
+Class-level Hamilton ODE fit to Dieckow phi_guild.npy.
 
 Uses simulate_0d_nsp (n_sp=10) for the forward pass.
 Equilibrium phibar[-1] → normalise → weekly composition prediction.
 
-Symmetric A (55 upper-triangle params, shared across patients)
-Per-patient b (10 guilds × 10 patients = 100 params)
-Total: 155 params
+Symmetric A (N(N+1)/2 upper-triangle params, shared across patients)
+Per-patient b (N guilds × 10 patients)
+Total: N(N+1)/2 + 10N params
 
 Optimisation: scipy L-BFGS-B with JIT forward pass + numerical gradients.
 NOTE: JIT compile for n_sp=10 takes ~10-20 min. Submit via PBS.
@@ -24,6 +24,8 @@ import jax
 import jax.numpy as jnp
 jax.config.update('jax_enable_x64', True)
 
+from guild_replicator_dieckow import GUILD_ORDER, N_G
+
 sys.path.insert(0, '/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/main')
 from hamilton_ode_jax_nsp import simulate_0d_nsp
 
@@ -31,15 +33,10 @@ PHI_NPY     = Path(__file__).parent / 'results' / 'dieckow_otu' / 'phi_guild.npy
 RESULTS_DIR = Path(__file__).parent / 'results' / 'dieckow_cr'
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-N_SP    = 10
-N_A     = N_SP * (N_SP + 1) // 2   # 55 upper-triangle params for symmetric A
+N_SP    = N_G
+N_A     = N_SP * (N_SP + 1) // 2
 N_STEPS = 300                        # steps to equilibrium (0.25 time units)
 LAMBDA  = 1e-2
-GUILD_ORDER = [
-    'Actinobacteria', 'Bacilli', 'Bacteroidia', 'Betaproteobacteria',
-    'Clostridia', 'Coriobacteriia', 'Fusobacteriia', 'Gammaproteobacteria',
-    'Negativicutes', 'Other',
-]
 PATIENTS = list('ABCDEFGHKL')
 
 

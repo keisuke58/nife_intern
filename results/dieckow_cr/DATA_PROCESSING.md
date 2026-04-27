@@ -14,8 +14,9 @@ Dieckow et al. 2024 (*npj Biofilms and Microbiomes*) の peri-implant 16S アン
 | 論文 | Dieckow et al. 2025, *npj Biofilms Microbiomes* |
 | データベース | ENA: PRJEB71108 |
 | シーケンサー | PacBio (long-read 16S amplicon) |
-| サンプル数 | 30 = 10 患者 × 3 週 (W1/W2/W3) |
-| 患者 ID | A, B, C, D, E, F, G, H, K, L |
+| サンプル数 | 30 
+= 10 患者 × 3 週 (W1/W2/W3) |
+| Patient　患者 ID | A, B, C, D, E, F, G, H, K, L |
 | ERR 番号 | ERR13166574–ERR13166603 (manifest: `dieckow_manifest.tsv`) |
 | FASTQ 保存先 | `data/` (`.fastq.gz`) |
 
@@ -169,6 +170,36 @@ f̄ = Σ_i φ_i (Σ_j A_ij φ_j + b_i)
 |------|-----|
 | RMSE | 0.0549 |
 | r (pred vs obs) | 0.954 |
+
+---
+
+## 関連研究（Faust / Thiele / COMETS）と本研究への接続
+
+### 10-guild の色（使い回し）
+
+- 10-guild の順序と色は [guild_replicator_dieckow.py](file:///home/nishioka/IKM_Hiwi/nife/guild_replicator_dieckow.py) に集約:
+  - `GUILD_ORDER`
+  - `GUILD_COLORS`（辞書）
+  - `GUILD_COLORS_LIST`（`GUILD_ORDER`順のリスト）
+
+### 論文・資料の取得先
+
+- 保存先: `results/dieckow_cr/related_work_papers/`
+  - `Faust_CoNet_app_F1000Research_2016.fulltext.xml`（Europe PMC fullTextXML）
+  - `Wang_Microbiome_Modelling_Toolbox_2_0_Bioinformatics_2022.fulltext.xml`（Europe PMC fullTextXML）
+  - `Heirendt_COBRA_Toolbox_v3_NatProtocols_2019.metadata.json`（Europe PMC metadata）
+
+### 本研究での使い方（最短ルート）
+
+- Faust/CoNet（association network）
+  - 目的: 「候補辺集合（スパースなマスク）」を作り、10-guild gLV の A 行列推定の同定性を上げる（探索空間を狭める）。
+  - 運用: 10-guild（または genus）×30サンプルの表から複数指標でエッジ候補を出し、合意したものだけを prior / constraint に反映。
+- Thiele/COBRA・Microbiome Modelling Toolbox（constraint-based metabolic modeling）
+  - 目的: gLV の “相互作用係数” を、代謝物の収支・交換（cross-feeding / competition）として機構的に裏づける。
+  - 運用: Dieckow の代謝物ネットワーク（USES/PRODUCES 等）を起点に、交換される代謝物の符号（競合/相利）と A の符号比較を行う。
+- COMETS（代謝モデル＋空間/離散時間）
+  - 目的: 「代謝＋環境制約（拡散/空間）」まで含めたシミュレーションで、時系列・空間構造を説明できるか検証する。
+  - 運用: COBRA系で整備したコミュニティモデルを入力にして、酸素など環境勾配や代謝物拡散を入れる。
 
 ---
 

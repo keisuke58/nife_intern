@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-10-guild gLV fit: JAX autodiff + scipy L-BFGS-B.
+Class-level gLV fit: JAX autodiff + scipy L-BFGS-B.
 
 Improvement over fit_guild_replicator.py:
   - jax.lax.scan-based RK4 → fast JIT compilation, no loop unrolling
@@ -11,7 +11,7 @@ Improvement over fit_guild_replicator.py:
 Output: results/dieckow_cr/fit_guild.json (overwrites if RMSE improves)
 """
 
-import json, sys, time
+import json, sys, time, argparse
 from pathlib import Path
 import numpy as np
 import jax
@@ -21,7 +21,9 @@ from scipy.optimize import minimize
 jax.config.update("jax_enable_x64", True)
 
 sys.path.insert(0, str(Path(__file__).parent))
-from guild_replicator_dieckow import GUILD_ORDER, N_G, pack, unpack, default_A
+from guild_replicator_dieckow import (
+    GUILD_ORDER, N_G, pack, unpack, default_A, conet_edges_to_mask
+)
 
 RESULTS_DIR = Path(__file__).parent / 'results' / 'dieckow_cr'
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -62,9 +64,12 @@ def _predict_patient(phi1, b, A):
     return phi2, phi3
 
 
-def make_loss_jax(phi_obs_np):
+def make_loss_jax(phi_obs_np, A_sign_prior=None, sign_lambda=0.0):
     phi_obs = jnp.array(phi_obs_np)   # (n_p, 3, N_G)
     n_p = phi_obs.shape[0]
+    s = None
+    if A_sign_prior is not None and sign_lambda > 0:
+        s = jnp.array(np.asarray(A_sign_prior, dtype=np.float64))
 
     def loss(theta):
         A     = theta[:N_A].reshape(N_G, N_G)
@@ -76,14 +81,35 @@ def make_loss_jax(phi_obs_np):
             sq = sq + jnp.sum((phi3_p - phi_obs[i, 2])**2)
         rmse = jnp.sqrt(sq / (n_p * 2 * N_G))
         reg  = LAMBDA_REG * jnp.sum(A**2)
-        return rmse + reg
+        val = rmse + reg
+        if s is not None:
+            mismatch = jnp.maximum(0.0, -s * A)
+            val = val + jnp.float64(sign_lambda) * jnp.sum(mismatch ** 2)
+        return val
 
     return jax.jit(jax.value_and_grad(loss)), n_p
 
 
-def make_bounds(n_p):
-    a_bounds = [(None, 0.0) if i == j else (None, None)
-                for i in range(N_G) for j in range(N_G)]
+def make_bounds(n_p, A_mask=None, A_sign_prior=None):
+    a_bounds = []
+    for i in range(N_G):
+        for j in range(N_G):
+            if i == j:
+                a_bounds.append((None, 0.0))
+            else:
+                if A_mask is not None and A_mask[i, j] == 0:
+                    a_bounds.append((0.0, 0.0))
+                else:
+                    if A_sign_prior is not None:
+                        s = int(A_sign_prior[i, j])
+                        if s > 0:
+                            a_bounds.append((0.0, None))
+                        elif s < 0:
+                            a_bounds.append((None, 0.0))
+                        else:
+                            a_bounds.append((None, None))
+                    else:
+                        a_bounds.append((None, None))
     return a_bounds + [(None, None)] * (n_p * N_G)
 
 
@@ -116,20 +142,42 @@ def save_result(A_np, b_np, loss_val, label, path):
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--conet-edges', default=None,
+                    help='Cytoscape/CoNet edge table (TSV/CSV) with guild names.')
+    ap.add_argument('--mask-npy', default=None,
+                    help='Optional precomputed A mask .npy (shape 10x10, 0/1).')
+    ap.add_argument('--use-sign-prior', action='store_true',
+                    help='If CoNet sign is available, constrain A_ij sign accordingly.')
+    ap.add_argument('--sign-penalty-lambda', type=float, default=0.0,
+                    help='Soft penalty weight for sign mismatch (requires CoNet sign).')
+    args = ap.parse_args()
+
     print('Loading phi_guild...', flush=True)
     phi_obs = np.load(PHI_NPY)
     n_p = phi_obs.shape[0]
     print(f'  {n_p} patients, {phi_obs.shape[1]} weeks, {phi_obs.shape[2]} guilds',
           flush=True)
 
-    print('Building JAX loss (JIT compile on first call ~10-30s)...', flush=True)
-    loss_and_grad, _ = make_loss_jax(phi_obs)
+    A_mask = None
+    A_sign = None
+    if args.mask_npy is not None:
+        A_mask = np.array(np.load(args.mask_npy), dtype=np.int8)
+    if args.conet_edges is not None:
+        A_mask, A_sign = conet_edges_to_mask(args.conet_edges, undirected=True)
+        np.save(RESULTS_DIR / 'conet_guild_A_mask.npy', A_mask)
+        np.save(RESULTS_DIR / 'conet_guild_A_sign.npy', A_sign)
+        print(f'Loaded CoNet edges → mask: free off-diagonal={int(A_mask.sum())-N_G}', flush=True)
 
-    # JIT warmup
+    A_sign_eff = A_sign if (A_sign is not None and args.sign_penalty_lambda > 0) else None
+
+    print('Building JAX loss (JIT compile on first call ~10-30s)...', flush=True)
+    loss_and_grad, _ = make_loss_jax(phi_obs, A_sign_prior=A_sign_eff, sign_lambda=float(args.sign_penalty_lambda))
+
     _ = loss_and_grad(jnp.zeros(N_A + n_p * N_G))
     print('JIT compiled.', flush=True)
 
-    bounds = make_bounds(n_p)
+    bounds = make_bounds(n_p, A_mask=A_mask, A_sign_prior=(A_sign if args.use_sign_prior else None))
 
     # warm start from previous result
     prev_json = RESULTS_DIR / 'fit_guild.json'
@@ -137,7 +185,11 @@ def main():
     prev_rmse = np.inf
     if prev_json.exists():
         prev = json.load(open(prev_json))
-        x_warm = pack(np.array(prev['A']), np.array(prev['b_all']))
+        A_warm = np.array(prev['A'])
+        if A_mask is not None:
+            A_warm = A_warm * A_mask
+        np.fill_diagonal(A_warm, np.minimum(np.diag(A_warm), 0.0))
+        x_warm = pack(A_warm, np.array(prev['b_all']))
         starts.append(('warm', x_warm))
         prev_rmse = prev['rmse']
         print(f'Warm start (prev RMSE={prev_rmse:.5f})', flush=True)
@@ -146,6 +198,8 @@ def main():
     rng = np.random.default_rng(42)
     for i in range(3):
         A_r = default_A() + rng.normal(0, 0.02, (N_G, N_G))
+        if A_mask is not None:
+            A_r = A_r * A_mask
         np.fill_diagonal(A_r, np.minimum(A_r.diagonal(), 0))
         b_r = rng.uniform(0.05, 0.3, (n_p, N_G))
         starts.append((f'rand{i}', pack(A_r, b_r)))

@@ -6,7 +6,7 @@ Analytical gradients → orders of magnitude faster than finite-difference L-BFG
 Output: results/dieckow_cr/fit_guild.json  (overwrites if RMSE improves)
 """
 
-import json, time
+import json, time, argparse
 from pathlib import Path
 import numpy as np
 import jax
@@ -15,16 +15,12 @@ from jax import grad, jit, vmap
 
 jax.config.update('jax_enable_x64', True)
 
+from guild_replicator_dieckow import GUILD_ORDER
+
 PHI_NPY    = Path(__file__).parent / 'results' / 'dieckow_otu' / 'phi_guild.npy'
 RESULTS_DIR = Path(__file__).parent / 'results' / 'dieckow_cr'
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-GUILD_ORDER = [
-    'Actinobacteria', 'Bacilli', 'Bacteroidia', 'Betaproteobacteria',
-    'Clostridia', 'Coriobacteriia', 'Fusobacteriia', 'Gammaproteobacteria',
-    'Negativicutes', 'Other',
-]
-N_G      = 10
 PATIENTS = list('ABCDEFGHKL')
 DT       = 1.0          # 1 week
 N_STEPS  = 20           # Euler steps per week
@@ -61,18 +57,43 @@ def predict_patient(phi0, b, A):
     return phi2, phi3
 
 
-@jit
-def loss_fn(A, b_all, phi_obs):
-    """Mean squared error over W2+W3 predictions + L2 reg on A."""
-    def patient_mse(phi_p, b_p):
-        phi2, phi3 = predict_patient(phi_p[0], b_p, A)
-        return jnp.sum((phi2 - phi_p[1])**2) + jnp.sum((phi3 - phi_p[2])**2)
-    mse = vmap(patient_mse)(phi_obs, b_all).mean() / (2 * N_G)
-    reg = LAMBDA * jnp.sum(A ** 2)
-    return jnp.sqrt(mse) + reg
+def _loss_builder(mask_obs):
+    n_g = int(mask_obs.shape[2])
 
+    @jit
+    def loss_fn(A, b_all, phi_obs):
+        def patient_sse(phi_p, b_p, m_p):
+            phi2, phi3 = predict_patient(phi_p[0], b_p, A)
+            m2 = m_p[1].astype(phi_obs.dtype)
+            m3 = m_p[2].astype(phi_obs.dtype)
+            sse2 = jnp.sum((phi2 - phi_p[1])**2) * m2
+            sse3 = jnp.sum((phi3 - phi_p[2])**2) * m3
+            terms = m2 + m3
+            return sse2 + sse3, terms
 
-grad_fn = jit(grad(loss_fn, argnums=(0, 1)))
+        sse, terms = vmap(patient_sse)(phi_obs, b_all, mask_obs)
+        denom = jnp.maximum(terms.sum(), 1.0) * n_g
+        mse = sse.sum() / denom
+        reg = LAMBDA * jnp.sum(A ** 2)
+        return jnp.sqrt(mse) + reg
+
+    @jit
+    def rmse_pure(A, b_all, phi_obs):
+        def patient_sse(phi_p, b_p, m_p):
+            phi2, phi3 = predict_patient(phi_p[0], b_p, A)
+            m2 = m_p[1].astype(phi_obs.dtype)
+            m3 = m_p[2].astype(phi_obs.dtype)
+            sse2 = jnp.sum((phi2 - phi_p[1])**2) * m2
+            sse3 = jnp.sum((phi3 - phi_p[2])**2) * m3
+            terms = m2 + m3
+            return sse2 + sse3, terms
+
+        sse, terms = vmap(patient_sse)(phi_obs, b_all, mask_obs)
+        denom = jnp.maximum(terms.sum(), 1.0) * n_g
+        mse = sse.sum() / denom
+        return jnp.sqrt(mse)
+
+    return loss_fn, rmse_pure
 
 
 # ── Adam optimiser (manual) ───────────────────────────────────────────────────
@@ -92,24 +113,64 @@ def adam_update(params, grads, m, v, t, lr=3e-3, b1=0.9, b2=0.999, eps=1e-8):
 def apply_constraints(A):
     """Keep diagonal ≤ 0 (self-limitation)."""
     diag_clipped = jnp.minimum(jnp.diag(A), 0.0)
-    return A.at[jnp.arange(N_G), jnp.arange(N_G)].set(diag_clipped)
+    n = A.shape[0]
+    return A.at[jnp.arange(n), jnp.arange(n)].set(diag_clipped)
 
 
 def main():
-    phi_obs = jnp.array(np.load(PHI_NPY))   # (10, 3, 10)
-    n_p     = phi_obs.shape[0]
-    print(f'phi_obs: {phi_obs.shape}  λ={LAMBDA}', flush=True)
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--phi-npy', default=str(PHI_NPY))
+    ap.add_argument('--out-json', default=str(RESULTS_DIR / 'fit_guild.json'))
+    ap.add_argument('--warm-start', default=str(RESULTS_DIR / 'fit_guild.json'))
+    ap.add_argument('--epochs', type=int, default=5000)
+    ap.add_argument('--lr', type=float, default=3e-3)
+    args = ap.parse_args()
+
+    phi_np = np.load(args.phi_npy)
+    if phi_np.ndim != 3 or phi_np.shape[1] != 3:
+        raise ValueError(f'Expected phi array shape (n_patients, 3, n_guilds), got {phi_np.shape}')
+
+    present = phi_np.sum(axis=2) > 1e-9
+    keep_patients = present[:, 0]
+    kept_idx = np.flatnonzero(keep_patients)
+    phi_np = phi_np[kept_idx]
+    present = present[kept_idx]
+
+    patients_used = [PATIENTS[i] for i in kept_idx] if len(PATIENTS) >= (kept_idx.max() + 1 if kept_idx.size else 0) else [str(i) for i in kept_idx]
+
+    phi_obs = jnp.array(phi_np)
+    mask_obs = jnp.array(present)
+    n_p, _, n_g = phi_obs.shape
+    loss_fn, rmse_pure = _loss_builder(mask_obs)
+    grad_fn = jit(grad(loss_fn, argnums=(0, 1)))
+
+    print(f'phi_obs: {phi_obs.shape}  observed_terms={int(present[:,1:].sum())}  λ={LAMBDA}', flush=True)
 
     # Warm-start from previous L-BFGS-B result if available
-    prev = RESULTS_DIR / 'fit_guild.json'
-    if prev.exists():
-        d = json.load(open(prev))
-        A     = jnp.array(d['A'])
-        b_all = jnp.array(d['b_all'])
-        print(f'Warm start from previous fit  RMSE={d["rmse"]:.5f}', flush=True)
-    else:
-        A     = jnp.zeros((N_G, N_G)).at[jnp.arange(N_G), jnp.arange(N_G)].set(-0.1)
-        b_all = jnp.full((n_p, N_G), 0.1)
+    warm = Path(args.warm_start)
+    A = None
+    b_all = None
+    if warm.exists():
+        d = json.load(open(warm))
+        A0 = np.array(d.get('A', []), dtype=float)
+        b0 = np.array(d.get('b_all', []), dtype=float)
+        if A0.shape == (n_g, n_g) and b0.ndim == 2 and b0.shape[1] == n_g:
+            A = jnp.array(A0)
+            if b0.shape[0] == n_p:
+                b_all = jnp.array(b0)
+            else:
+                prev_pat = d.get('patients')
+                if isinstance(prev_pat, list) and len(prev_pat) == b0.shape[0]:
+                    idx_map = {p: i for i, p in enumerate(prev_pat)}
+                    rows = [idx_map.get(p) for p in patients_used]
+                    if all(r is not None for r in rows):
+                        b_all = jnp.array(b0[rows])
+            if b_all is not None:
+                rmse0 = float(d.get('rmse', float('nan')))
+                print(f'Warm start from {warm.name}  RMSE={rmse0:.5f}', flush=True)
+    if A is None or b_all is None:
+        A = jnp.zeros((n_g, n_g)).at[jnp.arange(n_g), jnp.arange(n_g)].set(-0.1)
+        b_all = jnp.full((n_p, n_g), 0.1)
 
     # Adam state
     m = (jnp.zeros_like(A), jnp.zeros_like(b_all))
@@ -120,8 +181,8 @@ def main():
     best_b_all = b_all
 
     t0 = time.time()
-    N_EPOCHS = 5000
-    LR = 3e-3
+    N_EPOCHS = int(args.epochs)
+    LR = float(args.lr)
 
     for epoch in range(1, N_EPOCHS + 1):
         gA, gb = grad_fn(A, b_all, phi_obs)
@@ -138,15 +199,7 @@ def main():
 
     A, b_all = best_A, best_b_all
 
-    # Compute pure RMSE (no regularisation)
-    def rmse_pure(A, b_all, phi_obs):
-        def patient_mse(phi_p, b_p):
-            phi2, phi3 = predict_patient(phi_p[0], b_p, A)
-            return jnp.sum((phi2 - phi_p[1])**2) + jnp.sum((phi3 - phi_p[2])**2)
-        mse = vmap(patient_mse)(phi_obs, b_all).mean() / (2 * N_G)
-        return float(jnp.sqrt(mse))
-
-    rmse_final = rmse_pure(A, b_all, phi_obs)
+    rmse_final = float(rmse_pure(A, b_all, phi_obs))
     print(f'\nFinal RMSE (no reg): {rmse_final:.5f}  ({time.time()-t0:.1f}s total)', flush=True)
 
     # Print A matrix
@@ -154,15 +207,17 @@ def main():
     print('\nEffective A matrix:', flush=True)
     header = '         ' + ''.join(f'{g[:4]:>8s}' for g in GUILD_ORDER)
     print(header, flush=True)
-    for i, name in enumerate(GUILD_ORDER):
-        row = ''.join(f'{A_np[i,j]:8.3f}' for j in range(N_G))
+    for i, name in enumerate(GUILD_ORDER[:n_g]):
+        row = ''.join(f'{A_np[i,j]:8.3f}' for j in range(n_g))
         print(f'  {name[:8]:8s} {row}', flush=True)
 
-    out = RESULTS_DIR / 'fit_guild.json'
+    out = Path(args.out_json)
     json.dump(dict(
         A=A_np.tolist(), b_all=np.array(b_all).tolist(),
-        rmse=rmse_final, guilds=GUILD_ORDER,
-        patients=PATIENTS, success=True,
+        rmse=rmse_final, guilds=GUILD_ORDER[:n_g],
+        patients=patients_used, success=True,
+        phi_npy=str(args.phi_npy),
+        observed_terms=int(present[:, 1:].sum()),
         message=f'JAX Adam {N_EPOCHS} epochs lr={LR} λ={LAMBDA}',
         n_calls=N_EPOCHS, lambda_reg=LAMBDA,
     ), open(out, 'w'), indent=2)

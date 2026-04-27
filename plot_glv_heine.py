@@ -2,6 +2,7 @@
 """Plot gLV fit results for Heine 2025: trajectories + A-matrix heatmaps."""
 
 import json
+import sys
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -10,6 +11,11 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+
+REPO = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO))
+
+from nife.comets.oral_biofilm import metabolic_interaction_prior
 
 DATA_CSV    = Path('/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/experiment_data/fig3_species_distribution_replicates.csv')
 RESULT_JSON = Path('/home/nishioka/IKM_Hiwi/nife/results/heine2025/fit_glv_heine.json')
@@ -31,6 +37,61 @@ CONDITIONS = [
     ('Dysbiotic', 'Static',  'DS'),
     ('Dysbiotic', 'HOBIC',   'DH'),
 ]
+
+def _sign_prior_for_label(label: str) -> np.ndarray:
+    if label in ("CS", "CH"):
+        prof = metabolic_interaction_prior("commensal")
+    else:
+        prof = metabolic_interaction_prior("dysbiotic")
+    return np.array(prof["prior"]["sign"], dtype=int)
+
+
+def _mechanistic_mismatch_table(res: dict) -> pd.DataFrame:
+    rows = []
+    for label in LABELS:
+        r = res[label]
+        A = np.array(r["A"], dtype=float)
+        s = _sign_prior_for_label(label)
+        for src_i, src in enumerate(SHORT):
+            for tgt_i, tgt in enumerate(SHORT):
+                if src_i == tgt_i:
+                    continue
+                prior = int(s[src_i, tgt_i])
+                if prior == 0:
+                    continue
+                a = float(A[tgt_i, src_i])
+                mismatch = max(0.0, -prior * a)
+                rows.append(
+                    dict(
+                        label=label,
+                        source=src,
+                        target=tgt,
+                        A_target_source=a,
+                        prior_sign=prior,
+                        mismatch=mismatch,
+                        consistent=(prior * a >= 0),
+                        abs_A=abs(a),
+                    )
+                )
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return df
+    df = df.sort_values(["label", "mismatch", "abs_A"], ascending=[True, False, False])
+    df["rank_in_label"] = df.groupby("label").cumcount() + 1
+    return df
+
+
+def _mechanistic_summary(res: dict) -> pd.DataFrame:
+    mismatch = _mechanistic_mismatch_table(res)
+    if mismatch.empty:
+        return pd.DataFrame(
+            [{"label": label, "mismatch_sum": 0.0, "consistency": float("nan")} for label in LABELS]
+        )
+    g = mismatch.groupby("label", as_index=False).agg(
+        mismatch_sum=("mismatch", "sum"),
+        consistency=("consistent", "mean"),
+    )
+    return g
 
 
 def replicator_rhs(t, phi, A, b):
@@ -73,7 +134,15 @@ def load_phi(df, condition, cultivation):
 
 
 def main():
-    res = json.load(open(RESULT_JSON))
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--result", type=Path, default=RESULT_JSON)
+    ap.add_argument("--compare", type=Path, default=None)
+    ap.add_argument("--suffix", type=str, default="")
+    args = ap.parse_args()
+
+    res = json.load(open(args.result))
+    res_cmp = json.load(open(args.compare)) if args.compare else None
     df  = pd.read_csv(DATA_CSV)
 
     t_fine = np.linspace(1, 21, 200)
@@ -133,12 +202,55 @@ def main():
 
     fig.suptitle('gLV fit — Heine 2025 (5-species, 4 conditions)', fontsize=13, y=1.01)
 
-    out = OUT_DIR / 'glv_heine_fit.pdf'
+    suf = f"_{args.suffix}" if args.suffix else ""
+    out = OUT_DIR / f'glv_heine_fit{suf}.pdf'
     fig.savefig(out, bbox_inches='tight')
-    out_png = OUT_DIR / 'glv_heine_fit.png'
+    out_png = OUT_DIR / f'glv_heine_fit{suf}.png'
     fig.savefig(out_png, dpi=150, bbox_inches='tight')
     print(f'Saved: {out}')
     print(f'Saved: {out_png}')
+
+    mismatch = _mechanistic_mismatch_table(res)
+    if not mismatch.empty:
+        out_csv = OUT_DIR / f"glv_heine_mechanistic_mismatch{suf}.csv"
+        mismatch.to_csv(out_csv, index=False)
+        print(f"Saved: {out_csv}")
+        for label in LABELS:
+            sub = mismatch[mismatch["label"] == label]
+            if sub.empty:
+                continue
+            worst = sub.iloc[0]
+            frac = float(sub["consistent"].mean())
+            print(f"[{label}] mechanistic sign consistency={frac:.2f}  worst={worst['source']}→{worst['target']}  A={worst['A_target_source']:.3f}  prior={int(worst['prior_sign'])}")
+
+    if res_cmp is not None:
+        s1 = _mechanistic_summary(res).set_index("label")
+        s2 = _mechanistic_summary(res_cmp).set_index("label")
+        rows = []
+        for label in LABELS:
+            rmse_1 = float(res[label]["rmse"])
+            rmse_2 = float(res_cmp[label]["rmse"])
+            m1 = float(s1.loc[label, "mismatch_sum"])
+            m2 = float(s2.loc[label, "mismatch_sum"])
+            c1 = float(s1.loc[label, "consistency"])
+            c2 = float(s2.loc[label, "consistency"])
+            rows.append(
+                dict(
+                    label=label,
+                    rmse_1=rmse_1,
+                    rmse_2=rmse_2,
+                    delta_rmse=rmse_2 - rmse_1,
+                    mismatch_sum_1=m1,
+                    mismatch_sum_2=m2,
+                    delta_mismatch_sum=m2 - m1,
+                    consistency_1=c1,
+                    consistency_2=c2,
+                    delta_consistency=c2 - c1,
+                )
+            )
+        out_cmp = OUT_DIR / f"glv_heine_compare{suf}.csv"
+        pd.DataFrame(rows).to_csv(out_cmp, index=False)
+        print(f"Saved: {out_cmp}")
 
 
 if __name__ == '__main__':
