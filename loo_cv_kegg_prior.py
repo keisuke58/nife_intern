@@ -237,9 +237,7 @@ def run_hamilton_kegg(phi_all, net_flow):
     from hamilton_ode_jax_nsp import simulate_0d_nsp
 
     n_p = phi_all.shape[0]
-    n_sp = N_G
     N_STEPS = 2500
-    n_A = n_sp * (n_sp + 1) // 2
     LAM_H = 1e-4
 
     warm = _here / 'results' / 'dieckow_cr' / 'fit_guild_hamilton_masked.json'
@@ -247,18 +245,16 @@ def run_hamilton_kegg(phi_all, net_flow):
         print('  fit_guild_hamilton_masked.json not found — skipping Hamilton', flush=True)
         return
     d = json.load(open(warm))
-    A_warm = np.array(d['A'])[:n_sp, :n_sp]
     b_warm_raw = np.array(d['b_all'])
     if b_warm_raw.ndim != 2:
         b_warm_raw = np.asarray(b_warm_raw).reshape(n_p, -1)
     if b_warm_raw.shape[0] < n_p:
         b_warm_raw = np.vstack([b_warm_raw, np.full((n_p - b_warm_raw.shape[0], b_warm_raw.shape[1]), 0.1)])
-    if b_warm_raw.shape[1] < n_sp:
-        b_pad = np.full((n_p, n_sp), 0.1, dtype=float)
-        b_pad[:, :b_warm_raw.shape[1]] = b_warm_raw[:n_p, :]
-        b_warm = b_pad
-    else:
-        b_warm = b_warm_raw[:n_p, :n_sp]
+    # n_sp from actual Hamilton b dimension (may differ from N_G if 'Other' guild excluded)
+    n_sp = b_warm_raw.shape[1]
+    n_A = n_sp * (n_sp + 1) // 2
+    A_warm = np.array(d['A'])[:n_sp, :n_sp]
+    b_warm = b_warm_raw[:n_p, :n_sp]
 
     def pack_upper(A):
         return np.array([A[i, j] for j in range(n_sp) for i in range(j + 1)])
@@ -290,8 +286,10 @@ def run_hamilton_kegg(phi_all, net_flow):
         return np.array(_sim(jnp.array(theta), jnp.array(phi0),
                              jnp.array(float(psi)), jnp.array(float(alpha))))
 
+    # Slice net_flow to n_sp (Hamilton may use fewer guilds than gLV)
+    net_flow_sp = net_flow[:n_sp, :n_sp]
     # Build symmetric sign prior from net_flow (average both directions)
-    net_sym = (net_flow + net_flow.T) / 2.0
+    net_sym = (net_flow_sp + net_flow_sp.T) / 2.0
 
     def sign_pen_sym(A_up):
         A = unpack_upper(A_up)
@@ -307,15 +305,20 @@ def run_hamilton_kegg(phi_all, net_flow):
                     pen += w * v * v / (2 * SIGMA * SIGMA)
         return pen
 
+    # Slice phi_all to n_sp (renormalise in case the dropped guild had mass)
+    phi_sp = phi_all[:, :, :n_sp]
+    s = phi_sp.sum(axis=2, keepdims=True)
+    phi_sp = np.where(s > 0, phi_sp / s, np.ones_like(phi_sp) / n_sp)
+
     def obj_hamilton(theta_flat):
         A_up = theta_flat[:n_A]
         b_mat = theta_flat[n_A:].reshape(n_p, n_sp)
         total = 0.0
         for p in range(n_p):
-            phi2 = sim_np(A_up, b_mat[p], phi_all[p, 0], 0.5, 100.0)
+            phi2 = sim_np(A_up, b_mat[p], phi_sp[p, 0], 0.5, 100.0)
             phi3 = sim_np(A_up, b_mat[p], phi2, 0.5, 100.0)
-            total += np.mean((phi2 - phi_all[p, 1]) ** 2)
-            total += np.mean((phi3 - phi_all[p, 2]) ** 2)
+            total += np.mean((phi2 - phi_sp[p, 1]) ** 2)
+            total += np.mean((phi3 - phi_sp[p, 2]) ** 2)
         rmse = np.sqrt(total / n_p)
         return rmse + sign_pen_sym(theta_flat[:n_A]) + LAM_H * np.sum(theta_flat[:n_A] ** 2)
 
@@ -331,11 +334,11 @@ def run_hamilton_kegg(phi_all, net_flow):
     sq, cnt = 0.0, 0
     all_obs, all_pred = [], []
     for p in range(n_p):
-        phi2 = sim_np(res.x[:n_A], b_opt[p], phi_all[p, 0], 0.5, 100.0)
+        phi2 = sim_np(res.x[:n_A], b_opt[p], phi_sp[p, 0], 0.5, 100.0)
         phi3 = sim_np(res.x[:n_A], b_opt[p], phi2, 0.5, 100.0)
-        sq += np.sum((phi2 - phi_all[p, 1]) ** 2) + np.sum((phi3 - phi_all[p, 2]) ** 2)
+        sq += np.sum((phi2 - phi_sp[p, 1]) ** 2) + np.sum((phi3 - phi_sp[p, 2]) ** 2)
         cnt += 2 * n_sp
-        all_obs.extend(phi_all[p, 1].tolist() + phi_all[p, 2].tolist())
+        all_obs.extend(phi_sp[p, 1].tolist() + phi_sp[p, 2].tolist())
         all_pred.extend(phi2.tolist() + phi3.tolist())
     rmse = float(np.sqrt(sq / cnt))
     r = float(np.corrcoef(all_obs, all_pred)[0, 1])
@@ -353,7 +356,7 @@ def run_hamilton_kegg(phi_all, net_flow):
         'rmse': rmse, 'r': r,
         'sign_agreement': f'{n_agree}/{n_tot}',
         'patients': PATIENTS,
-        'guilds': GUILD_ORDER,
+        'guilds': GUILD_ORDER[:n_sp],
         'A': A_opt.tolist(),
         'b_all': b_opt.tolist(),
         'model': f'Hamilton gLV KEGG/HMDB-prior (8 pat, {N_G} guild, sigma={SIGMA})',
