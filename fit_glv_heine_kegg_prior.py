@@ -92,6 +92,17 @@ def build_net_flow_5sp() -> np.ndarray:
             for tgt in inhib:
                 if src != tgt:
                     neg[tgt, src] += w
+    # eHOMD/literature supplement for 4 pairs not covered by Dieckow SF1
+    ehomD_w = 1.0  # eHOMD-only weight (vs KEGG/HMDB = 2.0)
+    ehomD_pos = [
+        (0, 1),  # So-An: lactate/nitrite cross-feeding (Dieckow SI Neo4j)
+        (1, 3),  # An-Fn: early colonizer bridge synergy (eHOMD)
+        (2, 3),  # Vd-Fn: metabolite cross-feeding (eHOMD)
+        (3, 4),  # Fn-Pg: coaggregation + cross-feeding (Kapatral 2002, Periasamy 2011)
+    ]
+    for i, j in ehomD_pos:
+        pos[j, i] += ehomD_w
+        pos[i, j] += ehomD_w
     return pos - neg
 
 
