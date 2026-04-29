@@ -66,6 +66,8 @@ data/export_qiime2_report.json
 data/qiime2_out/
 *.qza
 *.qzv
+data/model_inputs/
+data/qiime2_taxonomy/
 
 # Local backups
 data/pdf_backups/
