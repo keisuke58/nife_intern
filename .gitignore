@@ -63,6 +63,9 @@ data/schema_diff.json
 data/qiime2_manifest.tsv
 data/sample-metadata.tsv
 data/export_qiime2_report.json
+data/qiime2_out/
+*.qza
+*.qzv
 
 # Local backups
 data/pdf_backups/

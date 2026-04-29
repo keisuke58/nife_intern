@@ -73,10 +73,9 @@ def _write_manifest(path: Path, pairs: list[PairedFastq]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="\n", encoding="utf-8") as f:
         w = csv.writer(f, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_MINIMAL)
-        w.writerow(["sample-id", "absolute-filepath", "direction"])
-        for p in pairs:
-            w.writerow([p.sample_id, str(p.forward.resolve()), "forward"])
-            w.writerow([p.sample_id, str(p.reverse.resolve()), "reverse"])
+        w.writerow(["sample-id", "forward-absolute-filepath", "reverse-absolute-filepath"])
+        for p in sorted(pairs, key=lambda x: x.sample_id):
+            w.writerow([p.sample_id, str(p.forward.resolve()), str(p.reverse.resolve())])
 
 
 def _write_metadata(path: Path, df: pd.DataFrame) -> None:
@@ -113,9 +112,9 @@ def _run_dada2_smoke(manifest_path: Path) -> dict[str, Any]:
     script = r"""
 args <- commandArgs(trailingOnly=TRUE)
 man <- read.delim(args[1], sep="\t", header=TRUE, stringsAsFactors=FALSE)
-stopifnot(all(c("sample-id","absolute-filepath","direction") %in% colnames(man)))
-fwd <- man[man$direction=="forward","absolute-filepath"][1]
-rev <- man[man$direction=="reverse","absolute-filepath"][1]
+stopifnot(all(c("sample-id","forward-absolute-filepath","reverse-absolute-filepath") %in% colnames(man)))
+fwd <- man[1,"forward-absolute-filepath"]
+rev <- man[1,"reverse-absolute-filepath"]
 stopifnot(file.exists(fwd), file.exists(rev))
 suppressWarnings({
   ok1 <- FALSE

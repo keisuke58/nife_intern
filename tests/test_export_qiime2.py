@@ -54,10 +54,10 @@ def test_export_qiime2_creates_manifest_and_metadata(tmp_path):
         assert export_main() == 0
 
     man = pd.read_csv(manifest, sep="\t")
-    assert list(man.columns) == ["sample-id", "absolute-filepath", "direction"]
-    assert man.shape[0] == 4
-    assert set(man["direction"].tolist()) == {"forward", "reverse"}
-    assert all(Path(p).is_absolute() for p in man["absolute-filepath"].tolist())
+    assert list(man.columns) == ["sample-id", "forward-absolute-filepath", "reverse-absolute-filepath"]
+    assert man.shape[0] == 2
+    assert all(Path(p).is_absolute() for p in man["forward-absolute-filepath"].tolist())
+    assert all(Path(p).is_absolute() for p in man["reverse-absolute-filepath"].tolist())
 
     meta = pd.read_csv(metadata, sep="\t")
     assert meta["sample-id"].is_unique
