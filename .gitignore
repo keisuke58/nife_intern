@@ -60,6 +60,9 @@ data/combined_meta.tsv
 data/structured_supp.tsv
 data/manual_review.tsv
 data/schema_diff.json
+data/qiime2_manifest.tsv
+data/sample-metadata.tsv
+data/export_qiime2_report.json
 
 # Local backups
 data/pdf_backups/
