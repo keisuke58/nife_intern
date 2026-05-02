@@ -224,9 +224,10 @@ def run_loo(phi_all, net_flow, A_warm, b_warm):
 
 # ── Hamilton full fit with sign prior (JAX autodiff + Adam) ──────────────
 
-def run_hamilton_kegg(phi_all, net_flow, nsteps=2500, n_epochs=5000, lr=3e-3):
+def run_hamilton_kegg(phi_all, net_flow, nsteps=500, n_epochs=5000, lr=3e-3):
     """Full-cohort Hamilton ODE fit with KEGG/HMDB sign prior.
     Uses jax.grad through simulate_0d_nsp (lax.scan-based) + Adam.
+    nsteps=500: reduced from 2500 to avoid XLA compilation blowup on CPU.
     """
     try:
         import jax
@@ -268,13 +269,26 @@ def run_hamilton_kegg(phi_all, net_flow, nsteps=2500, n_epochs=5000, lr=3e-3):
     net_sym      = jnp.array((net_flow + net_flow.T) / 2.0)
     diag_idx_jnp = jnp.array([j * (j + 1) // 2 + j for j in range(n_sp)])
 
-    @jax.jit
-    def pred_week(theta_A, b, phi0):
-        theta  = jnp.concatenate([theta_A, b])
+    def _run_sim(theta, phi_init):
         phibar = simulate_0d_nsp(theta, n_sp=n_sp, n_steps=nsteps, dt=1e-4,
-                                  phi_init=phi0, c_const=25.0, alpha_const=100.0)
+                                  phi_init=phi_init, c_const=25.0, alpha_const=100.0)
         eq = phibar[-1]; s = eq.sum()
         return jnp.where(s > 1e-10, eq / s, jnp.ones(n_sp) / n_sp)
+
+    def _pred_two_weeks(theta_A, b_p, phi0):
+        """Predict weeks 2 and 3 for one patient."""
+        theta = jnp.concatenate([theta_A, b_p])
+        phi2  = _run_sim(theta, phi0)
+        phi3  = _run_sim(theta, phi2)
+        return phi2, phi3
+
+    # vmap over patients (axis 0): theta_A is shared (None), b and phi0 are per-patient (0)
+    _pred_all = jax.vmap(_pred_two_weeks, in_axes=(None, 0, 0))
+
+    @jax.jit
+    def pred_week(theta_A, b, phi0):
+        """Single-patient single-week prediction (for evaluation)."""
+        return _run_sim(jnp.concatenate([theta_A, b]), phi0)
 
     def _unpack_A(v):
         A = jnp.zeros((n_sp, n_sp))
@@ -286,13 +300,10 @@ def run_hamilton_kegg(phi_all, net_flow, nsteps=2500, n_epochs=5000, lr=3e-3):
 
     @jax.jit
     def loss_fn(theta_A, b_all):
-        total = jnp.array(0.0)
-        for p in range(n_p):
-            phi2   = pred_week(theta_A, b_all[p], phi_obs[p, 0])
-            phi3   = pred_week(theta_A, b_all[p], phi2)
-            total += jnp.sum((phi2 - phi_obs[p, 1]) ** 2)
-            total += jnp.sum((phi3 - phi_obs[p, 2]) ** 2)
-        rmse     = jnp.sqrt(total / (n_p * 2 * n_sp))
+        # vmap replaces the Python for-loop — single scan graph instead of n_p copies
+        phi2_all, phi3_all = _pred_all(theta_A, b_all, phi_obs[:, 0])
+        sq = jnp.sum((phi2_all - phi_obs[:, 1]) ** 2) + jnp.sum((phi3_all - phi_obs[:, 2]) ** 2)
+        rmse     = jnp.sqrt(sq / (n_p * 2 * n_sp))
         A        = _unpack_A(theta_A)
         sp_mat   = jnp.sign(net_sym)
         mask     = (sp_mat != 0) & (~jnp.eye(n_sp, dtype=bool))
@@ -300,37 +311,49 @@ def run_hamilton_kegg(phi_all, net_flow, nsteps=2500, n_epochs=5000, lr=3e-3):
         pen      = jnp.where(mask, jnp.abs(net_sym) * mismatch ** 2 / (2 * SIGMA ** 2), 0.0).sum()
         return rmse + pen + LAM_H * jnp.sum(theta_A ** 2)
 
-    grad_fn = jax.jit(jax.grad(loss_fn, argnums=(0, 1)))
+    # Use scipy L-BFGS-B with JAX analytical gradients — far fewer iterations than Adam
+    from scipy.optimize import minimize as scipy_minimize
 
-    def adam_step(params, grads, m, v, t, b1=0.9, b2=0.999, eps=1e-8):
-        m_new = tuple(b1 * mi + (1 - b1) * gi for mi, gi in zip(m, grads))
-        v_new = tuple(b2 * vi + (1 - b2) * gi ** 2 for vi, gi in zip(v, grads))
-        mh    = tuple(mi / (1 - b1 ** t) for mi in m_new)
-        vh    = tuple(vi / (1 - b2 ** t) for vi in v_new)
-        p_new = tuple(pi - lr * mhi / (jnp.sqrt(vhi) + eps)
-                      for pi, mhi, vhi in zip(params, mh, vh))
-        return p_new, m_new, v_new
+    n_flat = n_A + n_p * n_sp
 
-    m = (jnp.zeros_like(theta_A), jnp.zeros_like(b_all))
-    v = (jnp.zeros_like(theta_A), jnp.zeros_like(b_all))
+    diag_idx_np = np.array([j * (j + 1) // 2 + j for j in range(n_sp)])
+
+    @jax.jit
+    def _loss_and_grad_flat(x_flat):
+        ta = x_flat[:n_A]
+        ba = x_flat[n_A:].reshape(n_p, n_sp)
+        loss, (gA, gb) = jax.value_and_grad(loss_fn, argnums=(0, 1))(ta, ba)
+        return loss, jnp.concatenate([gA, gb.ravel()])
 
     print(f'  Compiling Hamilton JAX (n_sp={n_sp}, nsteps={nsteps})...', flush=True)
-    best_loss = float(loss_fn(theta_A, b_all))
-    best_A, best_b = theta_A, b_all
-    print(f'  Initial loss={best_loss:.5f}', flush=True)
+    x0 = np.concatenate([np.array(theta_A), np.array(b_all).ravel()])
+    init_loss = float(loss_fn(theta_A, b_all))
+    print(f'  Initial loss={init_loss:.5f}', flush=True)
 
+    call_count = [0]
     t0 = time.time()
-    for epoch in range(1, n_epochs + 1):
-        gA, gb = grad_fn(theta_A, b_all)
-        (theta_A, b_all), m, v = adam_step((theta_A, b_all), (gA, gb), m, v, epoch)
-        theta_A = theta_A.at[diag_idx_jnp].min(0.0)
-        if epoch % 200 == 0 or epoch == 1:
-            val = float(loss_fn(theta_A, b_all))
-            print(f'  epoch {epoch:5d}  loss={val:.5f}  ({time.time()-t0:.1f}s)', flush=True)
-            if val < best_loss:
-                best_loss, best_A, best_b = val, theta_A, b_all
 
-    theta_A, b_all = best_A, best_b
+    def fg(x):
+        call_count[0] += 1
+        xj = jnp.array(x)
+        loss, grad = _loss_and_grad_flat(xj)
+        if call_count[0] % 50 == 1:
+            print(f'  iter {call_count[0]:4d}  loss={float(loss):.5f}  ({time.time()-t0:.1f}s)',
+                  flush=True)
+        return float(loss), np.array(grad, dtype=np.float64)
+
+    # Bounds: diagonal of A (theta_A[diag_idx]) ≤ 0; all others free
+    bounds = [(None, None)] * n_flat
+    for k in diag_idx_np:
+        bounds[k] = (None, 0.0)
+
+    res = scipy_minimize(fg, x0, jac=True, method='L-BFGS-B', bounds=bounds,
+                         options={'maxiter': n_epochs, 'ftol': 1e-12, 'gtol': 1e-7})
+    print(f'  L-BFGS-B: {res.message}  iters={call_count[0]}  loss={res.fun:.5f}', flush=True)
+
+    x_opt    = res.x
+    theta_A  = jnp.array(x_opt[:n_A])
+    b_all    = jnp.array(x_opt[n_A:].reshape(n_p, n_sp))
     A_opt = np.array(_unpack_A(theta_A))
     b_opt = np.array(b_all)
 
