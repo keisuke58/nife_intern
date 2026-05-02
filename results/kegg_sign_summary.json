@@ -1,0 +1,116 @@
+{
+  "net_flow": [
+    [
+      0.0,
+      1.0,
+      2.0,
+      0.0,
+      0.0
+    ],
+    [
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0
+    ],
+    [
+      2.0,
+      2.0,
+      0.0,
+      1.0,
+      2.0
+    ],
+    [
+      2.0,
+      1.0,
+      1.0,
+      0.0,
+      1.0
+    ],
+    [
+      -1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.0
+    ]
+  ],
+  "species": [
+    "So",
+    "An",
+    "Vd",
+    "Fn",
+    "Pg"
+  ],
+  "conditions": {
+    "CS": {
+      "SA_mean_agree": 7,
+      "SA_mean_total": 14,
+      "SA_mean_pct": 50.0,
+      "SA_map_agree": 9,
+      "SA_map_total": 16,
+      "SA_map_pct": 56.2,
+      "SA_kegg_map_agree": 12,
+      "SA_kegg_map_total": 15,
+      "SA_kegg_map_pct": 80.0,
+      "logL_MAP_kegg": -12.633101417231227,
+      "n_kegg_samples": 2000,
+      "n_10k_samples": 10000
+    },
+    "CH": {
+      "SA_mean_agree": 6,
+      "SA_mean_total": 16,
+      "SA_mean_pct": 37.5,
+      "SA_map_agree": 4,
+      "SA_map_total": 16,
+      "SA_map_pct": 25.0,
+      "SA_kegg_map_agree": 13,
+      "SA_kegg_map_total": 16,
+      "SA_kegg_map_pct": 81.2,
+      "logL_MAP_kegg": -9.536134214066273,
+      "n_kegg_samples": 2000,
+      "n_10k_samples": 10000
+    },
+    "DS": {
+      "SA_mean_agree": 10,
+      "SA_mean_total": 16,
+      "SA_mean_pct": 62.5,
+      "SA_map_agree": 14,
+      "SA_map_total": 16,
+      "SA_map_pct": 87.5,
+      "SA_kegg_map_agree": 7,
+      "SA_kegg_map_total": 16,
+      "SA_kegg_map_pct": 43.8,
+      "logL_MAP_kegg": -11.334998871681387,
+      "n_kegg_samples": 2000,
+      "n_10k_samples": 10000
+    },
+    "DH": {
+      "SA_mean_agree": 8,
+      "SA_mean_total": 16,
+      "SA_mean_pct": 50.0,
+      "SA_map_agree": 8,
+      "SA_map_total": 15,
+      "SA_map_pct": 53.3,
+      "SA_kegg_map_agree": 7,
+      "SA_kegg_map_total": 16,
+      "SA_kegg_map_pct": 43.8,
+      "logL_MAP_kegg": -73.59616748521236,
+      "n_kegg_samples": 2000,
+      "n_10k_samples": 10000
+    }
+  },
+  "kegg_runs": {
+    "CS": "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/CS_kegg_s015_1000p_20260430_183337",
+    "CH": "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/CH_kegg_s015_1000p_20260430_183337",
+    "DS": "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/DS_kegg_s008_1000p_20260430_183337",
+    "DH": "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/DH_kegg_s008_1000p_20260430_183337"
+  },
+  "p10k_runs": {
+    "CS": "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/cs_10000p",
+    "CH": "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/ch_10000p",
+    "DS": "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/ds_10000p",
+    "DH": "/home/nishioka/IKM_Hiwi/Tmcmc202601/data_5species/_runs/dh_10000p"
+  }
+}

@@ -80,7 +80,7 @@ def build_net_flow():
         prod, cons, inhib = set(), set(), set()
         for _, row in mdf.iterrows():
             g = GENUS_GUILD.get(str(row['TAXON']).split()[0])
-            if g is None:
+            if g is None or g not in gi:
                 continue
             if row['RELATIONSHIP'] == 'PRODUCES':
                 prod.add(g)
