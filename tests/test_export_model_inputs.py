@@ -1,95 +1,107 @@
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
 import pandas as pd
-import pytest
+
+from nife import export_model_inputs as m
 
 
-def test_parse_genus_from_taxon():
-    from nife.export_model_inputs import parse_genus_from_taxon
-
-    assert parse_genus_from_taxon("k__Bacteria; p__Firmicutes; g__Streptococcus; s__") == "Streptococcus"
-    assert parse_genus_from_taxon("Unassigned") == "Unassigned"
-    assert parse_genus_from_taxon("") == "Unassigned"
+def test_genus_from_taxon_parses_qiime2_styles() -> None:
+    assert m.genus_from_taxon("k__Bacteria; p__Firmicutes; c__Bacilli; g__Streptococcus; s__") == "Streptococcus"
+    assert m.genus_from_taxon("D_0__Bacteria; D_1__Firmicutes; D_5__Veillonella; D_6__sp") == "Veillonella"
+    assert m.genus_from_taxon("Unassigned") == "Unassigned"
 
 
-def test_export_model_inputs_end_to_end(tmp_path, monkeypatch):
-    from nife.export_model_inputs import main
-
-    ft = tmp_path / "feature-table.tsv"
-    ft.write_text(
-        "# Constructed from biom file\n"
-        "#OTU ID\tNU_01\tNU_02\n"
-        "F1\t10\t0\n"
-        "F2\t5\t5\n",
+def test_read_qiime2_feature_table_tsv_handles_biom_convert_header(tmp_path: Path) -> None:
+    p = tmp_path / "feature-table.tsv"
+    p.write_text(
+        "\n".join(
+            [
+                "# Constructed from biom file",
+                "#OTU ID\tS1\tS2",
+                "f1\t10\t0",
+                "f2\t0\t5",
+                "",
+            ]
+        )
+        + "\n",
         encoding="utf-8",
     )
-    tax = tmp_path / "taxonomy.tsv"
-    tax.write_text(
-        "Feature ID\tTaxon\tConfidence\n"
-        "F1\tk__Bacteria; p__Firmicutes; g__Streptococcus; s__oralis\t0.9\n"
-        "F2\tk__Bacteria; p__Firmicutes; g__Veillonella; s__\t0.8\n",
-        encoding="utf-8",
-    )
-    meta = tmp_path / "sample-metadata.tsv"
-    meta.write_text(
-        "sample-id\tproject_accession\tin_vivo_in_vitro\tmaterial\tday\tweek\tdonor\tpatient\trun_accession\n"
-        "NU_01\tPRJNA1159109\tsaliva\tnot_provided\tNA\tNA\t1\tNA\tSRR1\n"
-        "NU_02\tPRJNA1159109\tin_vivo\tTi6Al4V\t2\tNA\tnot_provided\tNA\tSRR2\n",
-        encoding="utf-8",
-    )
-    outdir = tmp_path / "model_inputs"
-
-    argv = [
-        "export_model_inputs.py",
-        "--feature-table",
-        str(ft),
-        "--taxonomy",
-        str(tax),
-        "--metadata",
-        str(meta),
-        "--outdir",
-        str(outdir),
-        "--split-test",
-        "in_vivo",
-    ]
-    monkeypatch.setattr("sys.argv", argv)
-    assert main() == 0
-
-    traj = pd.read_csv(outdir / "trajectories.tsv", sep="\t")
-    assert set(traj["sample-id"].unique()) == {"NU_01", "NU_02"}
-    assert set(traj["taxon"].unique()) == {"Streptococcus", "Veillonella"}
-
-    splits = pd.read_csv(outdir / "split_specs.tsv", sep="\t")
-    assert splits.shape[0] == 2
-    assert splits.loc[splits["sample-id"] == "NU_02", "split"].item() == "test"
+    df = m.read_qiime2_feature_table_tsv(p)
+    assert list(df.columns) == ["S1", "S2"]
+    assert set(df.index) == {"f1", "f2"}
+    assert float(df.loc["f1", "S1"]) == 10.0
 
 
-def test_export_model_inputs_rejects_sample_mismatch(tmp_path, monkeypatch):
-    from nife.export_model_inputs import main
-
-    ft = tmp_path / "feature-table.tsv"
-    ft.write_text(
-        "# Constructed from biom file\n"
-        "#OTU ID\tNU_01\n"
-        "F1\t10\n",
-        encoding="utf-8",
-    )
-    tax = tmp_path / "taxonomy.tsv"
-    tax.write_text("Feature ID\tTaxon\nF1\tk__Bacteria; g__X\n", encoding="utf-8")
-    meta = tmp_path / "sample-metadata.tsv"
-    meta.write_text("sample-id\nNU_XX\n", encoding="utf-8")
+def test_export_model_inputs_end_to_end(tmp_path: Path, monkeypatch) -> None:
+    feature_table = tmp_path / "feature-table.tsv"
+    taxonomy = tmp_path / "taxonomy.tsv"
+    metadata = tmp_path / "sample-metadata.tsv"
     outdir = tmp_path / "out"
 
+    feature_table.write_text(
+        "\n".join(
+            [
+                "# Constructed from biom file",
+                "#OTU ID\tS1\tS2",
+                "f1\t10\t0",
+                "f2\t0\t5",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    taxonomy.write_text(
+        "\n".join(
+            [
+                "Feature ID\tTaxon\tConfidence",
+                "f1\tk__Bacteria; p__Firmicutes; c__Bacilli; g__Streptococcus; s__\t0.99",
+                "f2\tD_0__Bacteria; D_1__Firmicutes; D_5__Veillonella; D_6__sp\t0.95",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    metadata.write_text(
+        "\n".join(
+            [
+                "sample-id\tday\tmaterial\tin_vivo_in_vitro\tproject_accession",
+                "S1\t2\tTi6Al4V\tin_vitro\tPRJNA1159109",
+                "S2\t4\tY-TZP\tin_vitro\tPRJNA1159109",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
     argv = [
         "export_model_inputs.py",
-        "--feature-table",
-        str(ft),
-        "--taxonomy",
-        str(tax),
+        "--feature-table-tsv",
+        str(feature_table),
+        "--taxonomy-tsv",
+        str(taxonomy),
         "--metadata",
-        str(meta),
+        str(metadata),
         "--outdir",
         str(outdir),
+        "--time-col",
+        "day",
+        "--group-cols",
+        "material,in_vivo_in_vitro,project_accession",
     ]
-    monkeypatch.setattr("sys.argv", argv)
-    with pytest.raises(Exception):
-        main()
+    monkeypatch.setattr(sys, "argv", argv)
+    assert m.main() == 0
+
+    genus_wide = pd.read_csv(outdir / "genus_relative_abundance.wide.tsv", sep="\t")
+    assert set(genus_wide["taxon"]) == {"Streptococcus", "Veillonella"}
+
+    genus_long = pd.read_csv(outdir / "genus_relative_abundance.long.tsv", sep="\t")
+    assert set(genus_long["sample-id"]) == {"S1", "S2"}
+    assert set(genus_long["taxon"]) == {"Streptococcus", "Veillonella"}
+
+    report = json.loads((outdir / "model_inputs.report.json").read_text(encoding="utf-8"))
+    assert report["counts"]["n_samples"] == 2
 
