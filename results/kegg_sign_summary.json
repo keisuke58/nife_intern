@@ -54,9 +54,94 @@
       "SA_kegg_map_agree": 12,
       "SA_kegg_map_total": 15,
       "SA_kegg_map_pct": 80.0,
+      "mean_sign_prob": 0.6084,
+      "n_pairs_above_50pct": 9,
+      "n_kegg_pairs": 16,
       "logL_MAP_kegg": -12.633101417231227,
       "n_kegg_samples": 2000,
-      "n_10k_samples": 10000
+      "n_10k_samples": 10000,
+      "per_pair": {
+        "So<-An": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "So<-Vd": {
+          "flow": 2.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "An<-So": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "An<-Fn": {
+          "flow": 1.0,
+          "P_correct": 0.4355,
+          "kegg_map_sign_ok": true
+        },
+        "Vd<-So": {
+          "flow": 2.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "Vd<-An": {
+          "flow": 2.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "Vd<-Fn": {
+          "flow": 1.0,
+          "P_correct": 0.2697,
+          "kegg_map_sign_ok": true
+        },
+        "Vd<-Pg": {
+          "flow": 2.0,
+          "P_correct": 0.5059,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-So": {
+          "flow": 2.0,
+          "P_correct": 0.2541,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-An": {
+          "flow": 1.0,
+          "P_correct": 0.4355,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-Vd": {
+          "flow": 1.0,
+          "P_correct": 0.2697,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-Pg": {
+          "flow": 1.0,
+          "P_correct": 0.4541,
+          "kegg_map_sign_ok": true
+        },
+        "Pg<-So": {
+          "flow": -1.0,
+          "P_correct": 0.633,
+          "kegg_map_sign_ok": true
+        },
+        "Pg<-An": {
+          "flow": 1.0,
+          "P_correct": 0.5165,
+          "kegg_map_sign_ok": false
+        },
+        "Pg<-Vd": {
+          "flow": 1.0,
+          "P_correct": 0.5059,
+          "kegg_map_sign_ok": true
+        },
+        "Pg<-Fn": {
+          "flow": 1.0,
+          "P_correct": 0.4541,
+          "kegg_map_sign_ok": true
+        }
+      }
     },
     "CH": {
       "SA_mean_agree": 6,
@@ -68,9 +153,94 @@
       "SA_kegg_map_agree": 13,
       "SA_kegg_map_total": 16,
       "SA_kegg_map_pct": 81.2,
+      "mean_sign_prob": 0.4779,
+      "n_pairs_above_50pct": 6,
+      "n_kegg_pairs": 16,
       "logL_MAP_kegg": -9.536134214066273,
       "n_kegg_samples": 2000,
-      "n_10k_samples": 10000
+      "n_10k_samples": 10000,
+      "per_pair": {
+        "So<-An": {
+          "flow": 1.0,
+          "P_correct": 0.0,
+          "kegg_map_sign_ok": true
+        },
+        "So<-Vd": {
+          "flow": 2.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "An<-So": {
+          "flow": 1.0,
+          "P_correct": 0.0,
+          "kegg_map_sign_ok": true
+        },
+        "An<-Fn": {
+          "flow": 1.0,
+          "P_correct": 0.376,
+          "kegg_map_sign_ok": true
+        },
+        "Vd<-So": {
+          "flow": 2.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "Vd<-An": {
+          "flow": 2.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "Vd<-Fn": {
+          "flow": 1.0,
+          "P_correct": 0.1764,
+          "kegg_map_sign_ok": true
+        },
+        "Vd<-Pg": {
+          "flow": 2.0,
+          "P_correct": 0.4518,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-So": {
+          "flow": 2.0,
+          "P_correct": 0.0,
+          "kegg_map_sign_ok": false
+        },
+        "Fn<-An": {
+          "flow": 1.0,
+          "P_correct": 0.376,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-Vd": {
+          "flow": 1.0,
+          "P_correct": 0.1764,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-Pg": {
+          "flow": 1.0,
+          "P_correct": 0.8378,
+          "kegg_map_sign_ok": true
+        },
+        "Pg<-So": {
+          "flow": -1.0,
+          "P_correct": 0.6819,
+          "kegg_map_sign_ok": true
+        },
+        "Pg<-An": {
+          "flow": 1.0,
+          "P_correct": 0.2804,
+          "kegg_map_sign_ok": true
+        },
+        "Pg<-Vd": {
+          "flow": 1.0,
+          "P_correct": 0.4518,
+          "kegg_map_sign_ok": true
+        },
+        "Pg<-Fn": {
+          "flow": 1.0,
+          "P_correct": 0.8378,
+          "kegg_map_sign_ok": true
+        }
+      }
     },
     "DS": {
       "SA_mean_agree": 10,
@@ -82,9 +252,94 @@
       "SA_kegg_map_agree": 7,
       "SA_kegg_map_total": 16,
       "SA_kegg_map_pct": 43.8,
+      "mean_sign_prob": 0.7339,
+      "n_pairs_above_50pct": 10,
+      "n_kegg_pairs": 16,
       "logL_MAP_kegg": -11.334998871681387,
       "n_kegg_samples": 2000,
-      "n_10k_samples": 10000
+      "n_10k_samples": 10000,
+      "per_pair": {
+        "So<-An": {
+          "flow": 1.0,
+          "P_correct": 0.4825,
+          "kegg_map_sign_ok": true
+        },
+        "So<-Vd": {
+          "flow": 2.0,
+          "P_correct": 0.0153,
+          "kegg_map_sign_ok": false
+        },
+        "An<-So": {
+          "flow": 1.0,
+          "P_correct": 0.4825,
+          "kegg_map_sign_ok": true
+        },
+        "An<-Fn": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "Vd<-So": {
+          "flow": 2.0,
+          "P_correct": 0.0153,
+          "kegg_map_sign_ok": false
+        },
+        "Vd<-An": {
+          "flow": 2.0,
+          "P_correct": 0.9968,
+          "kegg_map_sign_ok": true
+        },
+        "Vd<-Fn": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "Vd<-Pg": {
+          "flow": 2.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "Fn<-So": {
+          "flow": 2.0,
+          "P_correct": 0.3216,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-An": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-Vd": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "Fn<-Pg": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "Pg<-So": {
+          "flow": -1.0,
+          "P_correct": 0.428,
+          "kegg_map_sign_ok": true
+        },
+        "Pg<-An": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "Pg<-Vd": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "Pg<-Fn": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        }
+      }
     },
     "DH": {
       "SA_mean_agree": 8,
@@ -96,9 +351,94 @@
       "SA_kegg_map_agree": 7,
       "SA_kegg_map_total": 16,
       "SA_kegg_map_pct": 43.8,
+      "mean_sign_prob": 0.5026,
+      "n_pairs_above_50pct": 7,
+      "n_kegg_pairs": 16,
       "logL_MAP_kegg": -73.59616748521236,
       "n_kegg_samples": 2000,
-      "n_10k_samples": 10000
+      "n_10k_samples": 10000,
+      "per_pair": {
+        "So<-An": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "So<-Vd": {
+          "flow": 2.0,
+          "P_correct": 0.0,
+          "kegg_map_sign_ok": false
+        },
+        "An<-So": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "An<-Fn": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "Vd<-So": {
+          "flow": 2.0,
+          "P_correct": 0.0,
+          "kegg_map_sign_ok": false
+        },
+        "Vd<-An": {
+          "flow": 2.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "Vd<-Fn": {
+          "flow": 1.0,
+          "P_correct": 0.0,
+          "kegg_map_sign_ok": false
+        },
+        "Vd<-Pg": {
+          "flow": 2.0,
+          "P_correct": 0.0525,
+          "kegg_map_sign_ok": false
+        },
+        "Fn<-So": {
+          "flow": 2.0,
+          "P_correct": 0.4956,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-An": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": true
+        },
+        "Fn<-Vd": {
+          "flow": 1.0,
+          "P_correct": 0.0,
+          "kegg_map_sign_ok": false
+        },
+        "Fn<-Pg": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        },
+        "Pg<-So": {
+          "flow": -1.0,
+          "P_correct": 0.319,
+          "kegg_map_sign_ok": true
+        },
+        "Pg<-An": {
+          "flow": 1.0,
+          "P_correct": 0.1223,
+          "kegg_map_sign_ok": false
+        },
+        "Pg<-Vd": {
+          "flow": 1.0,
+          "P_correct": 0.0525,
+          "kegg_map_sign_ok": false
+        },
+        "Pg<-Fn": {
+          "flow": 1.0,
+          "P_correct": 1.0,
+          "kegg_map_sign_ok": false
+        }
+      }
     }
   },
   "kegg_runs": {
