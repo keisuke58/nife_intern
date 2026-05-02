@@ -28,17 +28,9 @@ import csv
 from pathlib import Path
 
 GUILD_ORDER = [
-    'Actinobacteria',
-    'Coriobacteriia',
-    'Bacilli',
-    'Clostridia',
-    'Negativicutes',
-    'Bacteroidia',
-    'Flavobacteriia',
-    'Fusobacteriia',
-    'Betaproteobacteria',
-    'Gammaproteobacteria',
-    'Other',
+    'Actinobacteria', 'Bacilli', 'Bacteroidia', 'Betaproteobacteria',
+    'Clostridia', 'Coriobacteriia', 'Fusobacteriia', 'Gammaproteobacteria',
+    'Negativicutes', 'Other',
 ]
 N_G = len(GUILD_ORDER)
 
