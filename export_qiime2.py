@@ -4,36 +4,38 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import os
 import re
-import shutil
-import subprocess
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
 
-class ExportError(RuntimeError):
+class ExportQiime2Error(RuntimeError):
     pass
 
 
 _CONTROL_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
-_SAFE_COL_RE = re.compile(r"[^A-Za-z0-9_\\-]+")
 
 
-def _sanitize_text(s: Any) -> str:
-    s = "" if s is None else str(s)
+def _sanitize_cell(x: Any) -> str:
+    s = "" if x is None else str(x)
     s = s.replace("\r\n", "\n").replace("\r", "\n")
     s = _CONTROL_CHARS_RE.sub("", s)
+    s = s.strip()
+    if s in {"", "not_provided"}:
+        return "NA"
+    if "\n" in s or "\t" in s:
+        s = s.replace("\t", " ").replace("\n", " ")
     return s
 
 
 def _sanitize_column_name(name: str) -> str:
-    name = _sanitize_text(name).strip()
-    name = name.replace(" ", "_")
-    name = _SAFE_COL_RE.sub("_", name)
+    name = _sanitize_cell(name)
+    if name == "NA":
+        name = "col"
+    name = name.lower()
+    name = re.sub(r"[^a-z0-9_\\-]+", "_", name)
     name = re.sub(r"_+", "_", name).strip("_")
     if not name:
         name = "col"
@@ -42,245 +44,185 @@ def _sanitize_column_name(name: str) -> str:
     return name
 
 
-@dataclass(frozen=True)
-class PairedFastq:
-    sample_id: str
-    forward: Path
-    reverse: Path
+def _infer_numeric_series(values: list[str]) -> list[str] | None:
+    non_na = [v for v in values if v != "NA"]
+    if not non_na:
+        return values
+    ints_ok = True
+    floats_ok = True
+    for v in non_na:
+        try:
+            f = float(v)
+        except Exception:
+            ints_ok = False
+            floats_ok = False
+            break
+        if abs(f - int(f)) > 1e-9:
+            ints_ok = False
+    if not floats_ok:
+        return None
+    out: list[str] = []
+    for v in values:
+        if v == "NA":
+            out.append("NA")
+        else:
+            f = float(v)
+            out.append(str(int(f)) if ints_ok else str(f))
+    return out
 
 
-def _detect_prjna_pair(fastq_dir: Path, run_accession: str, sample_id: str) -> PairedFastq | None:
-    f1 = fastq_dir / f"{run_accession}_{sample_id}_1.fastq.gz"
-    f2 = fastq_dir / f"{run_accession}_{sample_id}_2.fastq.gz"
+def _find_paired_fastq(fastq_dir: Path, run: str, sample: str) -> tuple[Path, Path]:
+    f1 = fastq_dir / f"{run}_{sample}_1.fastq.gz"
+    f2 = fastq_dir / f"{run}_{sample}_2.fastq.gz"
     if f1.exists() and f2.exists():
-        return PairedFastq(sample_id=sample_id, forward=f1, reverse=f2)
-    return None
+        return f1, f2
+
+    cands = list(fastq_dir.glob(f"{run}_{sample}_*.fastq.gz"))
+    if not cands:
+        cands = list(fastq_dir.glob(f"{run}_*{sample}*_*.fastq.gz"))
+    fwd = None
+    rev = None
+    for p in cands:
+        name = p.name
+        if name.endswith("_1.fastq.gz") or "_R1_" in name or name.endswith("_R1.fastq.gz"):
+            fwd = p
+        if name.endswith("_2.fastq.gz") or "_R2_" in name or name.endswith("_R2.fastq.gz"):
+            rev = p
+    if fwd is None or rev is None:
+        raise ExportQiime2Error(f"paired FASTQ not found for run={run} sample={sample} in {fastq_dir}")
+    return fwd, rev
 
 
-def _assert_utf8_no_control(df: pd.DataFrame) -> None:
-    for c in df.columns:
-        if _CONTROL_CHARS_RE.search(str(c)):
-            raise ExportError(f"Control character found in column name: {c!r}")
-    for c in df.columns:
-        ser = df[c].astype(str)
-        bad = ser[ser.str.contains(_CONTROL_CHARS_RE, regex=True)]
-        if not bad.empty:
-            ex = bad.iloc[0]
-            raise ExportError(f"Control character found in column {c!r}, example value: {ex!r}")
-
-
-def _write_manifest(path: Path, pairs: list[PairedFastq]) -> None:
+def write_tsv(path: Path, df: pd.DataFrame) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="\n", encoding="utf-8") as f:
-        w = csv.writer(f, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_MINIMAL)
-        w.writerow(["sample-id", "forward-absolute-filepath", "reverse-absolute-filepath"])
-        for p in sorted(pairs, key=lambda x: x.sample_id):
-            w.writerow([p.sample_id, str(p.forward.resolve()), str(p.reverse.resolve())])
-
-
-def _write_metadata(path: Path, df: pd.DataFrame) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(path, sep="\t", index=False, encoding="utf-8", lineterminator="\n", na_rep="NA", quoting=csv.QUOTE_MINIMAL)
-
-
-def _run_qiime_validate(metadata_path: Path) -> dict[str, Any]:
-    qiime = shutil.which("qiime")
-    if qiime is None:
-        return {"status": "skipped", "reason": "qiime_not_found"}
-    out_qzv = Path("/tmp") / f"metadata_{os.getpid()}.qzv"
-    cmd = [
-        qiime,
-        "metadata",
-        "tabulate",
-        "--m-input-file",
-        str(metadata_path),
-        "--o-visualization",
-        str(out_qzv),
-    ]
-    p = subprocess.run(cmd, capture_output=True, text=True)
-    if out_qzv.exists():
-        out_qzv.unlink(missing_ok=True)
-    if p.returncode != 0:
-        return {"status": "error", "returncode": p.returncode, "stderr": p.stderr[-2000:], "stdout": p.stdout[-2000:]}
-    return {"status": "ok"}
-
-
-def _run_dada2_smoke(manifest_path: Path) -> dict[str, Any]:
-    rscript = shutil.which("Rscript")
-    if rscript is None:
-        return {"status": "skipped", "reason": "Rscript_not_found"}
-    script = r"""
-args <- commandArgs(trailingOnly=TRUE)
-man <- read.delim(args[1], sep="\t", header=TRUE, stringsAsFactors=FALSE)
-stopifnot(all(c("sample-id","forward-absolute-filepath","reverse-absolute-filepath") %in% colnames(man)))
-fwd <- man[1,"forward-absolute-filepath"]
-rev <- man[1,"reverse-absolute-filepath"]
-stopifnot(file.exists(fwd), file.exists(rev))
-suppressWarnings({
-  ok1 <- FALSE
-  ok2 <- FALSE
-  if (requireNamespace("ShortRead", quietly=TRUE)) {
-    fq1 <- ShortRead::readFastq(fwd, n=1)
-    fq2 <- ShortRead::readFastq(rev, n=1)
-    ok1 <- length(fq1) == 1
-    ok2 <- length(fq2) == 1
-  }
-  if (!ok1 || !ok2) {
-    quit(status=2)
-  }
-})
-cat("ok\n")
-"""
-    p = subprocess.run([rscript, "-e", script, str(manifest_path)], capture_output=True, text=True)
-    if p.returncode != 0:
-        return {"status": "error", "returncode": p.returncode, "stderr": p.stderr[-2000:], "stdout": p.stdout[-2000:]}
-    return {"status": "ok"}
+    df.to_csv(
+        path,
+        sep="\t",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+        na_rep="NA",
+        quoting=csv.QUOTE_MINIMAL,
+    )
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument(
-        "--combined-meta",
-        type=Path,
-        default=Path(__file__).parent / "data" / "combined_meta.tsv",
-    )
-    ap.add_argument(
-        "--fastq-prjna-dir",
-        type=Path,
-        default=Path(__file__).parent / "data" / "PRJNA1159109_fastq",
-    )
-    ap.add_argument(
-        "--out-manifest",
-        type=Path,
-        default=Path(__file__).parent / "data" / "qiime2_manifest.tsv",
-    )
-    ap.add_argument(
-        "--out-metadata",
-        type=Path,
-        default=Path(__file__).parent / "data" / "sample-metadata.tsv",
-    )
-    ap.add_argument("--project", type=str, default="PRJNA1159109", help="Filter to this project_accession.")
-    ap.add_argument("--allow-missing-fastq", action="store_true")
-    ap.add_argument("--external-validate", action="store_true")
-    ap.add_argument("--strict-external", action="store_true")
-    ap.add_argument("--report-json", type=Path, default=Path(__file__).parent / "data" / "export_qiime2_report.json")
+    ap.add_argument("--combined-meta", type=Path, default=Path(__file__).parent / "data" / "combined_meta.tsv")
+    ap.add_argument("--fastq-dir", type=Path, required=True)
+    ap.add_argument("--project", type=str, default="PRJNA1159109")
+    ap.add_argument("--out-manifest", type=Path, default=Path(__file__).parent / "data" / "qiime2_manifest.tsv")
+    ap.add_argument("--out-metadata", type=Path, default=Path(__file__).parent / "data" / "sample-metadata.tsv")
+    ap.add_argument("--strict", action="store_true")
     args = ap.parse_args()
 
-    df = pd.read_csv(args.combined_meta, sep="\t", dtype=str, keep_default_na=False)
+    combined = args.combined_meta.resolve()
+    fastq_dir = args.fastq_dir.resolve()
+    if not combined.exists():
+        raise ExportQiime2Error(f"combined_meta.tsv not found: {combined}")
+    if not fastq_dir.exists():
+        raise ExportQiime2Error(f"fastq-dir not found: {fastq_dir}")
+
+    df = pd.read_csv(combined, sep="\t", dtype=str, keep_default_na=False)
     required = {"sample_alias", "project_accession", "run_accession"}
-    missing_cols = sorted(required - set(df.columns))
-    if missing_cols:
-        raise ExportError(f"combined_meta.tsv missing required columns: {missing_cols}")
+    missing = required - set(df.columns)
+    if missing:
+        raise ExportQiime2Error(f"combined_meta.tsv missing required columns: {sorted(missing)}")
 
-    df = df.copy()
-    df["sample_alias"] = df["sample_alias"].map(_sanitize_text).str.strip()
-    df["project_accession"] = df["project_accession"].map(_sanitize_text).str.strip()
-    df["run_accession"] = df["run_accession"].map(_sanitize_text).str.strip()
-
-    df = df[df["project_accession"] == args.project].copy()
+    df = df[df["project_accession"].astype(str) == args.project].copy()
     if df.empty:
-        raise ExportError(f"No records found for project_accession={args.project}")
+        raise ExportQiime2Error(f"no rows for project={args.project} in {combined}")
 
-    if df["sample_alias"].duplicated().any():
-        dup = df.loc[df["sample_alias"].duplicated(), "sample_alias"].unique().tolist()
-        raise ExportError(f"Duplicate sample_alias detected: {dup[:10]}")
+    df["sample-id"] = df["sample_alias"].map(_sanitize_cell)
+    if df["sample-id"].duplicated().any():
+        dups = df.loc[df["sample-id"].duplicated(), "sample-id"].unique().tolist()
+        raise ExportQiime2Error(f"duplicate sample-id detected: {dups[:10]}")
 
-    pairs: list[PairedFastq] = []
-    missing_fastq: list[dict[str, str]] = []
-    for _, row in df.iterrows():
-        sample_id = row["sample_alias"]
-        run = row["run_accession"]
-        p = _detect_prjna_pair(args.fastq_prjna_dir, run, sample_id)
-        if p is None:
-            missing_fastq.append({"sample_id": sample_id, "run_accession": run, "fastq_dir": str(args.fastq_prjna_dir)})
+    manifest_rows = []
+    missing_fastq = []
+    for _, r in df.iterrows():
+        run = _sanitize_cell(r["run_accession"])
+        sid = _sanitize_cell(r["sample-id"])
+        if run == "NA" or sid == "NA":
+            if args.strict:
+                raise ExportQiime2Error("run_accession or sample-id is NA")
             continue
-        pairs.append(p)
-
-    if missing_fastq and not args.allow_missing_fastq:
-        raise ExportError(f"Missing paired FASTQ for {len(missing_fastq)} samples (use --allow-missing-fastq to drop).")
-
-    kept_ids = {p.sample_id for p in pairs}
-    df_kept = df[df["sample_alias"].isin(kept_ids)].copy()
-
-    if df_kept.empty:
-        raise ExportError("No samples with paired FASTQ found; manifest would be empty.")
-
-    col_map: dict[str, str] = {}
-    out_cols: list[str] = ["sample-id"]
-    for c in df_kept.columns:
-        if c == "sample_alias":
+        try:
+            fwd, rev = _find_paired_fastq(fastq_dir, run=run, sample=sid)
+        except ExportQiime2Error:
+            missing_fastq.append({"sample-id": sid, "run_accession": run})
             continue
-        out_c = _sanitize_column_name(c)
-        if out_c == "sample-id":
-            out_c = "sample_id_meta"
-        i = 2
-        base = out_c
-        while out_c in out_cols:
-            out_c = f"{base}_{i}"
-            i += 1
-        col_map[c] = out_c
-        out_cols.append(out_c)
+        manifest_rows.append(
+            {
+                "sample-id": sid,
+                "forward-absolute-filepath": str(fwd.resolve()),
+                "reverse-absolute-filepath": str(rev.resolve()),
+            }
+        )
 
-    meta = pd.DataFrame()
-    meta["sample-id"] = df_kept["sample_alias"].map(_sanitize_text).str.strip()
-    for c, out_c in col_map.items():
-        meta[out_c] = df_kept[c].map(_sanitize_text).str.strip()
+    if missing_fastq and args.strict:
+        raise ExportQiime2Error(f"missing FASTQ for {len(missing_fastq)} samples (e.g. {missing_fastq[:3]})")
+
+    manifest_df = pd.DataFrame(manifest_rows)
+    if manifest_df.empty:
+        raise ExportQiime2Error("manifest is empty (no paired FASTQ found)")
+    if manifest_df["sample-id"].duplicated().any():
+        raise ExportQiime2Error("manifest sample-id is not unique")
+
+    write_tsv(args.out_manifest.resolve(), manifest_df)
+
+    meta = df.copy()
+    drop_cols = {"sample_alias"}
+    meta = meta[[c for c in meta.columns if c not in drop_cols]]
+
+    cols = list(meta.columns)
+    renamed = {}
+    for c in cols:
+        if c == "sample-id":
+            continue
+        renamed[c] = _sanitize_column_name(c)
+    meta = meta.rename(columns=renamed)
+    ordered_cols = ["sample-id"] + [c for c in meta.columns if c != "sample-id"]
+    meta = meta[ordered_cols]
 
     for c in meta.columns:
-        meta[c] = meta[c].replace("", "NA")
-        meta[c] = meta[c].fillna("NA")
+        meta[c] = meta[c].map(_sanitize_cell)
 
-    _assert_utf8_no_control(meta)
+    for c in meta.columns:
+        if c == "sample-id":
+            continue
+        inferred = _infer_numeric_series(meta[c].astype(str).tolist())
+        if inferred is not None:
+            meta[c] = inferred
 
-    numeric_candidates = {"day", "week"}
-    for src, out_c in col_map.items():
-        if src in numeric_candidates:
-            v = meta[out_c].replace("NA", pd.NA)
-            as_num = pd.to_numeric(v, errors="coerce")
-            if as_num.notna().any():
-                meta[out_c] = as_num
+    if set(manifest_df["sample-id"]) != set(meta["sample-id"]):
+        only_manifest = sorted(set(manifest_df["sample-id"]) - set(meta["sample-id"]))
+        only_meta = sorted(set(meta["sample-id"]) - set(manifest_df["sample-id"]))
+        if args.strict:
+            raise ExportQiime2Error(
+                f"sample mismatch manifest vs metadata: only_manifest={len(only_manifest)} only_meta={len(only_meta)}"
+            )
 
-    _write_manifest(args.out_manifest, pairs)
-    _write_metadata(args.out_metadata, meta)
+    write_tsv(args.out_metadata.resolve(), meta)
 
-    missing_manifest_paths = []
-    for p in pairs:
-        if not p.forward.exists():
-            missing_manifest_paths.append(str(p.forward))
-        if not p.reverse.exists():
-            missing_manifest_paths.append(str(p.reverse))
-    if missing_manifest_paths:
-        raise ExportError(f"Manifest contains missing file paths (count={len(missing_manifest_paths)}), example={missing_manifest_paths[0]}")
-
-    report: dict[str, Any] = {
-        "input_combined_meta": str(args.combined_meta),
+    report = {
+        "combined_meta": str(combined),
+        "fastq_dir": str(fastq_dir),
         "project": args.project,
-        "n_input_rows_project": int(df.shape[0]),
-        "n_kept_for_manifest": int(df_kept.shape[0]),
-        "n_dropped_missing_fastq": int(len(missing_fastq)),
-        "manifest_path": str(args.out_manifest),
-        "metadata_path": str(args.out_metadata),
-        "metadata_columns": int(meta.shape[1]),
-        "missing_fastq_samples": missing_fastq[:20],
-        "external_validation": {},
+        "n_project_rows": int(df.shape[0]),
+        "n_manifest_samples": int(manifest_df.shape[0]),
+        "n_metadata_samples": int(meta.shape[0]),
+        "n_missing_fastq": int(len(missing_fastq)),
+        "missing_fastq_examples": missing_fastq[:5],
+        "out_manifest": str(args.out_manifest.resolve()),
+        "out_metadata": str(args.out_metadata.resolve()),
     }
-
-    if args.external_validate:
-        qiime_res = _run_qiime_validate(args.out_metadata)
-        dada2_res = _run_dada2_smoke(args.out_manifest)
-        report["external_validation"] = {"qiime2": qiime_res, "dada2": dada2_res}
-        if args.strict_external:
-            if qiime_res.get("status") != "ok":
-                raise ExportError(f"QIIME2 validation failed: {qiime_res}")
-            if dada2_res.get("status") != "ok":
-                raise ExportError(f"DADA2 smoke test failed: {dada2_res}")
-
-    args.report_json.parent.mkdir(parents=True, exist_ok=True)
-    args.report_json.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-    print(json.dumps({k: report[k] for k in ["project", "n_input_rows_project", "n_kept_for_manifest", "n_dropped_missing_fastq", "metadata_columns"]}))
+    report_path = args.out_manifest.resolve().with_suffix(".report.json")
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(report))
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

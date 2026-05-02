@@ -2,16 +2,17 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
-import re
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 import pandas as pd
 
-GUILD_MAP = {
+
+class ExportModelInputsError(RuntimeError):
+    pass
+
+
+_GUILD_MAP: dict[str, str] = {
     "Actinomyces": "Actinobacteria",
     "Bifidobacterium": "Actinobacteria",
     "Corynebacterium": "Actinobacteria",
@@ -70,264 +71,196 @@ GUILD_MAP = {
 }
 
 
-class ModelInputError(RuntimeError):
-    pass
-
-
-_CONTROL_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
-
-
-def _sanitize_text(x: Any) -> str:
-    s = "" if x is None else str(x)
-    s = s.replace("\r\n", "\n").replace("\r", "\n")
-    s = _CONTROL_CHARS_RE.sub("", s)
-    return s.strip()
-
-
-def read_feature_table_tsv(path: Path) -> pd.DataFrame:
+def read_qiime2_feature_table_tsv(path: Path) -> pd.DataFrame:
+    path = path.resolve()
     if not path.exists():
-        raise ModelInputError(f"feature-table.tsv not found: {path}")
-    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-    header_idx = None
-    for i, line in enumerate(lines[:200]):
-        if line.startswith("#OTU ID") or line.startswith("OTU ID") or line.startswith("#OTU\t") or line.startswith("#OTU_ID"):
-            header_idx = i
-            break
-        if line.startswith("#OTU"):
-            header_idx = i
-            break
-        if line.startswith("#") and "\t" in line and "OTU" in line:
-            header_idx = i
-            break
-    if header_idx is None:
-        for i, line in enumerate(lines[:50]):
-            if not line.startswith("#") and "\t" in line:
-                header_idx = i
+        raise ExportModelInputsError(f"feature-table.tsv not found: {path}")
+    header_i = None
+    with open(path, "r", encoding="utf-8") as f:
+        for i, line in enumerate(f):
+            s = line.strip()
+            if not s:
+                continue
+            if s.startswith("#OTU ID") or s.startswith("OTU ID") or s.startswith("#Feature ID") or s.startswith("Feature ID"):
+                header_i = i
                 break
-    if header_idx is None:
-        raise ModelInputError(f"Could not find header line in feature table: {path}")
-
-    header = lines[header_idx].lstrip("#").split("\t")
-    if not header or header[0].strip().lower() not in {"otu id", "feature id", "feature-id", "otu_id"}:
-        header[0] = "feature-id"
-    data_lines = lines[header_idx + 1 :]
-    rows = []
-    for line in data_lines:
-        if not line.strip() or line.startswith("#"):
-            continue
-        rows.append(line.split("\t"))
-    df = pd.DataFrame(rows, columns=header)
-    fid_col = header[0]
-    df = df.rename(columns={fid_col: "feature-id"})
+    if header_i is None:
+        raise ExportModelInputsError(f"could not find header row in feature-table.tsv: {path}")
+    df = pd.read_csv(path, sep="\t", skiprows=header_i, dtype=str, keep_default_na=False)
+    if df.shape[1] < 2:
+        raise ExportModelInputsError(f"unexpected feature-table.tsv shape: {df.shape}")
+    first_col = df.columns[0]
+    df = df.rename(columns={first_col: "feature-id"})
+    if "taxonomy" in [c.lower() for c in df.columns]:
+        drop = [c for c in df.columns if c.lower() == "taxonomy"]
+        df = df.drop(columns=drop)
     df = df.set_index("feature-id")
     for c in df.columns:
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0.0)
     return df
 
 
-def read_qiime2_taxonomy_tsv(path: Path) -> pd.DataFrame:
-    if not path.exists():
-        raise ModelInputError(f"taxonomy.tsv not found: {path}")
-    df = pd.read_csv(path, sep="\t", dtype=str, keep_default_na=False)
-    need = {"Feature ID", "Taxon"}
-    if not need.issubset(set(df.columns)):
-        raise ModelInputError(f"taxonomy.tsv missing required columns: {sorted(need - set(df.columns))}")
-    return df
+def _clean_rank_token(token: str) -> str:
+    token = (token or "").strip()
+    if not token:
+        return ""
+    if "__" in token:
+        token = token.split("__", 1)[1]
+    token = token.strip()
+    if token in {"", "uncultured", "unidentified", "unassigned"}:
+        return ""
+    return token
 
 
-def parse_genus_from_taxon(taxon: str) -> str:
-    t = _sanitize_text(taxon)
-    if not t or t.lower() in {"unassigned", "na"}:
+def genus_from_taxon(taxon: str) -> str:
+    s = "" if taxon is None else str(taxon)
+    parts = [p.strip() for p in s.split(";")]
+    if any(p.startswith("g__") for p in parts):
+        for p in parts:
+            if p.startswith("g__"):
+                g = _clean_rank_token(p)
+                return g if g else "Unassigned"
         return "Unassigned"
-    parts = [p.strip() for p in t.split(";") if p.strip()]
-    genus = None
     for p in parts:
-        if p.startswith("g__"):
-            genus = p[3:].strip()
-    if genus and genus not in {"", "uncultured", "unidentified"}:
-        return genus
-    for p in reversed(parts):
-        if "__" in p:
-            val = p.split("__", 1)[1].strip()
-            if val:
-                return val
+        if p.startswith("D_5__"):
+            g = _clean_rank_token(p)
+            return g if g else "Unassigned"
     return "Unassigned"
 
 
-def build_feature_to_genus(taxonomy_df: pd.DataFrame) -> dict[str, str]:
-    out: dict[str, str] = {}
-    for _, r in taxonomy_df.iterrows():
-        fid = _sanitize_text(r.get("Feature ID"))
-        genus = parse_genus_from_taxon(r.get("Taxon", ""))
-        if fid:
-            out[fid] = genus
+def read_qiime2_taxonomy_tsv(path: Path) -> pd.DataFrame:
+    path = path.resolve()
+    if not path.exists():
+        raise ExportModelInputsError(f"taxonomy.tsv not found: {path}")
+    df = pd.read_csv(path, sep="\t", dtype=str, keep_default_na=False)
+    cols = {c.lower(): c for c in df.columns}
+    if "feature id" not in cols:
+        raise ExportModelInputsError(f"taxonomy.tsv missing 'Feature ID' column: {path}")
+    if "taxon" not in cols:
+        raise ExportModelInputsError(f"taxonomy.tsv missing 'Taxon' column: {path}")
+    df = df.rename(columns={cols["feature id"]: "feature-id", cols["taxon"]: "taxon"})
+    df["genus"] = df["taxon"].map(genus_from_taxon)
+    return df[["feature-id", "genus"]]
+
+
+def _relative_abundance(counts: pd.DataFrame) -> pd.DataFrame:
+    col_sums = counts.sum(axis=0)
+    col_sums = col_sums.replace(0.0, 1.0)
+    return counts.divide(col_sums, axis=1)
+
+
+def _to_long(abund: pd.DataFrame, metadata: pd.DataFrame, time_col: str, group_cols: list[str], tax_col: str) -> pd.DataFrame:
+    md = metadata.copy()
+    keep_cols = ["sample-id", time_col] + [c for c in group_cols if c in md.columns]
+    md = md[keep_cols].copy()
+    md[time_col] = pd.to_numeric(md[time_col], errors="coerce")
+
+    present_group_cols = [c for c in group_cols if c in md.columns]
+    if present_group_cols:
+        group_series = md[present_group_cols].astype(str).apply(
+            lambda r: "|".join([f"{c}={r[c]}" for c in present_group_cols]), axis=1
+        )
+    else:
+        group_series = pd.Series(["group=NA"] * md.shape[0], index=md.index)
+    md = md.assign(group=group_series)
+
+    melted = abund.reset_index().melt(id_vars=[tax_col], var_name="sample-id", value_name="rel_abundance")
+    out = melted.merge(md, on="sample-id", how="left")
+    out = out.rename(columns={tax_col: "taxon"})
+    out = out[["sample-id", time_col, "group", "taxon", "rel_abundance"] + present_group_cols]
     return out
-
-
-def collapse_table(table: pd.DataFrame, feature_to_group: dict[str, str], group_name: str) -> pd.DataFrame:
-    groups: dict[str, pd.Series] = {}
-    for fid, row in table.iterrows():
-        g = feature_to_group.get(str(fid), "Unassigned")
-        if g not in groups:
-            groups[g] = row.copy()
-        else:
-            groups[g] = groups[g] + row
-    out = pd.DataFrame(groups).T
-    out.index.name = group_name
-    return out
-
-
-def compute_time_days(meta: pd.DataFrame) -> pd.Series:
-    day_col = "day" if "day" in meta.columns else None
-    week_col = "week" if "week" in meta.columns else None
-
-    t_days = pd.Series(["NA"] * meta.shape[0], index=meta.index, dtype=object)
-
-    def _to_int(v: str) -> int | None:
-        v = _sanitize_text(v)
-        if v in {"", "NA", "not_provided"}:
-            return None
-        try:
-            return int(float(v))
-        except Exception:
-            return None
-
-    if day_col is not None:
-        for i, v in enumerate(meta[day_col].astype(str).tolist()):
-            iv = _to_int(v)
-            if iv is not None:
-                t_days.iat[i] = str(iv)
-
-    if week_col is not None:
-        for i, v in enumerate(meta[week_col].astype(str).tolist()):
-            if t_days.iat[i] != "NA":
-                continue
-            iv = _to_int(v)
-            if iv is not None:
-                t_days.iat[i] = str(iv * 7)
-
-    return t_days
-
-
-def write_tsv(path: Path, df: pd.DataFrame) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(path, sep="\t", index=False, encoding="utf-8", lineterminator="\n", na_rep="NA", quoting=csv.QUOTE_MINIMAL)
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--feature-table", type=Path, required=True, help="QIIME2 exported feature-table.tsv (biom converted).")
-    ap.add_argument("--taxonomy", type=Path, required=True, help="QIIME2 exported taxonomy.tsv.")
-    ap.add_argument("--metadata", type=Path, required=True, help="QIIME2 sample-metadata.tsv.")
+    ap.add_argument("--feature-table-tsv", type=Path, default=Path(__file__).parent / "data" / "qiime2_out" / "exported_table" / "feature-table.tsv")
+    ap.add_argument("--taxonomy-tsv", type=Path, default=Path(__file__).parent / "data" / "qiime2_taxonomy" / "exported_taxonomy" / "taxonomy.tsv")
+    ap.add_argument("--metadata", type=Path, default=Path(__file__).parent / "data" / "sample-metadata.tsv")
     ap.add_argument("--outdir", type=Path, default=Path(__file__).parent / "data" / "model_inputs")
-    ap.add_argument("--split-test", type=str, default="in_vivo", help="Use in_vivo_in_vitro==this as test split.")
+    ap.add_argument("--time-col", type=str, default="")
+    ap.add_argument("--group-cols", type=str, default="material,in_vivo_in_vitro,project_accession")
     args = ap.parse_args()
 
-    ft = read_feature_table_tsv(args.feature_table)
-    tax = read_qiime2_taxonomy_tsv(args.taxonomy)
-    meta = pd.read_csv(args.metadata, sep="\t", dtype=str, keep_default_na=False)
-    if "sample-id" not in meta.columns:
-        raise ModelInputError("metadata missing sample-id")
-    meta = meta.copy()
-    meta["sample-id"] = meta["sample-id"].map(_sanitize_text)
-    if meta["sample-id"].duplicated().any():
-        dup = meta.loc[meta["sample-id"].duplicated(), "sample-id"].unique().tolist()
-        raise ModelInputError(f"duplicate sample-id in metadata: {dup[:10]}")
+    feature_table = read_qiime2_feature_table_tsv(args.feature_table_tsv)
+    taxonomy = read_qiime2_taxonomy_tsv(args.taxonomy_tsv)
 
-    samples_in_table = list(ft.columns.astype(str))
-    if set(samples_in_table) != set(meta["sample-id"].astype(str).tolist()):
-        only_table = sorted(set(samples_in_table) - set(meta["sample-id"]))
-        only_meta = sorted(set(meta["sample-id"]) - set(samples_in_table))
-        raise ModelInputError(f"sample-id mismatch between feature table and metadata: only_table={len(only_table)} only_meta={len(only_meta)}")
+    md_path = args.metadata.resolve()
+    if not md_path.exists():
+        raise ExportModelInputsError(f"sample-metadata.tsv not found: {md_path}")
+    metadata = pd.read_csv(md_path, sep="\t", dtype=str, keep_default_na=False)
+    if "sample-id" not in metadata.columns:
+        raise ExportModelInputsError("sample-metadata.tsv missing 'sample-id' column")
 
-    meta = meta.set_index("sample-id").loc[samples_in_table].reset_index()
-    meta["t_days"] = compute_time_days(meta)
+    time_col = args.time_col.strip()
+    if not time_col:
+        if "day" in metadata.columns:
+            time_col = "day"
+        elif "week" in metadata.columns:
+            time_col = "week"
+        else:
+            raise ExportModelInputsError("no time column found (expected 'day' or 'week', or pass --time-col)")
+    if time_col not in metadata.columns:
+        raise ExportModelInputsError(f"time column not found in metadata: {time_col}")
 
-    feature_to_genus = build_feature_to_genus(tax)
-    genus_table = collapse_table(ft, feature_to_genus, group_name="genus")
+    group_cols = [c.strip() for c in args.group_cols.split(",") if c.strip()]
 
-    genus_to_guild = {g: GUILD_MAP.get(g, "Other") for g in genus_table.index.astype(str)}
-    guild_table = collapse_table(genus_table, genus_to_guild, group_name="guild")
+    sample_cols = [c for c in feature_table.columns]
+    md_samples = set(metadata["sample-id"].astype(str))
+    missing_md = [s for s in sample_cols if s not in md_samples]
+    if missing_md:
+        raise ExportModelInputsError(f"metadata missing {len(missing_md)} samples present in feature table (e.g. {missing_md[:5]})")
 
-    long_rows = []
-    for sample in samples_in_table:
-        total = float(ft[sample].sum())
-        if total <= 0:
-            continue
-        trow = meta[meta["sample-id"] == sample].iloc[0].to_dict()
-        for genus, cnt in genus_table[sample].items():
-            c = float(cnt)
-            if c <= 0:
-                continue
-            long_rows.append(
-                {
-                    "sample-id": sample,
-                    "t_days": trow.get("t_days", "NA"),
-                    "taxon_level": "genus",
-                    "taxon": str(genus),
-                    "count": c,
-                    "rel_abundance": c / total,
-                    "project_accession": trow.get("project_accession", "NA"),
-                    "in_vivo_in_vitro": trow.get("in_vivo_in_vitro", "NA"),
-                    "material": trow.get("material", "NA"),
-                    "day": trow.get("day", "NA"),
-                    "week": trow.get("week", "NA"),
-                    "donor": trow.get("donor", "NA"),
-                    "patient": trow.get("patient", "NA"),
-                    "run_accession": trow.get("run_accession", "NA"),
-                }
-            )
+    tax_map = taxonomy.set_index("feature-id")["genus"].to_dict()
+    if not set(feature_table.index).intersection(set(tax_map.keys())):
+        raise ExportModelInputsError("no overlapping features between feature table and taxonomy")
 
-    trajectories = pd.DataFrame(long_rows)
-    if trajectories.empty:
-        raise ModelInputError("no trajectories generated (empty feature table?)")
+    genus = [tax_map.get(fid, "Unassigned") for fid in feature_table.index]
+    genus_counts = feature_table.copy()
+    genus_counts["genus"] = genus
+    genus_counts = genus_counts.groupby("genus", sort=False).sum(numeric_only=True)
 
-    outdir = args.outdir
+    guild_counts = genus_counts.copy()
+    guild_counts["guild"] = [(_GUILD_MAP.get(g, "Other")) for g in guild_counts.index]
+    guild_counts = guild_counts.groupby("guild", sort=False).sum(numeric_only=True)
+
+    genus_rel = _relative_abundance(genus_counts)
+    guild_rel = _relative_abundance(guild_counts)
+
+    outdir = args.outdir.resolve()
     outdir.mkdir(parents=True, exist_ok=True)
+    genus_rel_path = outdir / "genus_relative_abundance.wide.tsv"
+    guild_rel_path = outdir / "guild_relative_abundance.wide.tsv"
+    genus_rel.reset_index().rename(columns={"genus": "taxon"}).to_csv(genus_rel_path, sep="\t", index=False)
+    guild_rel.reset_index().rename(columns={"guild": "taxon"}).to_csv(guild_rel_path, sep="\t", index=False)
 
-    write_tsv(outdir / "trajectories.tsv", trajectories)
-
-    obs_map = {
-        "feature_to_genus": feature_to_genus,
-        "genus_to_guild": genus_to_guild,
-        "taxon_level": "genus",
-        "guilds": sorted(set(genus_to_guild.values())),
-    }
-    (outdir / "observation_map.json").write_text(json.dumps(obs_map, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-    split = []
-    if "in_vivo_in_vitro" in meta.columns:
-        for _, r in meta.iterrows():
-            sid = r["sample-id"]
-            viv = _sanitize_text(r.get("in_vivo_in_vitro", "NA"))
-            split.append({"sample-id": sid, "split": "test" if viv == args.split_test else "train"})
-    else:
-        for sid in samples_in_table:
-            split.append({"sample-id": sid, "split": "train"})
-    split_df = pd.DataFrame(split)
-    write_tsv(outdir / "split_specs.tsv", split_df)
-    (outdir / "split_specs.json").write_text(
-        json.dumps(
-            {
-                "rule": {"test_if_in_vivo_in_vitro_equals": args.split_test},
-                "counts": split_df["split"].value_counts().to_dict(),
-            },
-            ensure_ascii=False,
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    genus_long = _to_long(genus_rel.reset_index().rename(columns={"genus": "taxon"}).set_index("taxon"), metadata, time_col, group_cols, "taxon")
+    guild_long = _to_long(guild_rel.reset_index().rename(columns={"guild": "taxon"}).set_index("taxon"), metadata, time_col, group_cols, "taxon")
+    genus_long_path = outdir / "genus_relative_abundance.long.tsv"
+    guild_long_path = outdir / "guild_relative_abundance.long.tsv"
+    genus_long.to_csv(genus_long_path, sep="\t", index=False)
+    guild_long.to_csv(guild_long_path, sep="\t", index=False)
 
     report = {
-        "n_samples": int(len(samples_in_table)),
-        "n_features": int(ft.shape[0]),
-        "n_genera": int(genus_table.shape[0]),
-        "n_guilds": int(guild_table.shape[0]),
-        "trajectories_rows": int(trajectories.shape[0]),
-        "metadata_columns": int(meta.shape[1]),
+        "inputs": {
+            "feature_table_tsv": str(args.feature_table_tsv.resolve()),
+            "taxonomy_tsv": str(args.taxonomy_tsv.resolve()),
+            "metadata_tsv": str(md_path),
+        },
+        "params": {"time_col": time_col, "group_cols": group_cols},
+        "counts": {
+            "n_samples": int(len(sample_cols)),
+            "n_features": int(feature_table.shape[0]),
+            "n_genera": int(genus_counts.shape[0]),
+            "n_guilds": int(guild_counts.shape[0]),
+        },
+        "outputs": {
+            "genus_wide": str(genus_rel_path),
+            "guild_wide": str(guild_rel_path),
+            "genus_long": str(genus_long_path),
+            "guild_long": str(guild_long_path),
+        },
     }
-    (outdir / "export_model_inputs_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (outdir / "model_inputs.report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report))
     return 0
 
