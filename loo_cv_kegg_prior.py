@@ -24,7 +24,7 @@ _here = Path(__file__).resolve().parent
 sys.path.insert(0, str(_here))
 from guild_replicator_dieckow import GUILD_ORDER, N_G
 
-PHI_NPY   = _here / 'results' / 'dieckow_otu' / 'phi_guild_excel_class.npy'
+PHI_NPY   = _here / 'results' / 'dieckow_otu' / 'phi_guild.npy'
 SUPPFILE  = _here / 'Szafranski_Published_Work' / 'Szafranski_Published_Work' / \
             'public_data' / 'Dieckow' / \
             'Supplementary_File_1_microbe_metabolite_enzyme_interactions.tsv'
