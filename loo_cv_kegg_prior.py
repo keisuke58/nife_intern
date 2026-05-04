@@ -387,20 +387,234 @@ def run_hamilton_kegg(phi_all, net_flow, nsteps=500, n_epochs=5000, lr=3e-3):
     print(f'Saved: {OUT_HAM}', flush=True)
 
 
+# ── Hamilton LOO-CV ───────────────────────────────────────────────────────────
+
+OUT_LOO_HAM = _here / 'results' / 'dieckow_cr' / 'loo_cv_hamilton_kegg_prior.json'
+
+
+def run_hamilton_kegg_loo(phi_all, net_flow, nsteps=100, n_epochs=2000, hold_idx=None):
+    """LOO-CV for Hamilton ODE with KEGG sign prior.
+
+    hold_idx: if given, only compute that one fold (for parallel GPU runs).
+    """
+    try:
+        import jax
+        import jax.numpy as jnp
+        jax.config.update('jax_enable_x64', True)
+    except ImportError:
+        print('JAX not available — skipping Hamilton LOO-CV', flush=True)
+        return
+
+    sys.path.insert(0, str(_here.parent / 'Tmcmc202601' / 'data_5species' / 'main'))
+    from hamilton_ode_jax_nsp import simulate_0d_nsp
+
+    n_p  = phi_all.shape[0]
+    n_sp = N_G
+    n_A  = n_sp * (n_sp + 1) // 2
+    LAM_H = 1e-4
+
+    # warm-start A from full-cohort Hamilton KEGG fit
+    if OUT_HAM.exists():
+        d_full = json.load(open(OUT_HAM))
+        A_full_np = np.array(d_full['A'])
+        b_full_np = np.array(d_full['b_all'])
+        print(f'  Warm-start A from {OUT_HAM.name}', flush=True)
+    else:
+        A_full_np = np.zeros((n_sp, n_sp))
+        np.fill_diagonal(A_full_np, -0.1)
+        b_full_np = np.full((n_p, n_sp), 0.1)
+
+    net_sym_np = (net_flow + net_flow.T) / 2.0
+    diag_idx_np = np.array([j * (j + 1) // 2 + j for j in range(n_sp)])
+
+    def _build_theta_A(A):
+        return np.array([A[i, j] for j in range(n_sp) for i in range(j + 1)])
+
+    def _unpack_A_np(v):
+        A = np.zeros((n_sp, n_sp))
+        idx = 0
+        for j in range(n_sp):
+            for i in range(j + 1):
+                A[i, j] = A[j, i] = v[idx]; idx += 1
+        return A
+
+    def fit_one_fold(hold):
+        import jax, jax.numpy as jnp
+        tr = [i for i in range(n_p) if i != hold]
+        phi_tr = phi_all[tr]
+        n_tr   = len(tr)
+
+        phi_obs_jax = jnp.array(phi_tr)
+        net_sym_jax = jnp.array(net_sym_np)
+
+        def _run_sim(theta, phi_init):
+            phibar = simulate_0d_nsp(theta, n_sp=n_sp, n_steps=nsteps, dt=1e-4,
+                                      phi_init=phi_init, c_const=25.0, alpha_const=100.0)
+            eq = phibar[-1]; s = eq.sum()
+            return jnp.where(s > 1e-10, eq / s, jnp.ones(n_sp) / n_sp)
+
+        def _pred_two_weeks(theta_A, b_p, phi0):
+            theta = jnp.concatenate([theta_A, b_p])
+            phi2  = _run_sim(theta, phi0)
+            phi3  = _run_sim(theta, phi2)
+            return phi2, phi3
+
+        _pred_all = jax.vmap(_pred_two_weeks, in_axes=(None, 0, 0))
+
+        @jax.jit
+        def pred_week(theta_A, b, phi0):
+            return _run_sim(jnp.concatenate([theta_A, b]), phi0)
+
+        def _unpack_A_jax(v):
+            A = jnp.zeros((n_sp, n_sp))
+            idx = 0
+            for j in range(n_sp):
+                for i in range(j + 1):
+                    A = A.at[i, j].set(v[idx]); A = A.at[j, i].set(v[idx]); idx += 1
+            return A
+
+        @jax.jit
+        def loss_fn(theta_A, b_all):
+            phi2_all, phi3_all = _pred_all(theta_A, b_all, phi_obs_jax[:, 0])
+            sq = (jnp.sum((phi2_all - phi_obs_jax[:, 1]) ** 2) +
+                  jnp.sum((phi3_all - phi_obs_jax[:, 2]) ** 2))
+            rmse = jnp.sqrt(sq / (n_tr * 2 * n_sp))
+            A       = _unpack_A_jax(theta_A)
+            sp_mat  = jnp.sign(net_sym_jax)
+            mask    = (sp_mat != 0) & (~jnp.eye(n_sp, dtype=bool))
+            mismatch = jnp.maximum(0.0, -sp_mat * A)
+            pen = jnp.where(mask, jnp.abs(net_sym_jax) * mismatch ** 2 / (2 * SIGMA ** 2), 0.0).sum()
+            return rmse + pen + LAM_H * jnp.sum(theta_A ** 2)
+
+        from scipy.optimize import minimize as scipy_minimize
+
+        n_flat = n_A + n_tr * n_sp
+
+        @jax.jit
+        def _lag(x_flat):
+            ta = x_flat[:n_A]
+            ba = x_flat[n_A:].reshape(n_tr, n_sp)
+            loss, (gA, gb) = jax.value_and_grad(loss_fn, argnums=(0, 1))(ta, ba)
+            return loss, jnp.concatenate([gA, gb.ravel()])
+
+        theta_A0 = _build_theta_A(A_full_np)
+        b0       = b_full_np[tr].copy()
+        x0       = np.concatenate([theta_A0, b0.ravel()])
+
+        bounds = [(None, None)] * n_flat
+        for k in diag_idx_np:
+            bounds[k] = (None, 0.0)
+
+        cc = [0]; t0 = time.time()
+
+        def fg(x):
+            cc[0] += 1
+            loss, grad = _lag(jnp.array(x))
+            if cc[0] % 100 == 1:
+                print(f'    fold{hold} iter{cc[0]:4d} loss={float(loss):.5f} ({time.time()-t0:.1f}s)',
+                      flush=True)
+            return float(loss), np.array(grad, dtype=np.float64)
+
+        res = scipy_minimize(fg, x0, jac=True, method='L-BFGS-B', bounds=bounds,
+                             options={'maxiter': n_epochs, 'ftol': 1e-12, 'gtol': 1e-7})
+
+        theta_A_opt = jnp.array(res.x[:n_A])
+        b_tr_opt    = jnp.array(res.x[n_A:].reshape(n_tr, n_sp))
+        tr_rmse_val = float(res.fun)
+
+        # fit b for held-out patient (A fixed)
+        b_h0  = jnp.array(b_full_np[hold])
+        phi_h = jnp.array(phi_all[hold])
+
+        @jax.jit
+        def loss_b(b_h):
+            phi2 = pred_week(theta_A_opt, b_h, phi_h[0])
+            phi3 = pred_week(theta_A_opt, b_h, phi2)
+            return jnp.sqrt(jnp.mean((phi2 - phi_h[1]) ** 2 + (phi3 - phi_h[2]) ** 2))
+
+        @jax.jit
+        def _lb_grad(b_h):
+            return jax.value_and_grad(loss_b)(b_h)
+
+        def fg_b(x):
+            v, g = _lb_grad(jnp.array(x))
+            return float(v), np.array(g, dtype=np.float64)
+
+        res_b = scipy_minimize(fg_b, np.array(b_h0), jac=True, method='L-BFGS-B',
+                               options={'maxiter': 500})
+        b_h_opt = jnp.array(res_b.x)
+
+        phi2_h = np.array(pred_week(theta_A_opt, b_h_opt, phi_h[0]))
+        phi3_h = np.array(pred_week(theta_A_opt, b_h_opt, jnp.array(phi2_h)))
+        rmse_p = float(np.sqrt(np.mean((phi2_h - phi_all[hold, 1]) ** 2 +
+                                       (phi3_h - phi_all[hold, 2]) ** 2)))
+        print(f'  {PATIENTS[hold]}: LOO={rmse_p:.5f}  train={tr_rmse_val:.5f}'
+              f'  ({time.time()-t0:.1f}s)', flush=True)
+        return rmse_p, tr_rmse_val
+
+    folds = [hold_idx] if hold_idx is not None else list(range(n_p))
+    results = []
+    for hold in folds:
+        rmse_p, tr_rmse = fit_one_fold(hold)
+        results.append({'patient': PATIENTS[hold], 'rmse': float(rmse_p),
+                        'train_rmse': float(tr_rmse)})
+
+    if hold_idx is None:
+        mean = float(np.mean([r['rmse'] for r in results]))
+        print(f'\nHamilton KEGG-prior LOO mean ({n_p} pat, {n_sp} guild): {mean:.5f}', flush=True)
+        out = {'loo_rmse_mean': mean, 'per_patient': results,
+               'model': f'Hamilton JAX KEGG-prior LOO-CV ({n_p} pat, {n_sp} guild, sigma={SIGMA})'}
+        json.dump(out, open(OUT_LOO_HAM, 'w'), indent=2)
+        print(f'Saved: {OUT_LOO_HAM}', flush=True)
+    else:
+        # partial result for single-fold parallel run
+        fold_out = _here / 'results' / 'dieckow_cr' / f'loo_hamilton_kegg_fold{hold_idx}.json'
+        json.dump({'patient': PATIENTS[hold_idx], 'rmse': results[0]['rmse'],
+                   'train_rmse': results[0]['train_rmse']}, open(fold_out, 'w'), indent=2)
+        print(f'Saved fold: {fold_out}', flush=True)
+
+
+def aggregate_hamilton_loo():
+    """Merge per-fold JSONs into final loo_cv_hamilton_kegg_prior.json."""
+    n_p = len(PATIENTS)
+    results = []
+    for i in range(n_p):
+        p = _here / 'results' / 'dieckow_cr' / f'loo_hamilton_kegg_fold{i}.json'
+        if p.exists():
+            results.append(json.load(open(p)))
+    if len(results) == n_p:
+        mean = float(np.mean([r['rmse'] for r in results]))
+        out = {'loo_rmse_mean': mean, 'per_patient': results,
+               'model': f'Hamilton JAX KEGG-prior LOO-CV ({n_p} pat, {N_G} guild, sigma={SIGMA})'}
+        json.dump(out, open(OUT_LOO_HAM, 'w'), indent=2)
+        print(f'Aggregated {n_p} folds: mean LOO={mean:.5f}  saved {OUT_LOO_HAM}', flush=True)
+    else:
+        print(f'Only {len(results)}/{n_p} folds ready', flush=True)
+
+
 # ── Main ────────────────────────────────────────────────────────────────────────────
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model',  default='both', choices=['glv', 'hamilton', 'both'])
-    parser.add_argument('--nsteps', type=int,   default=int(os.environ.get('NSTEPS',  2500)))
+    parser.add_argument('--model',  default='both',
+                        choices=['glv', 'hamilton', 'hamilton_loo', 'both'])
+    parser.add_argument('--nsteps', type=int,   default=int(os.environ.get('NSTEPS',  100)))
     parser.add_argument('--epochs', type=int,   default=int(os.environ.get('MAXITER', 5000)))
     parser.add_argument('--lr',     type=float, default=3e-3)
+    parser.add_argument('--fold',   type=int,   default=None,
+                        help='Run only this LOO fold (0-indexed). None=all folds.')
+    parser.add_argument('--aggregate', action='store_true',
+                        help='Aggregate per-fold JSONs into final LOO result.')
     args = parser.parse_args()
+
+    if args.aggregate:
+        aggregate_hamilton_loo()
+        return
 
     t0 = time.time()
     print('Building KEGG/HMDB-weighted metabolite flow...', flush=True)
     net_flow = build_net_flow()
-    print(f'  Non-zero pairs: {(net_flow != 0).sum() - N_G}, '
+    print(f'  Non-zero pairs: {int((net_flow != 0).sum()) - int((np.diag(net_flow) != 0).sum())}, '
           f'max |flow|={np.abs(net_flow).max():.1f}', flush=True)
 
     phi_all = np.load(PHI_NPY)
@@ -422,10 +636,17 @@ def main():
         run_loo(phi_sub, net_flow, A_warm, b_warm)
 
     if args.model in ('hamilton', 'both'):
-        print(f'\n=== Hamilton ODE KEGG-prior (JAX/Adam) '
+        print(f'\n=== Hamilton ODE KEGG-prior (JAX/L-BFGS-B) '
               f'nsteps={args.nsteps} epochs={args.epochs} lr={args.lr} ===', flush=True)
         run_hamilton_kegg(phi_sub, net_flow,
                           nsteps=args.nsteps, n_epochs=args.epochs, lr=args.lr)
+
+    if args.model == 'hamilton_loo':
+        print(f'\n=== Hamilton KEGG-prior LOO-CV '
+              f'nsteps={args.nsteps} epochs={args.epochs} fold={args.fold} ===', flush=True)
+        run_hamilton_kegg_loo(phi_sub, net_flow,
+                              nsteps=args.nsteps, n_epochs=args.epochs,
+                              hold_idx=args.fold)
 
     print(f'\nTotal: {time.time()-t0:.1f}s', flush=True)
 
