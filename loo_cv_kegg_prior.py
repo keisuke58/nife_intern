@@ -1,15 +1,38 @@
 #!/usr/bin/env python3
 """
-loo_cv_kegg_prior.py — LOO-CV for gLV with KEGG/HMDB-weighted sign prior.
+loo_cv_kegg_prior.py — LOO-CV for gLV / Hamilton ODE with metabolite-network sign prior.
 
-Also runs full-cohort Hamilton ODE fit with the same sign prior.
+Data source
+-----------
+The sign prior is derived from Szafranski et al. Supplementary File 1
+(microbe × metabolite × enzyme interactions, literature-curated).
 
-Outputs:
+KEGG compound IDs and HMDB IDs stored in that file are used solely as
+confidence weights: metabolites annotated in KEGG or HMDB receive weight 2.0;
+unannotated metabolites receive weight 1.0.  No data is fetched from the KEGG
+or HMDB APIs at runtime — the underlying interaction data is entirely from
+Szafranski's supplementary table.
+
+The resulting flow matrix F[i,j] encodes:
+  F[i,j] > 0  if guild j PRODUCES metabolites that guild i USES
+               (j benefits i → expect A[i,j] > 0)
+  F[i,j] < 0  if guild j PRODUCES metabolites that INHIBIT guild i
+               (j suppresses i → expect A[i,j] < 0)
+
+"KEGG prior" in variable / file names is a shorthand for this weighted
+Szafranski sign prior; it does NOT mean data from the KEGG PATHWAY database.
+
+Outputs
+-------
   results/dieckow_cr/loo_cv_glv_kegg_prior.json
-  results/dieckow_cr/fit_glv_hamilton_kegg_prior.json (Hamilton full fit)
+  results/dieckow_cr/fit_glv_hamilton_kegg_prior.json  (Hamilton full fit)
+  results/dieckow_cr/loo_cv_hamilton_kegg_prior.json   (Hamilton LOO-CV)
 
-Usage:
-  python loo_cv_kegg_prior.py [--model glv|hamilton|both]
+Usage
+-----
+  python loo_cv_kegg_prior.py [--model glv|hamilton|hamilton_loo|both]
+  python loo_cv_kegg_prior.py --model hamilton_loo --fold 0  # single fold
+  python loo_cv_kegg_prior.py --aggregate                    # merge fold JSONs
 """
 
 import argparse, json, os, sys, time
@@ -57,9 +80,23 @@ GENUS_GUILD = {
 }
 
 
-# ── Build KEGG/HMDB-weighted metabolite-flow matrix ──────────────────────────
+# ── Build metabolite-flow matrix (Szafranski data, KEGG/HMDB confidence weight) ──
 
 def build_net_flow():
+    """Build the signed flow matrix F from Szafranski Supplementary File 1.
+
+    Each row in the file is a (taxon, metabolite, relationship) triple.
+    Relationships: PRODUCES, USES, IS_INHIBITED_BY.
+
+    Weight per metabolite:
+      2.0 if the metabolite has a KEGG compound ID or HMDB ID in the file
+      1.0 otherwise  (KEGG/HMDB used only as annotation confidence, not as data)
+
+    F[i, j] > 0  →  guild j produces something guild i uses
+                     (mutualism signal: expect A[i,j] > 0)
+    F[i, j] < 0  →  guild j produces something that inhibits guild i
+                     (antagonism signal: expect A[i,j] < 0)
+    """
     gi = {g: i for i, g in enumerate(GUILD_ORDER)}
     df = pd.read_csv(SUPPFILE, sep='\t')
 
@@ -95,6 +132,7 @@ def build_net_flow():
             for tgt in inhib:
                 if src != tgt:
                     neg[gi[tgt], gi[src]] += w
+    return pos - neg
     return pos - neg
 
 

@@ -1,0 +1,47 @@
+{
+  "loo_rmse_mean": 0.07704859493666169,
+  "loo_rmse_std": 0.03578203265037312,
+  "per_patient": [
+    {
+      "patient": "A",
+      "rmse": 0.1593445436520225,
+      "train_rmse": 0.07966732604230103
+    },
+    {
+      "patient": "B",
+      "rmse": 0.08082238044113328,
+      "train_rmse": 0.0857019705441446
+    },
+    {
+      "patient": "C",
+      "rmse": 0.08222489902761272,
+      "train_rmse": 0.08643641779491927
+    },
+    {
+      "patient": "E",
+      "rmse": 0.05982192506891281,
+      "train_rmse": 0.06998355893340022
+    },
+    {
+      "patient": "F",
+      "rmse": 0.048450944256051884,
+      "train_rmse": 0.08757019834988303
+    },
+    {
+      "patient": "G",
+      "rmse": 0.029038779115186014,
+      "train_rmse": 0.08837853176599761
+    },
+    {
+      "patient": "H",
+      "rmse": 0.07656826963622518,
+      "train_rmse": 0.08201455816005716
+    },
+    {
+      "patient": "K",
+      "rmse": 0.08011701829614921,
+      "train_rmse": 0.06344405925915901
+    }
+  ],
+  "model": "Hamilton JAX L-BFGS-B KEGG/HMDB-prior LOO-CV (8 patients, 10 guilds, sigma=0.15, nsteps=100)"
+}
