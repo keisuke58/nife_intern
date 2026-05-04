@@ -1,0 +1,7 @@
+{
+  "patient": "H",
+  "hold_idx": 7,
+  "rmse": 0.17552406442232305,
+  "sign_agreement": "28/28",
+  "model": "Hamilton SS v2 LOO (34 pairs, 10 patients, SS_ITER=2000)"
+}

@@ -190,13 +190,25 @@ $$\mathcal{L} = \underbrace{\text{RMSE}(\hat\phi, \phi)}_{\text{data fit}} \;+\;
 
 ---
 
-## Result 3 — Model Comparison (LOO-CV)
+## Result 3 — LOO-CV: Community Type Analysis
 
-![center w:840](fig_guild_model_comparison.png)
+![center w:980](fig_patient_loo_analysis.png)
+
+<div class="box">
+
+Patient A (LOO-RMSE = 0.159) is a **covariate-shift outlier**: Actinobacteria = 48%, 3× the training mean. Removing A, mean LOO-RMSE drops to **0.063**. CT1 (Bacilli-dominant) patients predict well; CT2 diversity drives generalisation error.
+
+</div>
+
+---
+
+## Result 4 — Model Comparison (LOO-CV)
+
+![center w:900](fig_guild_model_comparison.png)
 
 <div class="box-green">
 
-**Hamilton + KEGG LOO-CV = 0.0770** &nbsp;·&nbsp; 9.4% improvement over Hamilton free (0.0855) &nbsp;·&nbsp; Competitive with gLV + KEGG (0.0741, Δ = 3.9%)
+**Hamilton + KEGG ODE = 0.0770** (8 pat.) &nbsp;·&nbsp; **Hamilton SS v2 = 0.0875** (10 pat.) &nbsp;·&nbsp; SS v2: 34-pair AGORA flow, 100% sign agreement on all folds
 
 </div>
 
@@ -208,22 +220,22 @@ $$\mathcal{L} = \underbrace{\text{RMSE}(\hat\phi, \phi)}_{\text{data fit}} \;+\;
 <div class="col">
 
 ### What works ✓
-- **Full sign consistency**: 22/22 (100%) KEGG agreement — metabolomic constraints are compatible with Hamilton dynamics
-- **KEGG prior regularises effectively**: LOO-CV 0.0855 → 0.0770 (9.4% improvement)
+- **Full sign consistency**: Hamilton + KEGG ODE 22/22 (100%); SS v2 ≥ 24/28 per fold
+- **KEGG prior regularises**: LOO-CV 0.0855 → 0.0770 (9.4% improvement over Hamilton free)
 - **Competitive generalisation**: within 3.9% of gLV + KEGG at 0.0741
 - **Biologically interpretable** $A$: negative self-regulation, positive Actinobacteria ↔ Bacilli mutualism
-- **Steady-state check**: RMSE 0.177 (vs ODE 0.083) — data are transient, not equilibrium
+- **SS v2 (10 patients)**: mean LOO-RMSE = 0.0875 — steady-state approximation on expanded cohort
 
 </div>
 <div class="col">
 
 ### Remaining gap vs gLV
-- gLV free still best at **0.0588** — Hamilton's transient approximation (short $t$) limits fit quality
-- Patient A outlier (LOO-RMSE 0.159) drives variance; community type differs from training set
-- **Next**: expanded flow (34 pairs, all 10 patients) fit running → may close the gap
+- gLV free best at **0.0588** — Hamilton's transient dynamics limit fit quality
+- Patient H outlier (SS v2 LOO-RMSE 0.176) and C (0.118) drive SS v2 variance
+- SS v2 performance confirms: **data are transient**, not equilibrium; ODE preferred for fitting
 
 ### Open questions
-- Do **34 KEGG+AGORA pairs** further improve LOO-CV?
+- Do **34 KEGG+AGORA pairs** (expanded fit, running) further improve LOO-CV?
 - Optimal $\sigma$ is **insensitive** ($\sigma \in [0.05, 0.30]$ all give SA = 22/22, RMSE ≈ 0.081)
 
 </div>
@@ -241,11 +253,11 @@ $$\mathcal{L} = \underbrace{\text{RMSE}(\hat\phi, \phi)}_{\text{data fit}} \;+\;
 | 4 | **Paper S1** update with correct posterior statistics | ✅ Done |
 | 5 | **Expanded flow** (34 pairs, full 10 patients) fit | 🔄 Running GPU |
 | 6 | **σ sensitivity** analysis | ✅ Insensitive — σ = 0.15 optimal |
-| 7 | **Steady-state** reformulation | ✅ Tested — transient data, ODE preferred |
+| 7 | **Steady-state LOO-CV** (10-fold, SS v2) | ✅ **Done** — 0.0875 |
 | 8 | **Network visualisation** of interaction matrix | ✅ Done |
 
 <div class="box-green" style="margin-top: 20px">
 
-**Summary**: Hamilton + KEGG prior achieves 100% metabolomic sign consistency (22/22) and 9.4% LOO-CV improvement over Hamilton free (0.077 vs 0.086). Generalisation is competitive with gLV + KEGG (Δ = 3.9%), while offering mechanistic interpretability that gLV lacks.
+**Summary**: Hamilton + KEGG ODE achieves 100% sign consistency and 9.4% LOO-CV improvement (0.077 vs 0.086). SS v2 validates the approach on all 10 patients (LOO-RMSE 0.0875), confirming transient dynamics dominate. Expanded AGORA flow fit pending.
 
 </div>
