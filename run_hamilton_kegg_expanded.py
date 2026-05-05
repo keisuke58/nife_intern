@@ -13,9 +13,18 @@ import numpy as np
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpu',     type=int, default=2)
-parser.add_argument('--nsteps',  type=int, default=100)
-parser.add_argument('--no-agora', action='store_true')
+parser.add_argument('--gpu',        type=int,   default=2)
+parser.add_argument('--nsteps',     type=int,   default=100)
+parser.add_argument('--no-agora',   action='store_true')
+parser.add_argument('--w-agora',    type=float, default=1.0,  help='AGORA L3 sign-prior weight')
+parser.add_argument('--prior-mode', type=str,   default='sign',
+                    choices=['sign', 'macarthur'],
+                    help='sign: current sign penalty; macarthur: Gaussian prior from FBA Phi')
+parser.add_argument('--c-agora',    type=float, default=0.1,
+                    help='[macarthur mode] scaling constant c in A~N(c·Phi, sigma²)')
+parser.add_argument('--sigma-mac',  type=float, default=0.5,
+                    help='[macarthur mode] prior std sigma')
+parser.add_argument('--out-suffix', type=str,   default='',   help='suffix for output filename')
 args = parser.parse_args()
 
 import os
@@ -31,7 +40,15 @@ from build_net_flow_expanded import build_net_flow_expanded
 PHI_NPY  = _here / 'results' / 'dieckow_otu' / 'phi_guild.npy'
 PATIENTS = list('ABCDEFGHKL')   # full cohort (all 10 patients)
 SIGMA    = 0.15
-OUT      = _here / 'results' / 'dieckow_cr' / 'fit_glv_hamilton_kegg_expanded.json'
+if args.out_suffix:
+    _suffix = args.out_suffix
+elif args.no_agora:
+    _suffix = '_no_agora'
+elif args.prior_mode == 'macarthur':
+    _suffix = f'_mac_c{args.c_agora:.3f}'.replace('.', 'p')
+else:
+    _suffix = f'_agora_w{args.w_agora:.1f}'.replace('.', 'p')
+OUT      = _here / 'results' / 'dieckow_cr' / f'fit_glv_hamilton_kegg_expanded{_suffix}.json'
 
 # ── Load data ─────────────────────────────────────────────────────────────────
 phi_all = np.load(PHI_NPY)
@@ -40,8 +57,9 @@ print(f'Loaded phi_sub: {phi_sub.shape}  patients={PATIENTS}', flush=True)
 
 # ── Expanded flow matrix ──────────────────────────────────────────────────────
 use_agora = not args.no_agora
-print(f'Building expanded flow matrix (use_agora={use_agora})...', flush=True)
-net_flow = build_net_flow_expanded(use_agora=use_agora, verbose=True)
+print(f'Building expanded flow matrix (use_agora={use_agora}, w_agora={args.w_agora})...', flush=True)
+net_flow = build_net_flow_expanded(use_agora=use_agora, verbose=True,
+                                    agora_weight=args.w_agora)
 
 net_sym  = (net_flow + net_flow.T) / 2.0
 sp_mat   = np.sign(net_sym)
@@ -86,6 +104,23 @@ diag_idx_np = np.array([j * (j + 1) // 2 + j for j in range(n_sp)])
 
 nsteps = args.nsteps
 
+# ── MacArthur prior (optional) ────────────────────────────────────────────────
+PRIOR_MODE = args.prior_mode
+C_AGORA    = args.c_agora
+SIGMA_MAC  = args.sigma_mac
+phi_mac_j  = None
+mac_mask_j = None
+
+if PRIOR_MODE == 'macarthur' and use_agora:
+    from guild_agora_signs import get_agora_phi_matrix
+    agora_dir = _here / 'data' / 'homd_db' / 'agora_gems'
+    print(f'Computing MacArthur Phi matrix (c={C_AGORA}, sigma={SIGMA_MAC})...', flush=True)
+    phi_mac_np, mac_mask_np = get_agora_phi_matrix(agora_dir, verbose=True)
+    phi_mac_j  = jnp.array(phi_mac_np)
+    mac_mask_j = jnp.array(mac_mask_np)
+    print(f'Phi range: [{phi_mac_np.min():.3f}, {phi_mac_np.max():.3f}]  '
+          f'non-zero pairs: {int(mac_mask_np.sum())}', flush=True)
+
 # ── ODE helpers ───────────────────────────────────────────────────────────────
 def _run_sim(theta, phi_init):
     phibar = simulate_0d_nsp(theta, n_sp=n_sp, n_steps=nsteps, dt=1e-4,
@@ -119,11 +154,23 @@ def loss_fn(theta_A, b_all):
     sq   = jnp.sum((phi2_all - phi_obs[:, 1]) ** 2) + jnp.sum((phi3_all - phi_obs[:, 2]) ** 2)
     rmse = jnp.sqrt(sq / (n_p * 2 * n_sp))
     A    = _unpack_A(theta_A)
-    sp_j = jnp.sign(net_sym_j)
-    mask = (sp_j != 0) & (~jnp.eye(n_sp, dtype=bool))
-    pen  = jnp.where(mask,
-                     jnp.abs(net_sym_j) * jnp.maximum(0.0, -sp_j * A) ** 2 / (2 * SIGMA ** 2),
-                     0.0).sum()
+
+    if PRIOR_MODE == 'macarthur' and phi_mac_j is not None:
+        # MacArthur Gaussian prior: A[i,j] ~ N(c · Phi[i,j], sigma²)
+        # L = Σ_{i≠j,mask} (A[i,j] − c·Phi[i,j])² / (2σ²)
+        pen = jnp.where(
+            mac_mask_j,
+            (A - C_AGORA * phi_mac_j) ** 2 / (2.0 * SIGMA_MAC ** 2),
+            0.0
+        ).sum()
+    else:
+        # Sign prior (default): penalise wrong sign weighted by flow magnitude
+        sp_j = jnp.sign(net_sym_j)
+        mask = (sp_j != 0) & (~jnp.eye(n_sp, dtype=bool))
+        pen  = jnp.where(mask,
+                         jnp.abs(net_sym_j) * jnp.maximum(0.0, -sp_j * A) ** 2 / (2 * SIGMA ** 2),
+                         0.0).sum()
+
     return rmse + pen + LAM * jnp.sum(theta_A ** 2)
 
 # ── Compile ───────────────────────────────────────────────────────────────────
