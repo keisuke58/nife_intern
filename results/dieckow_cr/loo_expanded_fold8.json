@@ -1,0 +1,7 @@
+{
+  "patient": "K",
+  "hold_idx": 8,
+  "rmse": 0.0627017979413066,
+  "sign_agreement": "26/28",
+  "model": "Hamilton expanded LOO (34 pairs, 10 patients, nsteps=100)"
+}
