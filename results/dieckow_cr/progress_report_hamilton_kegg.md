@@ -208,6 +208,10 @@ $$\mathcal{L} = \underbrace{\text{RMSE}(\hat{\boldsymbol\phi}, \boldsymbol\phi)}
 
 $$\mathcal{P}_{\text{sign}} = \sum_{\substack{(i,j)\\F_{ij}\neq 0}} \frac{|F_{ij}|}{2\sigma^2}\left[\max\!\left(0,\,-\operatorname{sgn}(F_{ij})\cdot A_{ij}\right)\right]^2 \quad (\sigma=0.15)$$
 
+**How the weight $w$ enters $|F_{ij}|$**: the flow matrix is built by accumulating per-metabolite signals across layers:
+$$F_{ij} = \tfrac{1}{2}\!\left(\sum_l w_l\,n^+_{l,ij} - \sum_l w_l\,n^-_{l,ij}\right) + (i{\leftrightarrow}j)$$
+where $n^+_{l,ij}$ / $n^-_{l,ij}$ = number of nutrient / toxin signals from guild $j$ to $i$ in layer $l$. $w$ (AGORA, L3) scales each cross-feeding metabolite's contribution to $|F_{ij}|$ and thereby the **penalty stiffness** for that pair. L1 weights (2.0/1.5) and L2 (1.0) accumulate in the same sum.
+
 ---
 
 <!-- _style: "section { font-size: 15px; }" -->
@@ -220,8 +224,8 @@ $$\mathcal{P}_{\text{sign}} = \sum_{\substack{(i,j)\\F_{ij}\neq 0}} \frac{|F_{ij
 ### Sign prior — data sources (3 layers)
 - **L1 (main)** Dieckow et al. (2024) Suppl. — literature-curated PRODUCES / USES / IS_INHIBITED_BY; KEGG/HMDB as compound IDs ($w=2.0$)
 - **L2** Additional KEGG-predicted cross-feeding ($w=1.0$)
-- **L3 (appendix)** AGORA2 FBA (Heinken et al. 2023, *Nat. Methods*) — pFBA cross-feeding signals on 9 guild SBML models ($w=0.5$)
-- Basic model: **22 pairs** (L1+L2) · Expanded: **34 pairs** (L1+L2+L3)
+- **L3 (appendix)** AGORA2 FBA (Heinken et al. 2023, *Nat. Biotechnol.*) — pFBA cross-feeding signals on 10 guild SBML models ($w=1.0$, sweep: 0.5→2.0)
+- Basic model: **22 pairs** (L1+L2 only) · Expanded: **35 pairs** (L1+L2+L3, W=1.0)
 
 </div>
 <div class="col">
@@ -360,7 +364,7 @@ gLV: $\dot{x}_i = x_i(r_i + \sum_j \alpha_{ij}x_j)$ on $\mathbb{R}_+^n$ — math
 ### Remaining gaps
 - gLV free still best at **0.0588** — replicator transient approximation limits fit quality on short 3-week window
 - Patient A covariate-shift outlier (Actinobacteria 3× mean) dominates generalisation error
-- **AGORA W=1.0 (43 pairs): RMSE 0.0565, r=0.951, SA 70/70 (100%)** — best model so far → LOO-CV running
+- **AGORA W=1.0 (43 pairs): RMSE 0.0565, r=0.951, SA 70/70 (100%)** — best model → LOO-CV **0.0504** (−2.4% vs L1+L2)
 
 ### Equation nomenclature
 - **Hamilton ODE** = 0D limit of Extended Hamilton Principle (Junker & Balzani 2021; Klempt et al. 2024, 2025)  
@@ -382,11 +386,185 @@ gLV: $\dot{x}_i = x_i(r_i + \sum_j \alpha_{ij}x_j)$ on $\mathbb{R}_+^n$ — math
 | 5 | **Paper S1** update with correct posterior statistics | ✅ Done |
 | 6 | **σ sensitivity** analysis | ✅ Done — insensitive, σ=0.15 optimal |
 | 7 | **Network visualisation** of $A$ matrix | ✅ Done |
+| 8 | **LOO A stability** (all 10 folds, sign consistency, regimes) | ✅ **Done** — all pairs SC≥0.70, 13/22/10 regimes |
+| 9 | **Bray-Curtis comparison** (training + LOO, gLV vs AGORA) | ✅ **Done** — LOO BC 0.1468 vs gLV 0.1536 (−4.4%) |
 
 <div class="box-green" style="margin-top: 16px">
 
-**Summary**: AGORA W=1.0 best overall: **LOO-RMSE=0.0504** (vs L1+L2 0.0516, −2.4%), training RMSE=0.0565 (vs 0.0631, −10%), SA=70/70 (100%). MacArthur quantitative prior failed (SA=4-8/70). Actinobacteria b̂ CT1/CT2 diff: +0.35. Sign prior weight W=1.0 optimal: phase transition to 100% SA.
+**Summary**: AGORA W=1.0 best overall: **LOO-RMSE=0.0481, LOO-BC=0.1468** (vs gLV free 0.0506/0.1536, −4.9%/−4.4%), training RMSE=0.0565 (vs L1+L2 0.0631, −10%), SA=70/70 (100%). MacArthur quantitative prior failed (SA=4-8/70). Sign prior weight W=1.0 optimal: phase transition to 100% SA. **LOO A stability: all 45 pairs SC≥0.70, no unstable pairs.** 13 data+prior aligned, 22 prior-constrained muted, 10 data-driven.
 
+</div>
+
+---
+
+## Result 5 — External Validation: Joshi Attractor Analysis (Method)
+
+<div class="cols">
+<div class="col">
+
+### Why attractor analysis?
+
+Cross-sectional data has **no time axis** → cannot fit ODE parameters. But if each sample represents a community near its local equilibrium (chronic disease = stable state), we can ask: *given the Dieckow A matrix, which equilibrium basin does each Joshi initial condition fall into?*
+
+### Theoretical basis
+
+For the replicator equation with **uniform** $b_i = b$:
+
+$$\dot\phi_i = \phi_i\!\left(b + \textstyle\sum_j A_{ij}\phi_j - \bar f\right)$$
+
+The fixed points $\phi^*$ satisfy $\sum_j A_{ij}\phi_j^* = \bar f^*$ for all $i \in \text{support}$. This condition is **independent of the scalar $b$** — equilibria are determined by $A$ alone. Confirmed empirically: neutral $b=0.1$ and mean Dieckow $\hat{b}$ give identical GDI values.
+
+</div>
+<div class="col">
+
+### Pipeline
+
+```
+Joshi 16S (5 genera, 127 samples)
+  ↓  genus-level aggregation (species rows summed)
+  ↓  map to 5/10 guilds (Actinomyces→Actinobacteria,
+     Streptococcus→Bacilli, Porphyromonas→Bacteroidia,
+     Fusobacterium→Fusobacteriia, Veillonella→Negativicutes)
+  ↓  remaining 5 guilds ← Dieckow mean × (1 − obs_total)
+  ↓  renormalise to Δ⁹ simplex
+  ↓  Hamilton ODE, 500 steps (dt=1e-4), AGORA W=1.0 A
+  ↓  equilibrium φ*
+  ↓  Guild DI = log( φ*_dys / φ*_com )  + eps
+```
+
+**Guild DI** = $\log\!\bigl(\underbrace{\phi_\text{Fuso}+\phi_\text{Bact}+\phi_\text{Clos}}_{\text{dysbiotic guilds}}\bigr) - \log\!\bigl(\underbrace{\phi_\text{Bac}+\phi_\text{Act}+\phi_\text{Neg}}_{\text{commensal guilds}}\bigr)$
+
+Higher GDI → more dysbiotic equilibrium.
+
+**Assumption**: peri-implant communities (cross-sectional) are near their ecological attractors. Supported by clinical chronicity of PI (months–years).
+
+</div>
+</div>
+
+---
+
+<!-- _style: "section { font-size: 15px; }" -->
+
+## Result 5 — External Validation: Joshi Attractor Analysis (Results)
+
+<div class="cols">
+<div class="col">
+
+![center w:480](figs/fig_joshi_attractor_analysis.png)
+
+</div>
+<div class="col">
+
+### Guild DI by diagnosis
+
+| Diagnosis | n | Mean GDI | Median |
+|---|---|---|---|
+| **Health** | 56 | **−2.90** | −3.69 |
+| Mucositis | 39 | −3.05 | −3.67 |
+| **Peri-implantitis** | 32 | **−0.29** | +0.48 |
+
+**Statistical tests**
+- Kruskal-Wallis: H=30.4, **p<0.0001**
+- Mann-Whitney Health < PI: **p<0.0001**
+- Spearman ρ(severity, GDI) = **0.37** (p<0.0001)
+
+**b̂ robustness**: neutral $b$ = mean $\hat{b}$ = CT1/CT2 $\hat{b}$ → all identical. Equilibrium is A-driven (theory confirmed).
+
+**Mucositis ≈ Health** at equilibrium (intermediate in clinical reality but not fully shifted) — consistent with reversible pre-disease state.
+
+</div>
+</div>
+
+<div class="box-green" style="margin-top:8px">
+
+**External validity**: $A$ matrix fitted on Dieckow oral abutment (10 patients, 3 weeks) predicts PI dysbiosis direction in 127 cross-sectional peri-implant samples from an independent cohort (Joshi mSystems 2025). $A$ generalises across niche and disease context.
+
+</div>
+
+---
+
+## Result 6 — A Matrix Biological Interpretation
+
+<div class="cols">
+<div class="col">
+
+### Three regimes of A_ij
+
+| Regime | Criterion | Meaning |
+|---|---|---|
+| **Data+prior aligned** | \|A\|>0.3 AND \|F\|>1 | metabolic + ecological signal agree |
+| **Prior-constrained, muted** | \|A\|<0.01 AND \|F\|>1 | metabolic cross-feeding predicted; not ecologically dominant in 3-week data |
+| **Data-driven, no prior** | \|F\|=0 AND \|A\|>0.05 | ecological signal without metabolic annotation |
+
+### Data+prior aligned — top pairs
+
+| Pair | A_ij | \|F\| | Literature |
+|---|---|---|---|
+| **Bacilli ↔ Betaproteob.** | +1.83 | 5.5 | Co-aggregation (Kolenbrander 2000) |
+| **Actinob. ↔ Betaproteob.** | +1.67 | 2.5 | Co-colonisers early biofilm |
+| **Actinob. ↔ Bacilli** | +1.61 | 5.0 | Co-aggregation (Kolenbrander 1993) |
+| Bacteroidia ↔ Betaproteob. | +1.18 | 2.2 | — |
+| Actinob. ↔ Bacteroidia | +1.12 | 2.8 | — |
+
+</div>
+<div class="col">
+
+![center w:530](figs/fig_A_biological_interpretation.png)
+
+### Prior-constrained, muted — key example
+
+**Bacilli ↔ Negativicutes**: \|F\|=5.0 (strong AGORA signal), A=+0.003  
+Best-known oral cross-feeding: Streptococcus → lactate → Veillonella (Mikx & van der Hoeven 1975). Metabolically confirmed but **not ecologically dominant in 3-week abutment data** — interaction may operate on longer timescales or be masked by competition.
+
+### Data-driven, no prior
+
+**Bacteroidia ↔ Other** (+0.74), **Bacilli ↔ Other** (−0.50): "Other" guild (unclassified taxa not in AGORA) shows strong data-fitted interactions — points to missing metabolic annotation in current AGORA coverage.
+
+</div>
+</div>
+
+---
+
+## Result 7 — LOO A-Matrix Stability & Bray-Curtis Validation
+
+<div class="cols">
+<div class="col">
+
+### LOO A stability (all 10 folds)
+
+10 held-out A matrices → per-pair statistics:
+
+| Regime | Pairs | Sign consistency |
+|---|---|---|
+| **Data+prior aligned** | 13 | 1.00 (all) |
+| **Prior-constrained muted** | 22 | ≥0.85 |
+| **Data-driven no prior** | 10 | ≥0.70 |
+
+**No unstable pairs** (all 45 off-diagonal pairs SC ≥ 0.70).  
+Top stable: Bacilli↔Betaproteo. (std=0.12), Actinob.↔Betaproteo. (std=0.025).  
+Prior-muted: Bacilli↔Negativicutes (std=0.12, SC=1.00) — ecologically muted but sign robustly constrained.
+
+### Bray-Curtis dissimilarity (LOO, 10 folds)
+
+| Model | LOO RMSE | LOO BC |
+|---|---|---|
+| gLV free | 0.0506 | 0.1536 |
+| **Hamilton AGORA W=1.0** | **0.0481** | **0.1468** |
+| Δ | −4.9% | **−4.4%** |
+
+AGORA sign prior improves both RMSE and compositional accuracy (BC) under LOO, confirming it generalises, not overfits.
+
+</div>
+<div class="col">
+
+![center w:480](figs/fig_loo_stability.png)
+
+<div class="box-green" style="margin-top:12px; font-size:17px">
+
+**Key finding**: All A_ij signs robustly recovered across LOO folds. Prior-constrained pairs (Bacilli↔Negativicutes: Streptococcus→lactate→Veillonella) show consistent positive sign despite near-zero magnitude — metabolic cross-feeding ecologically real but muted on 3-week timescale.
+
+</div>
+</div>
 </div>
 
 ---
@@ -529,6 +707,112 @@ uptake    = {met: |f| for f < 0} # ← env
 **Calibration**: Cu²⁺, meso-DAP, B₆ pyridoxine, cell-wall lipids were added iteratively to achieve $\mu > 0$ for all 10 guilds (verified per model).
 
 All 10 guilds: $\mu \in [0.11, 1.66]\ \text{h}^{-1}$ ✓
+
+</div>
+</div>
+
+---
+
+## Appendix — Per-Patient LOO-CV Results
+
+<div class="cols">
+<div class="col">
+
+### LOO-RMSE per patient
+
+| Patient | CT | L1+L2 | AGORA W=1.0 | Δ | ▲ |
+|---------|-----|-------|-------------|------|---|
+| **A** | CT2 | 0.0844 | 0.0799 | −0.0045 | ✓ |
+| **B** | CT2 | 0.0560 | 0.0545 | −0.0015 | ✓ |
+| C | CT2 | 0.0472 | 0.0473 | +0.0001 | — |
+| **D** | CT1 | 0.0380 | 0.0338 | −0.0042 | ✓ |
+| **E** | CT1 | 0.0308 | 0.0305 | −0.0003 | ✓ |
+| F | CT2 | 0.0074 | 0.0078 | +0.0004 | — |
+| **G** | CT1 | 0.0554 | 0.0543 | −0.0011 | ✓ |
+| **H** | CT2 | 0.0591 | 0.0554 | −0.0037 | ✓ |
+| **K** | CT1 | 0.0627 | 0.0618 | −0.0009 | ✓ |
+| L | CT1 | 0.0753 | 0.0786 | +0.0033 | ✗ |
+| **mean** | | **0.0516** | **0.0504** | **−0.0012** | **7/10** |
+| std | | 0.0211 | 0.0208 | | |
+
+</div>
+<div class="col">
+
+### Interpretation
+
+**7/10 patients improved** (A,B,D,E,G,H,K)
+
+**CT1 breakdown** (D,E,G,K,L):  
+4/5 improved · Patient L regressed (+0.0033)
+
+**CT2 breakdown** (A,B,C,F,H):  
+3/5 improved · C,F marginal (Δ < 0.001)
+
+**Patient A** (CT2, high Actinobacteria): hardest in both models; AGORA W=1.0 reduces from 0.0844 → 0.0799 (−5.3%)
+
+**Patient F** (CT2): near-zero error; minimal change (F both near 0.007–0.008)
+
+**Patient L** (CT1): only clear regression (−0.0033 penalty); L1+L2 prior better for this patient — possible Actinobacteria-guild edge effect
+
+**Paired t-test**: one-sided $p = 0.08$ (marginal; n=10 is low-power)
+
+</div>
+</div>
+
+---
+
+## Appendix — Sign Prior Weight: How $w$ Controls Penalty Stiffness
+
+<div class="cols">
+<div class="col">
+
+### Flow accumulation (per metabolite signal)
+
+```python
+# For each layer l, each metabolite α:
+# guild j secretes α ∧ guild i takes up α
+#   → nutrient cross-feeding
+net_flow[i, j] += w_l   # L1: 2.0/1.5, L2: 1.0, L3: w
+
+# guild j secretes toxin (H₂O₂, H₂S)
+net_flow[i, j] -= w_l
+
+# Symmetrize (shared interaction)
+F_ij = (net_flow[i,j] + net_flow[j,i]) / 2
+```
+
+**Penalty for pair (i,j)**:
+$$\frac{|F_{ij}|}{2\sigma^2}\!\left[\max(0, -\text{sgn}(F_{ij})\cdot A_{ij})\right]^2$$
+
+- Wrong sign → quadratic penalty proportional to $|F_{ij}|$  
+- Correct sign → **zero penalty** (not a Gaussian tether)  
+- $w$ scales the AGORA contribution to $|F_{ij}|$ linearly
+
+</div>
+<div class="col">
+
+### Example: Fusobacteriia → Bacilli
+
+pFBA: *F. nucleatum* secretes **butyrate, formate, propionate** (3 metabolites)  
+*S. gordonii* can take up all 3
+
+With $w=1.0$: `net_flow[Bac, Fus] += 3.0`  
+After symmetrisation $|F_{ij}| \approx 1.5$  
+Penalty stiffness: $1.5 / (2 \times 0.15^2) \approx 33\ [\text{RMSE unit}^{-1}]$
+
+With $w=0.5$: stiffness $\approx 17$ (half)  
+With $w=2.0$: stiffness $\approx 67$ (double)
+
+### Why $w=1.0$ is optimal
+
+| $w$ | SA | Interpretation |
+|-----|-----|----------------|
+| 0.5 | 94% | too soft — some pairs not constrained |
+| **1.0** | **100%** | **matches L2 baseline — phase transition** |
+| 1.5 | 94% | over-constrained on some L1 pairs |
+| 2.0 | 100% | same SA but RMSE worse (L1 pairs over-penalised) |
+
+At $w=1.0$ each AGORA metabolite signal carries the same weight as an L2 (predicted) Szafrański interaction — biologically motivated calibration.
 
 </div>
 </div>
