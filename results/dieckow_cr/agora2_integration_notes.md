@@ -104,11 +104,11 @@ gLV A の符号と AGORA2 FBA 由来符号が 92% 一致 → 代謝ネットワ�
 | Replicator + Dieckow prior (L1+L2) | 0.083 | — | — | 22 | 0.0770 |
 | Replicator + expanded prior (L1+L2, 34 pairs) | **0.0631** | 0.938 | 64/68 (94%) | 34 | **0.0516** |
 | **+ AGORA2 L3, W=0.5** | 0.0661 | 0.932 | 66/70 (94%) | 35 | — |
-| **★ + AGORA2 L3, W=1.0** | **0.0565** | **0.951** | **70/70 (100%)** | 35 | running |
+| **★ + AGORA2 L3, W=1.0** | **0.0565** | **0.951** | **70/70 (100%)** | 35 | **0.0504** |
 | **+ AGORA2 L3, W=1.5** | 0.0597 | 0.945 | 66/70 (94%) | 35 | — |
 | **+ AGORA2 L3, W=2.0** | 0.0575 | 0.949 | 70/70 (100%) | 35 | — |
 
-**W=1.0 が最適** — RMSE 10%改善、SA 100%達成。LOO-CV running (vancouver01/02)  
+**W=1.0 が最適** — training RMSE 10%改善、SA 100%達成。LOO-CV mean=**0.0504** (vs L1+L2 0.0516, -2.4%, 7/10 patients better)  
 出力ファイル: `fit_glv_hamilton_kegg_expanded_agora_w{0p5|1p0|1p5|2p0}.json`
 
 ## MacArthur Consumer-Resource Prior（定量的拡張）
