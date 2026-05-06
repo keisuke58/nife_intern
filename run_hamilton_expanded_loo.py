@@ -3,12 +3,13 @@
 run_hamilton_expanded_loo.py — LOO-CV for Hamilton expanded-flow model.
 
 For each held-out patient:
-  1. Train A on remaining 9 patients (ODE + 34-pair KEGG/AGORA prior)
+  1. Train A on remaining 9 patients (ODE + sign prior from net_flow_hamilton)
   2. Fit b for held-out patient (A fixed)
   3. Predict weeks 2,3 → LOO-CV RMSE
 
 Usage:
-    python run_hamilton_expanded_loo.py --hold 0 --gpu 0
+    python run_hamilton_expanded_loo.py --hold 0 --gpu 0 --alpha 0.5
+    python run_hamilton_expanded_loo.py --hold 0 --gpu 0 --alpha 0.0  # no competition
 """
 import argparse, json, sys, time
 import numpy as np
@@ -18,9 +19,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--hold',      type=int, required=True)
 parser.add_argument('--gpu',       type=int, default=0)
 parser.add_argument('--fit-file',  type=str, default='fit_glv_hamilton_kegg_expanded.json',
-                    help='JSON fit file used for warm start AND net_flow matrix')
+                    help='JSON fit file used for warm start')
 parser.add_argument('--tag',       type=str, default='',
                     help='output filename tag, e.g. "agora_w1p0"')
+parser.add_argument('--alpha',     type=float, default=0.0,
+                    help='competition_weight for net_flow_hamilton (0=cross-feeding only)')
+parser.add_argument('--use-agora', action='store_true',
+                    help='include AGORA2 FBA layer (L3) in sign prior')
 args = parser.parse_args()
 
 import os
@@ -43,16 +48,16 @@ phi_all = np.load(PHI_NPY)   # (10,3,10)
 n_sp = N_G
 n_A  = n_sp * (n_sp + 1) // 2
 
-# Load net_flow from fit file (avoids re-running cobra/AGORA on nodes without it)
+# Warm-start fit file (A, b only — net_flow rebuilt below)
 _fit_path = OUT_DIR / args.fit_file
 _fit_d    = json.load(open(_fit_path))
-if 'net_flow' in _fit_d:
-    net_flow = np.array(_fit_d['net_flow'])
-    print(f'net_flow loaded from {args.fit_file}  nonzero={int((net_flow != 0).sum())}', flush=True)
-else:
-    from build_net_flow_expanded import build_net_flow_expanded
-    net_flow = build_net_flow_expanded(use_agora=True, verbose=False)
-net_sym  = (net_flow + net_flow.T) / 2.0
+
+# Sign prior: always rebuilt from net_flow_hamilton with the requested alpha.
+# This is the only thing that changes across the alpha scan.
+from build_net_flow_expanded import net_flow_hamilton
+net_sym  = net_flow_hamilton(use_agora=args.use_agora, competition_weight=args.alpha)
+print(f'net_flow_hamilton  alpha={args.alpha}  agora={args.use_agora}  '
+      f'pos={int((net_sym>0).sum())}  neg={int((net_sym<0).sum())}', flush=True)
 sp_mat   = np.sign(net_sym)
 mask_np  = (sp_mat != 0) & (~np.eye(n_sp, dtype=bool))
 
@@ -191,10 +196,14 @@ n_tot   = int(mask_np.sum())
 
 print(f'\nFold {hold} ({PATIENTS[hold]}): LOO-RMSE={rmse:.4f}  SA={n_agree}/{n_tot}', flush=True)
 
-tag   = f'_{args.tag}' if args.tag else ''
-fname = f'loo_expanded{tag}_fold{hold}.json'
+alpha_tag = f'_a{str(args.alpha).replace(".","p")}'
+agora_tag = '_agora' if args.use_agora else ''
+tag       = f'_{args.tag}' if args.tag else ''
+fname = f'loo_expanded{agora_tag}{alpha_tag}{tag}_fold{hold}.json'
 out = {'patient': PATIENTS[hold], 'hold_idx': hold, 'rmse': rmse,
        'sign_agreement': f'{n_agree}/{n_tot}', 'fit_file': args.fit_file,
-       'model': f'Hamilton expanded LOO ({n_tot//2} pairs, 10 patients, nsteps={NSTEPS})'}
+       'alpha': args.alpha, 'use_agora': args.use_agora,
+       'A': A_np.tolist(), 'b_ho': np.array(b_ho_opt).tolist(),
+       'model': f'Hamilton expanded LOO (alpha={args.alpha}, agora={args.use_agora}, {n_tot//2} constrained pairs, nsteps={NSTEPS})'}
 json.dump(out, open(OUT_DIR / fname, 'w'), indent=2)
 print(f'Saved {fname}', flush=True)
