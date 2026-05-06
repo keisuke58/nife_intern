@@ -166,7 +166,7 @@ $$\text{LOO-RMSE} = \frac{1}{N}\!\sum_{p}\!\sqrt{\frac{\text{MSE}^{(p)}_{\text{w
 | Replicator + prior (22 pairs) | — | 0.0770 | 22/22 |
 | Replicator + L1+L2 (34 pairs) | 0.0631 | **0.0516** | 64/68 |
 | + AGORA W=0.5 (35 pairs) | 0.0661 | — | 66/70 |
-| **+ AGORA W=1.0 (35 pairs)** | **0.0565** | running | **70/70** |
+| **+ AGORA W=1.0 (35 pairs)** | **0.0565** | **0.0504** | **70/70** |
 | + AGORA W=1.5 (35 pairs) | 0.0597 | — | 66/70 |
 | + AGORA W=2.0 (35 pairs) | 0.0575 | — | 70/70 |
 
@@ -298,13 +298,13 @@ Matrix $A$ is symmetric by construction ($A_{ij}=A_{ji}$; from quadratic free en
 
 ---
 
-## Result 3 — LOO-CV: Community Type Analysis
+## Result 3 — LOO-CV: L1+L2 vs AGORA W=1.0
 
-![center w:980](figs/fig_loo_expanded_per_patient.png)
+![center w:1000](figs/fig_loo_comparison_agora_vs_l12.png)
 
-<div class="box">
+<div class="box-green">
 
-**L1+L2 expanded LOO-RMSE (10-fold, 34 pairs)**: mean=**0.0516**, std=0.0211. Patient A (0.0844) worst — Actinobacteria-dominant outlier. Patient F (0.0074) best. CT1 mean (D,E,G,K,L)=0.045; CT2 mean (A,B,C,H)=0.061 (excl. F). Removing A → mean=0.0477.
+**Final LOO-CV results** (10-fold, one patient out): L1+L2 (34 pairs) mean=0.0516 · **AGORA W=1.0 (35 pairs) mean=0.0504** (−2.4%, 7/10 patients improved). Training: RMSE 0.0631→0.0565 (−10%), SA 94%→100%. Patient A hardest in both models (CT2, Actinobacteria outlier). Patient F easiest (CT2, near-zero LOO error).
 
 </div>
 
@@ -330,7 +330,7 @@ Matrix $A$ is symmetric by construction ($A_{ij}=A_{ji}$; from quadratic free en
 
 <div class="box-green">
 
-**L1+L2 expanded (34 pairs) LOO-RMSE = 0.0516** · **AGORA W=1.0 (35 pairs): train RMSE=0.0565, r=0.951, SA=70/70 (100%)** — LOO-CV running · W=0.5: RMSE=0.0661, SA=66/70; W=2.0: RMSE=0.0575, SA=70/70
+**L1+L2 LOO=0.0516 → AGORA W=1.0 LOO=0.0504** (−2.4%, 7/10 patients better) · Train RMSE=0.0565, r=0.951, SA=70/70 (100%) · W=0.5 RMSE=0.0661, W=1.5 RMSE=0.0597, W=2.0 RMSE=0.0575
 
 </div>
 
@@ -377,7 +377,7 @@ gLV: $\dot{x}_i = x_i(r_i + \sum_j \alpha_{ij}x_j)$ on $\mathbb{R}_+^n$ — math
 |---|---|---|
 | 1 | Replicator + Dieckow prior **LOO-CV** (8-fold, 22 pairs) | ✅ **Done** — 0.0770 |
 | 2 | **Expanded flow LOO-CV** (10-fold, ODE, 34 pairs, L1+L2) | ✅ **Done** — LOO mean=**0.0516**, std=0.0211 (A worst: 0.0844, F best: 0.0074) |
-| 3 | **AGORA W=1.0 LOO-CV** (10-fold, 35 pairs, L1+L2+L3) | 🔄 **Running** — train RMSE=0.0565, SA=70/70 |
+| 3 | **AGORA W=1.0 LOO-CV** (10-fold, 35 pairs, L1+L2+L3) | ✅ **Done** — LOO mean=**0.0504**, std=0.0208 (7/10 patients improved vs L1+L2) |
 | 4 | **Sign probability** heatmap from 10,000p posterior | ✅ Done |
 | 5 | **Paper S1** update with correct posterior statistics | ✅ Done |
 | 6 | **σ sensitivity** analysis | ✅ Done — insensitive, σ=0.15 optimal |
@@ -385,7 +385,19 @@ gLV: $\dot{x}_i = x_i(r_i + \sum_j \alpha_{ij}x_j)$ on $\mathbb{R}_+^n$ — math
 
 <div class="box-green" style="margin-top: 16px">
 
-**Summary**: L1+L2 LOO-RMSE=**0.0516** (mean 10-fold). AGORA W=1.0 best training RMSE=0.0565, SA=70/70 (100%); W=0.5: RMSE=0.0661 SA=66/70; W=2.0: RMSE=0.0575, SA=70/70. W=1.0 LOO-CV running. MacArthur quantitative prior failed (SA=4-8/70). Key finding: Actinobacteria b̂ CT1/CT2 diff +0.35.
+**Summary**: AGORA W=1.0 best overall: **LOO-RMSE=0.0504** (vs L1+L2 0.0516, −2.4%), training RMSE=0.0565 (vs 0.0631, −10%), SA=70/70 (100%). MacArthur quantitative prior failed (SA=4-8/70). Actinobacteria b̂ CT1/CT2 diff: +0.35. Sign prior weight W=1.0 optimal: phase transition to 100% SA.
+
+</div>
+
+---
+
+## Appendix — 10-Week Extrapolation (AGORA W=1.0)
+
+![center w:1000](figs/fig_agora_w1p0_nweeks_extrapolation.png)
+
+<div class="box">
+
+**MAP extrapolation**: AGORA W=1.0 A matrix + per-patient b̂ → forward integration to week 10. Training range: weeks 1–3 (dots = observed). Shaded region = extrapolation. Week 2 RMSE = **0.061**, week 3 RMSE = **0.040** (MAP, training set). Communities converge toward guild-specific equilibria by week 5–7.
 
 </div>
 

@@ -1,0 +1,8 @@
+{
+  "patient": "H",
+  "hold_idx": 7,
+  "rmse": 0.055354024382853584,
+  "sign_agreement": "70/70",
+  "fit_file": "fit_glv_hamilton_kegg_expanded_agora_w1p0.json",
+  "model": "Hamilton expanded LOO (35 pairs, 10 patients, nsteps=100)"
+}
