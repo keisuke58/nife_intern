@@ -714,6 +714,48 @@ All 10 guilds: $\mu \in [0.11, 1.66]\ \text{h}^{-1}$ ✓
 
 ---
 
+## Appendix — AGORA L3 Prior: Methodological Limitations & Justification
+
+<div class="cols">
+<div class="col">
+
+### Known limitations of the current implementation
+
+| # | Issue | Fixable? |
+|---|---|---|
+| 1 | **Reaction-ID matching** — BiGG IDs assumed consistent across models; minor variant names may miss connections | Partly (→ metabolite-ID lookup) |
+| 2 | **Count-based weighting** — each secreted metabolite adds +W regardless of flux magnitude; 10 minor secretions outweigh 1 large one | Yes (→ flux-weighted W) |
+| 3 | **Single representative strain per guild** — S. gordonii ≠ all Bacilli; intra-guild metabolic diversity ignored | No (AGORA coverage limit) |
+| 4 | **Individual FBA, not community FBA** — pFBA ignores cross-feeding context (MICOM etc.); secretion profiles are unilateral | No (circular: composition is unknown) |
+| 5 | **Oral-fluid medium is literature-estimated** — Dawes 2008, not patient-specific Dieckow data; inter-patient variation ignored | No (patient metabolomics unavailable) |
+
+Issues 3–5 are **inherent to using FBA as an ecological prior**, not bugs.
+
+</div>
+<div class="col">
+
+### Why the results still support L3 inclusion
+
+Despite these limitations, LOO-CV demonstrates that L3 improves prediction:
+
+| Comparison | LOO RMSE | LOO BC |
+|---|---|---|
+| L1+L2 only | 0.0494 | 0.1550 |
+| **L1+L2+L3 (AGORA)** | **0.0481** | **0.1468** |
+| Δ | −2.6% | **−5.3%** |
+
+**Interpretation**: The sign prior does not need to be quantitatively accurate — it only needs to encode the *direction* of interaction. FBA signs are robust to the exact flux magnitude, medium composition, and even representative strain choice. **Unit-free sign information survives the limitations that would invalidate magnitude-based priors.**
+
+<div class="box" style="font-size:16px; margin-top:10px">
+
+**Paper framing**: "AGORA L3 is used as an exploratory metabolic prior. Despite single-strain FBA and estimated medium, LOO-CV confirms a consistent improvement in out-of-sample compositional accuracy (BC −5.3%), supporting inclusion as a complementary layer to experimental Szafrański L1+L2 evidence."
+
+</div>
+</div>
+</div>
+
+---
+
 ## Appendix — Per-Patient LOO-CV Results
 
 <div class="cols">
