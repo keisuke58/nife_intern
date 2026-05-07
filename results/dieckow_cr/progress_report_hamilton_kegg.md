@@ -862,6 +862,72 @@ At $w=1.0$ each AGORA metabolite signal carries the same weight as an L2 (predic
 
 ---
 
+## Appendix — Optimisation: L-BFGS-B
+
+<div class="cols">
+<div class="col">
+
+### What is L-BFGS-B?
+
+**L**imited-memory **B**royden–**F**letcher–**G**oldfarb–**S**hanno with **B**ounds constraints  
+(Liu & Nocedal 1989, *Math. Program.* 45:503)
+
+A quasi-Newton method that approximates the **inverse Hessian** using a fixed-size history of gradient vectors (memory-efficient second-order optimisation).
+
+| Property | Value |
+|---|---|
+| Method | Quasi-Newton (L-BFGS-B) |
+| Gradient | JAX auto-diff (exact) |
+| Memory | last $m=10$ gradient pairs |
+| Bounds | $A_{ii} \leq 0$ (self-limitation) |
+| Iterations | 5,000 (train) / 300 (LOO $b_{\hat{p}}$) |
+| Convergence | $\|g\| < 10^{-9}$ or $\Delta f < 10^{-12}$ |
+| Warm start | MAP $A$ from full fit → LOO A |
+
+### Loss function
+
+$$\mathcal{L}(\theta) = \underbrace{\text{RMSE}(\phi_{\text{pred}}, \phi_{\text{obs}})}_{\text{data fit}} + \underbrace{\mathcal{P}(A; F)}_{\text{sign prior}} + \underbrace{\lambda \|A\|_F^2}_{\text{ridge}}$$
+
+$\lambda = 10^{-4}$ prevents blow-up; prior penalty $\mathcal{P}$ dominates regularisation.
+
+</div>
+<div class="col">
+
+### Why L-BFGS-B (not Adam/SGD)?
+
+The parameter space is **155-dimensional** with few observations (200 data points):
+
+- **Smooth loss landscape** (ODE + quadratic penalty) → curvature information helps
+- **No batching needed** (all 10 patients fit simultaneously)
+- **Exact gradients** via JAX `jax.grad` — no finite-difference noise
+- L-BFGS-B reaches machine precision in ~200–500 iterations vs Adam ~5,000+ for same accuracy
+
+### JAX integration
+
+```python
+import jax, jax.numpy as jnp
+from scipy.optimize import minimize
+
+grad_fn = jax.jit(jax.value_and_grad(loss))
+
+def loss_and_grad(theta_np):
+    val, grad = grad_fn(jnp.array(theta_np))
+    return float(val), np.array(grad)
+
+res = minimize(loss_and_grad, theta0,
+               method='L-BFGS-B',
+               jac=True,           # gradient supplied
+               bounds=bounds,
+               options={'maxiter': 5000, 'ftol': 1e-12})
+```
+
+JAX compiles the ODE + prior to XLA, so gradient evaluation is ~10× faster than PyTorch eager mode on CPU.
+
+</div>
+</div>
+
+---
+
 ## References
 
 <div style="font-size:16px; line-height:1.6">
