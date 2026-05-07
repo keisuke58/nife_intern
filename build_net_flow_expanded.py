@@ -12,17 +12,25 @@ L2  Szafranski Suppl. File 1, prediction evidence
 L3  AGORA genome-scale metabolic models — FBA cross-feeding
       weight 0.5  (computational)
 
+Model-specific entry points
+----------------------------
+Hamilton model  — A is symmetric (A[i,j] = A[j,i]):
+    net = net_flow_hamilton(...)   # symmetrized, amensalism → unconstrained
+
+gLV model       — A is a full N×N matrix (no symmetry constraint):
+    net = net_flow_glv(...)        # directed, preserves amensalism
+
+Low-level (full control):
+    net = build_net_flow_expanded(..., symmetrize=True/False)
+
 Differences from original build_net_flow() in loo_cv_kegg_prior.py
 -------------------------------------------------------------------
 - experimental vs prediction evidence weighted separately
 - Additional relationship types: RELEASES → PRODUCES, HYDROLYSES/DEGRADES → USES
 - Expanded genus→guild mapping (typos + additional genera)
 - Optional AGORA FBA layer
-
-Usage
------
-    from build_net_flow_expanded import build_net_flow_expanded
-    net_flow = build_net_flow_expanded(use_agora=True, verbose=True)
+- Exploitative competition term (guilds consuming the same substrate)
+- Environmental variables (O₂, CO₂, H₂O₂) excluded from competition
 """
 from pathlib import Path
 import numpy as np
@@ -88,8 +96,34 @@ def _guild_of(taxon_str):
     return GENUS_GUILD.get(genus) or GENUS_GUILD_EXTRA.get(genus)
 
 
-def build_net_flow_expanded(use_agora=True, verbose=False):
-    """Multi-source flow matrix. See module docstring for details."""
+# Metabolites excluded from the competition term.
+# These are environmental variables or detoxification substrates, not limiting
+# nutrients — treating them as contested resources would misrepresent ecology.
+_COMPETITION_EXCLUDE = {
+    'oxygen',            # environmental; anaerobe sensitivity handled via IS_INHIBITED_BY
+    'carbon dioxide',    # capnophilic requirement, not a carbon-source competition
+    'hydrogen peroxide', # detoxification (catalase), not nutrient competition
+}
+
+
+def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
+                            competition_weight=0.5, symmetrize=True):
+    """Multi-source flow matrix. See module docstring for details.
+
+    competition_weight : float
+        Scaling factor alpha for exploitative competition terms.
+        When two guilds consume the same limiting substrate, each gets
+        neg[i, j] += w * competition_weight.
+        Environmental variables (O₂, CO₂, H₂O₂) are excluded automatically.
+        Set to 0.0 to reproduce the original (cross-feeding only) behaviour.
+
+    symmetrize : bool (default True)
+        If True, return (net + net.T) / 2 before returning.
+        The Hamilton model constrains A to be symmetric (A[i,j] = A[j,i]),
+        so the sign prior must also be symmetric. Asymmetric raw evidence
+        (amensalism +/-) is averaged: if the two directions disagree in sign
+        they cancel to 0 (unconstrained), which is the correct behaviour.
+    """
     gi  = {g: idx for idx, g in enumerate(GUILD_ORDER)}
     pos = np.zeros((N_G, N_G))
     neg = np.zeros((N_G, N_G))
@@ -126,6 +160,8 @@ def build_net_flow_expanded(use_agora=True, verbose=False):
                 cons.add(g)
             elif rel in inhib_rel:
                 inhib.add(g)
+
+        # cross-feeding: producer → consumer (positive)
         for src in prod:
             for tgt in cons:
                 if src != tgt:
@@ -134,6 +170,15 @@ def build_net_flow_expanded(use_agora=True, verbose=False):
                 if src != tgt:
                     neg[gi[tgt], gi[src]] += w
 
+        # exploitative competition: two consumers fight for the same substrate
+        # (skip environmental / detoxification metabolites)
+        if competition_weight > 0 and met not in _COMPETITION_EXCLUDE:
+            cons_list = sorted(cons)
+            for ii, gi_a in enumerate(cons_list):
+                for gi_b in cons_list[ii + 1:]:
+                    neg[gi[gi_a], gi[gi_b]] += w * competition_weight
+                    neg[gi[gi_b], gi[gi_a]] += w * competition_weight
+
     net = pos - neg
     if verbose:
         n_dir = int((net != 0).sum() - np.count_nonzero(np.diag(net)))
@@ -141,56 +186,54 @@ def build_net_flow_expanded(use_agora=True, verbose=False):
         n_und = int(((net_sym != 0).sum() - np.count_nonzero(np.diag(net_sym))) // 2)
         print(f'  L1+L2 Szafranski: {n_dir} directed pairs ({n_und} undirected)')
 
-    # ── L3: AGORA FBA cross-feeding (weight 0.5) ─────────────────────────────
+    # ── L3: AGORA2 FBA cross-feeding (weight 0.5) ────────────────────────────
     agora_dir = _here / 'data' / 'homd_db' / 'agora_gems'
     if use_agora and agora_dir.exists():
         try:
             import cobra
             from cobra.flux_analysis import pfba
+            from guild_agora_signs import (ORAL_MEDIUM, ANAEROBIC_GUILDS,
+                                            apply_medium, GUILD_REPS,
+                                            find_model_path)
 
-            W_AGORA   = 0.5
+            W_AGORA   = agora_weight
             THRESHOLD = 0.05
-
-            CARBON_CAPS = {
-                'EX_glc_D(e)': 10.0, 'EX_fru(e)': 5.0, 'EX_lac_L(e)': 8.0,
-                'EX_ala_L(e)': 2.0,  'EX_glu_L(e)': 2.0, 'EX_arg_L(e)': 1.5,
-                'EX_pro_L(e)': 1.0,  'EX_nh4(e)': 10.0,  'EX_pi(e)': 10.0,
-                'EX_o2(e)': 2.0,     'EX_h2o(e)': 1000.0, 'EX_h(e)': 1000.0,
-            }
-            BLOCK_KW = ['inulin', 'chtbs', '12dgr', 'acald', '2obut']
-            TOXINS   = {'EX_h2o2(e)', 'EX_h2s(e)'}
+            TOXINS    = {'EX_h2o2(e)', 'EX_h2s(e)'}
 
             guild_models = {}
-            for xml in sorted(agora_dir.glob('*.xml')):
-                guild = xml.stem.split('_')[0]
-                if guild in gi and guild not in guild_models:
-                    guild_models[guild] = cobra.io.read_sbml_model(str(xml))
+            for guild in GUILD_ORDER:
+                if guild not in gi:
+                    continue
+                path = find_model_path(agora_dir, GUILD_REPS.get(guild, [guild]))
+                if path is None:
+                    continue
+                guild_models[guild] = cobra.io.read_sbml_model(str(path))
 
             if verbose:
-                print(f'  L3 AGORA: loaded {len(guild_models)} guild models')
+                print(f'  L3 AGORA2: loaded {len(guild_models)} guild models '
+                      f'(oral-fluid medium, pFBA)')
 
             secretions, uptakes = {}, {}
             for guild, model in guild_models.items():
-                with model:
-                    for rxn in model.exchanges:
-                        if rxn.id in CARBON_CAPS:
-                            rxn.lower_bound = max(rxn.lower_bound,
-                                                   -CARBON_CAPS[rxn.id])
-                        if any(kw in rxn.id.lower() for kw in BLOCK_KW):
-                            rxn.lower_bound = 0.0
-                    try:
-                        sol = pfba(model)
-                    except Exception:
-                        continue
-                    sec, upt = {}, {}
-                    for rxn in model.exchanges:
-                        f = sol.fluxes.get(rxn.id, 0.0)
-                        if f >  THRESHOLD:
-                            sec[rxn.id] = f
-                        elif f < -THRESHOLD:
-                            upt[rxn.id] = abs(f)
-                    secretions[guild] = sec
-                    uptakes[guild]    = upt
+                apply_medium(model, guild)
+                try:
+                    sol = pfba(model)
+                except Exception:
+                    continue
+                if sol.objective_value < 1e-6:
+                    continue
+                sec, upt = {}, {}
+                for rxn in model.exchanges:
+                    f = sol.fluxes.get(rxn.id, 0.0)
+                    if f >  THRESHOLD:
+                        sec[rxn.id] = f
+                    elif f < -THRESHOLD:
+                        upt[rxn.id] = abs(f)
+                secretions[guild] = sec
+                uptakes[guild]    = upt
+                if verbose:
+                    print(f'    {guild}: μ={sol.objective_value:.2f}  '
+                          f'sec={len(sec)}  upt={len(upt)}')
 
             agora_pairs = 0
             for j, sec_j in secretions.items():
@@ -207,16 +250,50 @@ def build_net_flow_expanded(use_agora=True, verbose=False):
             net = pos - neg
             if verbose:
                 n_dir = int((net != 0).sum() - np.count_nonzero(np.diag(net)))
-                print(f'  L3 AGORA: +{agora_pairs} signals → total {n_dir} directed pairs')
+                print(f'  L3 AGORA2: +{agora_pairs} cross-feeding signals → '
+                      f'{n_dir} directed pairs total')
 
         except ImportError:
             if verbose:
-                print('  L3 AGORA: cobra not available, skipping')
+                print('  L3 AGORA2: cobra not available, skipping')
         except Exception as e:
             if verbose:
-                print(f'  L3 AGORA: skipped ({e})')
+                print(f'  L3 AGORA2: skipped ({e})')
 
-    return pos - neg
+    net = pos - neg
+    if symmetrize:
+        net = (net + net.T) / 2
+    return net
+
+
+def net_flow_hamilton(use_agora=True, competition_weight=0.5, **kwargs):
+    """Sign-prior matrix for the Hamilton model (symmetric A).
+
+    Returns a symmetric (N_G × N_G) matrix. Amensalism signals (+/-)
+    from opposite directions are averaged and cancel to 0 (unconstrained),
+    which is the correct behaviour when A[i,j] = A[j,i] is enforced.
+    """
+    return build_net_flow_expanded(
+        use_agora=use_agora,
+        competition_weight=competition_weight,
+        symmetrize=True,
+        **kwargs,
+    )
+
+
+def net_flow_glv(use_agora=True, competition_weight=0.5, **kwargs):
+    """Sign-prior matrix for the gLV model (full asymmetric A).
+
+    Returns a directed (N_G × N_G) matrix. net[i,j] encodes the sign
+    constraint on A[i,j] independently of A[j,i], preserving amensalism
+    (+/-) interactions that are biologically meaningful in gLV dynamics.
+    """
+    return build_net_flow_expanded(
+        use_agora=use_agora,
+        competition_weight=competition_weight,
+        symmetrize=False,
+        **kwargs,
+    )
 
 
 if __name__ == '__main__':

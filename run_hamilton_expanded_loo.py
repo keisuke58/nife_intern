@@ -26,6 +26,8 @@ parser.add_argument('--alpha',     type=float, default=0.0,
                     help='competition_weight for net_flow_hamilton (0=cross-feeding only)')
 parser.add_argument('--use-agora', action='store_true',
                     help='include AGORA2 FBA layer (L3) in sign prior')
+parser.add_argument('--no-prior',  action='store_true',
+                    help='disable sign prior entirely (pure data fit, baseline)')
 args = parser.parse_args()
 
 import os
@@ -109,12 +111,16 @@ def _pred_two(theta_A, b_p, phi0):
 
 _pred_all = jax.vmap(_pred_two, in_axes=(None, 0, 0))
 
+_no_prior = args.no_prior
+
 @jax.jit
 def loss_fn(theta_A, b_tr):
     phi2_all, phi3_all = _pred_all(theta_A, b_tr, phi_tr_j[:, 0])
     sq   = jnp.sum((phi2_all - phi_tr_j[:, 1])**2) + \
            jnp.sum((phi3_all - phi_tr_j[:, 2])**2)
     rmse = jnp.sqrt(sq / (n_tr * 2 * n_sp))
+    if _no_prior:
+        return rmse + LAM * jnp.sum(theta_A**2)
     A    = _unpack_A(theta_A)
     sp_j = jnp.sign(net_sym_j)
     mask = (sp_j != 0) & (~jnp.eye(n_sp, dtype=bool))
@@ -196,14 +202,15 @@ n_tot   = int(mask_np.sum())
 
 print(f'\nFold {hold} ({PATIENTS[hold]}): LOO-RMSE={rmse:.4f}  SA={n_agree}/{n_tot}', flush=True)
 
-alpha_tag = f'_a{str(args.alpha).replace(".","p")}'
-agora_tag = '_agora' if args.use_agora else ''
-tag       = f'_{args.tag}' if args.tag else ''
-fname = f'loo_expanded{agora_tag}{alpha_tag}{tag}_fold{hold}.json'
+alpha_tag    = f'_a{str(args.alpha).replace(".","p")}'
+agora_tag    = '_agora' if args.use_agora else ''
+noprior_tag  = '_noprior' if args.no_prior else ''
+tag          = f'_{args.tag}' if args.tag else ''
+fname = f'loo_expanded{noprior_tag}{agora_tag}{alpha_tag}{tag}_fold{hold}.json'
 out = {'patient': PATIENTS[hold], 'hold_idx': hold, 'rmse': rmse,
        'sign_agreement': f'{n_agree}/{n_tot}', 'fit_file': args.fit_file,
-       'alpha': args.alpha, 'use_agora': args.use_agora,
+       'alpha': args.alpha, 'use_agora': args.use_agora, 'no_prior': args.no_prior,
        'A': A_np.tolist(), 'b_ho': np.array(b_ho_opt).tolist(),
-       'model': f'Hamilton expanded LOO (alpha={args.alpha}, agora={args.use_agora}, {n_tot//2} constrained pairs, nsteps={NSTEPS})'}
+       'model': f'Hamilton expanded LOO (no_prior={args.no_prior}, alpha={args.alpha}, agora={args.use_agora}, {n_tot//2} constrained pairs, nsteps={NSTEPS})'}
 json.dump(out, open(OUT_DIR / fname, 'w'), indent=2)
 print(f'Saved {fname}', flush=True)

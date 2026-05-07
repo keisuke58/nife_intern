@@ -77,3 +77,6 @@ Seidel_InReview_ISME_J_confidential/
 
 # Large external datasets (>1GB)
 Szafranski_Published_Work/
+# PBS job logs
+*.fifawc.log
+*.log
