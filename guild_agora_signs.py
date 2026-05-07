@@ -55,68 +55,96 @@ GUILD_REPS = {
     'Gammaproteobacteria': ['Haemophilus_parainfluenzae', 'Haemophilus_influenzae'],
 }
 
-# ── Oral-fluid medium (BiGG metabolite IDs, mmol/gDW/h upper bounds) ──────────
+# ── Oral-fluid medium (AGORA2 exchange reaction IDs, mmol/gDW/h upper bounds) ──
+# AGORA2 uses old BiGG format: EX_{met}(e)  e.g. EX_glc_D(e), EX_ala_L(e)
 # Based on unstimulated whole saliva composition (Dawes 2008, Amerongen & Veerman 2002)
-# and oral biofilm interstitial fluid estimates.
 ORAL_MEDIUM = {
     # Sugars
-    'EX_glc__D_e':  10.0,   # glucose
-    'EX_fru_e':      5.0,   # fructose
-    'EX_sucr_e':     5.0,   # sucrose
-    'EX_lac__L_e':   3.0,   # L-lactate (Veillonella source)
+    'EX_glc_D(e)':  10.0,   # glucose
+    'EX_fru(e)':     5.0,   # fructose
+    'EX_sucr(e)':    5.0,   # sucrose
+    'EX_lac_L(e)':   3.0,   # L-lactate (Veillonella source)
     # Amino acids
-    'EX_ala__L_e':   2.0,
-    'EX_arg__L_e':   1.5,
-    'EX_asn__L_e':   1.0,
-    'EX_asp__L_e':   1.0,
-    'EX_gln__L_e':   2.0,
-    'EX_glu__L_e':   2.0,
-    'EX_gly_e':      1.5,
-    'EX_his__L_e':   0.5,
-    'EX_ile__L_e':   0.8,
-    'EX_leu__L_e':   0.8,
-    'EX_lys__L_e':   0.8,
-    'EX_met__L_e':   0.5,
-    'EX_phe__L_e':   0.5,
-    'EX_pro__L_e':   1.0,
-    'EX_ser__L_e':   1.0,
-    'EX_thr__L_e':   0.8,
-    'EX_trp__L_e':   0.2,
-    'EX_tyr__L_e':   0.5,
-    'EX_val__L_e':   0.8,
+    'EX_ala_L(e)':   2.0,
+    'EX_arg_L(e)':   1.5,
+    'EX_asn_L(e)':   1.0,
+    'EX_asp_L(e)':   1.0,
+    'EX_gln_L(e)':   2.0,
+    'EX_glu_L(e)':   2.0,
+    'EX_gly(e)':     1.5,
+    'EX_his_L(e)':   0.5,
+    'EX_ile_L(e)':   0.8,
+    'EX_leu_L(e)':   0.8,
+    'EX_lys_L(e)':   0.8,
+    'EX_met_L(e)':   0.5,
+    'EX_phe_L(e)':   0.5,
+    'EX_pro_L(e)':   1.0,
+    'EX_ser_L(e)':   1.0,
+    'EX_thr_L(e)':   0.8,
+    'EX_trp_L(e)':   0.2,
+    'EX_tyr_L(e)':   0.5,
+    'EX_val_L(e)':   0.8,
     # Nucleotides / bases
-    'EX_ade_e':      0.5,
-    'EX_gua_e':      0.5,
+    'EX_ade(e)':     0.5,
+    'EX_gua(e)':     0.5,
     # Vitamins & cofactors
-    'EX_thm_e':      0.1,   # thiamine
-    'EX_ribflv_e':   0.1,   # riboflavin
-    'EX_nac_e':      0.1,   # nicotinate
-    'EX_pnto__R_e':  0.1,   # pantothenate
-    'EX_fol_e':      0.1,   # folate
-    'EX_pydam_e':    0.1,   # pyridoxamine
-    'EX_cbl1_e':     0.01,  # cobalamin (B12)
-    'EX_btn_e':      0.05,  # biotin
+    'EX_thm(e)':     0.1,   # thiamine
+    'EX_ribflv(e)':  0.1,   # riboflavin
+    'EX_nac(e)':     0.1,   # nicotinate
+    'EX_pnto_R(e)':  0.1,   # pantothenate
+    'EX_fol(e)':     0.1,   # folate
+    'EX_pydam(e)':   0.1,   # pyridoxamine (B6 form)
+    'EX_pydxn(e)':   0.1,   # pyridoxine (B6 form)
+    'EX_pydx(e)':    0.1,   # pyridoxal (B6 form)
+    'EX_cbl1(e)':    0.01,  # cobalamin (B12)
+    'EX_btn(e)':     0.05,  # biotin
     # Heme / menaquinone (for anaerobes)
-    'EX_pheme_e':    0.5,   # protoheme (Porphyromonas, Prevotella)
-    'EX_mqn7_e':     0.3,   # menaquinone-7
-    'EX_mqn8_e':     0.3,
+    'EX_pheme(e)':   0.5,   # protoheme (Porphyromonas, Prevotella)
+    'EX_mqn7(e)':    0.3,   # menaquinone-7
+    'EX_mqn8(e)':    0.3,
     # Inorganic
-    'EX_h2o_e':    1000.0,
-    'EX_h_e':      1000.0,
-    'EX_pi_e':      10.0,   # phosphate
-    'EX_so4_e':      5.0,   # sulfate
-    'EX_nh4_e':     10.0,   # ammonium
-    'EX_na1_e':     50.0,
-    'EX_k_e':       10.0,
-    'EX_mg2_e':      2.0,
-    'EX_ca2_e':      2.0,
-    'EX_fe2_e':      0.5,
-    'EX_fe3_e':      0.5,
-    'EX_cl_e':      50.0,
-    'EX_zn2_e':      0.1,
+    'EX_h2o(e)':  1000.0,
+    'EX_h(e)':    1000.0,
+    'EX_pi(e)':    10.0,   # phosphate
+    'EX_so4(e)':    5.0,   # sulfate
+    'EX_nh4(e)':   10.0,   # ammonium
+    'EX_na1(e)':   50.0,
+    'EX_k(e)':     10.0,
+    'EX_mg2(e)':    2.0,
+    'EX_ca2(e)':    2.0,
+    'EX_fe2(e)':    0.5,
+    'EX_fe3(e)':    0.5,
+    'EX_cl(e)':    50.0,
+    'EX_zn2(e)':    0.1,
+    'EX_mn2(e)':    0.1,
+    'EX_cobalt2(e)': 0.05,
+    'EX_cu2(e)':    0.05,  # copper — essential for cytochrome oxidase
+    # Sulfur amino acid / polyamines (trace, present in saliva)
+    'EX_cys_L(e)':   0.5,
+    'EX_ptrc(e)':    0.05,  # putrescine
+    'EX_spmd(e)':    0.05,  # spermidine
+    # Quinones / cofactors (AGORA models require explicit uptake)
+    'EX_2dmmq8(e)':  0.1,
+    'EX_sheme(e)':   0.1,
+    'EX_adocbl(e)':  0.01,  # adenosylcobalamin
+    'EX_q8(e)':      0.1,
+    # Cell wall / fatty acid precursors (required by AGORA Gram+ / anaerobe models)
+    'EX_26dap_M(e)': 0.1,   # meso-2,6-diaminopimelate (peptidoglycan)
+    'EX_ocdca(e)':   0.1,   # octadecanoate (stearic acid C18)
+    'EX_ttdca(e)':   0.1,   # tetradecanoate (myristic acid C14)
+    'EX_ddca(e)':    0.1,   # dodecanoate (lauric acid C12)
+    'EX_4hbz(e)':    0.1,   # 4-hydroxybenzoate (ubiquinone precursor)
+    # Glutathione (oxidized/reduced, required by Actinobacteria / Bacteroidia)
+    'EX_gthrd(e)':   0.1,   # glutathione (reduced)
+    'EX_gthox(e)':   0.1,   # glutathione (oxidized)
+    # Amino acid derivatives (required by Coriobacteriia / Flavobacteriia)
+    'EX_orn(e)':     0.5,   # ornithine (arginine catabolism, present in saliva)
+    'EX_cgly(e)':    0.1,   # cys-gly dipeptide
+    # Pyrimidine nucleosides (required by Gammaproteobacteria)
+    'EX_cytd(e)':    0.1,   # cytidine
     # Gases (partial anaerobic — low O2)
-    'EX_o2_e':       2.0,   # microaerophilic (0 for strict anaerobes — set per model)
-    'EX_co2_e':      5.0,
+    'EX_o2(e)':      2.0,   # microaerophilic (0 for strict anaerobes — set per model)
+    'EX_co2(e)':     5.0,
 }
 
 # Guilds that are strict anaerobes (set O2 to 0)
@@ -126,10 +154,16 @@ ANAEROBIC_GUILDS = {'Clostridia', 'Bacteroidia', 'Fusobacteriia', 'Negativicutes
 def find_model_path(agora_dir: Path, candidates: list[str]) -> Path | None:
     """Return first AGORA2 XML file matching any candidate keyword."""
     for cand in candidates:
-        genus, *rest = cand.split('_')
-        # try exact match first, then genus-only
-        for pattern in [f"*{cand}*.xml", f"*{cand}*.json", f"*{genus}*{'_'.join(rest[:1])}*.xml"]:
-            found = sorted(agora_dir.glob(pattern))
+        parts = cand.split('_')
+        genus = parts[0]
+        patterns = [f"*{cand}*.xml", f"*{cand}*.json"]
+        if len(parts) > 1:
+            patterns.append(f"*{genus}*{parts[1]}*.xml")
+        for pattern in patterns:
+            try:
+                found = sorted(agora_dir.glob(pattern))
+            except ValueError:
+                continue
             if found:
                 return found[0]
     return None
@@ -144,6 +178,7 @@ def load_model(path: Path):
 
 def apply_medium(model, guild: str):
     """Close all exchange reactions, then open ORAL_MEDIUM ones."""
+    model_rxn_ids = {rxn.id for rxn in model.exchanges}
     medium = {}
     for rxn in model.exchanges:
         rxn_id = rxn.id
@@ -151,9 +186,9 @@ def apply_medium(model, guild: str):
             medium[rxn_id] = ORAL_MEDIUM[rxn_id]
         else:
             medium[rxn_id] = 0.0
-    # Strict anaerobes: shut off O2
-    if guild in ANAEROBIC_GUILDS:
-        medium['EX_o2_e'] = 0.0
+    # Strict anaerobes: shut off O2 (only if the rxn exists in this model)
+    if guild in ANAEROBIC_GUILDS and 'EX_o2(e)' in model_rxn_ids:
+        medium['EX_o2(e)'] = 0.0
     model.medium = medium
 
 
@@ -263,6 +298,120 @@ def build_agora_sign_matrix(agora_dir: Path, verbose=True):
     return sign_matrix, cross_matrix, comp_matrix, present, models
 
 
+def get_agora_phi_matrix(agora_dir: Path, verbose=False) -> tuple[np.ndarray, np.ndarray]:
+    """
+    MacArthur consumer-resource prior matrix from AGORA2 FBA.
+
+    Returns
+    -------
+    phi_net : (N, N) float
+        Phi[i,j] = normalised cross-feeding(j→i) − normalised competition(i,j)
+        Range roughly (−1, +1).  Used as prior mean for A[i,j].
+    mask    : (N, N) bool
+        True for pairs where at least one FBA model is available.
+
+    Derivation (MacArthur 1970, Marsland et al. 2019 PLOS CB):
+        A[i,j] ≈  Σ_α  s_{jα} · c_{iα}   (cross-feeding, +)
+                 − Σ_α  c_{iα} · c_{jα}   (competition for shared resources, −)
+    where s_{jα} = secretion flux (FBA), c_{iα} = max uptake flux (FBA bounds).
+    """
+    N = len(GUILD_ORDER)
+    cross_raw = np.zeros((N, N))   # Σ_α s_{jα} · c_{iα}
+    comp_raw  = np.zeros((N, N))   # Σ_α c_{iα} · c_{jα}  (shared resource overlap)
+
+    # Load models & run pFBA
+    secretions = {}   # guild → {met_id: flux}
+    uptake_cap = {}   # guild → {met_id: max_uptake}  (from lb of exchange rxns)
+    present = []
+
+    for guild in GUILD_ORDER:
+        path = find_model_path(agora_dir, GUILD_REPS[guild])
+        if path is None:
+            continue
+        try:
+            m = load_model(path)
+            apply_medium(m, guild)
+            sol = run_pfba(m)
+            if sol is None or sol.objective_value < 1e-6:
+                continue
+            sec, cap = {}, {}
+            for rxn in m.exchanges:
+                met_id = list(rxn.metabolites.keys())[0].id
+                f = sol.fluxes.get(rxn.id, 0.0)
+                if f > 1e-6:
+                    sec[met_id] = f           # secretion (positive FBA flux)
+                elif f < -1e-6:
+                    cap[met_id] = abs(f)      # actual uptake flux (not raw lb)
+            secretions[guild] = sec
+            uptake_cap[guild] = cap
+            present.append(guild)
+            if verbose:
+                print(f'  Phi: {guild}  μ={sol.objective_value:.2f}  '
+                      f'sec={len(sec)}  cap={len(cap)}')
+        except Exception as e:
+            if verbose:
+                print(f'  Phi: {guild} ERROR {e}')
+
+    # Exclude non-informative exchange metabolites from cross-feeding signal
+    EXCLUDE_METS = {
+        'h2o[e]', 'h[e]', 'co2[e]', 'o2[e]', 'na1[e]', 'k[e]',
+        'cl[e]', 'pi[e]', 'so4[e]', 'nh4[e]', 'ca2[e]', 'mg2[e]',
+    }
+
+    # Pairwise MacArthur terms
+    for src in present:                    # src = j (producer)
+        j = GUILD_ORDER.index(src)
+        secs_j = {m: f for m, f in secretions[src].items()
+                  if m not in EXCLUDE_METS}
+        cap_j  = uptake_cap[src]
+        for tgt in present:                # tgt = i (consumer)
+            if src == tgt:
+                continue
+            i = GUILD_ORDER.index(tgt)
+            cap_i = uptake_cap[tgt]
+
+            # Cross-feeding: Σ_α s_{jα} · min(c_{iα}, s_{jα})
+            # min() caps the benefit at what j actually produces
+            cf = sum(
+                secs_j[m] * min(cap_i.get(m, 0.0), secs_j[m])
+                for m in secs_j if m in cap_i and m not in EXCLUDE_METS
+            )
+            cross_raw[i, j] = cf
+
+            # Competition: cosine similarity of uptake vectors (resource niche overlap)
+            # α_{ij} = (c_i · c_j) / (|c_i| |c_j|) — stays in [0, 1]
+            shared = set(cap_i) & set(cap_j)
+            if shared:
+                dot = sum(cap_i[m] * cap_j[m] for m in shared)
+                norm_i = sum(v**2 for v in cap_i.values()) ** 0.5
+                norm_j = sum(v**2 for v in cap_j.values()) ** 0.5
+                comp_raw[i, j] = dot / (norm_i * norm_j + 1e-12)
+
+    # Normalise cross-feeding to [0, 1]; competition already in [0, 1]
+    mx_cf = cross_raw.max()
+    phi_cf   = cross_raw / mx_cf if mx_cf > 1e-12 else cross_raw
+    phi_comp = comp_raw   # already cosine similarity ∈ [0, 1]
+
+    # Net MacArthur Phi: cross-feeding positive, competition negative
+    phi_net = phi_cf - phi_comp
+
+    # Mask: pair has FBA support if both guilds have models
+    mask = np.zeros((N, N), dtype=bool)
+    for src in present:
+        for tgt in present:
+            if src != tgt:
+                mask[GUILD_ORDER.index(tgt), GUILD_ORDER.index(src)] = True
+
+    if verbose:
+        pos_pairs = int((phi_net > 0).sum())
+        neg_pairs = int((phi_net < 0).sum())
+        print(f'  Phi net: {pos_pairs} positive (cross-feeding), '
+              f'{neg_pairs} negative (competition)  '
+              f'range=[{phi_net.min():.3f}, {phi_net.max():.3f}]')
+
+    return phi_net, mask
+
+
 def compare_with_glv(sign_agora, present_guilds, glv_path: Path):
     """Compare AGORA sign predictions with gLV A matrix signs."""
     d = json.load(open(glv_path))
@@ -298,7 +447,12 @@ def compare_with_glv(sign_agora, present_guilds, glv_path: Path):
 
 
 def plot_comparison(sign_agora, cross_matrix, df_cmp, out_dir: Path):
-    from nife.guild_replicator_dieckow import GUILD_SHORT
+    GUILD_SHORT = {
+        'Actinobacteria': 'Actin.', 'Coriobacteriia': 'Coriob.', 'Bacilli': 'Bacil.',
+        'Clostridia': 'Clost.', 'Negativicutes': 'Negat.', 'Bacteroidia': 'Bact.',
+        'Flavobacteriia': 'Flavo.', 'Fusobacteriia': 'Fusob.',
+        'Betaproteobacteria': 'β-Prot.', 'Gammaproteobacteria': 'γ-Prot.',
+    }
     N = len(GUILD_ORDER)
     labels = [GUILD_SHORT.get(g, g[:5]) for g in GUILD_ORDER]
 
