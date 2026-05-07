@@ -549,10 +549,11 @@ Prior-muted: Bacilli↔Negativicutes (std=0.12, SC=1.00) — ecologically muted 
 | Model | LOO RMSE | LOO BC |
 |---|---|---|
 | gLV free | 0.0506 | 0.1536 |
+| Hamilton L1+L2 | 0.0494 | 0.1550 |
 | **Hamilton AGORA W=1.0** | **0.0481** | **0.1468** |
-| Δ | −4.9% | **−4.4%** |
+| Δ (vs L1+L2) | −2.6% | **−5.3%** |
 
-AGORA sign prior improves both RMSE and compositional accuracy (BC) under LOO, confirming it generalises, not overfits.
+AGORA improves both RMSE and BC vs L1+L2 under LOO — confirms generalisation, not overfitting. Best patients: H (ΔBC=−0.050), D (ΔBC=−0.030), G (ΔBC=−0.019). Regression: L (ΔBC=+0.014) — data-driven signal without AGORA coverage.
 
 </div>
 <div class="col">
