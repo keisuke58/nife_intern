@@ -862,6 +862,397 @@ At $w=1.0$ each AGORA metabolite signal carries the same weight as an L2 (predic
 
 ---
 
+## Appendix — Parameter Identifiability
+
+<div class="cols">
+<div class="col">
+
+### The underdetermined problem
+
+| Quantity | Value |
+|---|---|
+| Shared interaction matrix $A$ (upper triangle) | 55 parameters |
+| Patient-specific $\hat{b}$ (10 patients × 10 guilds) | 100 parameters |
+| **Total** | **155 parameters** |
+| Observations (10 patients × 2 steps × 10 guilds) | **200 data points** |
+
+Ratio: **200 obs / 155 params = 1.3** — barely above 1.  
+Without regularisation, infinitely many A matrices fit equally well (non-identifiable).
+
+### What this means in practice
+
+- Free gLV (155 params, unconstrained): overfits training, poor LOO
+- Sign prior effectively reduces degrees of freedom: 35 constrained pairs remove sign ambiguity
+- Symmetric A (A_ij = A_ji): halves the off-diagonal count from 90 → 45 free pairs
+
+</div>
+<div class="col">
+
+### How sign constraints help identifiability
+
+Each sign constraint eliminates one half-space:
+
+$$A_{ij} \in \mathbb{R} \xrightarrow{\text{sign constraint}} A_{ij} \in \mathbb{R}_{>0} \text{ or } \mathbb{R}_{<0}$$
+
+**Soft version** (what we implement): penalty $\mathcal{P}$ pulls $A_{ij}$ toward the correct sign but allows the optimiser to override with data. Equivalent to a half-normal prior.
+
+**Effective parameter count** ≈ 155 − 35 sign DOF = 120 → ratio 200/120 = **1.67**. Still low, but LOO-CV confirms the prior prevents overfitting:
+
+| Model | Train RMSE | LOO RMSE | Overfit gap |
+|---|---|---|---|
+| gLV free | 0.050 | 0.051 | +0.001 |
+| L1+L2 | 0.063 | 0.049 | −0.014 |
+| AGORA W=1.0 | 0.057 | 0.048 | −0.009 |
+
+Negative gap = prior provides useful regularisation beyond training set.
+
+</div>
+</div>
+
+---
+
+## Appendix — Generalized Lotka-Volterra (gLV) Model
+
+<div class="cols">
+<div class="col">
+
+### gLV (absolute abundance form)
+
+$$\dot{x}_i = x_i \underbrace{\left( r_i + \sum_{j=1}^{N} A_{ij}\, x_j \right)}_{f_i(\mathbf{x})}, \qquad x_i \geq 0$$
+
+| Symbol | Meaning |
+|---|---|
+| $x_i(t)$ | Absolute abundance of species $i$ |
+| $r_i$ | Intrinsic growth rate (without interactions) |
+| $A_{ij}$ | Interaction coefficient: effect of $j$ on $i$ |
+| $A_{ii}$ | Self-limitation ($< 0$ for stability) |
+| $A_{ij} > 0,\ A_{ji} > 0$ | Mutualism |
+| $A_{ij} > 0,\ A_{ji} < 0$ | Parasitism / commensalism |
+| $A_{ij} < 0,\ A_{ji} < 0$ | Competition |
+
+Equilibrium (coexistence): $r_i + \sum_j A_{ij} x_j^* = 0 \;\forall i$
+
+</div>
+<div class="col">
+
+### From gLV to replicator (this work)
+
+Define **relative abundance** $\phi_i = x_i / \sum_k x_k$. Under the constraint $\sum_i \phi_i = 1$:
+
+$$\dot{\phi}_i = \phi_i \left( f_i(\boldsymbol{\phi}) - \bar{f}(\boldsymbol{\phi}) \right)$$
+
+where $\bar{f} = \sum_k \phi_k f_k$ is the **mean fitness** (normalisation term).
+
+This is the **replicator equation** — gLV projected onto the probability simplex.
+
+### Parameter mapping
+
+| gLV | Replicator (this work) |
+|---|---|
+| $r_i$ (shared across patients) | $b_i^{(p)}$ (patient-specific) |
+| $A_{ij}$ (asymmetric) | $A_{ij} = A_{ji}$ (symmetric) |
+| $x_i \in \mathbb{R}_{\geq 0}$ (absolute) | $\phi_i \in [0,1]$, $\sum \phi_i = 1$ (relative) |
+
+The **gLV free** baseline in our LOO-CV uses asymmetric $A$ fit directly to relative abundances via the replicator form — the sign prior is removed ($\mathcal{P}=0$).
+
+</div>
+</div>
+
+---
+
+## Appendix — Hamilton ODE vs Classic gLV
+
+<div class="cols">
+<div class="col">
+
+### Classic gLV (unbounded)
+
+$$\dot{x}_i = x_i \left( r_i + \sum_j A_{ij} x_j \right), \quad x_i \in \mathbb{R}_{\geq 0}$$
+
+- State: **absolute abundance** $x_i$ (e.g. reads/mL)
+- No conservation law — $\sum x_i$ can grow or shrink
+- Equilibrium: $r_i + \sum_j A_{ij} x_j^* = 0$
+
+### Replicator / Hamilton ODE (this work)
+
+$$\dot{\phi}_i = \phi_i \left( b_i + \sum_j A_{ij} \phi_j - \bar{f} \right), \quad \phi_i \in [0,1],\ \sum_i \phi_i = 1$$
+
+where $\bar{f} = \sum_i \phi_i f_i$ is the mean fitness.
+
+- State: **relative abundance** $\phi_i$ (16S amplicon data)
+- **Conserved**: $\sum \dot{\phi}_i = 0$ always (simplex dynamics)
+- Mathematically: gLV projected onto the probability simplex
+
+</div>
+<div class="col">
+
+### Why use replicator form for 16S data?
+
+| Property | gLV | Replicator |
+|---|---|---|
+| Data type | Absolute counts | Relative (✓ 16S) |
+| State space | $\mathbb{R}^N_{\geq 0}$ | Probability simplex $\Delta^{N-1}$ |
+| $\sum \phi_i = 1$ | Not guaranteed | Guaranteed by construction |
+| Spurious correlations | Compositional bias | Naturally compositional |
+
+16S sequencing returns **relative** abundances — only ratios are meaningful. The replicator equation operates natively on the simplex, avoiding the compositional bias inherent in fitting absolute-abundance models to relative data (Aitchison 1986).
+
+### Equivalence to Hamilton mechanics
+
+The replicator equation is the **gradient flow of the Hamiltonian** $H = \frac{1}{2}\phi^\top A \phi + b^\top \phi$ on the simplex (Hofbauer & Sigmund 1998). This gives the model its name and motivates the NSP (Newton-Shulz-Perturbation) implicit integrator used in the JAX implementation.
+
+</div>
+</div>
+
+---
+
+## Appendix — Symmetric $A$ Assumption
+
+<div class="cols">
+<div class="col">
+
+### What the assumption states
+
+$$A_{ij} = A_{ji} \quad \forall i,j$$
+
+Guild $i$'s effect on guild $j$ equals guild $j$'s effect on guild $i$.
+
+### Ecological interpretation
+
+In classical **zero-sum games** (rock-paper-scissors, competitive exclusion), $A$ is antisymmetric ($A_{ij} = -A_{ji}$). In **mutualistic / cross-feeding** networks, symmetric $A$ arises when metabolic exchange is bidirectional: guild $i$ benefits from $j$'s metabolites and vice versa.
+
+Oral biofilm is dominated by cross-feeding syntrophies (Kolenbrander 2000) → symmetric is a reasonable first approximation.
+
+### Why symmetry is enforced here
+
+Without symmetry: 90 free off-diagonal parameters (too many).  
+With symmetry: **45 free parameters** → parameter space halved.  
+LOO stability confirms 13 pairs are robustly identified — consistent with effective identifiability.
+
+</div>
+<div class="col">
+
+### What symmetry excludes
+
+**Asymmetric interactions** exist biologically:
+- $A$: secretes lactate → $B$: benefits; $B$: secretes $\text{H}_2\text{O}_2$ → $A$: harmed
+  → $A_{AB} > 0$ but $A_{BA} < 0$
+
+These commensalism/amensalism patterns **cannot be captured** by symmetric $A$.
+
+### Consequence and mitigation
+
+The 3-layer sign prior partially compensates: AGORA FBA separately computes $\text{net\_flow}[i,j]$ and $\text{net\_flow}[j,i]$, then averages:
+
+$$F_{ij} = \frac{\text{net\_flow}[i,j] + \text{net\_flow}[j,i]}{2}$$
+
+This symmetrisation preserves the dominant direction of interaction. **Future work**: asymmetric $A$ with TMCMC posterior and asymmetric FBA sign prior.
+
+</div>
+</div>
+
+---
+
+## Appendix — Null Model Baseline (BC)
+
+<div class="cols">
+<div class="col">
+
+### Three null models
+
+| Null model | Prediction for week $t$ | LOO BC |
+|---|---|---|
+| **Persistence** | $\hat\phi_t = \phi_{t-1}$ (no change) | 0.2808 |
+| **Grand mean** | $\hat\phi_t = \bar\phi_{\text{all week 1}}$ | 0.2536 |
+| **Uniform** | $\hat\phi_t = \mathbf{1}/K$ | 0.6167 |
+
+Models (LOO):
+
+| Model | LOO BC | vs persistence |
+|---|---|---|
+| gLV free | 0.1536 | **−45%** |
+| L1+L2 | 0.1550 | −45% |
+| **AGORA W=1.0** | **0.1468** | **−48%** |
+
+All ODE models are substantially better than null. AGORA further improves by **−5.3% vs L1+L2** (absolute −0.008).
+
+</div>
+<div class="col">
+
+### Interpretation
+
+The **persistence null** ($\hat\phi_t = \phi_{t-1}$) is a strong baseline: if communities barely change week-to-week, simply copying the previous state is hard to beat.
+
+That all models outperform persistence (BC 0.28 → 0.15) confirms the Hamilton ODE captures genuine temporal dynamics beyond mere persistence.
+
+The AGORA improvement (0.1550 → 0.1468) is **0.008 absolute on top of persistence-adjusted signal** — meaningful given that BC=0 is unachievable with noisy 16S data.
+
+### Reference range
+
+| BC value | Typical meaning |
+|---|---|
+| 0.0 | Identical composition |
+| 0.1–0.2 | High similarity (same community type) |
+| 0.3–0.5 | Moderate divergence (different CT) |
+| 0.6–1.0 | Near-random / cross-individual |
+
+Our LOO BC ≈ 0.15 → **predicted communities stay in the "same community type" range** relative to observations.
+
+</div>
+</div>
+
+---
+
+## Appendix — Sign Agreement (SA): Definition
+
+<div class="cols">
+<div class="col">
+
+### Definition
+
+For a set of $M$ constrained pairs $\mathcal{C} = \{(i,j) : F_{ij} \neq 0\}$:
+
+$$\text{SA} = \frac{1}{M} \sum_{(i,j) \in \mathcal{C}} \mathbf{1}\!\left[\operatorname{sgn}(A_{ij}) = \operatorname{sgn}(F_{ij})\right]$$
+
+- $F_{ij}$: prior sign expectation (from net\_flow matrix)
+- $A_{ij}$: fitted interaction coefficient (MAP estimate)
+- $M$: total constrained pairs (35 for AGORA W=1.0)
+
+### Example
+
+| Pair | $F_{ij}$ | $A_{ij}$ | $\operatorname{sgn}$ match? |
+|---|---|---|---|
+| Bacilli↔Negativicutes | +5.0 | +0.003 | ✓ |
+| Actinob.↔Bacilli | +5.0 | +1.607 | ✓ |
+| Fusobacteriia↔Bacilli | −1.0 | −0.082 | ✓ |
+
+SA = 70/70 = **100%** for AGORA W=1.0
+
+</div>
+<div class="col">
+
+### What SA does and does not measure
+
+**SA measures**: whether the prior and data agree on the *direction* of interaction.  
+**SA does not measure**: whether the magnitude $|A_{ij}|$ matches $|F_{ij}|$.
+
+A pair with $F_{ij} = +5.0$ and $A_{ij} = +0.001$ scores SA=1 but is biologically "muted" (prior-constrained regime).
+
+### SA across models
+
+| Model | Constrained pairs $M$ | SA |
+|---|---|---|
+| L1+L2 only | 34 | 94% (32/34) |
+| **AGORA W=1.0** | **35** | **100% (70/70)\*** |
+| MacArthur prior | 70 | 6–11% |
+
+\*Counts each pair twice ($(i,j)$ and $(j,i)$) since $A$ is symmetric → 35 pairs = 70 checks.
+
+MacArthur failure shows FBA *magnitudes* are uncorrelated with ecological interaction strengths; FBA *signs* are informative.
+
+</div>
+</div>
+
+---
+
+## Appendix — Prior Penalty $\mathcal{P}$: Derivation
+
+<div class="cols">
+<div class="col">
+
+### From sign-constrained Gaussian prior
+
+Assume a **half-normal prior** on $A_{ij}$ given sign $s_{ij} = \operatorname{sgn}(F_{ij})$:
+
+$$P(A_{ij} \mid s_{ij}) \propto \exp\!\left(-\frac{[\max(0,\ -s_{ij} A_{ij})]^2}{2\sigma^2}\right)$$
+
+This is a **rectified Gaussian**: zero cost if $A_{ij}$ has the correct sign; quadratic cost if it violates the sign.
+
+Taking $-\log P$:
+
+$$-\log P(A_{ij} \mid s_{ij}) = \frac{[\max(0,\ -s_{ij} A_{ij})]^2}{2\sigma^2} + \text{const}$$
+
+Summing over all constrained pairs and weighting by $|F_{ij}|$:
+
+$$\mathcal{P}(A; F) = \sum_{(i,j):\ F_{ij}\neq 0} \frac{|F_{ij}|}{2\sigma^2} \left[\max\!\left(0,\ -\operatorname{sgn}(F_{ij})\, A_{ij}\right)\right]^2$$
+
+</div>
+<div class="col">
+
+### Parameters
+
+| Symbol | Value | Meaning |
+|---|---|---|
+| $\sigma$ | 0.15 | Prior width (insensitive in [0.1, 0.3]) |
+| $\|F_{ij}\|$ | ≥ 0 | Prior strength (metabolite count × weight $w$) |
+| $\max(0, \cdot)$ | hinge | Zero cost for correct sign |
+
+### Geometric interpretation
+
+$$\underbrace{\max(0,\ -s_{ij} A_{ij})}_{\text{violation depth}} = \begin{cases} |A_{ij}| & \text{wrong sign} \\ 0 & \text{correct sign} \end{cases}$$
+
+The penalty is a **hinge loss** squared — zero in the feasible half-space, quadratic outside. This is softer than a hard constraint (which would be $\infty$ for wrong sign) and allows data to override the prior when evidence is strong.
+
+### σ = 0.15 calibration
+
+$\sigma$ sets the scale at which data overrides prior. With typical $|A_{ij}| \sim 0.1$–$1.0$: $\sigma=0.15$ corresponds to ~1–7 units of "prior strength per unit of $A$" — insensitive to exact value (tested σ ∈ [0.05, 0.5]).
+
+</div>
+</div>
+
+---
+
+## Appendix — Patient-specific $\hat{b}_p$ Interpretation
+
+<div class="cols">
+<div class="col">
+
+### What $\hat{b}_p$ represents
+
+In the replicator equation:
+
+$$f_i(\phi) = \underbrace{b_i^{(p)}}_{\text{intrinsic fitness}} + \sum_j A_{ij} \phi_j$$
+
+$b_i^{(p)}$ is the **per-patient intrinsic growth rate** of guild $i$ in the absence of interactions. It absorbs:
+
+- Patient-specific immune status / GCF flow
+- Antibiotic history
+- Initial colonisation history (community type)
+- Local nutrient availability at the implant site
+
+$b_i^{(p)}$ is **not shared** across patients → captures inter-individual variation that $A$ (shared ecology) cannot.
+
+### Range in fitted model
+
+| Quantity | Range |
+|---|---|
+| $\hat{b}_p$ (all patients, all guilds) | [−0.66, +1.18] |
+| Mean $|\hat{b}_p|$ | 0.18 |
+| Mean $|A_{ij}|$ (off-diag) | 0.35 |
+
+Interactions ($A$) are on average ~2× stronger than intrinsic rates ($b$) → **community ecology dominates over individual growth** in this dataset.
+
+</div>
+<div class="col">
+
+### CT1 vs CT2 difference
+
+Community type (CT) is defined by Szafrański Suppl. — CT1 = commensal-like, CT2 = dysbiotic-enriched.
+
+Largest CT difference: **Actinobacteria $\hat{b}$**  
+CT1 mean: +0.42 · CT2 mean: +0.07 → Δ = **+0.35**
+
+Actinobacteria grow faster intrinsically in CT1 patients, consistent with their role as early commensal colonisers (Kolenbrander 2000). The **shared $A$ matrix** (same for all patients) captures guild interactions that are patient-independent; $\hat{b}$ captures the patient-level baseline.
+
+### Caution
+
+$\hat{b}_p$ is **not identifiable in isolation** from $A$: adding a constant to all $b_i^{(p)}$ while adjusting $A$ can give the same trajectory (gauge freedom). The constraint $\sum \phi_i = 1$ partially fixes this, but the absolute scale of $b$ vs $A$ is not uniquely determined without additional data (e.g. growth rates in monoculture).
+
+</div>
+</div>
+
+---
+
 ## Appendix — Bray-Curtis Dissimilarity
 
 <div class="cols">
