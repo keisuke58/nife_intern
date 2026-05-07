@@ -862,6 +862,58 @@ At $w=1.0$ each AGORA metabolite signal carries the same weight as an L2 (predic
 
 ---
 
+## Appendix — Bray-Curtis Dissimilarity
+
+<div class="cols">
+<div class="col">
+
+### Definition
+
+For two compositional vectors $\mathbf{x}, \mathbf{y} \in \mathbb{R}^K_{\geq 0}$ (guild abundances):
+
+$$\text{BC}(\mathbf{x}, \mathbf{y}) = 1 - \frac{2 \sum_{k=1}^{K} \min(x_k, y_k)}{\sum_{k=1}^{K} x_k + \sum_{k=1}^{K} y_k}$$
+
+- Range: $[0, 1]$ — 0 = identical, 1 = completely disjoint
+- Unit-free (works with relative abundances)
+- Emphasises shared dominants over rare taxa
+- Asymmetric in perception but **symmetric**: $\text{BC}(\mathbf{x},\mathbf{y}) = \text{BC}(\mathbf{y},\mathbf{x})$
+
+### Relation to RMSE
+
+$$\text{RMSE} = \sqrt{\frac{1}{K}\sum_k (x_k - y_k)^2}$$
+
+| Property | RMSE | Bray-Curtis |
+|---|---|---|
+| Penalises | Squared error | Proportional overlap |
+| Sensitive to | Large deviations | Dominant taxa shift |
+| Compositionality | No | Yes (normalised by sum) |
+| Ecological use | Regression metric | β-diversity standard |
+
+</div>
+<div class="col">
+
+### Worked example (K=3 guilds)
+
+| Guild | Predicted | Observed | min |
+|---|---|---|---|
+| Bacilli | 0.50 | 0.40 | 0.40 |
+| Bacteroidia | 0.30 | 0.50 | 0.30 |
+| Other | 0.20 | 0.10 | 0.10 |
+| **Sum** | **1.00** | **1.00** | **0.80** |
+
+$$\text{BC} = 1 - \frac{2 \times 0.80}{1.00 + 1.00} = 1 - 0.80 = \mathbf{0.20}$$
+
+### Why BC alongside RMSE?
+
+RMSE penalises raw differences; **BC captures whether the community composition is ecologically plausible** (correct dominant guild, correct rank order). A model that predicts 0.01 vs 0.02 for a rare guild is penalised by RMSE but not by BC. Conversely, swapping the dominant guild is strongly penalised by BC.
+
+Both metrics together provide complementary validation: RMSE assesses *magnitude accuracy*, BC assesses *compositional fidelity*.
+
+</div>
+</div>
+
+---
+
 ## Appendix — Optimisation: L-BFGS-B
 
 <div class="cols">
