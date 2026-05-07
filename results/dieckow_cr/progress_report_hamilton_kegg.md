@@ -923,6 +923,20 @@ res = minimize(loss_and_grad, theta0,
 
 JAX compiles the ODE + prior to XLA, so gradient evaluation is ~10× faster than PyTorch eager mode on CPU.
 
+### Relation to TMCMC (biofilm posterior paper)
+
+L-BFGS-B computes the **MAP estimate** — a point at the mode of the posterior. TMCMC samples the **full posterior distribution**.
+
+| | L-BFGS-B MAP (this work) | TMCMC (Nishioka et al.) |
+|---|---|---|
+| Target | $\theta^* = \arg\max P(\theta\|D)$ | $P(\theta\|D)$ |
+| Output | Single point (mode) | Posterior samples |
+| Uncertainty | None | CI, correlations |
+| Speed | Minutes | Hours–days |
+| Params | 155 (this work) | 20–22 |
+
+Mathematically identical objective — L-BFGS-B climbs to the summit; TMCMC maps the whole landscape. TMCMC is avoided here because: (1) 155 parameters × sign-prior geometry is poorly suited for MCMC mixing, and (2) 10 LOO A matrices already serve as a proxy uncertainty estimate for the identifiable pairs.
+
 </div>
 </div>
 
