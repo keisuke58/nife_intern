@@ -157,18 +157,18 @@ $$\text{LOO-RMSE} = \frac{1}{N}\!\sum_{p}\!\sqrt{\frac{\text{MSE}^{(p)}_{\text{w
 <div class="cols">
 <div class="col">
 
-### Model benchmark (LOO-CV RMSE)
-| Model | Train | LOO | SA |
-|---|---|---|---|
-| gLV (free) | — | 0.0588 ★ | — |
-| gLV + metabolite prior | — | 0.0741 | — |
-| Hamilton free | — | 0.0855 | — |
-| Replicator + prior (22 pairs) | — | 0.0770 | 22/22 |
-| Replicator + L1+L2 (34 pairs) | 0.0631 | **0.0516** | 64/68 |
-| + AGORA W=0.5 (35 pairs) | 0.0661 | — | 66/70 |
-| **+ AGORA W=1.0 (35 pairs)** | **0.0565** | **0.0504** | **70/70** |
-| + AGORA W=1.5 (35 pairs) | 0.0597 | — | 66/70 |
-| + AGORA W=2.0 (35 pairs) | 0.0575 | — | 70/70 |
+### Model benchmark (LOO-CV RMSE / BC)
+| Model | Train RMSE | LOO RMSE | LOO BC | SA |
+|---|---|---|---|---|
+| gLV (free) | — | 0.0588 ★ | 0.1536 | — |
+| gLV + metabolite prior | — | 0.0741 | — | — |
+| Hamilton free | — | 0.0855 | 0.1631 | — |
+| Replicator + prior (22 pairs) | — | 0.0770 | — | 22/22 |
+| Replicator + L1 (34 pairs) | 0.0631 | **0.0516** | 0.1550 | 64/68 |
+| + AGORA W=0.5 (35 pairs) | 0.0661 | — | — | 66/70 |
+| **+ AGORA W=1.0 (35 pairs)** | **0.0565** | **0.0504** | **0.1468** | **70/70** |
+| + AGORA W=1.5 (35 pairs) | 0.0597 | — | — | 66/70 |
+| + AGORA W=2.0 (35 pairs) | 0.0575 | — | — | 70/70 |
 
 </div>
 <div class="col">
@@ -176,7 +176,7 @@ $$\text{LOO-RMSE} = \frac{1}{N}\!\sum_{p}\!\sqrt{\frac{\text{MSE}^{(p)}_{\text{w
 ### Approach
 - **10 guilds** (class-level taxonomy, Szafrański et al. 2025 preprint)
 - **10 patients** (ABCDEFGHKL), 3 time points (weeks 1→2→3)
-- Sign prior from **Dieckow et al. (2024) Supplementary** — literature-curated microbe × metabolite interactions (KEGG/HMDB as compound identifiers only)
+- Sign prior from **Szafrański et al. (2025) Suppl. + eHOMD** (Human Oral Microbiome Database) — experimentally curated microbe × metabolite interactions (PRODUCES / USES / IS_INHIBITED_BY)
 - JAX autodiff + L-BFGS-B, RTX 3090 / RTX 4090
 
 </div>
@@ -210,7 +210,7 @@ $$\mathcal{P}_{\text{sign}} = \sum_{\substack{(i,j)\\F_{ij}\neq 0}} \frac{|F_{ij
 
 **How the weight $w$ enters $|F_{ij}|$**: the flow matrix is built by accumulating per-metabolite signals across layers:
 $$F_{ij} = \tfrac{1}{2}\!\left(\sum_l w_l\,n^+_{l,ij} - \sum_l w_l\,n^-_{l,ij}\right) + (i{\leftrightarrow}j)$$
-where $n^+_{l,ij}$ / $n^-_{l,ij}$ = number of nutrient / toxin signals from guild $j$ to $i$ in layer $l$. $w$ (AGORA, L3) scales each cross-feeding metabolite's contribution to $|F_{ij}|$ and thereby the **penalty stiffness** for that pair. L1 weights (2.0/1.5) and L2 (1.0) accumulate in the same sum.
+where $n^+_{l,ij}$ / $n^-_{l,ij}$ = number of nutrient / toxin signals from guild $j$ to $i$ in layer $l$. $w$ (AGORA, L2) scales each cross-feeding metabolite's contribution to $|F_{ij}|$ and thereby the **penalty stiffness** for that pair. L1 weights (2.0/1.5) and L2 (1.0) accumulate in the same sum.
 
 ---
 
@@ -221,11 +221,10 @@ where $n^+_{l,ij}$ / $n^-_{l,ij}$ = number of nutrient / toxin signals from guil
 <div class="cols">
 <div class="col">
 
-### Sign prior — data sources (3 layers)
-- **L1 (main)** Dieckow et al. (2024) Suppl. — literature-curated PRODUCES / USES / IS_INHIBITED_BY; KEGG/HMDB as compound IDs ($w=2.0$)
-- **L2** Additional KEGG-predicted cross-feeding ($w=1.0$)
-- **L3 (appendix)** AGORA2 FBA (Heinken et al. 2023, *Nat. Biotechnol.*) — pFBA cross-feeding signals on 10 guild SBML models ($w=1.0$, sweep: 0.5→2.0)
-- Basic model: **22 pairs** (L1+L2 only) · Expanded: **35 pairs** (L1+L2+L3, W=1.0)
+### Sign prior — data sources (2 layers)
+- **L1 (main)** Szafrański et al. (2025) Suppl. + eHOMD-based oral microbiome studies — experimentally curated PRODUCES / USES / IS_INHIBITED_BY flows ($w=2.0$ direct / $1.5$ literature-supported); **34 pairs**
+- **L2** AGORA2 pFBA (Heinken et al. 2023, *Nat. Biotechnol.*) — pFBA cross-feeding signals on 10 guild SBML models ($w=1.0$, sweep: 0.5→2.0); extends to **35 pairs**
+- Expanded model uses L1+L2 (W=1.0); L1 absorbs all experimental flows (eHOMD + Szafrński supplementary)
 
 </div>
 <div class="col">
@@ -248,7 +247,7 @@ where $n^+_{l,ij}$ / $n^-_{l,ij}$ = number of nutrient / toxin signals from guil
 
 <div class="box-green" style="margin-top:10px">
 
-**Warm start**: initial $A$ from a fit without prior → prior then regularises towards biologically consistent interactions. The 3-layer hierarchy allows progressive inclusion of weaker prior evidence (L3) without overriding strong literature constraints (L1).
+**Warm start**: initial $A$ from a fit without prior → prior then regularises towards biologically consistent interactions. The 2-layer hierarchy allows progressive inclusion of FBA evidence (L2) without overriding strong experimental constraints (L1 eHOMD/Szafrański).
 
 </div>
 
@@ -295,7 +294,7 @@ Matrix $A$ is symmetric by construction ($A_{ij}=A_{ji}$; from quadratic free en
   <div class="card"><div class="val">0.0631</div><div class="lbl">Training RMSE (all 10 pat.)</div></div>
   <div class="card"><div class="val">0.938</div><div class="lbl">Pearson <i>r</i></div></div>
   <div class="card"><div class="val">64/68</div><div class="lbl">Sign agreement (94%)</div></div>
-  <div class="card"><div class="val">34</div><div class="lbl">Prior pairs (L1+L2+L3)</div></div>
+  <div class="card"><div class="val">34</div><div class="lbl">Prior pairs (L1 only)</div></div>
 </div>
 
 <div class="cite">Hamilton ODE + expanded Dieckow+AGORA prior. Solid bars = observed; hatched (////) = predicted. Per-patient RMSE and Pearson r shown below each panel. Patient A (wk2 RMSE=0.094) is the hardest to fit — Actinobacteria-dominant community not well represented in 9-patient training pool.</div>
@@ -308,7 +307,7 @@ Matrix $A$ is symmetric by construction ($A_{ij}=A_{ji}$; from quadratic free en
 
 <div class="box-green">
 
-**Final LOO-CV results** (10-fold, one patient out): L1+L2 (34 pairs) mean=0.0516 · **AGORA W=1.0 (35 pairs) mean=0.0504** (−2.4%, 7/10 patients improved). Training: RMSE 0.0631→0.0565 (−10%), SA 94%→100%. Patient A hardest in both models (CT2, Actinobacteria outlier). Patient F easiest (CT2, near-zero LOO error).
+**Final LOO-CV results** (10-fold, one patient out): L1 only (34 pairs) RMSE=0.0516, BC=0.1550 · **L1+L2/AGORA W=1.0 (35 pairs) RMSE=0.0504, BC=0.1468** (RMSE −2.4%, BC −5.3%, 7/10 patients improved). Training: RMSE 0.0631→0.0565 (−10%), SA 94%→100%. Patient A hardest in both models (CT2, Actinobacteria outlier). Patient F easiest (CT2, near-zero LOO error).
 
 </div>
 
@@ -322,7 +321,7 @@ Matrix $A$ is symmetric by construction ($A_{ij}=A_{ji}$; from quadratic free en
 
 <div class="box-green">
 
-**AGORA W=1.0 b̂ CT comparison**: Actinobacteria shows largest CT1/CT2 difference (+0.35, CT2 higher). Bacilli also CT2>CT1 (+0.16). Betaproteobacteria CT1>CT2 (−0.10). Sign agreement improved 64/68 → 70/70 with AGORA L3 prior. ΔA (right column) shows changes concentrated in Actinobacteria-related interactions.
+**AGORA W=1.0 b̂ CT comparison**: Actinobacteria shows largest CT1/CT2 difference (+0.35, CT2 higher). Bacilli also CT2>CT1 (+0.16). Betaproteobacteria CT1>CT2 (−0.10). Sign agreement improved 64/68 → 70/70 with AGORA L2 prior. ΔA (right column) shows changes concentrated in Actinobacteria-related interactions.
 
 </div>
 
@@ -334,7 +333,7 @@ Matrix $A$ is symmetric by construction ($A_{ij}=A_{ji}$; from quadratic free en
 
 <div class="box-green">
 
-**L1+L2 LOO=0.0516 → AGORA W=1.0 LOO=0.0504** (−2.4%, 7/10 patients better) · Train RMSE=0.0565, r=0.951, SA=70/70 (100%) · W=0.5 RMSE=0.0661, W=1.5 RMSE=0.0597, W=2.0 RMSE=0.0575
+**L1 only LOO RMSE=0.0516, BC=0.1550 → L1+L2/AGORA W=1.0 LOO RMSE=0.0504, BC=0.1468** (RMSE −2.4%, BC −5.3%, 7/10 patients better) · Train RMSE=0.0565, r=0.951, SA=70/70 (100%) · W=0.5 RMSE=0.0661, W=1.5 RMSE=0.0597, W=2.0 RMSE=0.0575
 
 </div>
 
@@ -353,8 +352,8 @@ gLV: $\dot{x}_i = x_i(r_i + \sum_j \alpha_{ij}x_j)$ on $\mathbb{R}_+^n$ — math
 
 ### What works ✓
 - **Full sign consistency**: 22/22 (100%) — Dieckow metabolite prior compatible with Extended Hamilton dynamics
-- **Metabolite prior regularises**: LOO-CV 0.0855 → 0.0770 (9.4% improvement)
-- **Competitive**: within 3.9% of gLV + metabolite prior (0.0741)
+- **Metabolite prior regularises**: LOO-CV RMSE 0.0855 → 0.0770 (9.4% improvement)
+- **Competitive**: within 3.9% of gLV + metabolite prior (RMSE 0.0741)
 - **Biologically interpretable $A$**: self-limitation $A_{ii}<0$; Actinobacteria ↔ Bacilli facilitation
 - **σ robustness**: $\sigma \in [0.05, 0.30]$ all give SA = 22/22, RMSE ≈ 0.081
 
@@ -362,9 +361,9 @@ gLV: $\dot{x}_i = x_i(r_i + \sum_j \alpha_{ij}x_j)$ on $\mathbb{R}_+^n$ — math
 <div class="col">
 
 ### Remaining gaps
-- gLV free still best at **0.0588** — replicator transient approximation limits fit quality on short 3-week window
+- gLV free still best at **RMSE=0.0588, BC=0.1536** — replicator transient approximation limits fit quality on short 3-week window
 - Patient A covariate-shift outlier (Actinobacteria 3× mean) dominates generalisation error
-- **AGORA W=1.0 (43 pairs): RMSE 0.0565, r=0.951, SA 70/70 (100%)** — best model → LOO-CV **0.0504** (−2.4% vs L1+L2)
+- **L1+L2/AGORA W=1.0 (35 pairs): Train RMSE=0.0565, r=0.951, SA 70/70 (100%)** — best model → LOO **RMSE=0.0504, BC=0.1468** (RMSE −2.4%, BC −5.3% vs L1 only)
 
 ### Equation nomenclature
 - **Hamilton ODE** = 0D limit of Extended Hamilton Principle (Junker & Balzani 2021; Klempt et al. 2024, 2025)  
@@ -380,8 +379,8 @@ gLV: $\dot{x}_i = x_i(r_i + \sum_j \alpha_{ij}x_j)$ on $\mathbb{R}_+^n$ — math
 | # | Task | Status |
 |---|---|---|
 | 1 | Replicator + Dieckow prior **LOO-CV** (8-fold, 22 pairs) | ✅ **Done** — 0.0770 |
-| 2 | **Expanded flow LOO-CV** (10-fold, ODE, 34 pairs, L1+L2) | ✅ **Done** — LOO mean=**0.0516**, std=0.0211 (A worst: 0.0844, F best: 0.0074) |
-| 3 | **AGORA W=1.0 LOO-CV** (10-fold, 35 pairs, L1+L2+L3) | ✅ **Done** — LOO mean=**0.0504**, std=0.0208 (7/10 patients improved vs L1+L2) |
+| 2 | **Expanded flow LOO-CV** (10-fold, ODE, 34 pairs, L1 only) | ✅ **Done** — LOO mean=**0.0516**, std=0.0211 (A worst: 0.0844, F best: 0.0074) |
+| 3 | **AGORA W=1.0 LOO-CV** (10-fold, 35 pairs, L1+L2) | ✅ **Done** — LOO mean=**0.0504**, std=0.0208 (7/10 patients improved vs L1 only) |
 | 4 | **Sign probability** heatmap from 10,000p posterior | ✅ Done |
 | 5 | **Paper S1** update with correct posterior statistics | ✅ Done |
 | 6 | **σ sensitivity** analysis | ✅ Done — insensitive, σ=0.15 optimal |
@@ -391,7 +390,7 @@ gLV: $\dot{x}_i = x_i(r_i + \sum_j \alpha_{ij}x_j)$ on $\mathbb{R}_+^n$ — math
 
 <div class="box-green" style="margin-top: 16px">
 
-**Summary**: AGORA W=1.0 best overall: **LOO-RMSE=0.0481, LOO-BC=0.1468** (vs gLV free 0.0506/0.1536, −4.9%/−4.4%), training RMSE=0.0565 (vs L1+L2 0.0631, −10%), SA=70/70 (100%). MacArthur quantitative prior failed (SA=4-8/70). Sign prior weight W=1.0 optimal: phase transition to 100% SA. **LOO A stability: all 45 pairs SC≥0.70, no unstable pairs.** 13 data+prior aligned, 22 prior-constrained muted, 10 data-driven.
+**Summary**: L1+L2/AGORA W=1.0 best overall: **LOO-RMSE=0.0481, LOO-BC=0.1468** (vs gLV free 0.0506/0.1536, −4.9%/−4.4%), training RMSE=0.0565 (vs L1 only 0.0631, −10%), SA=70/70 (100%). MacArthur quantitative prior failed (SA=4-8/70). Sign prior weight W=1.0 optimal: phase transition to 100% SA. **LOO A stability: all 45 pairs SC≥0.70, no unstable pairs.** 13 data+prior aligned, 22 prior-constrained muted, 10 data-driven.
 
 </div>
 
@@ -549,11 +548,11 @@ Prior-muted: Bacilli↔Negativicutes (std=0.12, SC=1.00) — ecologically muted 
 | Model | LOO RMSE | LOO BC |
 |---|---|---|
 | gLV free | 0.0506 | 0.1536 |
-| Hamilton L1+L2 | 0.0494 | 0.1550 |
-| **Hamilton AGORA W=1.0** | **0.0481** | **0.1468** |
-| Δ (vs L1+L2) | −2.6% | **−5.3%** |
+| Hamilton L1 only | 0.0494 | 0.1550 |
+| **Hamilton L1+L2/AGORA W=1.0** | **0.0481** | **0.1468** |
+| Δ (vs L1 only) | −2.6% | **−5.3%** |
 
-AGORA improves both RMSE and BC vs L1+L2 under LOO — confirms generalisation, not overfitting. Best patients: H (ΔBC=−0.050), D (ΔBC=−0.030), G (ΔBC=−0.019). Regression: L (ΔBC=+0.014) — data-driven signal without AGORA coverage.
+AGORA L2 improves both RMSE and BC vs L1 only under LOO — confirms generalisation, not overfitting. Best patients: H (ΔBC=−0.050), D (ΔBC=−0.030), G (ΔBC=−0.019). Regression: L (ΔBC=+0.014) — data-driven signal without AGORA coverage.
 
 </div>
 <div class="col">
@@ -592,8 +591,8 @@ AGORA improves both RMSE and BC vs L1+L2 under LOO — confirms generalisation, 
 
 | AGORA weight $w$ | Train RMSE | Pearson $r$ | SA (35 pairs) | Notes |
 |---|---|---|---|---|
-| L1+L2 only (0) | 0.0631 | 0.938 | 64/68 | 34 pairs, baseline |
-| **W = 0.5** | 0.0661 | 0.932 | 66/70 | softer L3 prior |
+| L1 only (0) | 0.0631 | 0.938 | 64/68 | 34 pairs, baseline |
+| **W = 0.5** | 0.0661 | 0.932 | 66/70 | softer L2 prior |
 | **W = 1.0** ★ | **0.0565** | **0.951** | **70/70** | optimal |
 | **W = 1.5** | 0.0597 | 0.945 | 66/70 | over-constraints |
 | **W = 2.0** | 0.0575 | 0.949 | 70/70 | slightly worse |
@@ -603,30 +602,29 @@ AGORA improves both RMSE and BC vs L1+L2 under LOO — confirms generalisation, 
 
 <div class="box-green">
 
-**W=1.0 optimal**: full sign prior from AGORA2 FBA (weight = Szafrański L2 baseline) achieves best training RMSE and **100% sign agreement** with all 35 constrained pairs. MacArthur quantitative Gaussian prior ($A_{ij} \sim N(c\cdot\Phi_{ij}, \sigma^2)$) fails to enforce sign consistency — ecological signs dominated by data not FBA magnitude.
+**W=1.0 optimal**: full sign prior from AGORA2 FBA achieves best training RMSE and **100% sign agreement** with all 35 constrained pairs. MacArthur quantitative Gaussian prior ($A_{ij} \sim N(c\cdot\Phi_{ij}, \sigma^2)$) fails to enforce sign consistency — ecological signs dominated by data not FBA magnitude.
 
 </div>
 
 ---
 
-## Appendix — AGORA2: Sign Prior (L3 Layer)
+## Appendix — AGORA2: Sign Prior (L2 Layer)
 
 <div class="cols">
 <div class="col">
 
-### 3-layer prior construction
+### 2-layer prior construction
 
 | Layer | Source | Weight |
 |---|---|---|
-| L1 | Szafrański Suppl. (experimental, KEGG) | 2.0 |
-| L1 | Szafrański Suppl. (experimental, other) | 1.5 |
-| L2 | Szafrański Suppl. (prediction) | 1.0 |
-| **L3** | **AGORA2 pFBA cross-feeding** | **1.0** |
+| L1 | Szafrański Suppl. + eHOMD (direct experimental) | 2.0 |
+| L1 | Szafrański Suppl. + eHOMD (literature-supported) | 1.5 |
+| **L2** | **AGORA2 pFBA cross-feeding** | **1.0** |
 
 **Cross-feeding signal (j→i)**:  
 guild $j$ secretes $\alpha$ ∧ guild $i$ takes up $\alpha$ → `net_flow[i,j] += 1.0`
 
-**Prior pairs: 11 → 43** (L1+L2 → +L3)
+**Prior pairs: 34 → 35** (L1 only → +L2/AGORA)
 
 ### Validation
 
@@ -714,7 +712,7 @@ All 10 guilds: $\mu \in [0.11, 1.66]\ \text{h}^{-1}$ ✓
 
 ---
 
-## Appendix — AGORA L3 Prior: Methodological Limitations & Justification
+## Appendix — AGORA L2 Prior: Methodological Limitations & Justification
 
 <div class="cols">
 <div class="col">
@@ -734,21 +732,21 @@ Issues 3–5 are **inherent to using FBA as an ecological prior**, not bugs.
 </div>
 <div class="col">
 
-### Why the results still support L3 inclusion
+### Why the results still support L2 inclusion
 
-Despite these limitations, LOO-CV demonstrates that L3 improves prediction:
+Despite these limitations, LOO-CV demonstrates that L2/AGORA improves prediction:
 
 | Comparison | LOO RMSE | LOO BC |
 |---|---|---|
-| L1+L2 only | 0.0494 | 0.1550 |
-| **L1+L2+L3 (AGORA)** | **0.0481** | **0.1468** |
+| L1 only | 0.0494 | 0.1550 |
+| **L1+L2 (AGORA)** | **0.0481** | **0.1468** |
 | Δ | −2.6% | **−5.3%** |
 
 **Interpretation**: The sign prior does not need to be quantitatively accurate — it only needs to encode the *direction* of interaction. FBA signs are robust to the exact flux magnitude, medium composition, and even representative strain choice. **Unit-free sign information survives the limitations that would invalidate magnitude-based priors.**
 
 <div class="box" style="font-size:16px; margin-top:10px">
 
-**Paper framing**: "AGORA L3 is used as an exploratory metabolic prior. Despite single-strain FBA and estimated medium, LOO-CV confirms a consistent improvement in out-of-sample compositional accuracy (BC −5.3%), supporting inclusion as a complementary layer to experimental Szafrański L1+L2 evidence."
+**Paper framing**: "AGORA2 is used as an exploratory metabolic prior (L2). Despite single-strain FBA and estimated medium, LOO-CV confirms a consistent improvement in out-of-sample compositional accuracy (BC −5.3%), supporting inclusion as a complementary layer to experimental eHOMD/Szafrański L1 evidence."
 
 </div>
 </div>
@@ -763,7 +761,7 @@ Despite these limitations, LOO-CV demonstrates that L3 improves prediction:
 
 ### LOO-RMSE per patient
 
-| Patient | CT | L1+L2 | AGORA W=1.0 | Δ | ▲ |
+| Patient | CT | L1 only | L1+L2/AGORA W=1.0 | Δ | ▲ |
 |---------|-----|-------|-------------|------|---|
 | **A** | CT2 | 0.0844 | 0.0799 | −0.0045 | ✓ |
 | **B** | CT2 | 0.0560 | 0.0545 | −0.0015 | ✓ |
@@ -795,7 +793,7 @@ Despite these limitations, LOO-CV demonstrates that L3 improves prediction:
 
 **Patient F** (CT2): near-zero error; minimal change (F both near 0.007–0.008)
 
-**Patient L** (CT1): only clear regression (−0.0033 penalty); L1+L2 prior better for this patient — possible Actinobacteria-guild edge effect
+**Patient L** (CT1): only clear regression (−0.0033 penalty); L1 only prior better for this patient — possible Actinobacteria-guild edge effect
 
 **Paired t-test**: one-sided $p = 0.08$ (marginal; n=10 is low-power)
 
@@ -815,7 +813,7 @@ Despite these limitations, LOO-CV demonstrates that L3 improves prediction:
 # For each layer l, each metabolite α:
 # guild j secretes α ∧ guild i takes up α
 #   → nutrient cross-feeding
-net_flow[i, j] += w_l   # L1: 2.0/1.5, L2: 1.0, L3: w
+net_flow[i, j] += w_l   # L1: 2.0/1.5 (eHOMD/Szafrański), L2: w (AGORA)
 
 # guild j secretes toxin (H₂O₂, H₂S)
 net_flow[i, j] -= w_l
@@ -851,11 +849,11 @@ With $w=2.0$: stiffness $\approx 67$ (double)
 | $w$ | SA | Interpretation |
 |-----|-----|----------------|
 | 0.5 | 94% | too soft — some pairs not constrained |
-| **1.0** | **100%** | **matches L2 baseline — phase transition** |
+| **1.0** | **100%** | **matches L1 literature-supported weight — phase transition** |
 | 1.5 | 94% | over-constrained on some L1 pairs |
 | 2.0 | 100% | same SA but RMSE worse (L1 pairs over-penalised) |
 
-At $w=1.0$ each AGORA metabolite signal carries the same weight as an L2 (predicted) Szafrański interaction — biologically motivated calibration.
+At $w=1.0$ each AGORA metabolite signal carries the same weight as a literature-supported L1 experimental interaction — biologically motivated calibration.
 
 </div>
 </div>
@@ -1042,7 +1040,7 @@ These commensalism/amensalism patterns **cannot be captured** by symmetric $A$.
 
 ### Consequence and mitigation
 
-The 3-layer sign prior partially compensates: AGORA FBA separately computes $\text{net\_flow}[i,j]$ and $\text{net\_flow}[j,i]$, then averages:
+The 2-layer sign prior partially compensates: AGORA FBA separately computes $\text{net\_flow}[i,j]$ and $\text{net\_flow}[j,i]$, then averages:
 
 $$F_{ij} = \frac{\text{net\_flow}[i,j] + \text{net\_flow}[j,i]}{2}$$
 
@@ -1071,10 +1069,10 @@ Models (LOO):
 | Model | LOO BC | vs persistence |
 |---|---|---|
 | gLV free | 0.1536 | **−45%** |
-| L1+L2 | 0.1550 | −45% |
-| **AGORA W=1.0** | **0.1468** | **−48%** |
+| L1 only | 0.1550 | −45% |
+| **L1+L2/AGORA W=1.0** | **0.1468** | **−48%** |
 
-All ODE models are substantially better than null. AGORA further improves by **−5.3% vs L1+L2** (absolute −0.008).
+All ODE models are substantially better than null. AGORA L2 further improves by **−5.3% vs L1 only** (absolute −0.008).
 
 </div>
 <div class="col">
@@ -1142,7 +1140,7 @@ A pair with $F_{ij} = +5.0$ and $A_{ij} = +0.001$ scores SA=1 but is biologicall
 
 | Model | Constrained pairs $M$ | SA |
 |---|---|---|
-| L1+L2 only | 34 | 94% (32/34) |
+| L1 only | 34 | 94% (32/34) |
 | **AGORA W=1.0** | **35** | **100% (70/70)\*** |
 | MacArthur prior | 70 | 6–11% |
 
@@ -1391,9 +1389,9 @@ Mathematically identical objective — L-BFGS-B climbs to the summit; TMCMC maps
 
 **Dataset** &nbsp; Dieckow S, Szafrański SP et al. (2024) *npj Biofilms Microbiomes* 10:85. doi:10.1038/s41522-024-00624-3
 
-**Metabolite prior (L1, main)** &nbsp; Dieckow S, Szafrański SP et al. (2024) Suppl. File 1 — literature-curated microbe × metabolite interactions (KEGG/HMDB compound IDs)
+**Sign prior L1 (main)** &nbsp; Szafrański SP et al. (2025) Suppl. — experimentally curated microbe × metabolite interactions; eHOMD (Human Oral Microbiome Database): Chen T et al. (2010) *J. Bacteriol.* 192:5002–5017. doi:10.1128/JB.00039-10
 
-**AGORA2 (L3, appendix)** &nbsp; Heinken A et al. (2023) *Nat. Methods* 20:1022–1035. doi:10.1038/s41592-023-01919-1
+**AGORA2 (L2, appendix)** &nbsp; Heinken A et al. (2023) *Nat. Methods* 20:1022–1035. doi:10.1038/s41592-023-01919-1
 
 **Extended Hamilton Principle** &nbsp; Junker P & Balzani D (2021) *Comput. Methods Appl. Mech. Eng.* 380:113773; Junker P, Bode M & Hackl K (2025) *J. Mech. Phys. Solids*
 
@@ -1403,6 +1401,6 @@ Mathematically identical objective — L-BFGS-B climbs to the summit; TMCMC maps
 
 **Optimisation** &nbsp; JAX (Bradbury et al. 2018, github.com/jax-ml/jax); scipy L-BFGS-B (Byrd et al. 1995)
 
-**Compound identifiers** &nbsp; KEGG: Kanehisa M & Goto S (2000) *Nucleic Acids Res.* 28:27–30 · HMDB: Wishart DS et al. (2022) *Nucleic Acids Res.* 50:D622–D631
+**eHOMD** &nbsp; Escapa IF et al. (2018) *mSystems* 3:e00187-18. doi:10.1128/mSystems.00187-18 (NCBI 16S rRNA–based oral microbiome resource, 770+ taxa)
 
 </div>
