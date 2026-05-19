@@ -508,7 +508,7 @@ def get_agora_phi_matrix(agora_dir: Path, verbose=False) -> tuple[np.ndarray, np
 
 
 def compute_micom_signals(agora_dir: Path, medium_dict=None,
-                          flux_threshold=0.01, verbose=False):
+                          flux_threshold=0.01, fraction=0.5, verbose=False):
     """
     Community-aware cross-feeding signals via MICOM cooperative tradeoff.
 
@@ -523,16 +523,23 @@ def compute_micom_signals(agora_dir: Path, medium_dict=None,
     1. Build a 10-guild community model from AGORA2 SBML files.
     2. Set the shared medium and run ``cooperative_tradeoff(fluxes=True)``.
     3. For each exchange reaction r:
-       - secretors  = species with flux > threshold  (producing r)
-       - consumers  = species with flux < −threshold (consuming r)
-       Cross-feeding signal: pos[consumer, secretor] += 1
-    4. Subtract toxin secretion into neg matrix (H2O2, H2S).
+       Cross-feeding (non-toxin):
+         secretors (flux > threshold) → consumers (flux < −threshold)
+         pos[consumer, secretor] += min(src_flux, |tgt_flux|)   [flux magnitude]
+       Toxins (H2O2, H2S):
+         secretors harm ALL other guilds in community (not just metabolic consumers)
+         neg[any_guild, secretor] += src_flux
+
+    Using flux magnitude (instead of binary count) gives stronger weight to
+    high-flux cross-feeding (e.g., lactate 97 mmol/gDW/h) over low-flux amino
+    acid transfers (0.5 mmol/gDW/h).  fraction=0.5 is Diener 2020's default.
 
     Returns
     -------
-    pos_cf : (N_G, N_G) int
-        pos_cf[i, j] = number of metabolites secreted by j and consumed by i
-        in the community FBA.
+    pos_cf : (N_G, N_G) float
+        pos_cf[i, j] = total flux magnitude transferred from j to i.
+    neg_tox : (N_G, N_G) float
+        neg_tox[i, j] = total toxin flux secreted by j (harming i).
     present : list[str]
         Guilds for which a model was loaded.
     """
@@ -541,15 +548,16 @@ def compute_micom_signals(agora_dir: Path, medium_dict=None,
     except ImportError:
         if verbose:
             print('  MICOM not installed; skipping community FBA')
-        return np.zeros((len(GUILD_ORDER), len(GUILD_ORDER)), dtype=int), []
+        return np.zeros((len(GUILD_ORDER), len(GUILD_ORDER))), \
+               np.zeros((len(GUILD_ORDER), len(GUILD_ORDER))), []
 
     if medium_dict is None:
         medium_dict = ORAL_MEDIUM
 
     N = len(GUILD_ORDER)
-    pos_cf = np.zeros((N, N), dtype=int)
+    pos_cf  = np.zeros((N, N))
+    neg_tox = np.zeros((N, N))
     TOXIN_EXCH = {'EX_h2o2(e)', 'EX_h2s(e)'}
-    neg_tox = np.zeros((N, N), dtype=int)
 
     def _to_micom_id(rxn_id):
         return rxn_id[:-3] + '_m' if rxn_id.endswith('(e)') else rxn_id
@@ -562,7 +570,7 @@ def compute_micom_signals(agora_dir: Path, medium_dict=None,
             rows.append({'id': guild, 'file': str(path), 'abundance': 1.0})
 
     if not rows:
-        return pos_cf, []
+        return pos_cf, neg_tox, []
 
     import pandas as pd
     tax = pd.DataFrame(rows)
@@ -576,7 +584,7 @@ def compute_micom_signals(agora_dir: Path, medium_dict=None,
     except Exception as e:
         if verbose:
             print(f'  MICOM: Community build failed ({e})')
-        return pos_cf, present
+        return pos_cf, neg_tox, present
 
     # Set medium (convert IDs: EX_glc_D(e) → EX_glc_D_m)
     exch_set = {r.id for r in com.exchanges}
@@ -587,23 +595,21 @@ def compute_micom_signals(agora_dir: Path, medium_dict=None,
     if verbose:
         print(f'  MICOM: medium {len(med)}/{len(medium_dict)} components matched')
 
-    # Run cooperative tradeoff
+    # Run cooperative tradeoff (fraction=0.5 is Diener 2020 default)
     try:
-        sol = com.cooperative_tradeoff(fraction=0.3, fluxes=True)
+        sol = com.cooperative_tradeoff(fraction=fraction, fluxes=True)
     except Exception as e:
         if verbose:
             print(f'  MICOM: cooperative_tradeoff failed ({e})')
-        return pos_cf, present
+        return pos_cf, neg_tox, present
 
     if sol.status != 'optimal':
         if verbose:
             print(f'  MICOM: infeasible ({sol.status})')
-        return pos_cf, present
+        return pos_cf, neg_tox, present
 
     fluxes = sol.fluxes   # DataFrame: rows=species(+medium), cols=reactions
 
-    # For each exchange reaction, find secretors and consumers
-    # Exchange reactions have IDs like 'EX_lac_L(e)', 'EX_glc_D(e)', etc.
     exch_rxn_cols = [c for c in fluxes.columns
                      if c.startswith('EX_') and c.endswith('(e)')]
 
@@ -616,26 +622,37 @@ def compute_micom_signals(agora_dir: Path, medium_dict=None,
             src_flux = fluxes.loc[src, rxn_id] if rxn_id in fluxes.columns else 0.0
             if src_flux <= flux_threshold:
                 continue
-            # src secretes rxn_id into community
-            for tgt in present:
-                if tgt == src or tgt not in fluxes.index:
-                    continue
-                tgt_flux = fluxes.loc[tgt, rxn_id] if rxn_id in fluxes.columns else 0.0
-                if tgt_flux >= -flux_threshold:
-                    continue
-                # tgt consumes rxn_id that src secreted
-                j, i = GUILD_ORDER.index(src), GUILD_ORDER.index(tgt)
-                if is_toxin:
-                    neg_tox[i, j] += 1
-                else:
-                    pos_cf[i, j] += 1
-                cf_pairs += 1
+            j = GUILD_ORDER.index(src)
+
+            if is_toxin:
+                # Toxins diffuse and harm all co-occurring guilds, not just
+                # those that metabolically consume them.
+                for tgt in present:
+                    if tgt == src:
+                        continue
+                    i = GUILD_ORDER.index(tgt)
+                    neg_tox[i, j] += src_flux
+                    cf_pairs += 1
+            else:
+                # Cross-feeding: only guilds that actually consume this metabolite.
+                # Weight by actual flux transfer (min of secretion and uptake).
+                for tgt in present:
+                    if tgt == src or tgt not in fluxes.index:
+                        continue
+                    tgt_flux = fluxes.loc[tgt, rxn_id] if rxn_id in fluxes.columns else 0.0
+                    if tgt_flux >= -flux_threshold:
+                        continue
+                    i = GUILD_ORDER.index(tgt)
+                    transfer = min(src_flux, abs(tgt_flux))
+                    pos_cf[i, j] += transfer
+                    cf_pairs += 1
 
     if verbose:
         n_pos = int((pos_cf > 0).sum())
         n_neg = int((neg_tox > 0).sum())
-        print(f'  MICOM: {cf_pairs} community cross-feeding fluxes  '
-              f'({n_pos} pos pairs, {n_neg} toxin pairs)')
+        print(f'  MICOM: {cf_pairs} community flux events  '
+              f'({n_pos} pos pairs, {n_neg} toxin pairs)  '
+              f'fraction={fraction}')
 
     return pos_cf, neg_tox, present
 

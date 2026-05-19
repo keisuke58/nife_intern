@@ -29,6 +29,8 @@ parser.add_argument('--use-agora',    action='store_true',
 parser.add_argument('--agora-medium', type=str, default='v1',
                     choices=['v1', 'v2', 'micom'],
                     help='AGORA mode: v1=blood-plasma pFBA, v2=saliva pFBA, micom=community FBA')
+parser.add_argument('--micom-fraction', type=float, default=0.5,
+                    help='MICOM cooperative tradeoff fraction tau (default 0.5, Diener 2020)')
 parser.add_argument('--no-prior',     action='store_true',
                     help='disable sign prior entirely (pure data fit, baseline)')
 args = parser.parse_args()
@@ -61,9 +63,10 @@ _fit_d    = json.load(open(_fit_path))
 # This is the only thing that changes across the alpha scan.
 from build_net_flow_expanded import net_flow_hamilton
 net_sym  = net_flow_hamilton(use_agora=args.use_agora, competition_weight=args.alpha,
-                             agora_medium=args.agora_medium)
+                             agora_medium=args.agora_medium,
+                             micom_fraction=args.micom_fraction)
 print(f'net_flow_hamilton  alpha={args.alpha}  agora={args.use_agora}  '
-      f'medium={args.agora_medium}  '
+      f'medium={args.agora_medium}  fraction={args.micom_fraction}  '
       f'pos={int((net_sym>0).sum())}  neg={int((net_sym<0).sum())}', flush=True)
 sp_mat   = np.sign(net_sym)
 mask_np  = (sp_mat != 0) & (~np.eye(n_sp, dtype=bool))
@@ -210,14 +213,17 @@ print(f'\nFold {hold} ({PATIENTS[hold]}): LOO-RMSE={rmse:.4f}  SA={n_agree}/{n_t
 alpha_tag    = f'_a{str(args.alpha).replace(".","p")}'
 agora_tag    = '_agora' if args.use_agora else ''
 medium_tag   = f'_med{args.agora_medium}' if args.use_agora and args.agora_medium != 'v1' else ''
+frac_tag     = f'_f{str(args.micom_fraction).replace(".","p")}' \
+               if args.use_agora and args.agora_medium == 'micom' and args.micom_fraction != 0.5 else ''
 noprior_tag  = '_noprior' if args.no_prior else ''
 tag          = f'_{args.tag}' if args.tag else ''
-fname = f'loo_expanded{noprior_tag}{agora_tag}{medium_tag}{alpha_tag}{tag}_fold{hold}.json'
+fname = f'loo_expanded{noprior_tag}{agora_tag}{medium_tag}{frac_tag}{alpha_tag}{tag}_fold{hold}.json'
 out = {'patient': PATIENTS[hold], 'hold_idx': hold, 'rmse': rmse,
        'sign_agreement': f'{n_agree}/{n_tot}', 'fit_file': args.fit_file,
        'alpha': args.alpha, 'use_agora': args.use_agora,
-       'agora_medium': args.agora_medium, 'no_prior': args.no_prior,
+       'agora_medium': args.agora_medium, 'micom_fraction': args.micom_fraction,
+       'no_prior': args.no_prior,
        'A': A_np.tolist(), 'b_ho': np.array(b_ho_opt).tolist(),
-       'model': f'Hamilton expanded LOO (no_prior={args.no_prior}, alpha={args.alpha}, agora={args.use_agora}, medium={args.agora_medium}, {n_tot//2} constrained pairs, nsteps={NSTEPS})'}
+       'model': f'Hamilton expanded LOO (no_prior={args.no_prior}, alpha={args.alpha}, agora={args.use_agora}, medium={args.agora_medium}, fraction={args.micom_fraction}, {n_tot//2} constrained pairs, nsteps={NSTEPS})'}
 json.dump(out, open(OUT_DIR / fname, 'w'), indent=2)
 print(f'Saved {fname}', flush=True)
