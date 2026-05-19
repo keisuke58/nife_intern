@@ -108,7 +108,8 @@ _COMPETITION_EXCLUDE = {
 
 def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                             competition_weight=0.5, symmetrize=True,
-                            agora_medium='v1', agora_comp_weight=0.5):
+                            agora_medium='v1', agora_comp_weight=0.5,
+                            micom_fraction=0.5):
     """Multi-source flow matrix. See module docstring for details.
 
     competition_weight : float
@@ -133,6 +134,11 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
     agora_comp_weight : float (default 0.5)
         Scaling for AGORA growth-rate-suppression competition term (v2 only).
         Set to 0.0 to disable AGORA competition entirely.
+
+    micom_fraction : float (default 0.5)
+        Cooperative tradeoff fraction τ passed to MICOM (micom mode only).
+        τ = fraction of max-growth each species must achieve.
+        Diener 2020 default is 0.5.  Lower values allow more specialisation.
     """
     gi  = {g: idx for idx, g in enumerate(GUILD_ORDER)}
     pos = np.zeros((N_G, N_G))
@@ -209,7 +215,8 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                 # secretion profile is resolved in the presence of competitors.
                 from guild_agora_signs import compute_micom_signals, ORAL_MEDIUM
                 pos_cf, neg_tox, present_m = compute_micom_signals(
-                    agora_dir, medium_dict=ORAL_MEDIUM, verbose=verbose)
+                    agora_dir, medium_dict=ORAL_MEDIUM,
+                    fraction=micom_fraction, verbose=verbose)
                 for guild_i in present_m:
                     if guild_i not in gi:
                         continue
@@ -322,7 +329,8 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
 
 
 def net_flow_hamilton(use_agora=True, competition_weight=0.5,
-                      agora_medium='v1', agora_comp_weight=0.5, **kwargs):
+                      agora_medium='v1', agora_comp_weight=0.5,
+                      micom_fraction=0.5, **kwargs):
     """Sign-prior matrix for the Hamilton model (symmetric A).
 
     Returns a symmetric (N_G × N_G) matrix. Amensalism signals (+/-)
@@ -335,12 +343,14 @@ def net_flow_hamilton(use_agora=True, competition_weight=0.5,
         symmetrize=True,
         agora_medium=agora_medium,
         agora_comp_weight=agora_comp_weight,
+        micom_fraction=micom_fraction,
         **kwargs,
     )
 
 
 def net_flow_glv(use_agora=True, competition_weight=0.5,
-                 agora_medium='v1', agora_comp_weight=0.5, **kwargs):
+                 agora_medium='v1', agora_comp_weight=0.5,
+                 micom_fraction=0.5, **kwargs):
     """Sign-prior matrix for the gLV model (full asymmetric A).
 
     Returns a directed (N_G × N_G) matrix. net[i,j] encodes the sign
@@ -353,6 +363,7 @@ def net_flow_glv(use_agora=True, competition_weight=0.5,
         symmetrize=False,
         agora_medium=agora_medium,
         agora_comp_weight=agora_comp_weight,
+        micom_fraction=micom_fraction,
         **kwargs,
     )
 
