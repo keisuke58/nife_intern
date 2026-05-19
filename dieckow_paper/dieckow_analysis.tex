@@ -964,14 +964,47 @@ Other               & No AGORA representative (L3 absent) \\
 \end{tabular}
 \end{table}
 
-Oral-fluid medium~\citep{dawes2008}: glucose, fructose, sucrose, lactate; 20~amino acids
-$+$ Cys, Orn; vitamins B$_1$, B$_2$, B$_3$, B$_5$, B$_6$ (three forms), B$_{12}$;
-cofactors (heme, siroheme, adenosylcobalamin, menaquinone, ubiquinone);
-meso-DAP (peptidoglycan precursor);
-lipids (stearate C18, myristate C14, laurate C12);
+\subsection*{Oral-fluid medium construction}
+
+The medium was assembled in two steps.
+
+\paragraph{Step 1 — Literature-based saliva metabolite list.}
+Quantified metabolite concentrations in unstimulated whole saliva were drawn from
+Dawes~(2008) and Amerongen \& Veerman~(2002).
+Concentrations were converted from mM to mmol\,gDW$^{-1}$\,h$^{-1}$ assuming a
+biofilm cell density of $\sim$2\,gDW\,L$^{-1}$ and a reference growth rate
+of 0.1\,h$^{-1}$.
+The final list covers:
+sugars (glucose 10, fructose 5, sucrose 5, lactate 3\,mmol\,gDW$^{-1}$\,h$^{-1}$);
+20 amino acids $+$ Cys and Orn;
+B-vitamins (B$_1$, B$_2$, B$_3$, B$_5$, B$_6$ three forms, B$_{12}$, biotin, folate);
 trace metals (Fe$^{2+/3+}$, Mg$^{2+}$, Ca$^{2+}$, Zn$^{2+}$, Cu$^{2+}$, Mn$^{2+}$, Co$^{2+}$);
-glutathione (ox/red), putrescine, spermidine.
-All 10 guilds: $\mu\in[0.11, 1.66]\ \text{h}^{-1}$ (verified).
+purines (adenine, guanine); and inorganic salts (phosphate, sulfate, ammonium, Na$^+$, K$^+$, Cl$^-$).
+Note: concentrations in v1 are set at the blood-plasma scale ($\sim$100$\times$ realistic
+saliva values) to ensure all models remain feasible; a realistic v2 at actual salivary
+concentrations~\citep{tenovuo1998} was tested but produced non-specific competition signals
+(81/90 guild pairs showed growth suppression $>$50\%) and was not used for the main analysis.
+
+\paragraph{Step 2 — AGORA2-specific cofactors (verified by feasibility).}
+Several AGORA2 genome-scale models require cofactors absent from saliva literature or
+present only at trace concentrations.
+These were identified iteratively: after adding the saliva-based components, each guild
+model was run with pFBA; models with objective value $<10^{-6}$ were inspected for
+blocked reactions, and the missing exchange metabolite was added at a minimal bound.
+Components added in this step:
+protoheme \& siroheme (required by \textit{Porphyromonas}, \textit{Prevotella}, obligate anaerobes);
+menaquinone MK-7/MK-8 (Gram-positive electron transport);
+\textit{meso}-2,6-diaminopimelate (peptidoglycan precursor for Gram-negatives);
+saturated fatty acids C12/C14/C18 (membrane synthesis);
+4-hydroxybenzoate (ubiquinone precursor);
+adenosylcobalamin;
+glutathione (oxidised/reduced, required by Actinobacteria/Bacteroidia);
+putrescine, spermidine;
+cytidine (Gammaproteobacteria pyrimidine salvage).
+After both steps, all 9 guilds with an AGORA2 representative achieve
+$\mu\in[0.11, 1.66]\ \text{h}^{-1}$ (verified).
+The exchange reaction identifiers use the AGORA2 BiGG legacy format
+(\texttt{EX\_met(e)}).
 
 \section{\texorpdfstring{$\sigma$}{sigma} sensitivity of sign penalty}
 \label{app:sigma}
@@ -1154,6 +1187,11 @@ Chen T, Yu WH, Izard J, Baranova OV, Lakshmanan A, Dewhirst FE (2010).
 The Human Oral Microbiome Database: a web accessible resource for investigating oral
 microbe taxonomic and genomic information.
 \textit{Database} 2010:baq013.
+
+\bibitem[Tenovuo(1998)]{tenovuo1998}
+Tenovuo, J. (1998).
+Antimicrobial function of human saliva --- how important is it for oral health?
+\textit{Acta Odontologica Scandinavica}, 56(5):250--256.
 
 \bibitem[Diener et~al.(2020)]{diener2020}
 Diener, C., Gibbons, S.~M., and Resendis-Antonio, O. (2020).
