@@ -23,11 +23,18 @@ parser.add_argument('--alpha',    type=float, default=0.0,
                     help='competition_weight for net_flow_glv (0=cross-feeding only)')
 parser.add_argument('--use-agora', action='store_true',
                     help='include AGORA2 FBA layer (L3) in sign prior')
+parser.add_argument('--agora-medium', type=str, default='v1',
+                    choices=['v1', 'v2', 'micom'],
+                    help='AGORA mode: v1=blood-plasma pFBA, v2=saliva pFBA, micom=community FBA')
+parser.add_argument('--micom-fraction', type=float, default=0.5,
+                    help='MICOM cooperative tradeoff fraction tau (default 0.5, Diener 2020)')
 parser.add_argument('--no-prior',  action='store_true',
                     help='disable sign prior entirely (pure data fit, baseline)')
 parser.add_argument('--fit-file', type=str,
                     default='fit_glv_hamilton_kegg_expanded_agora_w0p5.json',
                     help='JSON warm-start file (A, b_all)')
+parser.add_argument('--tag', type=str, default='',
+                    help='output filename tag')
 args = parser.parse_args()
 
 _here = Path(__file__).resolve().parent
@@ -43,10 +50,13 @@ SIGMA    = 0.15
 LAM      = 1e-4
 
 # Sign prior (directed, not symmetrized)
-net_sym = net_flow_glv(use_agora=args.use_agora, competition_weight=args.alpha)
+net_sym = net_flow_glv(use_agora=args.use_agora, competition_weight=args.alpha,
+                       agora_medium=args.agora_medium,
+                       micom_fraction=args.micom_fraction)
 sp_mat  = np.sign(net_sym)
 mask_np = (sp_mat != 0) & (~np.eye(N_G, dtype=bool))
 print(f'net_flow_glv  alpha={args.alpha}  agora={args.use_agora}  '
+      f'medium={args.agora_medium}  fraction={args.micom_fraction}  '
       f'pos={int((net_sym>0).sum())}  neg={int((net_sym<0).sum())}', flush=True)
 
 # Data
@@ -171,8 +181,10 @@ print(f'\nFold {hold} ({PATIENTS[hold]}): LOO-RMSE={rmse:.4f}  SA={n_agree}/{n_t
 
 alpha_tag   = f'_a{str(args.alpha).replace(".", "p")}'
 agora_tag   = '_agora' if args.use_agora else ''
+medium_tag  = f'_med{args.agora_medium}' if args.use_agora and args.agora_medium != 'v1' else ''
 noprior_tag = '_noprior' if args.no_prior else ''
-fname = f'loo_glv{noprior_tag}{agora_tag}{alpha_tag}_fold{hold}.json'
+tag         = f'_{args.tag}' if args.tag else ''
+fname = f'loo_glv{noprior_tag}{agora_tag}{medium_tag}{alpha_tag}{tag}_fold{hold}.json'
 out = {
     'patient':        PATIENTS[hold],
     'hold_idx':       hold,
@@ -181,11 +193,14 @@ out = {
     'fit_file':       args.fit_file,
     'alpha':          args.alpha,
     'use_agora':      args.use_agora,
+    'agora_medium':   args.agora_medium,
+    'micom_fraction': args.micom_fraction,
     'no_prior':       args.no_prior,
     'A':              A_opt.tolist(),
     'b_ho':           b_ho_opt.tolist(),
     'model':          (f'gLV replicator LOO (no_prior={args.no_prior}, alpha={args.alpha}, '
-                       f'agora={args.use_agora}, {n_tot} constrained elements)'),
+                       f'agora={args.use_agora}, medium={args.agora_medium}, '
+                       f'fraction={args.micom_fraction}, {n_tot} constrained elements)'),
 }
 json.dump(out, open(OUT_DIR / fname, 'w'), indent=2)
 print(f'Saved {fname}', flush=True)
