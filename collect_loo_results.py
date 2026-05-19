@@ -18,7 +18,7 @@ parser.add_argument('--dir', type=str,
 args = parser.parse_args()
 
 OUT = Path(args.dir)
-files = sorted(OUT.glob('loo_expanded*.json'))
+files = sorted(list(OUT.glob('loo_expanded*.json')) + list(OUT.glob('loo_glv*.json')))
 
 if not files:
     print('No LOO result files found.')
@@ -36,7 +36,10 @@ for f in files:
 
     rmse  = d.get('rmse', None)
     fold  = d.get('hold_idx', None)
-    if rmse is None or fold is None:
+    if rmse is None or fold is None or fold < 0:
+        continue
+    # skip old-format files that lack use_agora/alpha metadata
+    if 'use_agora' not in d and 'alpha' not in d:
         continue
 
     agora  = d.get('use_agora', False)
@@ -47,16 +50,29 @@ for f in files:
     sa     = d.get('sign_agreement', '')
     tag    = d.get('model', '')
 
+    is_glv = 'glv' in f.name
+    model  = 'gLV' if is_glv else 'Hamilton'
     if noprior:
-        key = 'no-prior'
+        key = f'{model} no-prior'
     elif not agora:
-        key = f'Hamilton α={alpha}'
+        key = f'{model} α={alpha}'
     elif medium == 'micom':
-        key = f'MICOM τ={frac} α={alpha}'
+        key = f'{model} MICOM τ={frac} α={alpha}'
     else:
-        key = f'AGORA-{medium} α={alpha}'
+        key = f'{model} AGORA-{medium} α={alpha}'
 
     configs[key].append({'fold': fold, 'rmse': rmse, 'sa': sa})
+
+# Deduplicate: for each (key, fold) keep only the entry with lowest RMSE
+deduped = {}
+for key, vals in configs.items():
+    best_per_fold = {}
+    for v in vals:
+        f = v['fold']
+        if f not in best_per_fold or v['rmse'] < best_per_fold[f]['rmse']:
+            best_per_fold[f] = v
+    deduped[key] = list(best_per_fold.values())
+configs = deduped
 
 print(f'{"Config":<35} {"N":>3} {"mean RMSE":>10} {"std":>7} {"min":>7} {"max":>7}  sign_agree')
 print('-' * 90)

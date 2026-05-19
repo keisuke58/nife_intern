@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Add MICOM explanation slides to progress_report_hamilton_kegg.pptx."""
+import argparse
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -10,6 +11,12 @@ from copy import deepcopy
 import lxml.etree as etree
 from pathlib import Path
 import shutil, datetime
+
+_ap = argparse.ArgumentParser()
+_ap.add_argument('--replace', action='store_true',
+                 help='Replace last 3 slides (MICOM slides) instead of appending')
+_ap.add_argument('--n-replace', type=int, default=3)
+_args = _ap.parse_args()
 
 PPTX = Path('/home/nishioka/IKM_Hiwi/nife/results/dieckow_cr/progress_report_hamilton_kegg.pptx')
 
@@ -110,6 +117,19 @@ def add_table_row(slide, cells, left, top, width, height,
 
 
 prs = Presentation(PPTX)
+
+# Remove last N slides if --replace
+if _args.replace:
+    n = _args.n_replace
+    total = len(prs.slides)
+    sldIdLst = prs.slides._sldIdLst
+    for _ in range(min(n, total)):
+        idx = len(sldIdLst) - 1
+        rId = sldIdLst[idx].get(qn('r:id'))
+        prs.part.drop_rel(rId)
+        del sldIdLst[idx]
+    print(f'Removed last {min(n, total)} slides (was {total}, now {len(prs.slides)})')
+
 blank_layout = prs.slide_layouts[6]   # Blank
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -244,12 +264,11 @@ rows = [
     ('文献 L1+L2 のみ',      '45%  (5/11)',   '11 / 45', '文献ベース sign のみ'),
     ('単種 pFBA v1',         '88%  (29/33)',  '33 / 45', 'Blood-plasma medium'),
     ('単種 pFBA v2',         '81%  (21/26)',  '26 / 45', '唾液相当(乏しすぎ)'),
-    ('MICOM v0  (τ=0.3)',   '100% (36/36)',  '36 / 45', '初期実装'),
-    ('MICOM perfect (τ=0.5)','100% (36/36)+', '36 / 45', '★ Flux-weighted, toxin→全菌'),
+    ('MICOM (τ=0.5)',       '100% (72/72)',  '72 / 90', '★ Flux-weighted, toxin→全菌'),
 ]
-row_colors = [C_LGRAY, C_WHITE, C_LGRAY, C_WHITE,
+row_colors = [C_LGRAY, C_WHITE, C_LGRAY,
               RGBColor(0xe8, 0xf4, 0xec)]
-text_colors = [C_BLACK] * 4 + [C_GREEN]
+text_colors = [C_BLACK] * 3 + [C_GREEN]
 for k, (row, bg, tc) in enumerate(zip(rows, row_colors, text_colors)):
     bld = k == 4
     add_table_row(slideC, list(row), Inches(0.3), Inches(1.75) + Inches(0.42 * k),
@@ -276,37 +295,25 @@ for k, row in enumerate(p_rows):
 # Right: LOO-CV status
 add_rect(slideC, Inches(8.1), Inches(1.3), Inches(4.9), Inches(5.65),
          fill=RGBColor(0xf5, 0xf8, 0xff), line=C_BLUE, line_w=Pt(1.5))
-add_textbox(slideC, 'LOO-CV ジョブ状況 (2026-05-19)',
+add_textbox(slideC, 'LOO-CV 最終結果 (2026-05-20)',
             Inches(8.25), Inches(1.38), Inches(4.6), Inches(0.4),
             font_size=15, bold=True, color=C_BLUE)
-loo_items = [
-    ('Hamilton + MICOM v0',     '40153–40162', '実行中', C_ORANGE),
-    ('Hamilton + MICOM perfect','40164–40173', '実行中', C_ORANGE),
-    ('gLV + MICOM perfect',     '40174–40183', '実行中', C_ORANGE),
-    ('compare_signs',           '40163',       '実行中', C_ORANGE),
+loo_results = [
+    ('Hamilton MICOM τ=0.5', '0.0502', '72/72', C_GREEN),
+    ('Hamilton AGORA-v1',    '0.0562', '66/70', C_BLACK),
+    ('Hamilton no-prior',    '0.0595', '20/28', C_DGRAY),
+    ('gLV MICOM τ=0.5',     '0.0513', '71/72', C_BLACK),
+    ('gLV AGORA-v1',        '0.0499', '52/53', C_BLACK),
+    ('gLV α=0.25 ★best',   '0.0490', '32/33', C_GREEN),
 ]
-for k, (name, ids, status, clr) in enumerate(loo_items):
-    y = Inches(1.9) + Inches(0.7 * k)
-    add_textbox(slideC, name, Inches(8.25), y, Inches(4.6), Inches(0.3),
-                font_size=13, bold=True, color=C_BLACK)
-    add_textbox(slideC, f'jobs {ids}  →  {status}', Inches(8.25), y + Inches(0.3),
-                Inches(4.6), Inches(0.28), font_size=12, color=clr)
-
-add_rect(slideC, Inches(8.1), Inches(4.9), Inches(4.9), Inches(2.05),
-         fill=RGBColor(0xf0, 0xf8, 0xf0), line=C_GREEN, line_w=Pt(1.5))
-add_textbox(slideC, '比較対象 (baseline)',
-            Inches(8.25), Inches(4.95), Inches(4.6), Inches(0.35),
-            font_size=14, bold=True, color=C_GREEN)
-for k, (name, val) in enumerate([
-    ('Hamilton v1 (best)', 'mean RMSE = 0.0562'),
-    ('gLV α=0.25 (best)', 'mean RMSE = 0.0490'),
-    ('No-prior',           'mean RMSE = 0.0595'),
-]):
-    add_textbox(slideC, f'• {name}: {val}',
-                Inches(8.25), Inches(5.38) + Inches(0.42 * k),
-                Inches(4.6), Inches(0.35), font_size=13,
-                color=C_GREEN if 'gLV' in name else C_BLACK,
-                bold='gLV' in name)
+add_table_row(slideC, ['モデル', 'RMSE', 'SA'],
+              Inches(8.1), Inches(1.85), Inches(4.9), Inches(0.38),
+              bg=C_BLUE, text_color=C_WHITE, font_size=12, bold=True)
+for k, (name, rmse, sa, clr) in enumerate(loo_results):
+    bg = RGBColor(0xe8, 0xf4, 0xec) if clr == C_GREEN else (C_LGRAY if k % 2 == 0 else C_WHITE)
+    add_table_row(slideC, [name, rmse, sa],
+                  Inches(8.1), Inches(2.23) + Inches(0.38 * k), Inches(4.9), Inches(0.38),
+                  bg=bg, text_color=clr, font_size=12, bold=(clr == C_GREEN))
 
 # ── Save ────────────────────────────────────────────────────────────────────
 out = PPTX

@@ -35,6 +35,8 @@ parser.add_argument('--fit-file', type=str,
                     help='JSON warm-start file (A, b_all)')
 parser.add_argument('--tag', type=str, default='',
                     help='output filename tag')
+parser.add_argument('--maxiter', type=int, default=2000,
+                    help='L-BFGS-B max iterations for A training (default 2000)')
 args = parser.parse_args()
 
 _here = Path(__file__).resolve().parent
@@ -146,7 +148,7 @@ def _fg_train(x):
     return loss
 
 res = minimize(_fg_train, x0_train, method='L-BFGS-B', bounds=_bounds_train(),
-               options={'maxiter': 2000, 'ftol': 1e-10, 'gtol': 1e-7})
+               options={'maxiter': args.maxiter, 'ftol': 1e-10, 'gtol': 1e-7})
 print(f'  {res.message}  iters={call_count[0]}  loss={res.fun:.5f}', flush=True)
 
 A_opt = res.x[:N_G * N_G].reshape(N_G, N_G)
@@ -162,7 +164,7 @@ def _ho_obj(b_p):
     return float(np.sqrt(sq / (2 * N_G)))
 
 res_b = minimize(_ho_obj, b_warm[hold].copy(), method='L-BFGS-B',
-                 options={'maxiter': 500, 'ftol': 1e-12, 'gtol': 1e-7})
+                 options={'maxiter': max(500, args.maxiter // 4), 'ftol': 1e-12, 'gtol': 1e-7})
 b_ho_opt = res_b.x
 
 
@@ -196,6 +198,8 @@ out = {
     'agora_medium':   args.agora_medium,
     'micom_fraction': args.micom_fraction,
     'no_prior':       args.no_prior,
+    'tag':            args.tag,
+    'maxiter':        args.maxiter,
     'A':              A_opt.tolist(),
     'b_ho':           b_ho_opt.tolist(),
     'model':          (f'gLV replicator LOO (no_prior={args.no_prior}, alpha={args.alpha}, '
