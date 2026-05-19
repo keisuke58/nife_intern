@@ -103,12 +103,16 @@ The sign prior is consistent with the fitted A matrices — the prior does not c
 
 ---
 
-## Pending results
-- gLV + AGORA (α = 0, 0.25, 0.5): jobs 40017–40046
-- No-prior baseline (Hamilton + gLV): jobs 40057–40076
-- Hamilton + AGORA (α = 0.25, 0.5): partially complete
+## Pending results (2026-05-19 update)
 
-Once baseline is available: can quantify **"how much does the sign prior improve LOO-RMSE?"**
+| ジョブ | ID | 内容 | 状態 |
+|--------|-----|------|------|
+| loo_micom (v0) | 40153–40162 | MICOM fraction=0.3, binary | 実行中 |
+| compare_signs | 40163 | v1/v2/MICOM-perfect sign agreement | 実行中 |
+| loo_micom_perf | 40164–40173 | MICOM fraction=0.5, flux-weighted, toxin→all | 実行中 |
+
+結果が揃い次第 `collect_loo_results.py` で集計。  
+比較対象: v1 baseline (mean=0.0562), no-prior (mean=0.0595)
 
 ---
 

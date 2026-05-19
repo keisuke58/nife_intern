@@ -61,10 +61,10 @@ Bacilli → Negativicutes  via  EX_lac_L(e)
 
 MICOM の cooperative tradeoff は：
 ```
-maximize  min_i (μ_i / μ_i_max)    s.t. Σ μ_i ≥ 0.3 × Σ μ_i_max
+maximize  min_i (μ_i / μ_i_max)    s.t. Σ μ_i ≥ τ × Σ μ_i_max
 ```
-各菌が「最低でも自分の最大成長の 30%」を達成できるよう資源を分配する。  
-これにより generalist 同士でも特定の cross-feeding 経路が選択的に活性化される。
+各菌が「最低でも自分の最大成長の τ × 100%」を達成できるよう資源を分配する。  
+τ = 0.5（Diener 2020 デフォルト）により、generalist 同士でも特定の cross-feeding 経路が選択的に活性化される。
 
 ### 3c. Toxin signals が真に非ゼロ
 
@@ -102,16 +102,34 @@ MICOM は **Metagenome-Scale Community Metabolic Modeling** の実装：
 
 ---
 
-## 6. 残課題
+## 6. "Perfect" 版の変更点 (2026-05-19)
 
-- **LOO-CV 定量評価**: MICOM prior の LOO-RMSE が v1 (0.0504) を下回るか → jobs 40153–40162 待ち
-- **100% sign agreement の解釈**: fitted A は v1 prior で推定済み → MICOM が v1 を包含しているため高一致率が出る可能性。LOO-RMSE で実質的な改善を確認する必要あり。
-- **v2 medium + MICOM**: 唾液相当の乏しい培地でも community FBA が meaningful な flux を出すか未検証
-- **競合シグナルの精度**: MICOM の toxin pairs (37) が実際に A[i,j] < 0 と一致するか詳細分析
+初期実装（v0: fraction=0.3, binary count, toxin→consumer only）を以下の通り改善：
+
+| 変更点 | v0 | perfect |
+|--------|-----|---------|
+| `fraction` τ | 0.3 | **0.5**（Diener 2020 推奨） |
+| Cross-feeding 重み | バイナリ `+= 1` | **`+= min(src, \|tgt\|)`**（flux 量） |
+| 毒素シグナル対象 | 代謝的 consumer のみ | **community 内の全 guild** |
+| 戻り値型 | `int` | **`float`**（flux magnitude） |
+
+乳酸 cross-feeding（97.7 mmol/gDW/h）とアミノ酸移動（0.5 mmol/gDW/h）が同等重みで扱われていた問題を解消。  
+毒素は「消費」されるのではなく拡散して全菌に影響する → 生物学的に正確なモデル。
+
+LOO-CV: jobs 40164–40173（`loo_micom_perf`）で評価中。
 
 ---
 
-## 7. 参照文献
+## 7. 残課題
+
+- **LOO-RMSE 比較**: v0 (jobs 40153–40162) vs perfect (40164–40173) vs v1 baseline (mean=0.0562)
+- **sign agreement 確認**: perfect 版の fraction=0.5 での比較 → job 40163 (`compare_signs`) 結果待ち
+- **100% sign agreement の解釈**: fitted A は v1 prior で推定済み → MICOM が v1 を包含しているため高一致率が出る可能性。LOO-RMSE で実質的な改善を確認する必要あり。
+- **v2 medium + MICOM**: 唾液相当の乏しい培地でも community FBA が meaningful な flux を出すか未検証
+
+---
+
+## 8. 参照文献
 
 - Diener C, Gibbons SM, Resendis-Antonio O. **MICOM: Metagenome-Scale Modeling To Infer Metabolic Interactions in the Gut Microbiota.** mSystems. 2020;5(1):e00606-19. PMCID: PMC6977071.
 - MacArthur R. **Species packing and competitive equilibrium for many species.** Theor Popul Biol. 1970;1:1–11.
