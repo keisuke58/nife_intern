@@ -107,22 +107,24 @@ _COMPETITION_EXCLUDE = {
 
 
 def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
-                            competition_weight=0.5, symmetrize=True):
+                            competition_weight=0.5, symmetrize=True,
+                            agora_medium='v1'):
     """Multi-source flow matrix. See module docstring for details.
 
     competition_weight : float
-        Scaling factor alpha for exploitative competition terms.
-        When two guilds consume the same limiting substrate, each gets
-        neg[i, j] += w * competition_weight.
+        Scaling factor for exploitative competition from Szafranski L1/L2 terms.
         Environmental variables (O₂, CO₂, H₂O₂) are excluded automatically.
         Set to 0.0 to reproduce the original (cross-feeding only) behaviour.
 
     symmetrize : bool (default True)
         If True, return (net + net.T) / 2 before returning.
         The Hamilton model constrains A to be symmetric (A[i,j] = A[j,i]),
-        so the sign prior must also be symmetric. Asymmetric raw evidence
-        (amensalism +/-) is averaged: if the two directions disagree in sign
-        they cancel to 0 (unconstrained), which is the correct behaviour.
+        so the sign prior must also be symmetric.
+
+    agora_medium : str ('v1' or 'v2')
+        'v1': original ORAL_MEDIUM (~blood-plasma scale, all 24 AGORA pairs positive)
+        'v2': realistic saliva concentrations (~100× lower carbon; forces competition
+              signals to emerge via MacArthur cosine niche overlap scoring).
     """
     gi  = {g: idx for idx, g in enumerate(GUILD_ORDER)}
     pos = np.zeros((N_G, N_G))
@@ -186,19 +188,25 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
         n_und = int(((net_sym != 0).sum() - np.count_nonzero(np.diag(net_sym))) // 2)
         print(f'  L1+L2 Szafranski: {n_dir} directed pairs ({n_und} undirected)')
 
-    # ── L3: AGORA2 FBA cross-feeding (weight 0.5) ────────────────────────────
+    # ── L3: AGORA2 FBA cross-feeding + MacArthur competition ─────────────────
     agora_dir = _here / 'data' / 'homd_db' / 'agora_gems'
     if use_agora and agora_dir.exists():
         try:
             import cobra
             from cobra.flux_analysis import pfba
-            from guild_agora_signs import (ORAL_MEDIUM, ANAEROBIC_GUILDS,
-                                            apply_medium, GUILD_REPS,
-                                            find_model_path)
+            from guild_agora_signs import (ORAL_MEDIUM, ORAL_MEDIUM_V2,
+                                            ANAEROBIC_GUILDS, apply_medium,
+                                            GUILD_REPS, find_model_path)
 
+            medium_dict = ORAL_MEDIUM_V2 if agora_medium == 'v2' else ORAL_MEDIUM
             W_AGORA   = agora_weight
             THRESHOLD = 0.05
             TOXINS    = {'EX_h2o2(e)', 'EX_h2s(e)'}
+            # Metabolites excluded from MacArthur competition (v2 only)
+            _MACARTHUR_EXCL = {
+                'h2o', 'h', 'co2', 'o2', 'na1', 'k', 'cl',
+                'pi', 'so4', 'nh4', 'ca2', 'mg2', 'fe2', 'fe3',
+            }
 
             guild_models = {}
             for guild in GUILD_ORDER:
@@ -211,11 +219,11 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
 
             if verbose:
                 print(f'  L3 AGORA2: loaded {len(guild_models)} guild models '
-                      f'(oral-fluid medium, pFBA)')
+                      f'(medium={agora_medium}, pFBA)')
 
             secretions, uptakes = {}, {}
             for guild, model in guild_models.items():
-                apply_medium(model, guild)
+                apply_medium(model, guild, medium_dict=medium_dict)
                 try:
                     sol = pfba(model)
                 except Exception:
@@ -235,7 +243,8 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                     print(f'    {guild}: μ={sol.objective_value:.2f}  '
                           f'sec={len(sec)}  upt={len(upt)}')
 
-            agora_pairs = 0
+            # Cross-feeding (same for v1 and v2)
+            cf_pairs = 0
             for j, sec_j in secretions.items():
                 for ex_id in sec_j:
                     for i, upt_i in uptakes.items():
@@ -245,13 +254,42 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                             neg[gi[i], gi[j]] += W_AGORA
                         else:
                             pos[gi[i], gi[j]] += W_AGORA
-                        agora_pairs += 1
+                        cf_pairs += 1
+
+            # MacArthur competition (v2 only): cosine niche overlap → neg signal
+            if agora_medium == 'v2':
+                comp_pairs = 0
+                guild_list = sorted(uptakes.keys())
+                for idx_i, gi_i in enumerate(guild_list):
+                    upt_i = {ex_id: v for ex_id, v in uptakes[gi_i].items()
+                             if ex_id.replace('EX_', '').replace('(e)', '') not in _MACARTHUR_EXCL}
+                    norm_i = sum(v**2 for v in upt_i.values()) ** 0.5
+                    if norm_i < 1e-12:
+                        continue
+                    for gi_j in guild_list:
+                        if gi_i == gi_j:
+                            continue
+                        upt_j = {ex_id: v for ex_id, v in uptakes[gi_j].items()
+                                 if ex_id.replace('EX_', '').replace('(e)', '') not in _MACARTHUR_EXCL}
+                        norm_j = sum(v**2 for v in upt_j.values()) ** 0.5
+                        if norm_j < 1e-12:
+                            continue
+                        dot = sum(upt_i[ex] * upt_j.get(ex, 0.0) for ex in upt_i)
+                        cosine = dot / (norm_i * norm_j + 1e-12)
+                        if cosine > 0.05:
+                            neg[gi[gi_i], gi[gi_j]] += W_AGORA * cosine
+                            comp_pairs += 1
+
+                if verbose:
+                    print(f'  L3 AGORA2 v2: {cf_pairs} cross-feed + {comp_pairs} competition signals')
+            else:
+                if verbose:
+                    print(f'  L3 AGORA2 v1: {cf_pairs} cross-feeding signals')
 
             net = pos - neg
             if verbose:
                 n_dir = int((net != 0).sum() - np.count_nonzero(np.diag(net)))
-                print(f'  L3 AGORA2: +{agora_pairs} cross-feeding signals → '
-                      f'{n_dir} directed pairs total')
+                print(f'  L3 AGORA2: → {n_dir} directed pairs total')
 
         except ImportError:
             if verbose:
@@ -266,7 +304,8 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
     return net
 
 
-def net_flow_hamilton(use_agora=True, competition_weight=0.5, **kwargs):
+def net_flow_hamilton(use_agora=True, competition_weight=0.5,
+                      agora_medium='v1', **kwargs):
     """Sign-prior matrix for the Hamilton model (symmetric A).
 
     Returns a symmetric (N_G × N_G) matrix. Amensalism signals (+/-)
@@ -277,11 +316,13 @@ def net_flow_hamilton(use_agora=True, competition_weight=0.5, **kwargs):
         use_agora=use_agora,
         competition_weight=competition_weight,
         symmetrize=True,
+        agora_medium=agora_medium,
         **kwargs,
     )
 
 
-def net_flow_glv(use_agora=True, competition_weight=0.5, **kwargs):
+def net_flow_glv(use_agora=True, competition_weight=0.5,
+                 agora_medium='v1', **kwargs):
     """Sign-prior matrix for the gLV model (full asymmetric A).
 
     Returns a directed (N_G × N_G) matrix. net[i,j] encodes the sign
@@ -292,6 +333,7 @@ def net_flow_glv(use_agora=True, competition_weight=0.5, **kwargs):
         use_agora=use_agora,
         competition_weight=competition_weight,
         symmetrize=False,
+        agora_medium=agora_medium,
         **kwargs,
     )
 

@@ -147,6 +147,96 @@ ORAL_MEDIUM = {
     'EX_co2(e)':     5.0,
 }
 
+# ── ORAL_MEDIUM v2: realistic saliva concentrations ──────────────────────────
+# v1 was ~100× too high (blood-plasma scale).
+# v2 based on Dawes 2008, Tenovuo 1998 (unstimulated whole saliva, mM → mmol/gDW/h
+# conversion assuming ~2 gDW/L biofilm cell density, 0.1 /h growth rate).
+# Scarce carbon forces competition signals to emerge in pFBA.
+ORAL_MEDIUM_V2 = {
+    # Sugars — salivary glucose ~0.08 mM; others trace
+    'EX_glc_D(e)':  0.10,   # glucose   (0.08 mM → ~0.10 mmol/gDW/h)
+    'EX_fru(e)':    0.04,   # fructose
+    'EX_sucr(e)':   0.04,   # sucrose
+    'EX_lac_L(e)':  0.15,   # L-lactate (0.1-0.25 mM; Veillonella source)
+    # Amino acids — total ~2-5 mM, ~0.1-0.3 mM per species
+    'EX_ala_L(e)':  0.10,
+    'EX_arg_L(e)':  0.08,
+    'EX_asn_L(e)':  0.05,
+    'EX_asp_L(e)':  0.05,
+    'EX_gln_L(e)':  0.10,
+    'EX_glu_L(e)':  0.10,
+    'EX_gly(e)':    0.08,
+    'EX_his_L(e)':  0.02,
+    'EX_ile_L(e)':  0.03,
+    'EX_leu_L(e)':  0.03,
+    'EX_lys_L(e)':  0.03,
+    'EX_met_L(e)':  0.02,
+    'EX_phe_L(e)':  0.02,
+    'EX_pro_L(e)':  0.05,
+    'EX_ser_L(e)':  0.05,
+    'EX_thr_L(e)':  0.03,
+    'EX_trp_L(e)':  0.01,
+    'EX_tyr_L(e)':  0.02,
+    'EX_val_L(e)':  0.03,
+    'EX_cys_L(e)':  0.02,
+    'EX_orn(e)':    0.02,
+    # Nucleotides / bases — trace in saliva
+    'EX_ade(e)':    0.005,
+    'EX_gua(e)':    0.005,
+    # Vitamins & cofactors — nM–μM range → very small FBA bounds
+    'EX_thm(e)':    0.002,
+    'EX_ribflv(e)': 0.002,
+    'EX_nac(e)':    0.002,
+    'EX_pnto_R(e)': 0.002,
+    'EX_fol(e)':    0.001,
+    'EX_pydam(e)':  0.001,
+    'EX_pydxn(e)':  0.001,
+    'EX_pydx(e)':   0.001,
+    'EX_cbl1(e)':   0.0005,
+    'EX_btn(e)':    0.001,
+    # Heme / quinones — keep small but nonzero for anaerobes
+    'EX_pheme(e)':  0.02,
+    'EX_mqn7(e)':   0.01,
+    'EX_mqn8(e)':   0.01,
+    # Inorganic — abundant in saliva, keep proportional
+    'EX_h2o(e)':  1000.0,
+    'EX_h(e)':    1000.0,
+    'EX_pi(e)':      2.0,
+    'EX_so4(e)':     1.0,
+    'EX_nh4(e)':     2.0,
+    'EX_na1(e)':    50.0,
+    'EX_k(e)':      10.0,
+    'EX_mg2(e)':     0.5,
+    'EX_ca2(e)':     0.5,
+    'EX_fe2(e)':     0.02,
+    'EX_fe3(e)':     0.02,
+    'EX_cl(e)':     50.0,
+    'EX_zn2(e)':    0.005,
+    'EX_mn2(e)':    0.005,
+    'EX_cobalt2(e)': 0.002,
+    'EX_cu2(e)':    0.002,
+    # Polyamines
+    'EX_ptrc(e)':   0.002,
+    'EX_spmd(e)':   0.002,
+    # Cofactors required by AGORA models (keep small)
+    'EX_2dmmq8(e)': 0.005,
+    'EX_sheme(e)':  0.005,
+    'EX_adocbl(e)': 0.0005,
+    'EX_q8(e)':     0.005,
+    'EX_26dap_M(e)': 0.005,
+    'EX_ocdca(e)':  0.005,
+    'EX_ttdca(e)':  0.005,
+    'EX_ddca(e)':   0.005,
+    'EX_4hbz(e)':   0.005,
+    'EX_gthrd(e)':  0.005,
+    'EX_gthox(e)':  0.005,
+    'EX_cgly(e)':   0.005,
+    'EX_cytd(e)':   0.005,
+    # Gases
+    'EX_o2(e)':     0.5,    # reduced O2 (biofilm is more anoxic)
+    'EX_co2(e)':    2.0,
+}
+
 # Guilds that are strict anaerobes (set O2 to 0)
 ANAEROBIC_GUILDS = {'Clostridia', 'Bacteroidia', 'Fusobacteriia', 'Negativicutes'}
 
@@ -176,14 +266,19 @@ def load_model(path: Path):
     return read_sbml_model(str(path))
 
 
-def apply_medium(model, guild: str):
-    """Close all exchange reactions, then open ORAL_MEDIUM ones."""
+def apply_medium(model, guild: str, medium_dict=None):
+    """Close all exchange reactions, then open medium_dict ones.
+
+    medium_dict defaults to ORAL_MEDIUM (v1). Pass ORAL_MEDIUM_V2 for v2.
+    """
+    if medium_dict is None:
+        medium_dict = ORAL_MEDIUM
     model_rxn_ids = {rxn.id for rxn in model.exchanges}
     medium = {}
     for rxn in model.exchanges:
         rxn_id = rxn.id
-        if rxn_id in ORAL_MEDIUM:
-            medium[rxn_id] = ORAL_MEDIUM[rxn_id]
+        if rxn_id in medium_dict:
+            medium[rxn_id] = medium_dict[rxn_id]
         else:
             medium[rxn_id] = 0.0
     # Strict anaerobes: shut off O2 (only if the rxn exists in this model)
