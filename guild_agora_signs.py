@@ -507,6 +507,230 @@ def get_agora_phi_matrix(agora_dir: Path, verbose=False) -> tuple[np.ndarray, np
     return phi_net, mask
 
 
+def compute_micom_signals(agora_dir: Path, medium_dict=None,
+                          flux_threshold=0.01, verbose=False):
+    """
+    Community-aware cross-feeding signals via MICOM cooperative tradeoff.
+
+    Unlike single-species pFBA (which checks whether j CAN secrete what i
+    needs), MICOM runs a joint community FBA so that each species' secretion
+    profile is resolved in the presence of competitors.  We extract the sign
+    of the metabolite exchange, not the growth rate change, because the
+    cooperative tradeoff's max-min fairness objective distorts growth rates.
+
+    Algorithm
+    ---------
+    1. Build a 10-guild community model from AGORA2 SBML files.
+    2. Set the shared medium and run ``cooperative_tradeoff(fluxes=True)``.
+    3. For each exchange reaction r:
+       - secretors  = species with flux > threshold  (producing r)
+       - consumers  = species with flux < −threshold (consuming r)
+       Cross-feeding signal: pos[consumer, secretor] += 1
+    4. Subtract toxin secretion into neg matrix (H2O2, H2S).
+
+    Returns
+    -------
+    pos_cf : (N_G, N_G) int
+        pos_cf[i, j] = number of metabolites secreted by j and consumed by i
+        in the community FBA.
+    present : list[str]
+        Guilds for which a model was loaded.
+    """
+    try:
+        import micom
+    except ImportError:
+        if verbose:
+            print('  MICOM not installed; skipping community FBA')
+        return np.zeros((len(GUILD_ORDER), len(GUILD_ORDER)), dtype=int), []
+
+    if medium_dict is None:
+        medium_dict = ORAL_MEDIUM
+
+    N = len(GUILD_ORDER)
+    pos_cf = np.zeros((N, N), dtype=int)
+    TOXIN_EXCH = {'EX_h2o2(e)', 'EX_h2s(e)'}
+    neg_tox = np.zeros((N, N), dtype=int)
+
+    def _to_micom_id(rxn_id):
+        return rxn_id[:-3] + '_m' if rxn_id.endswith('(e)') else rxn_id
+
+    # Build community taxonomy table
+    rows = []
+    for guild in GUILD_ORDER:
+        path = find_model_path(agora_dir, GUILD_REPS[guild])
+        if path is not None:
+            rows.append({'id': guild, 'file': str(path), 'abundance': 1.0})
+
+    if not rows:
+        return pos_cf, []
+
+    import pandas as pd
+    tax = pd.DataFrame(rows)
+    present = [r['id'] for r in rows]
+
+    if verbose:
+        print(f'  MICOM: building {len(present)}-guild community ...')
+
+    try:
+        com = micom.Community(tax, progress=False)
+    except Exception as e:
+        if verbose:
+            print(f'  MICOM: Community build failed ({e})')
+        return pos_cf, present
+
+    # Set medium (convert IDs: EX_glc_D(e) → EX_glc_D_m)
+    exch_set = {r.id for r in com.exchanges}
+    med = {_to_micom_id(k): v for k, v in medium_dict.items()
+           if _to_micom_id(k) in exch_set}
+    com.medium = pd.Series(med)
+
+    if verbose:
+        print(f'  MICOM: medium {len(med)}/{len(medium_dict)} components matched')
+
+    # Run cooperative tradeoff
+    try:
+        sol = com.cooperative_tradeoff(fraction=0.3, fluxes=True)
+    except Exception as e:
+        if verbose:
+            print(f'  MICOM: cooperative_tradeoff failed ({e})')
+        return pos_cf, present
+
+    if sol.status != 'optimal':
+        if verbose:
+            print(f'  MICOM: infeasible ({sol.status})')
+        return pos_cf, present
+
+    fluxes = sol.fluxes   # DataFrame: rows=species(+medium), cols=reactions
+
+    # For each exchange reaction, find secretors and consumers
+    # Exchange reactions have IDs like 'EX_lac_L(e)', 'EX_glc_D(e)', etc.
+    exch_rxn_cols = [c for c in fluxes.columns
+                     if c.startswith('EX_') and c.endswith('(e)')]
+
+    cf_pairs = 0
+    for rxn_id in exch_rxn_cols:
+        is_toxin = rxn_id in TOXIN_EXCH
+        for src in present:
+            if src not in fluxes.index:
+                continue
+            src_flux = fluxes.loc[src, rxn_id] if rxn_id in fluxes.columns else 0.0
+            if src_flux <= flux_threshold:
+                continue
+            # src secretes rxn_id into community
+            for tgt in present:
+                if tgt == src or tgt not in fluxes.index:
+                    continue
+                tgt_flux = fluxes.loc[tgt, rxn_id] if rxn_id in fluxes.columns else 0.0
+                if tgt_flux >= -flux_threshold:
+                    continue
+                # tgt consumes rxn_id that src secreted
+                j, i = GUILD_ORDER.index(src), GUILD_ORDER.index(tgt)
+                if is_toxin:
+                    neg_tox[i, j] += 1
+                else:
+                    pos_cf[i, j] += 1
+                cf_pairs += 1
+
+    if verbose:
+        n_pos = int((pos_cf > 0).sum())
+        n_neg = int((neg_tox > 0).sum())
+        print(f'  MICOM: {cf_pairs} community cross-feeding fluxes  '
+              f'({n_pos} pos pairs, {n_neg} toxin pairs)')
+
+    return pos_cf, neg_tox, present
+
+
+def compute_growth_suppression(agora_dir: Path, medium_dict=None,
+                               threshold=0.05, verbose=False):
+    """
+    Growth-rate suppression competition matrix.
+
+    competition[i, j] = max(0, (μ_i(full) − μ_i(depleted_by_j)) / μ_i(full))
+
+    For each pair (i, j): build a depleted medium by subtracting guild j's
+    pFBA uptake fluxes from the shared medium, then re-run pFBA for guild i.
+    A positive value means guild j reduces guild i's growth rate by competing
+    for the same limiting resources.
+
+    Returns
+    -------
+    comp : (N_G, N_G) float  — relative growth suppression (0 = no competition)
+    present : list[str]      — guilds for which a model was found and solved
+    """
+    from cobra.flux_analysis import pfba as _pfba
+
+    if medium_dict is None:
+        medium_dict = ORAL_MEDIUM
+
+    N = len(GUILD_ORDER)
+
+    # ── Phase 1: run pFBA for all guilds on full medium ───────────────────────
+    mu_full       = {}   # guild → growth rate
+    uptake_fluxes = {}   # guild → {exchange_rxn_id: |flux|}
+    model_paths   = {}   # guild → Path
+
+    for guild in GUILD_ORDER:
+        path = find_model_path(agora_dir, GUILD_REPS[guild])
+        if path is None:
+            continue
+        try:
+            model = load_model(path)
+            apply_medium(model, guild, medium_dict=medium_dict)
+            sol = _pfba(model)
+            if sol.status != 'optimal' or sol.objective_value < 1e-6:
+                continue
+            mu_full[guild] = sol.objective_value
+            upt = {}
+            for rxn in model.exchanges:
+                f = sol.fluxes.get(rxn.id, 0.0)
+                if f < -threshold:
+                    upt[rxn.id] = abs(f)
+            uptake_fluxes[guild] = upt
+            model_paths[guild]   = path
+            if verbose:
+                print(f'  GRS phase1 {guild}: μ={sol.objective_value:.3f}  '
+                      f'upt={len(upt)}')
+        except Exception as e:
+            if verbose:
+                print(f'  GRS phase1 {guild}: ERROR {e}')
+
+    present = list(mu_full.keys())
+
+    # ── Phase 2: for each (i, j), deplete medium by j and re-run i ───────────
+    comp = np.zeros((N, N))
+
+    for guild_j in present:
+        j = GUILD_ORDER.index(guild_j)
+        # medium after guild j has consumed its share
+        depleted = dict(medium_dict)
+        for rxn_id, flux_mag in uptake_fluxes[guild_j].items():
+            if rxn_id in depleted:
+                depleted[rxn_id] = max(0.0, depleted[rxn_id] - flux_mag)
+
+        for guild_i in present:
+            if guild_i == guild_j:
+                continue
+            i = GUILD_ORDER.index(guild_i)
+            try:
+                model_i = load_model(model_paths[guild_i])
+                apply_medium(model_i, guild_i, medium_dict=depleted)
+                sol_d = _pfba(model_i)
+                mu_d = (sol_d.objective_value
+                        if sol_d.status == 'optimal' and sol_d.objective_value > 1e-8
+                        else 0.0)
+            except Exception:
+                mu_d = 0.0
+            mu_f = mu_full[guild_i]
+            comp[i, j] = max(0.0, (mu_f - mu_d) / (mu_f + 1e-12))
+
+    if verbose:
+        n_nonzero = int((comp > 0.01).sum())
+        print(f'  GRS: {n_nonzero} pairs with >1% growth suppression  '
+              f'max={comp.max():.3f}')
+
+    return comp, present
+
+
 def compare_with_glv(sign_agora, present_guilds, glv_path: Path):
     """Compare AGORA sign predictions with gLV A matrix signs."""
     d = json.load(open(glv_path))
