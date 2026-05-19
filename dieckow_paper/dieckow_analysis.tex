@@ -252,10 +252,25 @@ This layer yields 34 constrained guild pairs.
 \paragraph{L2 — AGORA2 pFBA.}
 Parsimonious FBA~\citep{lewis2010} on one representative genome-scale metabolic model
 per guild (AGORA2 v2.01~\citep{heinken2023}) under a standardised oral-fluid medium.
+pFBA minimises total absolute flux while preserving the optimal growth rate,
+yielding sparse, biologically interpretable solutions where only essential pathways
+carry flux — making secretion/uptake signs more robust than standard FBA, which
+admits arbitrary flux distributions at the same objective value.
+Four guilds (Clostridia, Bacteroidia, Fusobacteriia, Negativicutes) are strict anaerobes;
+their oxygen exchange bound is set to zero before optimisation.
+Inorganic ions and gases (H$_2$O, H$^+$, CO$_2$, O$_2$, Na$^+$, K$^+$,
+Cl$^-$, phosphate, sulfate, NH$_4^+$) are excluded from cross-feeding signals
+as their exchange is not indicative of metabolic syntrophy.
+Infeasible models (growth rate~$<10^{-6}$\,h$^{-1}$) are excluded; all 9 guilds
+with AGORA2 representatives remain feasible (Table~\ref{tab:agora_strains}).
+The \emph{Other} guild has no AGORA2 representative; pairs involving it receive no
+L2 or L3 prior and are unconstrained.
 A cross-feeding signal (guild $j$ secretes $\alpha$, guild $i$ takes up $\alpha$)
 contributes $+w_{L2}$; toxin secretion $-w_{L2}$.
 Full list of representative strains and medium composition in Appendix~\ref{app:agora}.
-Adding L2 at $w_{L2}=1.0$ extends the constrained pairs from 34 to 35.
+Adding L2 at $w_{L2}=1.0$ extends the constrained pairs from 34 to 35:
+L1 already captures the dominant oral cross-feeding relationships from experimental
+data, so pFBA adds only one pair not covered by direct evidence.
 
 \paragraph{L3 — MICOM community FBA (primary model).}
 Single-species pFBA (L2) treats each guild independently, missing resource competition
@@ -275,12 +290,18 @@ guild $i$ consumes it at $|v_i^-|$, then $\text{pos}[i,j] \mathrel{+}=
 (ii)~\emph{toxins} (H$_2$O$_2$, H$_2$S): if guild $j$ secretes a toxin,
 $\text{neg}[i,j] \mathrel{+}= v_j^+$ for \emph{all} co-occurring guilds $i \ne j$,
 since toxins diffuse and harm non-consuming species.
+Exchange fluxes below $10^{-2}$\,mmol\,gDW$^{-1}$\,h$^{-1}$ are treated as
+numerical noise and excluded.
+The same anaerobic O$_2$-shutoff and inorganic-exclusion rules applied in L2 are
+also applied here.
 The MICOM layer adds 37 constrained guild pairs (total 72), achieving 100\% sign agreement
 with the fitted $\bA$ (72/72).
 Sensitivity to $\tau \in \{0.3, 0.4, 0.5\}$ yields $\Delta$RMSE~$<0.001$
 (Figure~\ref{fig:tau_sensitivity}), confirming robustness to the tradeoff parameter.
 
 \paragraph{Net flow and sign.}
+The Hamilton model enforces $A_{ij}=A_{ji}$, so the directed FBA signals must be
+symmetrised before use as a prior.
 The symmetrised net flow is
 \begin{equation}
   F_{ij} = \frac{1}{2}
@@ -288,6 +309,9 @@ The symmetrised net flow is
   \label{eq:flow}
 \end{equation}
 giving prior sign $s_{ij}=\sgn(F_{ij})$ and stiffness weight $|F_{ij}|$.
+This averaging discards directional asymmetry in MICOM signals (e.g.\ $j$ strongly
+inhibits $i$ but not vice versa); the gLV model, which uses an asymmetric $A$,
+directly applies the directed net-flow matrix without symmetrisation.
 
 \paragraph{Sign penalty.}
 \begin{equation}
@@ -842,13 +866,29 @@ The insensitivity of equilibria to FBA flux magnitudes is consistent with ecolog
 theory: on the simplex, fixed points are determined by the \emph{signs} of $A_{ij}$,
 not their absolute values~\citep{hofbauer1998}.
 
-Known AGORA L3 limitations include: (1) single representative strain per guild,
-ignoring intra-guild metabolic diversity; (2) individual rather than community FBA
-(MICOM would be more accurate but circularly depends on community composition);
-(3) estimated oral-fluid medium (Dawes 2008~\citep{dawes2008}, not patient-specific);
-(4) count-based rather than flux-weighted cross-feeding signals.
-Despite these limitations, LOO-CV demonstrates that L3 sign information survives the approximation — the key insight being that sign robustness is inherent to FBA, even under
-imprecise medium and representative-strain approximations.
+The MICOM L3 layer addresses the main weakness of single-species pFBA (L2):
+it resolves actual inter-guild flux distributions under shared-medium competition,
+rather than asking what each guild \emph{could} do in isolation.
+Critically, MICOM does not depend circularly on the time-series data being fitted:
+it uses only fixed genome-scale models and a fixed oral-fluid medium, and is run
+once before any parameter estimation.
+The resulting 72-pair sign prior achieves perfect agreement with the fitted $\bA$
+(72/72, 100\%) and reduces Hamilton LOO-RMSE by 10.7\% relative to single-species
+AGORA v1 (0.0502 vs.\ 0.0562).
+
+Remaining AGORA/MICOM limitations:
+(1)~\emph{single representative strain per guild} — intra-guild metabolic diversity
+(e.g.\ cariogenic vs.\ non-cariogenic Streptococci) is ignored;
+(2)~\emph{fixed oral-fluid medium} — not patient-specific; a patient with elevated
+salivary glucose would shift the community flux profile;
+(3)~\emph{symmetrisation for Hamilton model} — MICOM produces directed signals
+($\text{pos}[i,j] \ne \text{pos}[j,i]$) that are averaged to enforce $A_{ij}=A_{ji}$,
+discarding genuine ecological asymmetries;
+(4)~\emph{no guild for ``Other'' class} — 1 of 10 guilds has no AGORA representative
+and receives no metabolic prior.
+Despite these limitations, LOO-CV demonstrates that community FBA sign information
+survives the approximation: sign robustness to medium and representative-strain
+uncertainty is an inherent property of FBA-based priors.
 
 \subsection{External validity: attractor generalisation}
 \label{ssec:disc_joshi}
