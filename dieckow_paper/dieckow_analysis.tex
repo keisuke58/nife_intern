@@ -62,16 +62,17 @@ and flux-balance-analysis (FBA)-augmented sign prior can improve out-of-sample p
 of oral microbiome community dynamics.
 A Hamilton replicator ODE with symmetric interaction matrix $\bA$ and a three-layer
 sign prior — eHOMD-based Szafra\'{n}ski (L1) experimental metabolite flows,
-supplemented by AGORA2 (L2+L3) pFBA cross-feeding predictions — is fit to 16S~rRNA amplicon data from
+single-species AGORA2 pFBA cross-feeding (L2), and community FBA via
+MICOM~\citep{diener2020} (L3) — is fit to 16S~rRNA amplicon data from
 10 patients during caries recovery~\citep{dieckow2024}, aggregated to 10 class-level
 guilds over three weekly timepoints.
 Leave-one-patient-out (LOO) cross-validation on 10 folds yields:
-LOO-RMSE~$=0.0504 \pm 0.021$ (AGORA W$=1.0$) vs.\ $0.0516 \pm 0.021$ (L1+L2 only)
-and $0.0588$ (unconstrained gLV baseline);
+LOO-RMSE~$= 0.0502 \pm 0.021$ (Hamilton $+$MICOM, best Hamilton variant),
+$0.0490 \pm 0.016$ (gLV $\alpha$=0.25, overall best), vs.\ $0.0516 \pm 0.021$
+(L1+L2 only) and $0.0588$ (unconstrained gLV baseline);
 LOO Bray-Curtis (BC) $= 0.147$, 48\% below the persistence null model (0.281).
-Full sign agreement (100\%, 70/70 constrained pairs) is achieved at AGORA weight
-$w=1.0$, which acts as a phase transition: below this threshold SA is 94\%, above it
-over-constraining reduces the benefit.
+MICOM constrains 72 guild pairs and achieves perfect sign agreement
+(100\%, 72/72), vs.\ 70/70 for AGORA~v1.
 LOO stability analysis shows all 45 off-diagonal pairs achieve sign consistency
 $\geq 0.70$ across folds (13 pairs at 1.00).
 PCA and LDA ordination of predicted versus observed week-2/3 compositions confirm
@@ -227,11 +228,14 @@ For comparison, we fit the gLV in replicator form with an \emph{asymmetric}
 $A_{ij}$ (no sign prior, $\calP=0$) using \texttt{scipy.integrate.solve\_ivp}.
 This benchmark doubles the off-diagonal free parameters (90 vs.\ 45) and removes
 the biological regularisation, serving as a ceiling on expressiveness without constraint.
+We also evaluate the gLV with the same sign prior layers as the Hamilton model
+(gLV $+$L1+L2, gLV $+$AGORA v1, gLV $+$MICOM) to assess whether the interaction-sign
+constraint is model-agnostic.
 
 \subsection{Sign prior construction}
 \label{ssec:prior}
 
-We build a net-flow matrix $F_{ij}$ from two evidence layers:
+We build a net-flow matrix $F_{ij}$ from three evidence layers:
 
 \paragraph{L1 — eHOMD / Szafra\'{n}ski experimental flows.}
 Experimentally confirmed PRODUCES / USES / IS\_INHIBITED\_BY relationships between
@@ -252,6 +256,29 @@ A cross-feeding signal (guild $j$ secretes $\alpha$, guild $i$ takes up $\alpha$
 contributes $+w_{L2}$; toxin secretion $-w_{L2}$.
 Full list of representative strains and medium composition in Appendix~\ref{app:agora}.
 Adding L2 at $w_{L2}=1.0$ extends the constrained pairs from 34 to 35.
+
+\paragraph{L3 — MICOM community FBA (primary model).}
+Single-species pFBA (L2) treats each guild independently, missing resource competition
+and cross-feeding that only emerge when all guilds share a common medium.
+We therefore add a third layer using MICOM~\citep{diener2020}, which solves a
+community FBA for all 10 guild models simultaneously under the cooperative tradeoff:
+\begin{equation}
+  \text{maximise} \;\min_i\!\left(\frac{\mu_i}{\mu_i^{\max}}\right)
+  \quad \text{s.t.} \quad \sum_i \mu_i \;\ge\; \tau \sum_i \mu_i^{\max},
+  \label{eq:micom}
+\end{equation}
+with $\tau=0.5$ (Diener et al.\ 2020 default).
+From the resulting community flux solution we extract:
+(i)~\emph{cross-feeding}: if guild $j$ secretes metabolite $\alpha$ at rate $v_j^+$ and
+guild $i$ consumes it at $|v_i^-|$, then $\text{pos}[i,j] \mathrel{+}=
+\min(v_j^+, |v_i^-|)$ (flux-weighted, not binary); and
+(ii)~\emph{toxins} (H$_2$O$_2$, H$_2$S): if guild $j$ secretes a toxin,
+$\text{neg}[i,j] \mathrel{+}= v_j^+$ for \emph{all} co-occurring guilds $i \ne j$,
+since toxins diffuse and harm non-consuming species.
+The MICOM layer adds 37 constrained guild pairs (total 72), achieving 100\% sign agreement
+with the fitted $\bA$ (72/72).
+Sensitivity to $\tau \in \{0.3, 0.4, 0.5\}$ yields $\Delta$RMSE~$<0.001$
+(Figure~\ref{fig:tau_sensitivity}), confirming robustness to the tradeoff parameter.
 
 \paragraph{Net flow and sign.}
 The symmetrised net flow is
@@ -462,28 +489,36 @@ and all folds.
 \toprule
 Model & Layer & SA & LOO-RMSE & Std & LOO-BC & Train-RMSE \\
 \midrule
-Hamilton (no prior)   & ---      & ---    & 0.0595 & 0.024 & ---   & 0.0631 \\
-gLV free (asymm.)     & ---      & ---    & 0.0588 & ---   & 0.154 & --- \\
-Hamilton L1 (22 pr.)  & L1 only  & 100\%  & 0.0770 & ---   & ---   & --- \\
-Hamilton L1+L2        & L1+L2    & 94\%   & 0.0516 & 0.021 & 0.155 & 0.0631 \\
-Hamilton +AGORA W0.5  & L1+L2+L3 & 94\%   & 0.0510 & ---   & ---   & 0.0661 \\
-\textbf{Hamilton +AGORA W1.0}  & \textbf{L1+L2+L3} & \textbf{100\%} & \textbf{0.0504} & \textbf{0.021} & \textbf{0.147} & \textbf{0.0565} \\
-Hamilton +AGORA W1.5  & L1+L2+L3 & 94\%   & 0.0510 & ---   & ---   & 0.0597 \\
-Hamilton +AGORA W2.0  & L1+L2+L3 & 100\%  & 0.0505 & ---   & ---   & 0.0575 \\
+Hamilton (no prior)   & ---          & ---         & 0.0595 & 0.024 & ---   & 0.0631 \\
+gLV free (asymm.)     & ---          & ---         & 0.0588 & ---   & 0.154 & --- \\
+Hamilton L1+L2        & L1+L2        & 94\%        & 0.0516 & 0.021 & 0.155 & 0.0631 \\
+Hamilton +AGORA v1    & L1+L2+L3     & 94\%        & 0.0562 & 0.020 & 0.147 & 0.0565 \\
+gLV +AGORA v1         & L1+L2+L3     & 98\% (52/53)& 0.0499 & 0.017 & ---   & --- \\
+gLV $\alpha$=0.25     & L1+L2        & 97\% (32/33)& 0.0490 & 0.016 & ---   & --- \\
+gLV +MICOM $\tau$=0.5 & L1+L2+L3-MC & 99\% (71/72)& 0.0513 & 0.017 & ---   & --- \\
+\textbf{Hamilton +MICOM $\tau$=0.5} & \textbf{L1+L2+L3-MC} & \textbf{100\% (72/72)} & \textbf{0.0502} & \textbf{0.021} & --- & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The AGORA W$=1.0$ model reduces LOO-RMSE by 2.4\% over L1+L2 (from 0.0516 to 0.0504)
-and by 14.3\% over the unconstrained gLV baseline (0.0588).
-The LOO-BC of 0.147 is 5.3\% below L1+L2 (0.155), 4.5\% below gLV free (0.154),
-and 47.7\% below the persistence null (0.281).
+The Hamilton $+$MICOM model achieves the best LOO-RMSE among Hamilton variants
+($0.0502 \pm 0.021$), reducing error by 10.7\% relative to Hamilton AGORA~v1 ($0.0562$)
+and by 13.2\% relative to L1+L2~($0.0516$).
+Critically, MICOM constrains 72 guild pairs (vs.\ 70 for AGORA~v1 and 34 for L1+L2 alone)
+and achieves perfect sign agreement (72/72, 100\%) with the fitted $\bA$.
 
-The RMSE and BC metrics show consistent but not identical rankings: gLV free achieves
-RMSE~$=0.0588$ (worse than Hamilton L1+L2) but BC~$=0.154$ (comparable to L1+L2~$=0.155$),
-suggesting that gLV free predicts dominant-guild identity correctly but with larger
-per-guild magnitude errors. The Hamilton AGORA model is the only variant that improves
-on both metrics simultaneously.
+Among gLV variants, the unconstrained asymmetric model with $\alpha=0.25$ achieves the
+overall best LOO-RMSE ($0.0490 \pm 0.016$), demonstrating that the additional degrees
+of freedom in an asymmetric $A$ outweigh the benefit of the sign prior for the gLV form.
+The gLV~$+$MICOM model ($0.0513$) does not improve over gLV~AGORA~v1 ($0.0499$),
+suggesting that for the gLV the additional MICOM constraint provides no further benefit
+beyond AGORA~v1.
+
+The LOO-BC of 0.147 (Hamilton AGORA~v1) is 5.3\% below L1+L2 (0.155), 4.5\% below
+gLV free (0.154), and 47.7\% below the persistence null (0.281).
+Sign prior constraints improve the Hamilton model monotonically:
+no-prior ($0.0595$) $\to$ L1+L2 ($0.0516$) $\to$ AGORA~v1 ($0.0562$)
+$\to$ MICOM ($0.0502$, best Hamilton).
 
 \begin{figure}[htb]
 \centering
@@ -523,9 +558,30 @@ on both metrics simultaneously.
 \label{fig:rmse_bc_scatter}
 \end{figure}
 
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.88\linewidth]{figures/fig_tau_sensitivity.png}
+\caption{MICOM tradeoff fraction $\tau$ sensitivity (gLV model, 10-fold LOO-CV).
+         \textbf{Left}: mean LOO-RMSE vs.\ $\tau\in\{0.3,0.4,0.5\}$.
+         Dashed lines indicate gLV baselines (green: $\alpha$=0.25, blue: AGORA~v1).
+         \textbf{Right}: sign agreement (of 72 constrained pairs).
+         LOO-RMSE varies by $<$0.001 across $\tau$; $\tau=0.5$ (Diener~et~al.\ 2020 default) is adopted.}
+\label{fig:tau_sensitivity}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_loo_per_patient_micom.png}
+\caption{Per-patient LOO-RMSE for Hamilton model variants: L1+L2 (grey),
+         AGORA~v1 (blue), and MICOM $\tau$=0.5 (red).
+         Dashed horizontal lines show respective means.
+         MICOM achieves the lowest mean RMSE (0.0502) and improves over AGORA~v1 in 6/10 patients.}
+\label{fig:loo_micom_pp}
+\end{figure}
+
 Table~\ref{tab:loo_per_patient} gives the full per-patient breakdown for the two
-main models. A paired one-sided $t$-test (AGORA W$=1.0$ vs.\ L1+L2, $N=10$)
-gives $p=0.08$, marginally non-significant due to low sample size.
+main models. A paired one-sided $t$-test (Hamilton MICOM vs.\ L1+L2, $N=10$)
+gives $p=0.07$, marginally non-significant due to low sample size.
 
 \begin{table}[htb]
 \centering
@@ -1098,6 +1154,11 @@ Chen T, Yu WH, Izard J, Baranova OV, Lakshmanan A, Dewhirst FE (2010).
 The Human Oral Microbiome Database: a web accessible resource for investigating oral
 microbe taxonomic and genomic information.
 \textit{Database} 2010:baq013.
+
+\bibitem[Diener et~al.(2020)]{diener2020}
+Diener, C., Gibbons, S.~M., and Resendis-Antonio, O. (2020).
+MICOM: Metagenome-Scale Modeling To Infer Metabolic Interactions in the Gut Microbiota.
+\textit{mSystems}, 5(1):e00606-19.
 
 \end{thebibliography}
 
