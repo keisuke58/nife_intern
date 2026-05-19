@@ -620,7 +620,7 @@ def compute_micom_signals(agora_dir: Path, medium_dict=None,
             if src not in fluxes.index:
                 continue
             src_flux = fluxes.loc[src, rxn_id] if rxn_id in fluxes.columns else 0.0
-            if src_flux <= flux_threshold:
+            if not np.isfinite(src_flux) or src_flux <= flux_threshold:
                 continue
             j = GUILD_ORDER.index(src)
 
@@ -636,11 +636,12 @@ def compute_micom_signals(agora_dir: Path, medium_dict=None,
             else:
                 # Cross-feeding: only guilds that actually consume this metabolite.
                 # Weight by actual flux transfer (min of secretion and uptake).
+                # Guard against NaN: species lacking a reaction have NaN flux.
                 for tgt in present:
                     if tgt == src or tgt not in fluxes.index:
                         continue
                     tgt_flux = fluxes.loc[tgt, rxn_id] if rxn_id in fluxes.columns else 0.0
-                    if tgt_flux >= -flux_threshold:
+                    if not np.isfinite(tgt_flux) or tgt_flux >= -flux_threshold:
                         continue
                     i = GUILD_ORDER.index(tgt)
                     transfer = min(src_flux, abs(tgt_flux))
