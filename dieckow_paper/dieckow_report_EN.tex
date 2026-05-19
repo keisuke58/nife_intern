@@ -301,6 +301,21 @@ On the simplex, fixed points are determined by signs of $A_{ij}$, not absolute v
 The MacArthur quantitative Gaussian prior fails completely, confirming that
 FBA magnitude information is not ecologically predictive.
 
+\paragraph{AGORA medium v2 (realistic saliva).}
+The original oral-fluid medium (v1) used nutrient concentrations at blood-plasma scale
+($\sim\!100\times$ too high), so all 24 AGORA-added pairs were positive (cross-feeding
+dominant, no competition signal).
+Medium v2 uses physiologically correct unstimulated saliva concentrations
+(Dawes 2008: glucose $\sim$0.08\,mM, total amino acids $\sim$2--5\,mM),
+implemented via MacArthur cosine niche-overlap scoring for competition.
+Under resource scarcity, competition signals emerge: v2 yields
+\textbf{AGORA$+$\,=\,10, AGORA$-$\,=\,14} (symmetric, 45 pairs) and
+\textbf{AGORA$+$\,=\,20, AGORA$-$\,=\,17} (directed, 90 pairs), increasing total
+constrained pairs from 33/45 to 35/45 (symmetric) and 57/90 to 68/90 (directed).
+Notably, the Bacteroidia--Fusobacteriia pair, previously unconstrained (no metabolic
+signal in v1), acquires a negative (competition) prior in v2.
+LOO-CV comparison v1 vs.\ v2 is a planned next step.
+
 \subsection{External Validation: Peri-implant Dysbiosis}
 
 \begin{figure}[H]
