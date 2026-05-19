@@ -108,7 +108,7 @@ _COMPETITION_EXCLUDE = {
 
 def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                             competition_weight=0.5, symmetrize=True,
-                            agora_medium='v1'):
+                            agora_medium='v1', agora_comp_weight=0.5):
     """Multi-source flow matrix. See module docstring for details.
 
     competition_weight : float
@@ -121,10 +121,18 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
         The Hamilton model constrains A to be symmetric (A[i,j] = A[j,i]),
         so the sign prior must also be symmetric.
 
-    agora_medium : str ('v1' or 'v2')
-        'v1': original ORAL_MEDIUM (~blood-plasma scale, all 24 AGORA pairs positive)
-        'v2': realistic saliva concentrations (~100× lower carbon; forces competition
-              signals to emerge via MacArthur cosine niche overlap scoring).
+    agora_medium : str ('v1', 'v2', or 'micom')
+        'v1': original ORAL_MEDIUM (~blood-plasma scale).
+        'v2': realistic saliva concentrations (Dawes 2008).  Under v2,
+              growth-rate suppression competition is also computed.
+        'micom': community FBA via MICOM cooperative tradeoff.  Cross-feeding
+              signals are extracted from actual community fluxes (not single-
+              species pFBA), giving more realistic cross-feeding detection.
+              Requires the micom package: pip install micom.
+
+    agora_comp_weight : float (default 0.5)
+        Scaling for AGORA growth-rate-suppression competition term (v2 only).
+        Set to 0.0 to disable AGORA competition entirely.
     """
     gi  = {g: idx for idx, g in enumerate(GUILD_ORDER)}
     pos = np.zeros((N_G, N_G))
@@ -188,103 +196,112 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
         n_und = int(((net_sym != 0).sum() - np.count_nonzero(np.diag(net_sym))) // 2)
         print(f'  L1+L2 Szafranski: {n_dir} directed pairs ({n_und} undirected)')
 
-    # ── L3: AGORA2 FBA cross-feeding + MacArthur competition ─────────────────
+    # ── L3: AGORA2 FBA cross-feeding ─────────────────────────────────────────
     agora_dir = _here / 'data' / 'homd_db' / 'agora_gems'
     if use_agora and agora_dir.exists():
         try:
-            import cobra
-            from cobra.flux_analysis import pfba
-            from guild_agora_signs import (ORAL_MEDIUM, ORAL_MEDIUM_V2,
-                                            ANAEROBIC_GUILDS, apply_medium,
-                                            GUILD_REPS, find_model_path)
+            W_AGORA = agora_weight
 
-            medium_dict = ORAL_MEDIUM_V2 if agora_medium == 'v2' else ORAL_MEDIUM
-            W_AGORA   = agora_weight
-            THRESHOLD = 0.05
-            TOXINS    = {'EX_h2o2(e)', 'EX_h2s(e)'}
-            # Metabolites excluded from MacArthur competition (v2 only)
-            _MACARTHUR_EXCL = {
-                'h2o', 'h', 'co2', 'o2', 'na1', 'k', 'cl',
-                'pi', 'so4', 'nh4', 'ca2', 'mg2', 'fe2', 'fe3',
-            }
-
-            guild_models = {}
-            for guild in GUILD_ORDER:
-                if guild not in gi:
-                    continue
-                path = find_model_path(agora_dir, GUILD_REPS.get(guild, [guild]))
-                if path is None:
-                    continue
-                guild_models[guild] = cobra.io.read_sbml_model(str(path))
-
-            if verbose:
-                print(f'  L3 AGORA2: loaded {len(guild_models)} guild models '
-                      f'(medium={agora_medium}, pFBA)')
-
-            secretions, uptakes = {}, {}
-            for guild, model in guild_models.items():
-                apply_medium(model, guild, medium_dict=medium_dict)
-                try:
-                    sol = pfba(model)
-                except Exception:
-                    continue
-                if sol.objective_value < 1e-6:
-                    continue
-                sec, upt = {}, {}
-                for rxn in model.exchanges:
-                    f = sol.fluxes.get(rxn.id, 0.0)
-                    if f >  THRESHOLD:
-                        sec[rxn.id] = f
-                    elif f < -THRESHOLD:
-                        upt[rxn.id] = abs(f)
-                secretions[guild] = sec
-                uptakes[guild]    = upt
-                if verbose:
-                    print(f'    {guild}: μ={sol.objective_value:.2f}  '
-                          f'sec={len(sec)}  upt={len(upt)}')
-
-            # Cross-feeding (same for v1 and v2)
-            cf_pairs = 0
-            for j, sec_j in secretions.items():
-                for ex_id in sec_j:
-                    for i, upt_i in uptakes.items():
-                        if i == j or ex_id not in upt_i:
-                            continue
-                        if ex_id in TOXINS:
-                            neg[gi[i], gi[j]] += W_AGORA
-                        else:
-                            pos[gi[i], gi[j]] += W_AGORA
-                        cf_pairs += 1
-
-            # MacArthur competition (v2 only): cosine niche overlap → neg signal
-            if agora_medium == 'v2':
-                comp_pairs = 0
-                guild_list = sorted(uptakes.keys())
-                for idx_i, gi_i in enumerate(guild_list):
-                    upt_i = {ex_id: v for ex_id, v in uptakes[gi_i].items()
-                             if ex_id.replace('EX_', '').replace('(e)', '') not in _MACARTHUR_EXCL}
-                    norm_i = sum(v**2 for v in upt_i.values()) ** 0.5
-                    if norm_i < 1e-12:
+            if agora_medium == 'micom':
+                # ── MICOM community FBA path ───────────────────────────────
+                # Cross-feeding signals from actual community fluxes.
+                # More realistic than single-species pFBA because each guild's
+                # secretion profile is resolved in the presence of competitors.
+                from guild_agora_signs import compute_micom_signals, ORAL_MEDIUM
+                pos_cf, neg_tox, present_m = compute_micom_signals(
+                    agora_dir, medium_dict=ORAL_MEDIUM, verbose=verbose)
+                for guild_i in present_m:
+                    if guild_i not in gi:
                         continue
-                    for gi_j in guild_list:
-                        if gi_i == gi_j:
+                    for guild_j in present_m:
+                        if guild_j not in gi or guild_i == guild_j:
                             continue
-                        upt_j = {ex_id: v for ex_id, v in uptakes[gi_j].items()
-                                 if ex_id.replace('EX_', '').replace('(e)', '') not in _MACARTHUR_EXCL}
-                        norm_j = sum(v**2 for v in upt_j.values()) ** 0.5
-                        if norm_j < 1e-12:
-                            continue
-                        dot = sum(upt_i[ex] * upt_j.get(ex, 0.0) for ex in upt_i)
-                        cosine = dot / (norm_i * norm_j + 1e-12)
-                        if cosine > 0.05:
-                            neg[gi[gi_i], gi[gi_j]] += W_AGORA * cosine
-                            comp_pairs += 1
+                        pos[gi[guild_i], gi[guild_j]] += W_AGORA * pos_cf[
+                            GUILD_ORDER.index(guild_i), GUILD_ORDER.index(guild_j)]
+                        neg[gi[guild_i], gi[guild_j]] += W_AGORA * neg_tox[
+                            GUILD_ORDER.index(guild_i), GUILD_ORDER.index(guild_j)]
+
+            else:
+                # ── Single-species pFBA path (v1 or v2) ───────────────────
+                import cobra
+                from cobra.flux_analysis import pfba
+                from guild_agora_signs import (ORAL_MEDIUM, ORAL_MEDIUM_V2,
+                                                ANAEROBIC_GUILDS, apply_medium,
+                                                GUILD_REPS, find_model_path)
+
+                medium_dict = ORAL_MEDIUM_V2 if agora_medium == 'v2' else ORAL_MEDIUM
+                THRESHOLD = 0.05
+                TOXINS    = {'EX_h2o2(e)', 'EX_h2s(e)'}
+
+                guild_models = {}
+                for guild in GUILD_ORDER:
+                    if guild not in gi:
+                        continue
+                    path = find_model_path(agora_dir, GUILD_REPS.get(guild, [guild]))
+                    if path is None:
+                        continue
+                    guild_models[guild] = cobra.io.read_sbml_model(str(path))
 
                 if verbose:
-                    print(f'  L3 AGORA2 v2: {cf_pairs} cross-feed + {comp_pairs} competition signals')
-            else:
+                    print(f'  L3 AGORA2: loaded {len(guild_models)} guild models '
+                          f'(medium={agora_medium}, pFBA)')
+
+                secretions, uptakes = {}, {}
+                for guild, model in guild_models.items():
+                    apply_medium(model, guild, medium_dict=medium_dict)
+                    try:
+                        sol = pfba(model)
+                    except Exception:
+                        continue
+                    if sol.objective_value < 1e-6:
+                        continue
+                    sec, upt = {}, {}
+                    for rxn in model.exchanges:
+                        f = sol.fluxes.get(rxn.id, 0.0)
+                        if f >  THRESHOLD:
+                            sec[rxn.id] = f
+                        elif f < -THRESHOLD:
+                            upt[rxn.id] = abs(f)
+                    secretions[guild] = sec
+                    uptakes[guild]    = upt
+                    if verbose:
+                        print(f'    {guild}: μ={sol.objective_value:.2f}  '
+                              f'sec={len(sec)}  upt={len(upt)}')
+
+                # Cross-feeding and toxin signals
+                cf_pairs = 0
+                for j, sec_j in secretions.items():
+                    for ex_id in sec_j:
+                        for i, upt_i in uptakes.items():
+                            if i == j or ex_id not in upt_i:
+                                continue
+                            if ex_id in TOXINS:
+                                neg[gi[i], gi[j]] += W_AGORA
+                            else:
+                                pos[gi[i], gi[j]] += W_AGORA
+                            cf_pairs += 1
                 if verbose:
-                    print(f'  L3 AGORA2 v1: {cf_pairs} cross-feeding signals')
+                    print(f'  L3 AGORA2 {agora_medium}: {cf_pairs} cross-feeding signals')
+
+                # Competition via growth-rate suppression (v2 only, experimental)
+                if agora_medium == 'v2' and agora_comp_weight > 0:
+                    from guild_agora_signs import compute_growth_suppression
+                    comp_mat, present_grs = compute_growth_suppression(
+                        agora_dir, medium_dict=medium_dict, verbose=verbose)
+                    comp_pairs = 0
+                    for guild_i in present_grs:
+                        if guild_i not in gi:
+                            continue
+                        for guild_j in present_grs:
+                            if guild_j not in gi or guild_i == guild_j:
+                                continue
+                            v = comp_mat[GUILD_ORDER.index(guild_i),
+                                         GUILD_ORDER.index(guild_j)]
+                            if v > 0:
+                                neg[gi[guild_i], gi[guild_j]] += agora_comp_weight * v
+                                comp_pairs += 1
+                    if verbose:
+                        print(f'  L3 AGORA2 v2 GRS: {comp_pairs} competition pairs')
 
             net = pos - neg
             if verbose:
@@ -305,7 +322,7 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
 
 
 def net_flow_hamilton(use_agora=True, competition_weight=0.5,
-                      agora_medium='v1', **kwargs):
+                      agora_medium='v1', agora_comp_weight=0.5, **kwargs):
     """Sign-prior matrix for the Hamilton model (symmetric A).
 
     Returns a symmetric (N_G × N_G) matrix. Amensalism signals (+/-)
@@ -317,12 +334,13 @@ def net_flow_hamilton(use_agora=True, competition_weight=0.5,
         competition_weight=competition_weight,
         symmetrize=True,
         agora_medium=agora_medium,
+        agora_comp_weight=agora_comp_weight,
         **kwargs,
     )
 
 
 def net_flow_glv(use_agora=True, competition_weight=0.5,
-                 agora_medium='v1', **kwargs):
+                 agora_medium='v1', agora_comp_weight=0.5, **kwargs):
     """Sign-prior matrix for the gLV model (full asymmetric A).
 
     Returns a directed (N_G × N_G) matrix. net[i,j] encodes the sign
@@ -334,6 +352,7 @@ def net_flow_glv(use_agora=True, competition_weight=0.5,
         competition_weight=competition_weight,
         symmetrize=False,
         agora_medium=agora_medium,
+        agora_comp_weight=agora_comp_weight,
         **kwargs,
     )
 

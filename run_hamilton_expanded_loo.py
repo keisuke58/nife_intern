@@ -27,8 +27,8 @@ parser.add_argument('--alpha',        type=float, default=0.0,
 parser.add_argument('--use-agora',    action='store_true',
                     help='include AGORA2 FBA layer (L3) in sign prior')
 parser.add_argument('--agora-medium', type=str, default='v1',
-                    choices=['v1', 'v2'],
-                    help='AGORA oral medium version: v1=blood-plasma, v2=realistic saliva+MacArthur')
+                    choices=['v1', 'v2', 'micom'],
+                    help='AGORA mode: v1=blood-plasma pFBA, v2=saliva pFBA, micom=community FBA')
 parser.add_argument('--no-prior',     action='store_true',
                     help='disable sign prior entirely (pure data fit, baseline)')
 args = parser.parse_args()
