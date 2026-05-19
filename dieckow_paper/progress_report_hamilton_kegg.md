@@ -581,7 +581,84 @@ AGORA L2 improves both RMSE and BC vs L1 only under LOO — confirms generalisat
 
 ---
 
-## Appendix — AGORA Weight & Prior Type Sensitivity
+## Appendix — AGORA Weight Sensitivity (Figure)
+
+![center w:980](figures/fig_agora_weight_sensitivity.png)
+
+<div class="box-green" style="margin-top:10px">
+
+**Phase transition at W=1.0**: SA jumps from 94% → 100%, LOO-RMSE minimum at 0.0504. Panel A: RMSE vs W (U-shaped, min at W=1.0). Panel B: Bray-Curtis. Panel C: per-patient heatmap — patients A and F most sensitive to W.
+
+</div>
+
+---
+
+## Appendix — Sign Prior Coverage: Layer-by-Layer
+
+![center w:750](figures/fig_sign_prior_3x2.png)
+
+<div class="box" style="margin-top:8px; font-size:17px">
+
+**3×2 layout** — rows: L1+L2 only / L1+L2+AGORA v1 / Unconstrained; cols: Symmetric (Hamilton) / Directed (gLV).  
+**v1**: L1+L2=11/45 sym (33/45 with AGORA+), all AGORA pairs positive (cross-feeding only, no competition).  
+Amber ✕ = pairs where AGORA cancelled L1+L2 signal (Actin–γ-Prot, γ-Prot–Negat).
+
+</div>
+
+---
+
+## Appendix — AGORA v2: Realistic Saliva Medium
+
+![center w:860](figures/fig_agora_v1_v2_comparison.png)
+
+<div class="cols" style="margin-top:6px">
+<div class="col">
+
+### Root cause of v1 over-optimism
+
+v1 oral medium used **blood-plasma scale** concentrations (~100× too high):
+- Glucose: **10.0** mmol/gDW/h (actual saliva: ~0.08 mM → **0.10**)
+- Amino acids: 0.5–2.0 → **0.02–0.10**
+- Result: nutrient surplus → cross-feeding dominates → **all 24 AGORA-added pairs positive**
+
+</div>
+<div class="col">
+
+### v2 results (realistic saliva, MacArthur competition)
+
+| Metric | v1 | v2 |
+|---|---|---|
+| Growth rate μ (Bacilli) | 1659 /h | **35 /h** |
+| AGORA+ (sym, 45 pairs) | 24 | **10** |
+| AGORA− (sym) | 0 | **14** ← competition emerges |
+| Total constrained (sym) | 33/45 | **35/45** |
+| Total constrained (dir) | 57/90 | **68/90** |
+| Bact–Fusob signal | free | **negative** (competition) |
+
+MacArthur cosine niche overlap: $\alpha_{ij} = (\mathbf{c}_i \cdot \mathbf{c}_j)/(|\mathbf{c}_i||\mathbf{c}_j|)$
+
+</div>
+</div>
+
+---
+
+## Appendix — AGORA v2: Sign Prior Coverage
+
+![center w:750](figures/fig_sign_prior_3x2_v2.png)
+
+<div class="box-green" style="margin-top:8px; font-size:17px">
+
+**v2 improvements**: competition signals emerge under resource scarcity.  
+Symmetric: 35/45 constrained (+10 v1→v2 resolved), AGORA−=14 (none in v1).  
+Directed: 68/90 constrained, AGORA−=17.  
+**Bact–Fusob** acquires negative prior (competition) — previously unconstrained in v1.  
+LOO-CV with v2 prior is planned to quantify prediction improvement.
+
+</div>
+
+---
+
+## Appendix — AGORA Weight & Prior Type Sensitivity (Legacy)
 
 ![center w:980](figs/fig_agora_weight_sweep.png)
 
