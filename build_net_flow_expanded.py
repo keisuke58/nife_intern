@@ -195,10 +195,10 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                     neg[gi[gi_a], gi[gi_b]] += w * competition_weight
                     neg[gi[gi_b], gi[gi_a]] += w * competition_weight
 
-    net = pos - neg
     if verbose:
-        n_dir = int((net != 0).sum() - np.count_nonzero(np.diag(net)))
-        net_sym = (net + net.T) / 2
+        _net_l1l2 = pos - neg
+        n_dir = int((_net_l1l2 != 0).sum() - np.count_nonzero(np.diag(_net_l1l2)))
+        net_sym = (_net_l1l2 + _net_l1l2.T) / 2
         n_und = int(((net_sym != 0).sum() - np.count_nonzero(np.diag(net_sym))) // 2)
         print(f'  L1+L2 Szafranski: {n_dir} directed pairs ({n_und} undirected)')
 
@@ -213,20 +213,25 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                 # Cross-feeding signals from actual community fluxes.
                 # More realistic than single-species pFBA because each guild's
                 # secretion profile is resolved in the presence of competitors.
-                from guild_agora_signs import compute_micom_signals, ORAL_MEDIUM
+                from guild_agora_signs import (compute_micom_signals, ORAL_MEDIUM,
+                                               GUILD_ORDER as GUILD_ORDER_AGORA)
                 pos_cf, neg_tox, present_m = compute_micom_signals(
                     agora_dir, medium_dict=ORAL_MEDIUM,
                     fraction=micom_fraction, verbose=verbose)
+                # guild_agora_signs.GUILD_ORDER contains "Flavobacteriia" where
+                # guild_replicator_dieckow.GUILD_ORDER has "Other" (10th guild differs).
+                # Guilds not in gi (Flavobacteriia, "Other") are silently skipped;
+                # pos_cf/neg_tox must be indexed by GUILD_ORDER_AGORA, not gi.
                 for guild_i in present_m:
                     if guild_i not in gi:
                         continue
                     for guild_j in present_m:
                         if guild_j not in gi or guild_i == guild_j:
                             continue
-                        pos[gi[guild_i], gi[guild_j]] += W_AGORA * pos_cf[
-                            GUILD_ORDER.index(guild_i), GUILD_ORDER.index(guild_j)]
-                        neg[gi[guild_i], gi[guild_j]] += W_AGORA * neg_tox[
-                            GUILD_ORDER.index(guild_i), GUILD_ORDER.index(guild_j)]
+                        ai = GUILD_ORDER_AGORA.index(guild_i)
+                        aj = GUILD_ORDER_AGORA.index(guild_j)
+                        pos[gi[guild_i], gi[guild_j]] += W_AGORA * pos_cf[ai, aj]
+                        neg[gi[guild_i], gi[guild_j]] += W_AGORA * neg_tox[ai, aj]
 
             else:
                 # ── Single-species pFBA path (v1 or v2) ───────────────────
@@ -237,7 +242,7 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                                                 GUILD_REPS, find_model_path)
 
                 medium_dict = ORAL_MEDIUM_V2 if agora_medium == 'v2' else ORAL_MEDIUM
-                THRESHOLD = 0.05
+                THRESHOLD = 0.01  # consistent with compute_micom_signals flux_threshold
                 TOXINS    = {'EX_h2o2(e)', 'EX_h2s(e)'}
 
                 guild_models = {}
@@ -275,24 +280,31 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                         print(f'    {guild}: μ={sol.objective_value:.2f}  '
                               f'sec={len(sec)}  upt={len(upt)}')
 
-                # Cross-feeding and toxin signals
+                # Cross-feeding and toxin signals.
+                # Toxins harm ALL other guilds (environmental, not uptake-dependent);
+                # cross-feeding requires explicit uptake by the receiving guild.
                 cf_pairs = 0
                 for j, sec_j in secretions.items():
                     for ex_id in sec_j:
-                        for i, upt_i in uptakes.items():
-                            if i == j or ex_id not in upt_i:
-                                continue
-                            if ex_id in TOXINS:
+                        if ex_id in TOXINS:
+                            for i in secretions:
+                                if i == j:
+                                    continue
                                 neg[gi[i], gi[j]] += W_AGORA
-                            else:
+                                cf_pairs += 1
+                        else:
+                            for i, upt_i in uptakes.items():
+                                if i == j or ex_id not in upt_i:
+                                    continue
                                 pos[gi[i], gi[j]] += W_AGORA
-                            cf_pairs += 1
+                                cf_pairs += 1
                 if verbose:
-                    print(f'  L3 AGORA2 {agora_medium}: {cf_pairs} cross-feeding signals')
+                    print(f'  L3 AGORA2 {agora_medium}: {cf_pairs} cross-feeding/toxin signals')
 
                 # Competition via growth-rate suppression (v2 only, experimental)
                 if agora_medium == 'v2' and agora_comp_weight > 0:
-                    from guild_agora_signs import compute_growth_suppression
+                    from guild_agora_signs import (compute_growth_suppression,
+                                                   GUILD_ORDER as GUILD_ORDER_AGORA)
                     comp_mat, present_grs = compute_growth_suppression(
                         agora_dir, medium_dict=medium_dict, verbose=verbose)
                     comp_pairs = 0
@@ -302,17 +314,17 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                         for guild_j in present_grs:
                             if guild_j not in gi or guild_i == guild_j:
                                 continue
-                            v = comp_mat[GUILD_ORDER.index(guild_i),
-                                         GUILD_ORDER.index(guild_j)]
+                            v = comp_mat[GUILD_ORDER_AGORA.index(guild_i),
+                                         GUILD_ORDER_AGORA.index(guild_j)]
                             if v > 0:
                                 neg[gi[guild_i], gi[guild_j]] += agora_comp_weight * v
                                 comp_pairs += 1
                     if verbose:
                         print(f'  L3 AGORA2 v2 GRS: {comp_pairs} competition pairs')
 
-            net = pos - neg
             if verbose:
-                n_dir = int((net != 0).sum() - np.count_nonzero(np.diag(net)))
+                _net_l3 = pos - neg
+                n_dir = int((_net_l3 != 0).sum() - np.count_nonzero(np.diag(_net_l3)))
                 print(f'  L3 AGORA2: → {n_dir} directed pairs total')
 
         except ImportError:
