@@ -1,0 +1,25 @@
+{
+  "condition": "Dysbiotic",
+  "cultivation": "HOBIC",
+  "cond_tag": "DH",
+  "Nz": 30,
+  "dt": 0.2,
+  "n_nsp": 3,
+  "D_scale": 1.0,
+  "u": 0.005,
+  "D_values": [
+    0.015,
+    0.008,
+    0.012,
+    0.012,
+    0.005
+  ],
+  "phi_bulk": [
+    0.0305,
+    0.01,
+    0.9490000000000001,
+    0.005,
+    0.0055000000000000005
+  ],
+  "note": "D_i placeholder \u2014 fit from CLSM z-profiles (Heine et al. 2025)"
+}

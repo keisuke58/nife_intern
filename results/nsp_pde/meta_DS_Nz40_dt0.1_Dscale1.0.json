@@ -1,0 +1,25 @@
+{
+  "condition": "Dysbiotic",
+  "cultivation": "Static",
+  "cond_tag": "DS",
+  "Nz": 40,
+  "dt": 0.1,
+  "n_nsp": 5,
+  "D_scale": 1.0,
+  "u": 0.005,
+  "D_values": [
+    0.015,
+    0.008,
+    0.012,
+    0.012,
+    0.005
+  ],
+  "phi_bulk": [
+    0.1508664627930683,
+    0.08460754332313966,
+    0.6294597349643222,
+    0.04943934760448522,
+    0.08562691131498472
+  ],
+  "note": "D_i placeholder \u2014 fit from CLSM z-profiles (Heine et al. 2025)"
+}

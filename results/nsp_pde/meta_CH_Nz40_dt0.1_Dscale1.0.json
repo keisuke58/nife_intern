@@ -1,0 +1,25 @@
+{
+  "condition": "Commensal",
+  "cultivation": "HOBIC",
+  "cond_tag": "CH",
+  "Nz": 40,
+  "dt": 0.1,
+  "n_nsp": 5,
+  "D_scale": 1.0,
+  "u": 0.005,
+  "D_values": [
+    0.015,
+    0.008,
+    0.012,
+    0.012,
+    0.005
+  ],
+  "phi_bulk": [
+    0.7331932773109243,
+    0.059873949579831935,
+    0.10451680672268907,
+    0.09716386554621849,
+    0.005252100840336134
+  ],
+  "note": "D_i placeholder \u2014 fit from CLSM z-profiles (Heine et al. 2025)"
+}

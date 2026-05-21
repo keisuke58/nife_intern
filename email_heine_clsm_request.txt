@@ -1,0 +1,19 @@
+To: Szafranski.Szymon@mh-hannover.de
+Subject: Raw CLSM/FISH data — Heine et al. 2025 (Frontiers)
+
+Hi Szymon,
+
+Hope you're well! I just read the new Frontiers paper (Heine et al. 2025) and got really excited about the CLSM z-stacks and FISH data from the HOBIC experiments.
+
+We're working on a spatial extension of the gLV model — a reaction-diffusion PDE along the biofilm depth axis:
+
+   ∂φ_i/∂t = D_i ∂²φ_i/∂z² − u ∂φ_i/∂z + φ_i(b_i + Σ_j A_ij φ_j)
+
+The A matrix is already estimated from the HOBIC time-series; we just need D_i and the spatial profiles to fit the diffusion and validate the predicted depth gradients.
+
+The species-resolved CLSM/FISH z-profiles from the flow chamber (Day 1, 3, 6, 10, 15, 21) would be exactly what we need.
+
+Would it be possible to get hold of the raw or processed z-profile data — either directly or via Katharina? Happy to discuss co-authorship or acknowledgement.
+
+Thanks!
+Keisuke
