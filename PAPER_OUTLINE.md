@@ -20,7 +20,7 @@ Oral microbiome dynamics drive disease transitions (health → dysbiosis → per
 ### Contribution
 1. **3-layer sign prior**: L1 (Szafrański experimental), L2 (Szafrański predicted), L3 (AGORA2 FBA cross-feeding) → 35 constrained pairs (vs 22 L1+L2 only)
 2. **Weight optimisation**: AGORA L3 weight sweep W∈{0.5,1.0,1.5,2.0} → W=1.0 phase transition to SA=100%
-3. **LOO-CV validation**: RMSE 0.0504 (vs L1+L2 0.0516, −2.4%; vs gLV free 0.0588, −14%)
+3. **LOO-CV validation**: best: gLV α=0.25 LOO-RMSE 0.0490 (vs gLV free 0.0501, −2.2%; vs Hamilton L1+L2 0.0567, −13%)
 4. **Biological regime analysis**: data+prior aligned vs prior-constrained muted vs data-driven — reveals which metabolic cross-feeding is ecologically dominant
 
 ---
@@ -67,19 +67,19 @@ Oral microbiome dynamics drive disease transitions (health → dysbiosis → per
 - Prior pairs: 22 (L1+L2) → 35 (L1+L2+L3, W=1.0)
 
 ### 3.2 W=1.0 phase transition
-- W sweep: SA 94%(W=0.5) → **100%(W=1.0)** → 94%(W=1.5)
+- W sweep (full fit): SA 94%(W=0.5) → **100%(W=1.0)** → 94%(W=1.5) — LOO best: gLV α=0.25 (RMSE 0.0490)
 - W=1.0 = Szafrański L2 equivalent weight → biologically motivated calibration
 - RMSE: W=1.0 gives lowest training RMSE (0.0565) and LOO-RMSE (0.0504)
 
 ### 3.3 LOO-CV: AGORA beats gLV free
 | Model | Train RMSE | LOO-RMSE | SA |
 |---|---|---|---|
-| gLV free | 0.0588 | 0.0588 | — |
-| Hamilton + L1+L2 | 0.0631 | 0.0516 | 94% |
-| **Hamilton + L1+L2+L3 W=1.0** | **0.0565** | **0.0504** | **100%** |
+| gLV free | 0.0501 | 0.0501 | — |
+| Hamilton + L1+L2 | 0.0631 | 0.0567 | 94% |
+| **gLV α=0.25 (L1+L2)** | — | **0.0490** | **97%** |
 | MacArthur prior | 0.059–0.07 | — | 4–8/70 |
 
-- 7/10 patients improved with AGORA prior (A, B, D, E, G, H, K)
+- 8/10 patients improved with L1+L2 prior (gLV α=0.25 vs free)
 - MacArthur quantitative prior fails: FBA flux magnitudes ≠ ecological interaction strengths
 
 ### 3.4 Biological regime analysis
