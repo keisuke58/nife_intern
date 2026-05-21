@@ -18,7 +18,7 @@ Oral microbiome dynamics drive disease transitions (health → dysbiosis → per
 - Existing approaches: (a) free gLV (overfits), (b) literature-curated sign constraints (sparse coverage), (c) genome-scale metabolic models (GEMs) exist but never used as ecological priors
 
 ### Contribution
-1. **3-layer sign prior**: L1 (Szafrański experimental, KEGG/HMDB), L2 (Szafrański predicted), L3 (AGORA2 FBA cross-feeding) → 35 constrained pairs (vs 22 L1+L2 only)
+1. **3-layer sign prior**: L1 (Szafrański experimental), L2 (Szafrański predicted), L3 (AGORA2 FBA cross-feeding) → 35 constrained pairs (vs 22 L1+L2 only)
 2. **Weight optimisation**: AGORA L3 weight sweep W∈{0.5,1.0,1.5,2.0} → W=1.0 phase transition to SA=100%
 3. **LOO-CV validation**: RMSE 0.0504 (vs L1+L2 0.0516, −2.4%; vs gLV free 0.0588, −14%)
 4. **Biological regime analysis**: data+prior aligned vs prior-constrained muted vs data-driven — reveals which metabolic cross-feeding is ecologically dominant
@@ -39,7 +39,7 @@ Oral microbiome dynamics drive disease transitions (health → dysbiosis → per
 - Optimisation: JAX L-BFGS-B, warm start, 5000 iterations
 
 ### 2.3 3-Layer Sign Prior
-- **L1**: Szafrański experimental evidence; weights 2.0 (KEGG/HMDB) / 1.5 (other)
+- **L1**: Szafrański experimental evidence; weight 2.0
 - **L2**: Szafrański predicted interactions; weight 1.0
 - **L3**: AGORA2 (Heinken et al. 2023, *Nat. Biotechnol.*) pFBA cross-feeding; weight W
   - 10 guild-representative SBML models
