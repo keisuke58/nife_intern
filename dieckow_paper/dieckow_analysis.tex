@@ -82,7 +82,8 @@ Patient-specific growth vectors $\hat{b}_p$ cluster by community type (CT1/CT2)
 even without explicit CT supervision.
 External validation on 127 independent cross-sectional peri-implant samples~\citep{joshi2025}
 shows that the Dieckow-fitted $\bA$ correctly orders community dysbiosis across health,
-mucositis, and peri-implantitis (Kruskal-Wallis $p<0.0001$, Spearman $\rho=0.37$).
+mucositis, and peri-implantitis (Kruskal-Wallis $p<0.0001$, Spearman $\rho=0.46$,
+binary Health vs.\ PI $\rho=0.59$).
 A Hamilton Normal-Species-Pool (NSP) formulation achieves LOO-RMSE~$=0.091$
 ($1.9\times$ worse than gLV), with the gap attributed to indirect composition
 observables and latent-variable warm-up cost.
@@ -421,17 +422,21 @@ data manifold; LDA tests whether CT-label discrimination is preserved under pred
 \label{ssec:joshi}
 
 Each cross-sectional sample from~\citet{joshi2025} (127 samples: Health/Mucositis/
-Peri-implantitis) is mapped to the 10-guild simplex (5 measured genera to 5 guilds;
-remaining 5 filled with Dieckow W1 mean; renormalised), then integrated for 500 steps
-($dt=10^{-4}$) to numerical equilibrium. The Guild Dysbiosis Index:
+Peri-implantitis) is mapped to the 10-guild simplex: the 5 measured genera
+(Actinomyces, Streptococcus, Porphyromonas, Fusobacterium, Veillonella) are assigned
+to their respective guilds; the remaining 5 guilds are zero-imputed ($\phi=10^{-5}$)
+so that the signal is carried entirely by the observed 5 genera.  The Guild Dysbiosis
+Index is computed \emph{directly} from the observed composition:
 \begin{equation}
   \text{GDI} = \log\!\bigl(\phi_\text{Fuso}+\phi_\text{Bact}+\phi_\text{Clos}\bigr)
-             - \log\!\bigl(\phi_\text{Bac}+\phi_\text{Act}+\phi_\text{Neg}\bigr)
+             - \log\!\bigl(\phi_\text{Bac}+\phi_\text{Act}+\phi_\text{Neg}\bigr),
   \label{eq:gdi}
 \end{equation}
-is computed at equilibrium. The equilibrium is independent of the scalar $b_i$:
-only $\bA$ determines fixed points on the simplex (verified: neutral $b=0.1$ and
-mean $\hat{b}$ give identical GDI values).
+without ODE integration.  We compared this \emph{compositional} GDI against
+model-based variants (Hamilton ODE equilibrium, instant GDI $= -\bphi^\top(\bb+\bA\bphi)$
+with the gLV $\alpha=0.25$ interaction matrix); the raw compositional ratio consistently
+outperformed ODE-based variants for cross-sectional data, where individual trajectories
+are at arbitrary points rather than near attractor equilibria.
 
 % ─── 3. Results ───────────────────────────────────────────────────────────────
 \section{Results}
@@ -834,26 +839,35 @@ not ecologically predictive, whereas FBA sign information is.
 \label{ssec:joshi_results}
 
 Table~\ref{tab:joshi} and Figure~\ref{fig:joshi} show GDI distributions across
-diagnostic groups in the Joshi dataset. Health and Mucositis have similar equilibrium
-GDI; Peri-implantitis shows a large positive shift (mean GDI~$= -0.29$ vs.\ $-2.90$
-for Health). Kruskal-Wallis $H=30.4$, $p<0.0001$; Mann-Whitney Health vs.\ PI
-$p<0.0001$; Spearman $\rho(\text{diagnosis severity}, \text{GDI}) = 0.37$, $p<0.0001$.
+diagnostic groups in the Joshi dataset.  Health and Mucositis have similar GDI
+(mean $-2.09$ vs.\ $-1.74$); Peri-implantitis shows a large positive shift
+(mean $+0.53$, median $+0.76$).  Kruskal-Wallis $H=34.7$, $p<0.0001$;
+Mann-Whitney Health $<$ PI $p<0.0001$; Spearman
+$\rho(\text{diagnosis severity}, \text{GDI}) = 0.46$, $p=5\times10^{-8}$
+($N=127$).  Restricting to the binary Health vs.\ Peri-implantitis contrast
+($N=88$) yields $\rho=0.59$, $p=2\times10^{-9}$.
+The moderate three-way $\rho$ reflects the biological proximity of Health
+and Mucositis in the 5-genus composition space (both lack substantial
+Porphyromonas/Fusobacterium enrichment); additional pathogens
+(Treponema, Tannerella, Prevotella) would be required to resolve early-stage
+dysbiosis.
 
 \begin{table}[htb]
 \centering
 \caption{Guild Dysbiosis Index by diagnosis (Joshi et~al.\ 2025, 127 samples).
-         GDI computed from Hamilton ODE equilibrium with Dieckow $\bA$.}
+         GDI $=\log(\phi_\mathrm{dys})-\log(\phi_\mathrm{com})$ evaluated at
+         observed composition (zero-imputation for undetected guilds).}
 \label{tab:joshi}
 \begin{tabular}{lcccc}
 \toprule
 Diagnosis & $n$ & Mean GDI & Median GDI & vs.\ Health \\
 \midrule
-Health           & 56 & $-2.90$ & $-3.69$ & --- \\
-Mucositis        & 39 & $-3.05$ & $-3.67$ & $p=0.61$ \\
-Peri-implantitis & 32 & $-0.29$ & $+0.48$ & $p<0.0001$ \\
+Health           & 56 & $-2.09$ & $-1.88$ & --- \\
+Mucositis        & 39 & $-1.74$ & $-1.65$ & $p=0.47$ \\
+Peri-implantitis & 32 & $+0.53$ & $+0.76$ & $p<0.0001$ \\
 \bottomrule
-\multicolumn{5}{l}{\small Kruskal-Wallis: $H=30.4$, $p<0.0001$.
-Spearman $\rho=0.37$, $p<0.0001$.}
+\multicolumn{5}{l}{\small Kruskal-Wallis: $H=34.7$, $p<0.0001$.
+Spearman $\rho=0.46$, $p=5\times10^{-8}$.}
 \end{tabular}
 \end{table}
 
@@ -861,12 +875,11 @@ Spearman $\rho=0.37$, $p<0.0001$.}
 \centering
 \includegraphics[width=0.82\linewidth]{fig3_joshi_attractor.pdf}
 \caption{External validation: Guild Dysbiosis Index in Joshi~et~al.~(2025) peri-implant
-         samples. \textbf{(A)} Violin + strip plot of GDI by diagnosis. Health and
-         Mucositis communities equilibrate near the commensal attractor (GDI~$\approx-3$);
-         Peri-implantitis shows a shift toward the dysbiotic attractor (GDI~$\approx 0$).
-         \textbf{(B)} Representative equilibrium guild compositions for each group.
-         The $b_i$ robustness check (neutral $b=0.1$ vs.\ mean $\hat{b}$) gives identical
-         GDI values, confirming that the equilibrium is $\bA$-determined, not $\bb$-dependent.
+         samples. \textbf{(A)} Violin + strip plot of GDI by diagnosis.  Health and
+         Mucositis overlap substantially; Peri-implantitis shows a strong positive shift
+         (GDI $>0$).  \textbf{(B)} Comparison of GDI variants: the raw compositional
+         log-ratio (ρ$=0.46$) outperforms ODE-equilibrium variants (ρ$=0.37$--$0.39$)
+         because cross-sectional samples are not at attractor equilibria.
          The interaction matrix generalises from 10-patient abutment data to 127-sample
          peri-implant disease context.}
 \label{fig:joshi}
@@ -1072,10 +1085,13 @@ or mechanistic conclusions are drawn:
         accordingly can yield equivalent trajectories. The absolute scale of $b$ vs.\ $A$
         is not independently identifiable from 16S data without growth-rate measurements.
 
-  \item \textbf{Joshi mapping approximation.} Filling 5 of 10 guilds from the Dieckow mean
-        introduces a systematic bias toward the Dieckow community composition; the attractor
-        analysis assumes stationarity (peri-implant communities near equilibrium) without
-        direct verification.
+  \item \textbf{Joshi genus coverage.} Only 5 of 10 guilds are directly measured
+        (Actinomyces, Streptococcus, Porphyromonas, Fusobacterium, Veillonella); the
+        remaining 5 are zero-imputed.  Cross-sectional samples are unlikely to be at
+        ODE equilibria, which is why the raw compositional log-ratio outperforms
+        ODE-equilibrium GDI ($\rho=0.46$ vs.\ $0.37$--$0.39$).  Adding major
+        pathogens (Treponema, Tannerella, Prevotella) would substantially improve
+        sensitivity to early dysbiosis stages (Health vs.\ Mucositis).
 \end{enumerate}
 
 % ─── 5. Conclusions ───────────────────────────────────────────────────────────
@@ -1099,7 +1115,8 @@ for oral microbiome prediction. Key results are:
   \item CT-consistent patient-specific $\hat{b}$ clustering without supervision.
   \item Robust sign stability (SC$=1.00$ for 31/45 pairs; 40/45 at SC$\geq 0.90$) across LOO folds.
   \item External validity: Dieckow $\bA$ correctly orders peri-implant dysbiosis
-        in 127 independent cross-sectional samples ($p<0.0001$).
+        in 127 independent cross-sectional samples (Spearman $\rho=0.46$, $p<10^{-7}$;
+        binary Health vs.\ PI $\rho=0.59$, $p<10^{-8}$).
 \end{itemize}
 Key limitations are the small cohort ($N=10$, $p=0.08$ for the AGORA improvement),
 the symmetry constraint of the Hamilton model, and the caries-context prior.

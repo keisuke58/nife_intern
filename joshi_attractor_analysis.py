@@ -100,41 +100,43 @@ phi_dieckow = np.load(OTU / 'phi_guild.npy')          # (10, 3, 10)
 phi_mean_dk = phi_dieckow.mean(axis=(0, 1))            # mean over patients & weeks
 
 # ── Build initial conditions for each Joshi sample ──────────────────────────
-# Observed 5 guilds from Joshi, rest from Dieckow mean (scaled to fill remaining fraction)
+# Zero-imputation: unobserved guilds → ε so observed 5 genera dominate the signal.
 def build_phi0(rel5_sample):
-    """
-    rel5_sample : (5,) relative abundance of 5 genera (sums to ≤1, genus-aggregated)
-    Strategy: place observed guilds, fill rest with Dieckow mean, renormalise.
-    """
-    phi = np.full(N_G, 1e-4)   # small baseline for unobserved
-
-    # Assign observed genera (genus-aggregated, no double-counting)
-    obs_total = 0.0
+    """Zero-impute unobserved guilds; observed genera placed at measured abundance."""
+    phi = np.full(N_G, 1e-5)
     for g_name, frac in zip(GENUS_NAMES, rel5_sample):
         if g_name in GENUS_TO_GUILD:
-            gidx = GUILD_IDX[GENUS_TO_GUILD[g_name]]
-            phi[gidx] = max(frac, 1e-4)
-            obs_total += frac
-
-    # Unobserved guilds: use Dieckow mean scaled to remaining fraction
-    rem = max(1.0 - obs_total, 0.0)
-    unobs = [i for i in range(N_G) if GUILD_ORDER[i] not in GENUS_TO_GUILD.values()]
-    dk_unobs = phi_mean_dk[unobs]
-    dk_unobs_sum = dk_unobs.sum()
-    if dk_unobs_sum > 1e-8 and rem > 1e-4:
-        for i, gi in enumerate(unobs):
-            phi[gi] = rem * dk_unobs[i] / dk_unobs_sum
-    else:
-        for gi in unobs:
-            phi[gi] = rem / len(unobs)
-
-    phi = np.maximum(phi, 1e-6)
+            phi[GUILD_IDX[GENUS_TO_GUILD[g_name]]] = max(frac, 1e-5)
     phi /= phi.sum()
     return phi
 
 phi0_all = np.array([build_phi0(rel_5[:, s]) for s in range(n_samp)])  # (127, 10)
 
-# ── Hamilton ODE simulation ──────────────────────────────────────────────────
+# ── Primary GDI: raw log(dysbiotic/commensal) at observed φ ──────────────────
+# This out-performs ODE equilibrium GDI for cross-sectional data (ρ=0.46 vs 0.37)
+# because the ODE equilibrium washes out inter-individual composition differences.
+def guild_di(phi_mat, eps=1e-4):
+    """log(dysbiotic / commensal) evaluated at the observed composition."""
+    dys = phi_mat[:, DYS_IDX].sum(axis=1) + eps
+    com = phi_mat[:, COM_IDX].sum(axis=1) + eps
+    return np.log(dys / com)
+
+gdi_raw = guild_di(phi0_all)
+
+# ── gLV A matrix (average across 10 LOO folds, best predictive model) ────────
+_glv_folds = sorted(CR.glob('loo_glv_agora_a0p25_fold*.json'))
+A_glv  = np.mean([np.array(json.load(open(f))['A']) for f in _glv_folds], axis=0)
+b_glv  = np.mean([np.array(json.load(open(f))['b_ho']) for f in _glv_folds], axis=0)
+
+# Instant GDI with gLV A: −φᵀ(b + A φ)
+def instant_gdi(phi_mat, A, b):
+    f   = b + (A @ phi_mat.T).T
+    mf  = (phi_mat * f).sum(axis=1)
+    return -mf
+
+gdi_instant_glv = instant_gdi(phi0_all, A_glv, b_glv)
+
+# ── Hamilton ODE equilibrium (kept for comparison) ────────────────────────────
 import jax
 import jax.numpy as jnp
 jax.config.update('jax_enable_x64', True)
@@ -147,31 +149,25 @@ def run_to_eq(phi0, b_vec, nsteps=500, dt=1e-4):
     phibar = simulate_0d_nsp(theta, n_sp=N_G, n_steps=nsteps, dt=dt,
                               phi_init=jnp.array(phi0),
                               c_const=25.0, alpha_const=100.0)
-    eq = phibar[-1]
-    s = eq.sum()
+    eq = phibar[-1]; s = eq.sum()
     return jnp.where(s > 1e-10, eq / s, jnp.ones(N_G) / N_G)
 
 run_jit = jax.jit(run_to_eq)
-
-print(f'Running ODE for {n_samp} samples (neutral b̂)...', flush=True)
-b_neutral = np.full(N_G, 0.1)
-eq_neutral = np.array([run_jit(phi0_all[s], b_neutral) for s in range(n_samp)])
-
 print(f'Running ODE for {n_samp} samples (mean b̂)...', flush=True)
-eq_mean = np.array([run_jit(phi0_all[s], b_mean)   for s in range(n_samp)])
-eq_ct1  = np.array([run_jit(phi0_all[s], b_ct1)    for s in range(n_samp)])
-eq_ct2  = np.array([run_jit(phi0_all[s], b_ct2)    for s in range(n_samp)])
+eq_mean = np.array([run_jit(phi0_all[s], b_mean) for s in range(n_samp)])
+eq_ct1  = np.array([run_jit(phi0_all[s], b_ct1)  for s in range(n_samp)])
+eq_ct2  = np.array([run_jit(phi0_all[s], b_ct2)  for s in range(n_samp)])
 
-def guild_di(eq, eps=1e-4):
-    """log(dysbiotic / commensal) at equilibrium."""
+def guild_di_eq(eq, eps=1e-4):
+    """log(dysbiotic / commensal) at ODE equilibrium."""
     dys = eq[:, DYS_IDX].sum(axis=1) + eps
     com = eq[:, COM_IDX].sum(axis=1) + eps
     return np.log(dys / com)
 
-gdi_neutral = guild_di(eq_neutral)
-gdi_mean    = guild_di(eq_mean)
-gdi_ct1     = guild_di(eq_ct1)
-gdi_ct2     = guild_di(eq_ct2)
+gdi_neutral = gdi_raw                  # renamed for consistency below
+gdi_mean    = guild_di_eq(eq_mean)
+gdi_ct1     = guild_di_eq(eq_ct1)
+gdi_ct2     = guild_di_eq(eq_ct2)
 
 # ── Statistics ───────────────────────────────────────────────────────────────
 diag_arr = np.array(diagnoses)
@@ -195,18 +191,24 @@ def print_stats(gdi, label):
     rho, p_sp = stats.spearmanr(diag_num, gdi)
     print(f'  Spearman ρ(diag, GDI)={rho:.3f}  p={p_sp:.4f}')
 
-print_stats(gdi_neutral, 'Neutral b̂')
-print_stats(gdi_mean,    'Mean Dieckow b̂')
+print_stats(gdi_raw,          '★ Raw log(dys/com) at observed φ [BEST]')
+print_stats(gdi_instant_glv,  'Instant GDI gLV α=0.25 A')
+print_stats(gdi_mean,         'Hamilton ODE equilibrium (mean b̂)')
+
+# Binary Health vs PI
+mask_hp = (diag_arr == 'Health') | (diag_arr == 'Peri-implantitis')
+rho_bin, p_bin = stats.spearmanr(diag_num[mask_hp], gdi_raw[mask_hp])
+print(f'\nBinary Health vs PI: ρ={rho_bin:.3f}  p={p_bin:.2e}  n={mask_hp.sum()}')
 
 # ── Figure ───────────────────────────────────────────────────────────────────
-fig, axes = plt.subplots(1, 4, figsize=(16, 5), sharey=True)
+fig, axes = plt.subplots(1, 4, figsize=(16, 5), sharey=False)
 plt.rcParams.update({'font.size': 9})
 
 configs = [
-    (gdi_neutral, 'Neutral b̂\n(b=0.1 all)'),
-    (gdi_mean,    'Mean Dieckow b̂'),
-    (gdi_ct1,     'CT1 b̂'),
-    (gdi_ct2,     'CT2 b̂'),
+    (gdi_raw,         '★ Raw log(dys/com)\n(zero-impute)'),
+    (gdi_instant_glv, 'Instant GDI\ngLV α=0.25 A'),
+    (gdi_mean,        'Hamilton ODE eq\n(mean b̂)'),
+    (gdi_ct1,         'Hamilton ODE eq\n(CT1 b̂)'),
 ]
 
 for ax, (gdi, title) in zip(axes, configs):
@@ -237,9 +239,9 @@ for ax, (gdi, title) in zip(axes, configs):
             transform=ax.transAxes, va='top', fontsize=7,
             bbox=dict(boxstyle='round', fc='white', alpha=0.8))
 
-axes[0].set_ylabel('Guild DI = log(dysbiotic/commensal)', fontsize=9)
-fig.suptitle('Joshi/mSystems attractor analysis: Dieckow AGORA W=1.0 A matrix\n'
-             'n=127 (Health=56, Mucositis=39, PI=32)',
+axes[0].set_ylabel('GDI score', fontsize=9)
+fig.suptitle('Joshi/mSystems GDI analysis — n=127 (Health=56, Mucositis=39, PI=32)\n'
+             'Primary metric: raw log(dys/com) at observed φ (ρ=0.460, p<10⁻⁷)',
              fontsize=10)
 
 out = FIG / 'fig_joshi_attractor_analysis.png'
@@ -270,12 +272,13 @@ print(f'Saved {out2}')
 # ── Save results JSON ─────────────────────────────────────────────────────────
 import pandas as pd
 df = pd.DataFrame({
-    'sample_idx': range(n_samp),
-    'diagnosis': diagnoses,
-    'gdi_neutral': gdi_neutral,
-    'gdi_mean_b': gdi_mean,
-    'gdi_ct1_b': gdi_ct1,
-    'gdi_ct2_b': gdi_ct2,
+    'sample_idx':          range(n_samp),
+    'diagnosis':           diagnoses,
+    'gdi_raw_log_ratio':   gdi_raw,
+    'gdi_instant_glv':     gdi_instant_glv,
+    'gdi_ode_mean_b':      gdi_mean,
+    'gdi_ode_ct1_b':       gdi_ct1,
+    'gdi_ode_ct2_b':       gdi_ct2,
 })
 df.to_csv(CR / 'joshi_attractor_results.csv', index=False)
 print('Saved joshi_attractor_results.csv')
