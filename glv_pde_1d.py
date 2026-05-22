@@ -107,15 +107,26 @@ def load_A(fold: int = 0) -> np.ndarray:
     return np.array(d['A'])
 
 
-def load_b_mean() -> np.ndarray:
-    """Average b vectors across all available folds (b is patient-specific)."""
-    bs = []
-    for fold in range(10):
-        f = LOO_DIR / f'loo_glv_agora_a0p25_fold{fold}.json'
-        if f.exists():
-            d = json.loads(f.read_text())
-            bs.append(np.array(d['b_ho']))
-    return np.mean(bs, axis=0) if bs else np.zeros(N_G)
+def load_fold_data(fold: int):
+    """Return (A, b_train_mean, hold_idx) for a given LOO fold.
+
+    b_train_mean: mean of b_ho from all other folds (= training patients' mean b).
+    hold_idx: index of held-out patient in phi_obs.
+    """
+    bs_train = []
+    hold_idx = None
+    for k in range(10):
+        f = LOO_DIR / f'loo_glv_agora_a0p25_fold{k}.json'
+        if not f.exists():
+            continue
+        d = json.loads(f.read_text())
+        if k == fold:
+            hold_idx = d['hold_idx']
+        else:
+            bs_train.append(np.array(d['b_ho']))
+    A = load_A(fold)
+    b_train = np.mean(bs_train, axis=0) if bs_train else np.zeros(N_G)
+    return A, b_train, hold_idx
 
 
 # ---------------------------------------------------------------------------
@@ -346,14 +357,14 @@ def main():
                         help='Use linear gradient IC (substratum = Dysbiotic composition)')
     args = parser.parse_args()
 
-    # --- load A matrix ---
-    A = load_A(args.fold)
-    b = load_b_mean()
-    print(f'Loaded A matrix from LOO fold {args.fold}')
+    # --- load fold-specific A, b, and held-out index ---
+    A, b, hold_idx = load_fold_data(args.fold)
+    print(f'Loaded fold {args.fold}: hold_idx={hold_idx}')
 
-    # --- load phi_obs for bulk BC and IC ---
+    # --- load phi_obs; exclude held-out patient for bulk BC ---
     phi_obs = np.load(PHI_NPY)   # (10, 3, 10)
-    phi_bulk = phi_obs[:, 0, :].mean(axis=0)   # mean Week 1 across patients
+    train_rows = [i for i in range(10) if i != hold_idx]
+    phi_bulk = phi_obs[train_rows, 0, :].mean(axis=0)   # mean Week 1 of training patients
     phi_bulk = phi_bulk / phi_bulk.sum()
 
     # --- parameters ---
