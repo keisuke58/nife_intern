@@ -11,7 +11,6 @@ import json, sys
 import numpy as np
 import h5py
 from pathlib import Path
-from scipy.integrate import solve_ivp
 from scipy.optimize import minimize
 
 _here = Path(__file__).resolve().parent
@@ -30,16 +29,19 @@ obs    = {}
 for s in gs['samples']:
     obs[(s['patient'], s['week'])] = np.array([s[g] for g in GUILDS])
 
-def _replicator_rhs(t, phi, b, A):
-    f = b + A @ phi
-    return phi * (f - phi @ f)
-
-def _step(phi0, b, A):
-    sol = solve_ivp(_replicator_rhs, [0, 1.0], phi0, args=(b, A),
-                    method='RK45', rtol=1e-6, atol=1e-8)
-    phi1 = np.clip(sol.y[:, -1], 0, None)
-    s    = phi1.sum()
-    return phi1 / s if s > 1e-12 else phi0.copy()
+def _step(phi0, b, A, n_steps=2000, dt=5e-4):
+    """Fast numpy Euler integrator for 1-week replicator step."""
+    phi = phi0.copy()
+    for _ in range(n_steps):
+        f    = b + A @ phi
+        mf   = phi @ f
+        dphi = phi * (f - mf)
+        phi  = phi + dt * dphi
+        phi  = np.maximum(phi, 0.0)
+        s    = phi.sum()
+        if s > 1e-12:
+            phi /= s
+    return phi
 
 def process_fold(fold):
     trace_file = OUT_DIR / f'fold{fold}' / 'traces.hdf5'
@@ -54,12 +56,17 @@ def process_fold(fold):
         return
 
     with h5py.File(trace_file, 'r') as hf:
-        A_samples = hf['Interactions object'][:]   # (n, N_G, N_G)
-        b_samples = hf['Growth parameter'][:]      # (n, N_G)
+        A_raw    = hf['Interactions object'][:]                     # (n, N_G, N_G) with NaN
+        ind      = hf['Cluster interaction indicator parameter'][:]  # (n, N_G, N_G) bool
+        b_samples = hf['Growth parameter'][:]                        # (n, N_G)
 
-    n_post  = len(A_samples)
-    A_mean  = A_samples.mean(axis=0)
-    b_mean  = b_samples.mean(axis=0)
+    # Zero out inactive interactions (NaN where indicator=False)
+    A_samples = np.where(ind, A_raw, 0.0)
+    n_post    = len(A_samples)
+    A_mean    = A_samples.mean(axis=0)
+    b_mean    = b_samples.mean(axis=0)
+    nz_frac   = ind.mean()
+    print(f'  A nonzero fraction: {nz_frac:.4f} (effective A {"≈0" if nz_frac < 0.01 else ""})')
     print(f'fold {fold}: {n_post} posterior samples loaded.')
 
     hold_pat = PATIENTS[fold]
