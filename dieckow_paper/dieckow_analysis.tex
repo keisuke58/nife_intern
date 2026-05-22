@@ -130,11 +130,15 @@ supplemented by AGORA2 pFBA cross-feeding predictions from genome-scale metaboli
 models~\citep{heinken2023}. Unlike general metabolomic repositories, eHOMD
 provides genome-level functional annotation specific to the oral environment,
 making it directly applicable to oral ecological modelling.
-Here we use this three-layer prior to regularise Hamilton replicator
-fits~\citep{klempt2024, klempt2025} to the Dieckow~et~al.~(2024) longitudinal dataset,
-evaluate out-of-sample generalisation by LOO cross-validation using both RMSE and
-Bray-Curtis dissimilarity as complementary metrics, and validate the inferred
-interaction matrix on an independent peri-implant dataset~\citep{joshi2025}.
+Here we use this three-layer prior to regularise both a symmetric Hamilton replicator
+ODE~\citep{klempt2024, klempt2025} and an asymmetric generalised Lotka-Volterra (gLV)
+model fit to the Dieckow~et~al.~(2024) longitudinal dataset.
+We evaluate out-of-sample generalisation by leave-one-patient-out (LOO) cross-validation
+using RMSE and Bray-Curtis dissimilarity, compare a Hamilton Normal-Species-Pool (NSP)
+formulation as a mechanistically richer alternative, validate the inferred interaction
+matrix on an independent peri-implant dataset~\citep{joshi2025}, and extend the
+fitted model to a 1D reaction-diffusion PDE to probe predicted spatial stratification
+along the biofilm depth axis.
 
 % ─── 2. Methods ───────────────────────────────────────────────────────────────
 \section{Methods}
@@ -563,9 +567,10 @@ gLV free (asymm.)     & ---          & ---         & 0.0588 & ---   & 0.154 & --
 Hamilton L1+L2        & L1+L2        & 94\%        & 0.0516 & 0.021 & 0.155 & 0.0631 \\
 Hamilton +AGORA v1    & L1+L2+L3     & 94\%        & 0.0562 & 0.020 & 0.147 & 0.0565 \\
 gLV +AGORA v1         & L1+L2+L3     & 98\% (52/53)& 0.0499 & 0.017 & ---   & --- \\
-gLV $\alpha$=0.25     & L1+L2        & 97\% (32/33)& 0.0490 & 0.016 & ---   & --- \\
-gLV +MICOM $\tau$=0.5 & L1+L2+L3-MC & 99\% (71/72)& 0.0513 & 0.017 & ---   & --- \\
-\textbf{Hamilton +MICOM $\tau$=0.5} & \textbf{L1+L2+L3-MC} & \textbf{100\% (72/72)} & \textbf{0.0502} & \textbf{0.021} & --- & --- \\
+\textbf{gLV $\alpha$=0.25}     & \textbf{L1+L2}        & \textbf{97\% (32/33)}& \textbf{0.0490} & \textbf{0.016} & ---   & --- \\
+gLV +MICOM $\tau$=0.5, $\alpha$=0.25 & L1+L2+L3-MC & 100\% (72/72)& 0.0516 & 0.018 & ---   & --- \\
+gLV +MICOM $\tau$=0.5, $\alpha$=0.0  & L1+L2+L3-MC & 99\% (71/72) & 0.0519 & 0.017 & ---   & --- \\
+Hamilton +MICOM $\tau$=0.5 & L1+L2+L3-MC & 100\% (72/72) & 0.0502 & 0.021 & --- & --- \\
 \midrule
 NSP IFT v2 (best NSP) & L1+L2        & ---         & 0.0906 & ---   & ---   & --- \\
 \bottomrule
@@ -578,12 +583,14 @@ and by 13.2\% relative to L1+L2~($0.0516$).
 Critically, MICOM constrains 72 guild pairs (vs.\ 70 for AGORA~v1 and 34 for L1+L2 alone)
 and achieves perfect sign agreement (72/72, 100\%) with the fitted $\bA$.
 
-Among gLV variants, the unconstrained asymmetric model with $\alpha=0.25$ achieves the
+Among gLV variants, the asymmetric model with $\alpha=0.25$ (L1+L2 only) achieves the
 overall best LOO-RMSE ($0.0490 \pm 0.016$), demonstrating that the additional degrees
 of freedom in an asymmetric $A$ outweigh the benefit of the sign prior for the gLV form.
-The gLV~$+$MICOM model ($0.0513$) does not improve over gLV~AGORA~v1 ($0.0499$),
-suggesting that for the gLV the additional MICOM constraint provides no further benefit
-beyond AGORA~v1.
+Adding the MICOM L3 layer — whether at $\alpha=0.0$ ($0.0519$) or $\alpha=0.25$
+($0.0516$, 100\% SA) — improves sign agreement to perfect (72/72) but increases
+RMSE by $5$--$6\%$ relative to gLV $\alpha{=}0.25$ (L1+L2), suggesting that the additional
+directed constraints impose a cost in predictive accuracy not compensated by the
+biological consistency gain for this dataset size.
 
 The LOO-BC of 0.147 (Hamilton AGORA~v1) is 5.3\% below L1+L2 (0.155), 4.5\% below
 gLV free (0.154), and 47.7\% below the persistence null (0.281).
