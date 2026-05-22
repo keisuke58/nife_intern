@@ -876,6 +876,76 @@ the symmetry constraint, combined with the sign prior, provides net regularisati
 benefit exceeding the loss in expressiveness. Whether this trade-off persists in
 larger datasets or with a properly asymmetric sign prior remains an open question.
 
+\subsection{gLV versus Hamilton ODE: role of the model class}
+\label{ssec:disc_glv_nsp}
+
+The unconstrained asymmetric gLV achieves the best LOO-RMSE overall ($0.0490$, cf.\
+Hamilton+MICOM $0.0502$), and the non-symmetric free parameters allow it to capture
+directed asymmetries (e.g.\ \textit{Streptococcus} $\text{H}_2\text{O}_2$ inhibition)
+that the symmetric $A$ suppresses.
+We also tested a Hamilton Normal-Species-Pool (NSP) formulation in which the replicator
+is derived from a free-energy quadratic over guild abundances \emph{and} environmental
+metabolite pools; the best NSP variant (three-step IFT optimisation) achieves
+LOO-RMSE~$=0.091$, roughly $1.9\times$ worse than gLV.
+
+Three mechanisms explain the gap:
+\begin{enumerate}[noitemsep]
+  \item \textbf{Indirect observables.} The NSP observes $\bar\phi=\phi\psi$ (abundance
+        weighted by normalisation scalar $\psi$) rather than $\phi$ directly, so
+        the observation gradient in the IFT backward pass is attenuated by $\psi$.
+  \item \textbf{Latent warm-up.} The NSP latent state $(\phi_0, \psi, \gamma)$ must
+        equilibrate from week~1 before useful predictions emerge; with only two
+        prediction steps (W1$\to$W2, W2$\to$W3), the latent dynamics are partially
+        unresolved.
+  \item \textbf{Parameter count.} The NSP $b$-diagonal enters only the $\psi$-equation,
+        making it less directly constrained by $\phi$ observations; the gLV $b_i$
+        enters the replicator fitness directly.
+\end{enumerate}
+The NSP formulation remains scientifically relevant for two reasons.
+First, it preserves the Extended Hamilton Principle and admits a free-energy
+interpretation of community structure~\citep{junker2021}.
+Second, because the full NSP state encodes environmental resource pools,
+it can in principle predict multi-stable attractors — a regime where gLV and NSP
+predictions diverge qualitatively, not merely quantitatively.
+For the present 10-patient, 3-timepoint dataset the gLV wins on predictive accuracy;
+whether the NSP advantage on interpretability translates to a predictive edge in
+richer datasets remains an open question.
+
+\subsection{Spatial structure: 1D reaction-diffusion PDE outlook}
+\label{ssec:disc_pde}
+
+Oral biofilms are spatially stratified: early colonisers (Actinobacteria, Streptococci)
+attach to the enamel surface, while late colonisers (Fusobacteria, Negativicutes) occupy
+the outer biofilm layers~\citep{kolenbrander2010}.
+The LOO $A$ matrix quantifies these interactions in a well-mixed (0D) model, but the
+differential enrichment it implies can be tested in a 1D depth model.
+
+We extended the fitted gLV to a reaction-diffusion PDE on normalised depth $z\in[0,1]$:
+\begin{equation}
+  \frac{\partial\phi_i}{\partial t}
+  = D_i\frac{\partial^2\phi_i}{\partial z^2}
+  - u\frac{\partial\phi_i}{\partial z}
+  + \phi_i\!\left(b_i + \sum_j A_{ij}\phi_j - \langle f\rangle\right),
+\end{equation}
+with no-flux BC at $z=0$ (substratum) and Dirichlet $\phi_i=\bar\phi^{\,\text{train}}_i$
+at $z=1$ (bulk).
+Running the model for all 10 LOO folds with fold-specific $A$, training-mean $\phi_{\text{bulk}}$
+and $b$, we find that Actinobacteria and Bacilli are consistently enriched near
+the substratum ($\Delta\phi_{\text{sub}-\text{bulk}} = 0.115\pm0.100$ and $0.078\pm0.120$,
+respectively), while Negativicutes and $\gamma$-Proteobacteria are consistently depleted
+($-0.050\pm0.006$ and $-0.037\pm0.005$). This predicted stratification is qualitatively
+consistent with the known successional ecology of dental plaque.
+$\beta$-Proteobacteria (Neisseria/Eikenella) show the highest fold-to-fold variance
+($0.006\pm0.200$), reflecting sensitivity of this guild's substratum affinity to
+which patient is held out — suggesting an identifiability limit of the current data.
+
+These results are preliminary: diffusivities $D_i$ are placeholders (pending
+$z$-resolved CLSM depth profiles from Szafra\'{n}ski lab), and the advection
+velocity $u$ represents biofilm surface detachment without direct calibration.
+When $z$-profile data become available, the PDE framework can be fitted to depth
+gradients directly, providing a quantitative test of whether the inferred $A$
+correctly predicts spatial community structure.
+
 \subsection{AGORA L3: informative signs, uninformative magnitudes}
 \label{ssec:disc_agora}
 
