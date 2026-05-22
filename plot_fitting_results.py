@@ -60,7 +60,10 @@ COLORS = ['#4C8DC4','#5BB85B','#E0873A','#9B59B6','#D62728',
 SHORT  = ['Actin.','Bacil.','Bact.','β-Prot.','Clost.',
           'Coriob.','Fusob.','γ-Prot.','Negat.','Other']
 
-plt.rcParams.update({'font.family':'DejaVu Sans','font.size':9,
+plt.rcParams.update({'font.family':'serif',
+                     'font.serif':['Times New Roman','Times','DejaVu Serif'],
+                     'mathtext.fontset':'stix',
+                     'font.size':9,
                      'axes.spines.top':False,'axes.spines.right':False})
 
 fig, axes = plt.subplots(2, 5, figsize=(16, 7.5),
@@ -141,7 +144,7 @@ fig.suptitle(
     fontsize=11, fontweight='bold', y=1.02)
 
 for ext in ('png', 'pdf'):
-    fig.savefig(OUT / f'fig_fitting_results.{ext}', dpi=150, bbox_inches='tight')
+    fig.savefig(OUT / f'fig_fitting_results.{ext}', dpi=300, bbox_inches='tight')
 plt.close(fig)
 print(f'\nOverall: RMSE={rmse_all:.4f}  r={r_all:.3f}')
 print('Saved fig_fitting_results.*')

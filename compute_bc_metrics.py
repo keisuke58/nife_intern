@@ -232,7 +232,9 @@ DIAG_COLORS = {'Health':'#2ecc71','Mucositis':'#f39c12','Peri-implantitis':'#e74
 DIAG_SHORT  = {'Health':'PIH','Mucositis':'PIM','Peri-implantitis':'PI'}
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-plt.rcParams.update({'font.size':9})
+plt.rcParams.update({'font.size':9, 'font.family':'serif',
+                     'font.serif':['Times New Roman','Times','DejaVu Serif'],
+                     'mathtext.fontset':'stix'})
 
 # Panel 1: Training RMSE vs BC scatter
 ax = axes[0]
@@ -277,5 +279,6 @@ ax3.text(0.05,0.97,f'r={r3:.2f}  p={p3:.2e}',transform=ax3.transAxes,
 fig.suptitle('RMSE vs Bray-Curtis: training predictions and Joshi attractor', fontsize=10)
 fig.tight_layout()
 out = FIG / 'fig_rmse_vs_bc.png'
-fig.savefig(out, dpi=150, bbox_inches='tight')
-print(f'\nSaved {out}')
+fig.savefig(out, dpi=300, bbox_inches='tight')
+fig.savefig(FIG / 'fig_rmse_vs_bc.pdf', bbox_inches='tight')
+print(f'\nSaved {out} + PDF')
