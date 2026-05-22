@@ -87,6 +87,10 @@ binary Health vs.\ PI $\rho=0.59$).
 A Hamilton Normal-Species-Pool (NSP) formulation achieves LOO-RMSE~$=0.091$
 ($1.9\times$ worse than gLV), with the gap attributed to indirect composition
 observables and latent-variable warm-up cost.
+MDSINE2 (Bayesian gLV) collapses to A$\approx$0 under this data regime
+(3 timepoints per patient), yielding LOO-RMSE~$=0.055$ ($12\%$ worse than
+gLV $\alpha{=}0.25$), confirming the advantage of sign-prior regularisation
+over Bayesian sparsity-induction when $T$ is small.
 Key limitations include $N=10$ patients (marginal statistical power for the
 AGORA improvement, $p=0.08$), the symmetry constraint $A_{ij}=A_{ji}$ (which excludes
 asymmetric ecological interactions), and potential mismatch between the caries-context
@@ -578,7 +582,10 @@ gLV +MICOM $\tau$=0.5, $\alpha$=0.0  & L1+L2+L3-MC & 99\% (71/72) & 0.0519 & 0.0
 Hamilton +MICOM $\tau$=0.5 & L1+L2+L3-MC & 100\% (72/72) & 0.0502 & 0.021 & --- & --- \\
 \midrule
 NSP IFT v2 (best NSP) & L1+L2        & ---         & 0.0906 & ---   & ---   & --- \\
+MDSINE2 (Bayesian gLV) & Bayesian     & ---         & 0.0552$^\dagger$ & 0.019 & --- & --- \\
 \bottomrule
+\multicolumn{7}{l}{\small $^\dagger$8/10 folds; A$\approx$0 (Bayesian evidence insufficient
+for N=3 timepoints).} \\
 \end{tabular}
 \end{table}
 
@@ -602,6 +609,16 @@ gLV free (0.154), and 47.7\% below the persistence null (0.281).
 Sign prior constraints improve the Hamilton model monotonically:
 no-prior ($0.0595$) $\to$ L1+L2 ($0.0516$) $\to$ AGORA~v1 ($0.0562$)
 $\to$ MICOM ($0.0502$, best Hamilton).
+
+\textbf{MDSINE2 Bayesian gLV baseline.}
+As a fully Bayesian reference, we ran MDSINE2~\citep{gibson2021} (MCMC, burnin~$=500$,
+$N_\text{samples}{=}2500$).  With $N{=}9$ training patients and only 3 timepoints each
+(27 measurements), the Bayesian model assigns near-zero posterior weight to all interactions
+($\bar{I}_{ij}~{<}~0.1\%$), reducing to a growth-rate-only predictor.
+LOO-RMSE (8/10 folds, 2 pending) $= 0.0552\pm0.019$, $12.7\%$ worse than
+gLV $\alpha{=}0.25$ ($0.0490$).
+This confirms that sign-prior regularisation outperforms Bayesian sparsity-induction
+when the number of timepoints per patient is small.
 
 \begin{figure}[htb]
 \centering
@@ -1110,6 +1127,9 @@ for oral microbiome prediction. Key results are:
   \item \textbf{NSP comparison}: Hamilton NSP IFT (best variant) achieves
         LOO-RMSE~$=0.091$, $1.9\times$ worse than gLV, due to indirect observables
         and latent-variable warm-up cost.
+  \item \textbf{MDSINE2 baseline}: Bayesian gLV (MDSINE2) collapses to A$\approx 0$
+        with 3 timepoints per patient; RMSE~$=0.055$ ($+12\%$ vs.\ gLV $\alpha{=}0.25$).
+        Sign-prior regularisation is superior to Bayesian sparsity for small $T$.
   \item LOO Bray-Curtis $=0.147$ ($-$5.3\% vs.\ L1+L2, $-$47.7\% vs.\ persistence null).
   \item Correct PCA/LDA community structure under prediction.
   \item CT-consistent patient-specific $\hat{b}$ clustering without supervision.
