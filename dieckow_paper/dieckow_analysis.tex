@@ -83,6 +83,9 @@ even without explicit CT supervision.
 External validation on 127 independent cross-sectional peri-implant samples~\citep{joshi2025}
 shows that the Dieckow-fitted $\bA$ correctly orders community dysbiosis across health,
 mucositis, and peri-implantitis (Kruskal-Wallis $p<0.0001$, Spearman $\rho=0.37$).
+A Hamilton Normal-Species-Pool (NSP) formulation achieves LOO-RMSE~$=0.091$
+($1.9\times$ worse than gLV), with the gap attributed to indirect composition
+observables and latent-variable warm-up cost.
 Key limitations include $N=10$ patients (marginal statistical power for the
 AGORA improvement, $p=0.08$), the symmetry constraint $A_{ij}=A_{ji}$ (which excludes
 asymmetric ecological interactions), and potential mismatch between the caries-context
@@ -231,6 +234,28 @@ the biological regularisation, serving as a ceiling on expressiveness without co
 We also evaluate the gLV with the same sign prior layers as the Hamilton model
 (gLV $+$L1+L2, gLV $+$AGORA v1, gLV $+$MICOM) to assess whether the interaction-sign
 constraint is model-agnostic.
+
+\subsubsection{Hamilton Normal-Species-Pool (NSP)}
+\label{sssec:nsp}
+
+As a mechanistically richer alternative, we test the Hamilton Normal-Species-Pool
+model~\citep{junker2021}, in which each guild $i$ carries an extended state
+$(\phi_i, \phi_{0,i}, \psi_i, \gamma_i)$ encoding both relative abundance and
+environmental normalisation variables. The NSP free-energy formulation gives a
+more complex fitness function $f_i^{\text{NSP}}$ that depends on nutrient
+concentrations and a shared carrying capacity scalar $\psi$; full equations are
+given in~\citet{klempt2024, klempt2025}.
+
+We optimise the NSP via a three-step iterative scheme (IFT~v2):
+(i)~fit shared $A_{\text{upper}}$ (55 parameters, triangular) on all training patients;
+(ii)~fix $A$, fit per-patient $b^{(p)}$ (9$\times$10 parameters);
+(iii)~fit the held-out patient's $b^{(\text{ho})}$ (10 parameters) and predict
+W2, W3 via 2-step integration.
+Gradients are computed through the fixed-point condition using the implicit function
+theorem (IFT): $\nabla_\theta \mathcal{L} = -(\partial G/\partial x)^{-T}\partial G/\partial\theta$,
+where $G(x;\theta)=0$ is the steady-state equation.
+$b$ initialisation is from zero (warm-start from a previous $b$ estimate was found
+to cause gradient blow-up due to $|\nabla|\approx 187$ at the warm-start).
 
 \subsection{Sign prior construction}
 \label{ssec:prior}
@@ -541,6 +566,8 @@ gLV +AGORA v1         & L1+L2+L3     & 98\% (52/53)& 0.0499 & 0.017 & ---   & --
 gLV $\alpha$=0.25     & L1+L2        & 97\% (32/33)& 0.0490 & 0.016 & ---   & --- \\
 gLV +MICOM $\tau$=0.5 & L1+L2+L3-MC & 99\% (71/72)& 0.0513 & 0.017 & ---   & --- \\
 \textbf{Hamilton +MICOM $\tau$=0.5} & \textbf{L1+L2+L3-MC} & \textbf{100\% (72/72)} & \textbf{0.0502} & \textbf{0.021} & --- & --- \\
+\midrule
+NSP IFT v2 (best NSP) & L1+L2        & ---         & 0.0906 & ---   & ---   & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -937,7 +964,8 @@ respectively), while Negativicutes and $\gamma$-Proteobacteria are consistently 
 consistent with the known successional ecology of dental plaque.
 $\beta$-Proteobacteria (Neisseria/Eikenella) show the highest fold-to-fold variance
 ($0.006\pm0.200$), reflecting sensitivity of this guild's substratum affinity to
-which patient is held out — suggesting an identifiability limit of the current data.
+which patient is held out — suggesting an identifiability limit of the current data
+(Figures~\ref{fig:pde_gradient}--\ref{fig:pde_profiles}, Appendix~\ref{app:pde}).
 
 These results are preliminary: diffusivities $D_i$ are placeholders (pending
 $z$-resolved CLSM depth profiles from Szafra\'{n}ski lab), and the advection
@@ -1047,24 +1075,31 @@ or mechanistic conclusions are drawn:
 \section{Conclusions}
 \label{sec:conclusions}
 
-We have shown that a metabolically informed three-layer sign prior significantly
-regularises Hamilton replicator dynamics for oral microbiome prediction.
-At the optimal AGORA weight $w=1.0$, the model achieves:
+We have shown that a metabolically informed three-layer sign prior substantially
+regularises both Hamilton (symmetric) and gLV (asymmetric) replicator dynamics
+for oral microbiome prediction. Key results are:
 \begin{itemize}[noitemsep]
-  \item 100\% sign agreement (35 constrained pairs, L1+L2+L3).
-  \item LOO-RMSE~$=0.0504\pm0.021$ ($-$14\% vs.\ unconstrained gLV).
-  \item LOO-BC~$=0.147$ ($-$5.3\% vs.\ L1+L2, $-$47.7\% vs.\ persistence null).
+  \item \textbf{Best Hamilton}: Hamilton $+$MICOM ($\tau{=}0.5$) achieves
+        LOO-RMSE~$=0.0502\pm0.021$, $-$15.6\% vs.\ Hamilton no-prior (0.0595),
+        with perfect sign agreement (100\%, 72/72 constrained pairs).
+  \item \textbf{Best overall}: gLV $\alpha{=}0.25$ (L1+L2, asymmetric $A$) achieves
+        LOO-RMSE~$=0.0490\pm0.016$, $-$16.7\% vs.\ unconstrained gLV (0.0588).
+  \item \textbf{NSP comparison}: Hamilton NSP IFT (best variant) achieves
+        LOO-RMSE~$=0.091$, $1.9\times$ worse than gLV, due to indirect observables
+        and latent-variable warm-up cost.
+  \item LOO Bray-Curtis $=0.147$ ($-$5.3\% vs.\ L1+L2, $-$47.7\% vs.\ persistence null).
   \item Correct PCA/LDA community structure under prediction.
   \item CT-consistent patient-specific $\hat{b}$ clustering without supervision.
-  \item Robust sign stability (SC$=1.00$ for 31/45 pairs; 40/45 at SC$\geq 0.90$) across all LOO folds.
+  \item Robust sign stability (SC$=1.00$ for 31/45 pairs; 40/45 at SC$\geq 0.90$) across LOO folds.
   \item External validity: Dieckow $\bA$ correctly orders peri-implant dysbiosis
         in 127 independent cross-sectional samples ($p<0.0001$).
 \end{itemize}
 Key limitations are the small cohort ($N=10$, $p=0.08$ for the AGORA improvement),
-the symmetry constraint, and the caries-context prior. Future work should replicate
-in larger cohorts, evaluate asymmetric gLV with asymmetric sign priors, construct
-disease-specific priors for periodontitis, and incorporate posterior uncertainty
-via TMCMC~\citep{nishioka_paper}.
+the symmetry constraint of the Hamilton model, and the caries-context prior.
+Future work should replicate in larger cohorts, evaluate asymmetric gLV with
+asymmetric MICOM sign priors, construct disease-specific priors for periodontitis,
+incorporate posterior uncertainty via TMCMC~\citep{nishioka_paper}, and validate
+spatial depth predictions once CLSM $z$-profile data become available.
 
 % ─── Appendix ─────────────────────────────────────────────────────────────────
 \appendix
@@ -1197,6 +1232,39 @@ corresponds to approximately one inter-quartile range of the per-patient BC dist
          and should be interpreted as a qualitative attractor projection, not a
          clinical prediction.}
 \label{fig:extrap}
+\end{figure}
+
+\section{gLV reaction-diffusion PDE: depth profiles across LOO folds}
+\label{app:pde}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.90\linewidth]{fig_pde_gradient_boxplot.pdf}
+\caption{Substratum enrichment index $\Delta\phi_i = \phi_i(z{=}0) - \phi_i(z{=}1)$
+         at $t=21$\,d for the gLV 1D reaction-diffusion PDE across all 10 LOO folds
+         (placeholder diffusivities $D_i$, advection $u=0.005$, $N_z=30$).
+         Positive values indicate enrichment at the substratum ($z=0$, enamel surface);
+         negative values indicate enrichment in the bulk ($z=1$).
+         Actinobacteria and Bacilli are consistently enriched at the substratum
+         (mean $\Delta\phi = +0.115$ and $+0.078$, respectively), consistent with
+         their role as early colonisers. Negativicutes and $\gamma$-Proteobacteria
+         are consistently depleted ($-0.050$ and $-0.037$). $\beta$-Proteobacteria
+         show high fold-to-fold variance ($\pm 0.200$), reflecting sensitivity to
+         the held-out patient's $A$ matrix. Note: $D_i$ are placeholder values
+         derived from literature ranges; quantitative conclusions require $z$-resolved
+         CLSM depth profiles (pending Szafra\'{n}ski lab data request).}
+\label{fig:pde_gradient}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\linewidth]{fig_pde_depth_profiles_all_folds.pdf}
+\caption{gLV PDE guild depth profiles $\phi_i(z)$ at $t=21$\,d for all 10 LOO
+         folds (thin lines) and fold mean (bold). One panel per guild, $z=0$ is
+         substratum, $z=1$ is bulk. Guilds with consistent fold-to-fold behaviour
+         (Actin., Negat.) show tight bands; $\beta$-Prot. shows large inter-fold
+         spread.}
+\label{fig:pde_profiles}
 \end{figure}
 
 % ─── References ───────────────────────────────────────────────────────────────
