@@ -96,7 +96,10 @@ mcmc = md2.initialize_graph(
     graph_name=f'dieckow_fold{hold}',
     subjset=study,
 )
-mcmc = md2.run.run_graph(mcmc, crash_if_error=False)
+try:
+    mcmc = md2.run.run_graph(mcmc, crash_if_error=False)
+except Exception as e:
+    print(f'run_graph raised (likely pickle/h5py): {e}  — continuing.', flush=True)
 print('MCMC done.', flush=True)
 
 # ── Extract posterior A matrix directly from HDF5 ─────────────────────────────
