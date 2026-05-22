@@ -21,6 +21,31 @@ AGORA2 models: download from https://www.vmh.life (AGORA2 section)
   or Zenodo record DOI:10.5281/zenodo.7050029
   XML files (~2GB total); only ~10 files needed for oral guilds.
 """
+
+#!/usr/bin/env python3
+"""
+11のギルド（菌群）で構成される一般化ロトカ・ヴォルテラ（gLV）モデルの相互作用行列（A行列）に対する、AGORA2ベースの符号検証スクリプト。
+
+パイプライン（処理の流れ）:
+  1. ギルドごとに、それを代表するAGORA2のゲノム規模代謝モデル（GEM）を1つずつ読み込む。
+  2. 唾液ベースの培地条件（グルコース ＋ アミノ酸 ＋ ビタミン ＋ ヘム）を適用する。
+  3. 各ギルドの順序対 (j → i) について以下を計算する:
+       - ギルド j の pFBA（プロトタイプ流速バランス解析）を実行 → 分泌プロファイル S_j (mmol/gDW/h) を取得。
+       - ギルド i が、S_j に含まれる各代謝物質の取り込み（Uptake）交換反応を持っているかを確認。
+       - クロスフィード（相互栄養）スコア ＝ 取り込み可能な流速の総和（ → A[i,j] > 0 の要因）
+       - 競争スコア ＝ 共有する基質の取り込みの重複度（ → A[i,j] < 0 の要因）
+       予測符号: クロスフィード ＞ 競争 ならば「＋」、それ以外は「ー」（どちらも無ければ「0」）
+  4. 予測された符号（sign(A_AGORA)）を、実際の gLV モデルの符号（sign(A_gLV)）および SF1（Surrogate Function 1）による符号予測と比較する。
+
+使用方法:
+  python guild_agora_signs.py --agora_dir /path/to/AGORA2/xml
+  python guild_agora_signs.py --agora_dir /path/to/AGORA2/xml --plot
+
+AGORA2モデルについて: https://www.vmh.life (AGORA2 セクション) 
+または Zenodo（DOI:10.5281/zenodo.7050029）からダウンロードしてください。
+XMLファイルの総容量は約2GBですが、口腔内ギルドに必要なのはそのうち10ファイル程度のみです。
+"""
+
 import argparse, json, warnings
 from pathlib import Path
 import numpy as np

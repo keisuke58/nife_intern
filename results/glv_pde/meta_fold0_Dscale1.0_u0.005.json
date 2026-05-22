@@ -2,9 +2,9 @@
   "fold": 0,
   "D_scale": 1.0,
   "u": 0.005,
-  "Nz": 50,
+  "Nz": 30,
   "t_end": 21.0,
-  "ic": "gradient IC (dysbiotic\u2192bulk)",
+  "ic": "uniform IC (bulk)",
   "D_values": [
     0.008,
     0.015,
