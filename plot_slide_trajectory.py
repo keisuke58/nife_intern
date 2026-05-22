@@ -15,7 +15,10 @@ from guild_replicator_dieckow import GUILD_SHORT_LIST, GUILD_COLORS_LIST, N_G
 from loo_cv_kegg_prior import PHI_NPY, PATIENTS
 
 plt.rcParams.update({
-    'font.family': 'DejaVu Sans', 'font.size': 10,
+    'font.family': 'serif',
+    'font.serif': ['Times New Roman', 'Times', 'DejaVu Serif'],
+    'mathtext.fontset': 'stix',
+    'font.size': 10,
     'axes.titlesize': 11, 'axes.labelsize': 10,
     'xtick.labelsize': 8.5, 'ytick.labelsize': 8.5,
     'axes.spines.top': False, 'axes.spines.right': False,
@@ -176,6 +179,6 @@ fig.suptitle(
     fontsize=11.5, fontweight='bold', y=0.98)
 
 for ext in ('pdf', 'png'):
-    fig.savefig(RES / f'fig_slide_trajectory.{ext}', dpi=180, bbox_inches='tight')
+    fig.savefig(RES / f'fig_slide_trajectory.{ext}', dpi=300, bbox_inches='tight')
 plt.close(fig)
 print('Saved fig_slide_trajectory.*')

@@ -43,7 +43,9 @@ GREY  = '#888888'
 LGREY = '#dddddd'
 
 plt.rcParams.update({
-    'font.family':        'Arial',
+    'font.family':        'serif',
+    'font.serif':         ['Times New Roman', 'Times', 'DejaVu Serif'],
+    'mathtext.fontset':   'stix',
     'font.size':          10,
     'axes.titlesize':     11,
     'axes.titleweight':   'bold',
@@ -96,8 +98,10 @@ free_pp  = load_loo_folds('loo_expanded_a0p0_fold{}.json')
 def save(fig, name):
     path = DEST / name
     fig.savefig(path, dpi=300, bbox_inches='tight', pad_inches=0.05)
+    pdf_path = path.with_suffix('.pdf')
+    fig.savefig(pdf_path, bbox_inches='tight', pad_inches=0.05)
     plt.close(fig)
-    print(f'  Saved {path.name}  ({path.stat().st_size//1024} KB)')
+    print(f'  Saved {path.name}  ({path.stat().st_size//1024} KB)  +PDF')
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Fig 1 — A matrix heatmap (AGORA W=1.0, full 10-patient fit)

@@ -1,16 +1,15 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{amsmath,amssymb,mathtools}
+\usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\graphicspath{{./figures/}}
 \usepackage{xcolor}
 \usepackage{hyperref}
-\usepackage{microtype}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{siunitx}
 \usepackage{natbib}
 \usepackage{authblk}
 \usepackage{enumitem}
@@ -73,8 +72,9 @@ $0.0490 \pm 0.016$ (gLV $\alpha$=0.25, overall best), vs.\ $0.0516 \pm 0.021$
 LOO Bray-Curtis (BC) $= 0.147$, 48\% below the persistence null model (0.281).
 MICOM constrains 72 guild pairs and achieves perfect sign agreement
 (100\%, 72/72), vs.\ 70/70 for AGORA~v1.
-LOO stability analysis shows all 45 off-diagonal pairs achieve sign consistency
-$\geq 0.70$ across folds (13 pairs at 1.00).
+LOO stability analysis (gLV $\alpha$=0.25, best model) shows 31/45 off-diagonal
+pairs achieve sign consistency SC$=1.00$ across folds; 40/45 reach SC$\geq 0.90$;
+only 1 pair falls below SC$=0.70$.
 PCA and LDA ordination of predicted versus observed week-2/3 compositions confirm
 that the model correctly reproduces inter-patient community structure, not just mean
 trajectories.
@@ -186,7 +186,7 @@ type (Figure~\ref{fig:ct}).
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.85\linewidth]{figures/slide_community_types.png}
+\includegraphics[width=0.85\linewidth]{slide_community_types.pdf}
 \caption{Community type classification. \textbf{Left}: stacked bar plots of W1 guild
          compositions for all 10 patients, sorted by CT. CT1 (patients A,D,E,G,K,L):
          Actinobacteria + Bacilli dominant. CT2 (patients B,C,F,H): Fusobacteriia +
@@ -235,7 +235,19 @@ constraint is model-agnostic.
 \subsection{Sign prior construction}
 \label{ssec:prior}
 
+Figure~\ref{fig:pipeline} shows the full three-layer sign prior construction pipeline.
 We build a net-flow matrix $F_{ij}$ from three evidence layers:
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\linewidth]{fig0b_agora_pipeline.pdf}
+\caption{AGORA2 sign prior construction pipeline.
+         \textbf{(A)} Workflow: oral-fluid medium composition → per-guild pFBA → cross-feeding
+         matrix $F_{ij}$. \textbf{(B)} Constrained pair count by layer: L1 (10), L1+L2 (22),
+         L1+L2+L3 (66 pairs). \textbf{(C)} Signed $F_{ij}$ matrix; triangles indicate
+         L3-only (AGORA) pairs.}
+\label{fig:pipeline}
+\end{figure}
 
 \paragraph{L1 — eHOMD / Szafra\'{n}ski experimental flows.}
 Experimentally confirmed PRODUCES / USES / IS\_INHIBITED\_BY relationships between
@@ -414,7 +426,7 @@ Sign agreement: 22/22 (100\%) for L1 prior pairs;
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=\linewidth]{figures/fig1_A_matrix.png}
+\includegraphics[width=\linewidth]{fig1_A_matrix.pdf}
 \caption{Fitted interaction matrix $\bA$ (Hamilton replicator, AGORA W$=1.0$, all 10
          patients). Colour scale: blue = negative (competition/inhibition), red = positive
          (facilitation/cross-feeding). Diagonal $A_{ii}<0$ (self-limitation) for all guilds.
@@ -435,32 +447,40 @@ Figure~\ref{fig:biological} classifies all 45 off-diagonal pairs into three regi
 based on fitted magnitude $|A_{ij}|$ and prior stiffness $|F_{ij}|$:
 
 \begin{description}[noitemsep]
-  \item[Data$+$prior aligned (13 pairs):] $|A_{ij}|>0.3$ \emph{and} $|F_{ij}|>1$.
+  \item[Data$+$prior aligned (7 pairs):] $|\bar{A}_{ij}|>0.25$ \emph{and} sign matches prior.
     Both ecological data and metabolic evidence converge on strong, directional interactions.
-    These pairs have sign consistency SC$=1.00$ across all 10 LOO folds.
-  \item[Prior-constrained, muted (22 pairs):] $|A_{ij}|<0.01$ \emph{and} $|F_{ij}|>1$.
+    These pairs achieve sign consistency SC$=1.00$ across all 10 LOO folds.
+  \item[Prior-constrained, muted (7 pairs):] $|\bar{A}_{ij}|\leq 0.10$ \emph{and} sign matches prior.
     Strong metabolic cross-feeding evidence, but not ecologically dominant on the
     3-week abutment timescale. Bacilli$\leftrightarrow$Negativicutes ($|F|=5.0$,
     $A=+0.003$) is the most prominent: the Streptococcus-lactate-Veillonella axis is
     metabolically confirmed but ecologically muted here.
-  \item[Data-driven, no prior (10 pairs):] $|F_{ij}|=0$ \emph{and} $|A_{ij}|>0.05$.
+  \item[Data-driven, no prior (1 pair):] $|F_{ij}|=0$ \emph{and} $|\bar{A}_{ij}|>0.25$.
     Ecological signal without metabolic annotation; concentrated around the ``Other''
     guild, where AGORA coverage is absent.
 \end{description}
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.92\linewidth]{figures/fig5_A_biological.png}
+\includegraphics[width=0.92\linewidth]{fig5_A_biological.pdf}
 \caption{Biological interpretation of $A$ matrix interaction regimes.
-         \textbf{(A)} Scatter plot of prior stiffness $|F_{ij}|$ vs.\ fitted magnitude $|A_{ij}|$
-         for all 45 off-diagonal pairs. Colour and symbol indicate regime.
-         \textbf{(B)} Network diagram of top-strength pairs with literature annotations.
-         Data$+$prior-aligned pairs (red, upper-right) include the three documented
-         co-aggregation pairs (Actinobacteria--Bacilli--Betaproteobacteria;~\citealt{kolenbrander2000}).
-         Muted pairs (blue, lower-right) include Bacilli--Negativicutes
-         (Streptococcus-lactate-Veillonella;~\citealt{mikx1975}) and Fusobacteriia--Actinobacteria
-         ($A=-0.08$, negative, consistent with temporal niche separation).}
+         \textbf{(A)} Sign agreement: AGORA2 predicted sign vs.\ fitted $A_{ij}$ for all 72
+         constrained pairs. Green shading: correct-sign quadrants (91.7\% agreement).
+         Triangles: L3-only (AGORA) pairs; circles: L1+L2.
+         \textbf{(B)} Sign recovery rate by layer: L1+L2 (Szafra\'{n}ski), L3 (AGORA), all pairs.}
 \label{fig:biological}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.90\linewidth]{fig5b_aij_fij_scatter.pdf}
+\caption{Prior strength vs.\ ecological signal.
+         \textbf{(A)} Scatter of fitted $A_{ij}$ vs.\ AGORA net-flow $F_{ij}$; shaded quadrants
+         indicate sign agreement. Outlier Actinobacteria$\to\beta$-Proteobacteria ($F=-12$)
+         shown at axis edge with arrow.
+         \textbf{(B)} Sign recovery rate by layer (L1+L2: 90\%, L3/AGORA: 95\%).
+         Colour code: blue = data+prior aligned, light blue = muted, red = data-driven.}
+\label{fig:scatter}
 \end{figure}
 
 \subsection{Training fit}
@@ -473,7 +493,7 @@ shows the largest training residuals; Patient~F achieves near-zero error.
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.90\linewidth]{figures/fig_slide_trajectory.png}
+\includegraphics[width=0.90\linewidth]{fig_slide_trajectory.pdf}
 \caption{Training trajectory prediction for a representative patient
          (Hamilton + AGORA W$=1.0$). Solid lines: observed guild fractions; dashed: predicted.
          Overall Pearson $r=0.874$ (all patients, all timepoints). The model reproduces
@@ -484,7 +504,7 @@ shows the largest training residuals; Patient~F achieves near-zero error.
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_fitting_results.png}
+\includegraphics[width=\linewidth]{fig_fitting_results.pdf}
 \caption{Training fit for all 10 patients (Hamilton + AGORA W$=1.0$).
          Solid bars: observed; hatched bars: predicted.
          Per-patient RMSE and Pearson $r$ shown below each panel.
@@ -546,7 +566,7 @@ $\to$ MICOM ($0.0502$, best Hamilton).
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=\linewidth]{figures/fig2_loo_comparison.png}
+\includegraphics[width=\linewidth]{fig2_loo_comparison.pdf}
 \caption{LOO-RMSE per patient for L1+L2 (grey) vs.\ AGORA W$=1.0$ (blue).
          Mean LOO-RMSE: L1+L2~$=0.0516$, AGORA W$=1.0$~$=0.0504$ ($-$2.4\%).
          7/10 patients improve; Patient L is the only clear regression.
@@ -557,7 +577,7 @@ $\to$ MICOM ($0.0502$, best Hamilton).
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.90\linewidth]{figures/fig8_all_models_rmse_bc.png}
+\includegraphics[width=0.90\linewidth]{fig8_all_models_rmse_bc.pdf}
 \caption{LOO Bray-Curtis dissimilarity for all model variants and null models.
          Null baselines (dashed): persistence (0.281), grand-mean (0.254).
          All ODE models substantially beat both nulls.
@@ -571,7 +591,7 @@ $\to$ MICOM ($0.0502$, best Hamilton).
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.78\linewidth]{figures/fig_rmse_vs_bc.png}
+\includegraphics[width=0.78\linewidth]{fig_rmse_vs_bc.pdf}
 \caption{RMSE vs.\ Bray-Curtis scatter across all model variants and LOO folds.
          Each point is one patient-fold. Axes: LOO-RMSE ($x$) and LOO-BC ($y$).
          Model colour as in legend. Patients with large RMSE typically also have
@@ -584,7 +604,7 @@ $\to$ MICOM ($0.0502$, best Hamilton).
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.88\linewidth]{figures/fig_tau_sensitivity.png}
+\includegraphics[width=0.88\linewidth]{fig_tau_sensitivity.pdf}
 \caption{MICOM tradeoff fraction $\tau$ sensitivity (gLV model, 10-fold LOO-CV).
          \textbf{Left}: mean LOO-RMSE vs.\ $\tau\in\{0.3,0.4,0.5\}$.
          Dashed lines indicate gLV baselines (green: $\alpha$=0.25, blue: AGORA~v1).
@@ -595,7 +615,7 @@ $\to$ MICOM ($0.0502$, best Hamilton).
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_loo_per_patient_micom.png}
+\includegraphics[width=\linewidth]{fig_loo_per_patient_micom.pdf}
 \caption{Per-patient LOO-RMSE for Hamilton model variants: L1+L2 (grey),
          AGORA~v1 (blue), and MICOM $\tau$=0.5 (red).
          Dashed horizontal lines show respective means.
@@ -646,13 +666,13 @@ CT1/CT2 as the supervised labels.
 \begin{figure}[htb]
 \centering
 \begin{subfigure}[b]{0.48\textwidth}
-  \includegraphics[width=\linewidth]{figures/fig_pca_pred_obs.png}
+  \includegraphics[width=\linewidth]{fig_pca_pred_obs.pdf}
   \caption{PCA: observed (solid) vs.\ predicted (open).}
   \label{fig:pca}
 \end{subfigure}
 \hfill
 \begin{subfigure}[b]{0.48\textwidth}
-  \includegraphics[width=\linewidth]{figures/fig_lda_pred_obs.png}
+  \includegraphics[width=\linewidth]{fig_lda_pred_obs.pdf}
   \caption{LDA: observed (solid) vs.\ predicted (open).}
   \label{fig:lda}
 \end{subfigure}
@@ -690,7 +710,7 @@ CT1 from CT2 without explicit supervision: CT1 patients cluster at positive PC1
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.70\linewidth]{figures/fig4_b_pca.png}
+\includegraphics[width=0.70\linewidth]{fig4_b_pca.pdf}
 \caption{PCA of patient-specific growth vectors $\hat{\bb}^{(p)}$ (Hamilton + AGORA W$=1.0$).
          PC1 (explained variance shown) separates CT1 (triangles) from CT2 (circles)
          without label supervision, demonstrating that patient-level ecological differences
@@ -723,31 +743,32 @@ the fraction of folds in which $\sgn(A_{ij})$ agrees with the full-data estimate
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.90\linewidth]{figures/fig7_loo_stability.png}
-\caption{A matrix LOO stability.
-         \textbf{(A)} Sign consistency (SC) heatmap across 10 folds (Hamilton + AGORA W$=1.0$).
-         All 45 off-diagonal pairs: SC~$\geq 0.70$. Dark red: SC~$=1.00$ (sign robustly
-         identified). Pale: SC~$\in[0.70, 0.90]$ (some fold-level sign variation).
-         \textbf{(B)} Box-plots of $A_{ij}$ magnitude distributions across folds for
-         selected pairs, annotated by regime. Data$+$prior-aligned pairs show tight
-         distributions; prior-muted pairs cluster near zero with consistent sign.}
+\includegraphics[width=0.90\linewidth]{fig7_loo_stability.pdf}
+\caption{A matrix LOO stability (gLV $\alpha$=0.25, best model, 10 folds).
+         \textbf{(A)} Sign consistency (SC) heatmap; boxed cells have a non-zero sign prior.
+         31/45 pairs: SC$=1.00$; 40/45: SC$\geq 0.90$; 1 pair: SC$<0.70$.
+         \textbf{(B)} $|\bar{A}_{ij}|$ vs.\ LOO std, coloured by regime
+         (blue=data$+$prior aligned, light blue=prior-muted, red=data-driven).
+         \textbf{(C)} Fold-to-fold distributions for the 12 strongest pairs.}
 \label{fig:stability}
 \end{figure}
 
-Key observations:
+Key observations (gLV $\alpha$=0.25, 10 LOO folds):
 \begin{itemize}[noitemsep]
-  \item Data$+$prior-aligned pairs (13): SC~$=1.00$ in all 10 folds — both the sign
-        and approximate magnitude are robustly identified.
-  \item Prior-constrained muted pairs (22): SC~$\geq 0.85$ — the prior fixes the sign
-        even when magnitude is near zero, preventing sign-flip artefacts.
-  \item Data-driven, no prior (10): SC~$\in[0.70, 1.00]$ — less stable, reflecting
-        genuine under-identification in the absence of regularisation.
-  \item No pair achieves SC~$< 0.70$ (i.e., no pair flips sign in more than 3/10 folds).
+  \item \textbf{31/45 pairs: SC$=1.00$} — sign is perfectly reproduced across all folds.
+  \item \textbf{40/45 pairs: SC$\geq 0.90$} — only minor fold-level variation.
+  \item \textbf{1 pair: SC$<0.70$} (sign flips in $>3/10$ folds) — under-identified.
+  \item Data$+$prior-aligned pairs (7, $|\bar{A}_{ij}|>0.25$, sign matches prior):
+        all at SC$=1.00$, tight magnitude distributions.
+  \item Prior-constrained muted pairs (7, $|\bar{A}_{ij}|\leq 0.10$, sign matches prior):
+        SC$\geq 0.80$ — prior pins the sign even when magnitude is negligible.
+  \item Data-driven pairs (1, no prior, $|\bar{A}_{ij}|>0.25$): high magnitude but
+        reduced sign stability without prior support.
 \end{itemize}
 
-The stability analysis provides a fold-level uncertainty proxy and identifies the
-13 robustly identified pairs as the model's most reliable output. Pairs with
-SC~$< 0.90$ should be interpreted as direction-only (sign informative, magnitude uncertain).
+The 31 perfectly stable pairs (SC$=1.00$) are the model's most reliable output.
+Pairs with SC$<0.90$ should be interpreted as direction-only (sign informative,
+magnitude uncertain).
 
 \subsection{AGORA weight sensitivity}
 \label{ssec:agora_weight}
@@ -762,7 +783,7 @@ not ecologically predictive, whereas FBA sign information is.
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=\linewidth]{figures/fig6_agora_weight_sweep.png}
+\includegraphics[width=\linewidth]{fig6_agora_weight_sweep.pdf}
 \caption{AGORA weight sweep ($w_{L3}\in\{0,0.5,1.0,1.5,2.0\}$).
          Panels: \textbf{(A)} training RMSE (mean~$\pm$ std, LOO folds);
          \textbf{(B)} Pearson $r$; \textbf{(C)} sign agreement (SA).
@@ -804,7 +825,7 @@ Spearman $\rho=0.37$, $p<0.0001$.}
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.82\linewidth]{figures/fig3_joshi_attractor.png}
+\includegraphics[width=0.82\linewidth]{fig3_joshi_attractor.pdf}
 \caption{External validation: Guild Dysbiosis Index in Joshi~et~al.~(2025) peri-implant
          samples. \textbf{(A)} Violin + strip plot of GDI by diagnosis. Health and
          Mucositis communities equilibrate near the commensal attractor (GDI~$\approx-3$);
@@ -965,7 +986,7 @@ At the optimal AGORA weight $w=1.0$, the model achieves:
   \item LOO-BC~$=0.147$ ($-$5.3\% vs.\ L1+L2, $-$47.7\% vs.\ persistence null).
   \item Correct PCA/LDA community structure under prediction.
   \item CT-consistent patient-specific $\hat{b}$ clustering without supervision.
-  \item Robust sign stability (SC~$\geq 0.70$) across all LOO folds.
+  \item Robust sign stability (SC$=1.00$ for 31/45 pairs; 40/45 at SC$\geq 0.90$) across all LOO folds.
   \item External validity: Dieckow $\bA$ correctly orders peri-implant dysbiosis
         in 127 independent cross-sectional samples ($p<0.0001$).
 \end{itemize}
@@ -1095,7 +1116,7 @@ corresponds to approximately one inter-quartile range of the per-patient BC dist
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_agora_w1p0_nweeks_extrapolation.png}
+\includegraphics[width=\linewidth]{fig_agora_w1p0_nweeks_extrapolation.pdf}
 \caption{MAP trajectory extrapolation to week 10 (AGORA W$=1.0$, all 10 patients).
          Training window (weeks 1--3) shaded; dots = observed. Solid lines = forward
          integration with per-patient $\hat{b}$.
@@ -1205,7 +1226,7 @@ Mikx FHM, van der Hoeven JS (1975). Symbiosis of Streptococcus mutans and
 Veillonella alcalescens in mixed continuous cultures.
 \textit{Archives of Oral Biology} 20:407--410.
 
-\bibitem[Nishioka et~al.(\textit{in prep.})]{nishioka_paper}
+\bibitem[Nishioka et~al.(in prep.)]{nishioka_paper}
 Nishioka K, Klempt F, Soleimani M, Junker P (in preparation).
 Bayesian inference for biofilm mechanics via TMCMC.
 

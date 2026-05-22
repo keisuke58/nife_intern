@@ -14,6 +14,9 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+matplotlib.rcParams.update({'font.family':'serif',
+                            'font.serif':['Times New Roman','Times','DejaVu Serif'],
+                            'mathtext.fontset':'stix', 'font.size':10})
 import matplotlib.patches as mpatches
 from pathlib import Path
 from sklearn.decomposition import PCA
@@ -137,7 +140,7 @@ for g, guild in enumerate(GUILD_ORDER):
     ax.text(dx * 1.12, dy * 1.12, guild[:4], fontsize=6, color='grey', ha='center')
 
 plt.tight_layout()
-fig.savefig(CR / 'fig_pca_pred_obs.png', dpi=150)
+fig.savefig(CR / 'fig_pca_pred_obs.png', dpi=300)
 fig.savefig(CR / 'fig_pca_pred_obs.pdf')
 print('Saved fig_pca_pred_obs.png')
 
@@ -192,7 +195,7 @@ for g, guild in enumerate(GUILD_ORDER):
     ax.text(dx * 1.15, dy * 1.15, guild[:4], fontsize=6, color='grey', ha='center')
 
 plt.tight_layout()
-fig.savefig(CR / 'fig_lda_pred_obs.png', dpi=150)
+fig.savefig(CR / 'fig_lda_pred_obs.png', dpi=300)
 fig.savefig(CR / 'fig_lda_pred_obs.pdf')
 print('Saved fig_lda_pred_obs.png')
 

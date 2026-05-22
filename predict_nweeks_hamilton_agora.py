@@ -84,7 +84,9 @@ weeks = np.arange(1, MAX_WEEK + 1)
 n_pat = len(PATIENTS)
 n_rows = (n_pat + 1) // 2
 fig, axes = plt.subplots(n_rows, 2, figsize=(16, n_rows * 3.5))
-plt.rcParams.update({'font.size': 9})
+plt.rcParams.update({'font.size': 9, 'font.family':'serif',
+                     'font.serif':['Times New Roman','Times','DejaVu Serif'],
+                     'mathtext.fontset':'stix'})
 
 GUILD_COLORS = {g: c for g, c in zip(GUILD_ORDER, [
     '#976832', '#20af53', '#ea2323', '#4090d0', '#98c557',
@@ -126,5 +128,6 @@ fig.suptitle('AGORA W=1.0 Hamilton ODE: 10-week extrapolation\n'
              fontsize=12, fontweight='bold')
 fig.tight_layout(rect=[0, 0, 1, 0.95])
 out = FIG / 'fig_agora_w1p0_nweeks_extrapolation.png'
-fig.savefig(out, dpi=150, bbox_inches='tight')
-print(f'Saved {out}')
+fig.savefig(out, dpi=300, bbox_inches='tight')
+fig.savefig(FIG / 'fig_agora_w1p0_nweeks_extrapolation.pdf', bbox_inches='tight')
+print(f'Saved {out} + PDF')
