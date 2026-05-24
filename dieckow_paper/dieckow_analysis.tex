@@ -584,8 +584,7 @@ Hamilton +MICOM $\tau$=0.5 & L1+L2+L3-MC & 100\% (72/72) & 0.0502 & 0.021 & --- 
 NSP IFT v2 (best NSP) & L1+L2        & ---         & 0.0906 & ---   & ---   & --- \\
 MDSINE2 (Bayesian gLV) & Bayesian     & ---         & 0.0552$^\dagger$ & 0.019 & --- & --- \\
 \bottomrule
-\multicolumn{7}{l}{\small $^\dagger$8/10 folds; A$\approx$0 (Bayesian evidence insufficient
-for N=3 timepoints).} \\
+\multicolumn{7}{l}{\small $^\dagger$8/10 folds completed; remaining 2 folds excluded (MCMC not converged within 7-day walltime); A$\approx$0 (Bayesian evidence insufficient for $N{=}3$ timepoints).} \\
 \end{tabular}
 \end{table}
 
@@ -615,7 +614,7 @@ As a fully Bayesian reference, we ran MDSINE2~\citep{gibson2021} (MCMC, burnin~$
 $N_\text{samples}{=}2500$).  With $N{=}9$ training patients and only 3 timepoints each
 (27 measurements), the Bayesian model assigns near-zero posterior weight to all interactions
 ($\bar{I}_{ij}~{<}~0.1\%$), reducing to a growth-rate-only predictor.
-LOO-RMSE (8/10 folds, 2 pending) $= 0.0552\pm0.019$, $12.7\%$ worse than
+LOO-RMSE (8/10 folds) $= 0.0552\pm0.019$, $12.7\%$ worse than
 gLV $\alpha{=}0.25$ ($0.0490$).
 This confirms that sign-prior regularisation outperforms Bayesian sparsity-induction
 when the number of timepoints per patient is small.
@@ -1062,6 +1061,103 @@ This interpretation should be qualified: the mapping of genera to guilds is
 incomplete (5 of 10 guilds derived from Dieckow mean), and the assumption that
 peri-implant samples are near their ecological equilibrium (not mid-transition) is unverified.
 
+\subsection{Guild-level keystone analysis}
+\label{ssec:keystone}
+
+To characterise which guilds structurally anchor the fitted community, we performed
+in-silico guild knockout simulations using the best-fit gLV $A$ matrix and
+patient-mean growth vector $\bar{b}$ (mean over 10 patients), initialised at
+the observed week-0 mean composition. Each guild $i$ was removed by setting
+$\phi_i(0)=0$ and zeroing all interactions with guild $i$; the community was then
+simulated forward 21 days, and four metrics were computed relative to the intact
+baseline: (i) mean Bray-Curtis (BC) divergence, (ii) productivity drop
+($\Delta\langle\phi^\top b\rangle$), (iii) volume growth drop
+($\Delta\!\int\!\phi_{\text{total}}\,dt$), and (iv) volume fraction
+($\int\phi_i\,dt / \int\phi_{\text{total}}\,dt$).
+
+Two guilds emerge as keystone taxa:
+
+\paragraph{Actinobacteria — volume engine.}
+Removing Actinobacteria yields BC divergence~$=0.637$ and volume growth
+drop~$=0.846$ (85\% of community volume is lost). Actinobacteria accounts
+for 15.7\% of the cumulative abundance integral, but drives disproportionately
+more total growth through facilitative coupling with Bacilli
+($A_{\text{Acti,Baci}}=+3.43$, the strongest interaction in the matrix)
+and Betaproteobacteria ($A_{\text{Beta,Acti}}=+1.74$). This is consistent
+with Actinomyces being the archetypal early coloniser that provides surface
+receptors for Streptococcal adhesion and metabolic bridging~\citep{kolenbrander2000}.
+
+\paragraph{Bacilli — compositional keystone with competitive suppression.}
+Removing Bacilli produces the highest BC divergence (0.839), yet the volume
+growth \emph{increases} by 73\% (volume drop~$=-0.733$). This apparent paradox
+reflects competitive suppression: Bacilli (Streptococci) inhibit Betaproteobacteria
+($A_{\text{Beta,Baci}}=-2.10$) and are inhibited by Bacteroidia
+($A_{\text{Bact,Baci}}=-0.63$). When Bacilli is absent, Betaproteobacteria and
+Bacteroidia expand, driving higher total biomass but a qualitatively different
+composition. Bacilli is thus a keystone competitor analogous to a dominant
+plant species that suppresses community-level productivity through competition,
+yet its presence is essential for the Actinobacteria-dominated CT1 state.
+
+\paragraph{Remaining guilds.}
+Bacteroidia and Betaproteobacteria show intermediate BC divergence (0.43 and 0.45)
+and are primarily structural players within the Fusobacteriia-enriched CT2 state.
+Clostridia, Coriobacteriia, Negativicutes, and Other show negligible knockout
+effects (BC $<0.05$), consistent with their low observed abundance and
+absence of strong prior-supported interactions.
+
+The top-ranked interaction $A_{\text{Acti,Baci}}=+3.43$ substantially exceeds the
+next-strongest ($A_{\text{Beta,Baci}}=-2.10$), confirming that the Actinobacteria--Bacilli
+mutualism is the backbone of the CT1 commensal state.
+Per-patient error bars on BC divergence confirm that these rankings are robust
+across patients (SD $< 0.12$ for all guilds; available in the supplementary
+JSON output from \texttt{guild\_importance\_analysis.py}).
+
+\subsection{In-silico intervention and attractor robustness}
+\label{ssec:intervention}
+
+A key translational question is whether targeted manipulation of initial guild
+composition (e.g.\ probiotic supplementation or antibiotic suppression)
+can redirect a dysbiotic community toward a healthy reference state.
+We formalised this as an in-silico scan: for each of the 10 guilds, we applied
+either (i) suppression — $\phi_i(0) \leftarrow \phi_i(0)\,(1-f)$ for
+$f\in\{0.1,\ldots,0.9\}$, representing antibiotics or phage therapy — or
+(ii) boost — $\phi_i(0) \leftarrow \phi_i(0) + \delta\,\phi_\text{total}(0)$
+for $\delta\in\{0.05,\ldots,0.5\}$, representing probiotic supplementation.
+After renormalisation, each perturbed community was simulated forward 21 days
+with the patient-specific gLV $A$ and $b^{(p)}$, and the Bray-Curtis distance
+of the simulated week-3 composition to the healthy reference
+(mean observed week-3 across all 10 patients) was recorded.
+
+The baseline BC to the healthy reference is
+$0.992 \pm 0.019$ (mean $\pm$ SD across patients), close to the theoretical
+maximum of 1.0 for two maximally dissimilar compositions.
+The best single-guild intervention is 90\% suppression of Bacteroidia
+($\Delta$BC~$=+0.002$); boosting Gammaproteobacteria at $\delta=0.5$
+achieves $\Delta$BC~$=+0.001$.
+Even the most aggressive compositions change reduces the BC to the healthy
+reference by less than $0.3\%$.
+
+This near-zero intervention sensitivity reveals a fundamental property of the
+fitted gLV: the dynamical attractor is overwhelmingly determined by the
+interaction matrix $A$ and growth rates $b$, not by the initial composition.
+Any initial perturbation in $\phi(0)$ is rapidly washed out as the system
+relaxes toward the $A$- and $b$-determined equilibrium within $\sim$3 weeks.
+From a clinical perspective, this implies that the caries recovery observed
+in the Dieckow dataset is not achievable through manipulation of the starting
+community composition alone; rather, recovery requires a change in the
+ecological growth environment — i.e.\ a shift in effective growth rates $b_i$
+(e.g.\ through dental cleaning, pH normalisation, or reduced sugar substrate
+availability) that redefines which attractor the community converges to.
+
+This interpretation is reinforced by the patient-specific $\hat{b}^{(p)}$ analysis
+(Section~\ref{ssec:bvec}): CT1 and CT2 patients differ primarily in their growth
+rate vectors, not in $A$, and the $b$-mediated attractor difference is what
+distinguishes commensal from dysbiotic equilibria.
+A mechanistically grounded intervention strategy would therefore target the
+\emph{fitness landscape} (manipulating $b$ via environmental perturbation)
+rather than the \emph{initial condition} (manipulating $\phi_0$ via transplantation),
+at least within the timescale and data regime of the present study.
+
 \subsection{Honest assessment of limitations}
 \label{ssec:limitations}
 
@@ -1310,6 +1406,15 @@ corresponds to approximately one inter-quartile range of the per-patient BC dist
          spread.}
 \label{fig:pde_profiles}
 \end{figure}
+
+% ─── Data and Code Availability ───────────────────────────────────────────────
+\section*{Data and Code Availability}
+The analysis code, fitted model parameters, and LOO-CV results are available at
+\url{https://github.com/keisuke58/nife\_intern}.
+The 16S rRNA amplicon time-series data are from Dieckow et al.~\citeyear{dieckow2024}
+(available from the corresponding author on reasonable request).
+The peri-implant cross-sectional 16S data (Joshi et al.) are deposited in NCBI SRA
+under accession PRJNA1192962.
 
 % ─── References ───────────────────────────────────────────────────────────────
 \bibliographystyle{plainnat}
