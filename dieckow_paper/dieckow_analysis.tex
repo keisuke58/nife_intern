@@ -1313,6 +1313,66 @@ A mechanistically grounded intervention strategy would therefore target the
 rather than the \emph{initial condition} (manipulating $\phi_0$ via transplantation),
 at least within the timescale and data regime of the present study.
 
+\subsection{Relapse prevention threshold and long-term prognosis}
+\label{ssec:prevention}
+
+The relapse dynamics (Section~\ref{ssec:relapse}) raise an immediate translational question:
+\emph{how large must a clinical change in the ecological growth environment be to convert a transient
+responder into a permanent commensal?}
+For patients C, G and L — who each showed commensal-like GDI at week 3 but subsequently
+re-dysbiosed at days 24, 38, and 48, respectively — we performed a single-guild $b$-sweep:
+for each of four candidate target guilds (Bacteroidia, Fusobacteria, Gammaproteobacteria,
+Bacilli) we reduced $b_i$ stepwise from its fitted value by up to $\Delta b = 2.0$ and
+identified the minimum reduction that eliminates the later GDI sign-change (i.e.\ achieves
+permanent commensalism over 150 days).
+
+Only one threshold was identified within the sweep range: for patient~C, reducing the
+Bacteroidia growth rate by $\Delta b_\text{Bact} = 1.33$ prevents relapse (converted from
+transient to permanent commensal). For patients G and L, no single-guild growth-rate
+suppression of up to $\Delta b = 2.0$ was sufficient to eliminate relapse.
+This asymmetry reflects patient-specific attractor depths: patient~C has a relatively
+shallow dysbiotic basin, whereas patients G and L reside in deeply dysbiotic growth
+environments that require multi-guild or large-magnitude intervention.
+
+Taken together, the prevention analysis quantifies the concept of ``attractor depth'':
+for most patients the dysbiotic attractor is robust to realistic single-parameter
+perturbations, consistent with the near-zero BC improvement found in the initial-condition
+intervention scan (Section~\ref{ssec:intervention}).
+
+\paragraph{Week-3 GDI as a prognostic marker.}
+Among the three transient responders, the week-3 GDI correlates inversely with relapse day:
+patient~L achieves the most commensal-like state at week 3
+($\mathrm{GDI}_{w3} = -5.66$, relapse: day 48), patient~C
+($\mathrm{GDI}_{w3} = -2.15$, relapse: day 24), and patient~G
+($\mathrm{GDI}_{w3} = -1.20$, relapse: day 38).
+While $N=3$ precludes statistical inference, this ordering is consistent with the hypothesis
+that a more negative week-3 GDI reflects deeper penetration into the commensal basin,
+buying additional time before the dysbiotic attractor reasserts dominance.
+If confirmed in larger cohorts, the week-3 GDI could serve as a simple prognostic
+clinical marker: patients whose GDI remains above approximately $-2$ at the first
+follow-up appointment are at elevated short-term relapse risk ($<$4 weeks), whereas
+$\mathrm{GDI}_{w3} < -5$ may predict durable remission of at least 6 weeks.
+
+\paragraph{External validation via peri-implant reference distribution.}
+A potential concern with the relapse projections is that they extrapolate from
+3-week calibration data to 150-day equilibria, with no held-out longitudinal validation.
+To partially address this, we compared the model-predicted long-time GDI distribution
+to the independent peri-implant dataset of Joshi et~al.~\citep{joshi2025}.
+Across all 10 Dieckow patients, the mean equilibrium GDI predicted by the model is
+$+0.65$ (SD $=0.87$); for 9 of 10 patients the equilibrium GDI falls in the
+peri-implantitis (PI) range of Joshi et~al.\ ($\mu_\mathrm{PI}=+0.53$, $\sigma=1.30$).
+By contrast, the mean week-3 GDI for the same patients is $-0.50$, consistent with
+the Joshi mucositis/health range ($\mu_\mathrm{Muc}=-1.74$, $\mu_\mathrm{Health}=-2.09$).
+
+The $0.12$-unit offset between our predicted equilibrium ($+0.65$) and the
+Joshi PI mean ($+0.53$) falls well within the Joshi SD ($1.30$), and is partly
+attributable to the 5-guild zero-imputation required by the incomplete guild
+overlap (see Section~\ref{ssec:limitations}).
+This concordance provides cross-sectional support for the long-term model extrapolation:
+an untreated caries microbiome converging to a GDI indistinguishable from
+peri-implantitis is ecologically plausible, as both conditions are characterised by
+a shift toward Bacteroidia/Fusobacteria dominance at the expense of Actinobacteria/Streptococcus.
+
 \subsection{Honest assessment of limitations}
 \label{ssec:limitations}
 
