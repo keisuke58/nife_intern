@@ -1201,6 +1201,72 @@ and environmental modulation (mediated by $\bb$): interventions acting
 on the ecological niche of Gammaproteobacteria and Bacteroidia offer the
 most tractable entry points for growth-rate-mediated dysbiosis reversal.
 
+\subsection{Predicted relapse dynamics: transient recovery vs.\ permanent commensalism}
+\label{ssec:relapse}
+
+A direct clinical implication of the fitted gLV dynamics is the predicted
+long-term fate of each patient after the 3-week observation window.
+We integrated the patient-specific gLV ($\bA$, $\hat{\bb}^{(p)}$, week-0 $\phi_0^{(p)}$)
+for 90 days and tracked the Guild Dysbiosis Index (GDI).
+
+Three distinct trajectories emerge (Figure~\ref{fig:relapse}):
+
+\begin{enumerate}[noitemsep]
+  \item \textbf{Persistently dysbiotic (6/10 patients: A, B, E, F, H, K):}
+        GDI $>0$ already at week 3 and remains positive.
+        These patients' $\hat{b}^{(p)}$ vectors have elevated dysbiotic guild growth
+        rates that maintain a dysbiotic attractor despite the shared $\bA$.
+
+  \item \textbf{Transient responders (3/10 patients: C, G, L):}
+        GDI $<0$ at week 3 (apparent commensal recovery), but the model predicts
+        a GDI crossing to positive at days 24, 38, and 48, respectively.
+        Patient L shows the most striking profile: GDI~$=-5.66$ at week 3
+        (deepest apparent recovery) yet relapses at day 48.
+        This suggests that the week-3 commensal state is a transient deflection
+        imposed by the initial condition, not a stable attractor under their
+        patient-specific growth dynamics.
+
+  \item \textbf{Permanent commensal (1/10 patients: D):}
+        GDI remains $<0$ throughout, converging to a stable commensal equilibrium.
+        Patient~D (CT1) is the only patient whose $\hat{b}^{(p)}$ vector supports
+        a commensal long-time attractor under the inferred $\bA$.
+\end{enumerate}
+
+This patient-level heterogeneity in predicted long-term fate emerges entirely
+from the patient-specific $\hat{\bb}^{(p)}$ vectors: all patients share the
+same $\bA$ matrix, yet most converge to dysbiosis at long times because their
+fitted growth rates encode a dysbiotic ecological niche.
+This is consistent with the clinical reality of caries recovery: dental
+intervention (scaling, prophylaxis) temporarily disrupts the dysbiotic
+community (transient GDI reduction) but does not permanently alter the
+patient's underlying oral environment.
+Long-term commensalism requires a lasting shift in $b_i$ --- for instance,
+through diet modification (reducing fermentable substrate availability,
+which directly affects $b_{\text{Bact}}$ and $b_{\text{Fuso}}$) or immune-mediated
+changes in gingival crevicular fluid composition.
+
+\textbf{Caveat:} these predictions extend substantially beyond the 3-week
+calibration window and should be interpreted as qualitative extrapolations,
+not validated clinical forecasts. Validation requires longitudinal follow-up
+data beyond week 3 (unavailable in the current Dieckow dataset).
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.90\linewidth]{relapse_dynamics.pdf}
+\caption{Predicted relapse dynamics: GDI trajectories for all 10 patients
+         simulated to 90 days using patient-specific gLV
+         ($\bA$, $\hat{\bb}^{(p)}$, week-0 $\phi_0^{(p)}$).
+         Green shading: 3-week data window. Dashed line: GDI~$=0$ boundary
+         (below = commensal, above = dysbiotic).
+         \textbf{Blue}: Patient~D (permanent commensal, never relapses).
+         \textbf{Orange}: Transient responders C, G, L (commensal at week 3,
+         relapse at days 24, 38, 48).
+         \textbf{Red/light-blue}: 6 persistently dysbiotic patients.
+         Note: predictions beyond week 3 are speculative and require
+         longitudinal validation.}
+\label{fig:relapse}
+\end{figure}
+
 \subsection{In-silico intervention and attractor robustness}
 \label{ssec:intervention}
 
