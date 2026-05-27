@@ -159,7 +159,7 @@ def alpha_scan(A, b_all, phi0_pp, short, patients, n_alpha=60):
 
 # ── Single-guild b sweep ──────────────────────────────────────────────────────
 
-def single_guild_sweep(A, b_all, phi0_pp, short, patients, n_steps=40):
+def single_guild_sweep(A, b_all, phi0_pp, short, patients, n_steps=20):
     """
     For each guild i, sweep b_i from b_CT2[i] to b_CT1[i] while keeping
     all other b components at b_CT2.  Record mean GDI at week-3.
@@ -194,7 +194,7 @@ def single_guild_sweep(A, b_all, phi0_pp, short, patients, n_steps=40):
 
 # ── 2D phase diagram ──────────────────────────────────────────────────────────
 
-def phase_diagram_2d(A, b_all, phi0_pp, short, patients, gi, gj, n_grid=20):
+def phase_diagram_2d(A, b_all, phi0_pp, short, patients, gi, gj, n_grid=12):
     """
     Scan b_i and b_j on a 2D grid (from b_CT2[i/j] to b_CT1[i/j] + 20% overshoot).
     Returns: b_i_vals, b_j_vals, gdi_grid (n_grid, n_grid)
@@ -399,12 +399,18 @@ def main():
     alphas, gdi_mean, gdi_std, gdi_mat, alpha_star, b_CT1, b_CT2 = \
         alpha_scan(A, b_all, phi0_pp, short, patients)
 
+    print(f'  GDI range: [{gdi_mean.min():.3f}, {gdi_mean.max():.3f}]')
+    print(f'  GDI at α=0 (CT2 env): {gdi_mean[0]:.3f}')
+    print(f'  GDI at α=1 (CT1 env): {gdi_mean[-1]:.3f}')
     print(f'  Tipping point α* = {alpha_star}')
     if alpha_star is not None:
         b_star = (1 - alpha_star) * b_CT2 + alpha_star * b_CT1
         print(f'  b at tipping: {dict(zip(short, b_star.round(3)))}')
         delta_b = b_star - b_CT2
         print(f'  Δb from CT2 baseline: {dict(zip(short, delta_b.round(3)))}')
+    else:
+        print('  → GDI does not cross zero: b shift alone cannot flip the community.')
+        print('    Attractor is determined by A matrix, not b.')
 
     plot_alpha_scan(alphas, gdi_mean, gdi_std, gdi_mat, alpha_star,
                     patients, ct,
