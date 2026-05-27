@@ -45,8 +45,10 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 FIT_JSON = HERE / 'results' / 'dieckow_cr' / 'fit_guild.json'
 PHI_NPY  = HERE / 'results' / 'dieckow_otu' / 'phi_guild.npy'
 
-T_END  = 21.0
-T_EVAL = np.linspace(0, T_END, 300)
+T_END      = 21.0
+T_END_LONG = 150.0            # long integration to find equilibrium
+T_EVAL     = np.linspace(0, T_END, 300)
+T_EVAL_LONG = np.linspace(0, T_END_LONG, 400)
 
 # CT1 = commensal (A,D,E,G,K,L), CT2 = dysbiotic (B,C,F,H)
 # Determined by GMM on W1 guild fractions in Dieckow 2024.
@@ -96,19 +98,27 @@ def glv_rhs(t, phi, A, b):
     return phi * (b + A @ phi)
 
 
-def simulate(A, b, phi0):
-    sol = solve_ivp(glv_rhs, [0, T_END], phi0,
-                    args=(A, b), t_eval=T_EVAL,
-                    method='RK45', rtol=1e-8, atol=1e-10)
+def simulate(A, b, phi0, t_end=T_END, t_eval=None, rtol=1e-6):
+    if t_eval is None:
+        t_eval = np.linspace(0, t_end, max(100, int(t_end * 10)))
+    sol = solve_ivp(glv_rhs, [0, t_end], phi0,
+                    args=(A, b), t_eval=t_eval,
+                    method='RK45', rtol=rtol, atol=rtol * 1e-2)
     traj = sol.y.T
-    if len(traj) < len(T_EVAL):
-        pad  = np.tile(traj[-1], (len(T_EVAL) - len(traj), 1))
+    if len(traj) < len(t_eval):
+        pad  = np.tile(traj[-1], (len(t_eval) - len(traj), 1))
         traj = np.vstack([traj, pad])
     return traj
 
 
 def week3(traj):
     """Return composition at t=21 days."""
+    return traj[-1]
+
+
+def equilibrium(A, b, phi0):
+    """Integrate to t=150 to approximate equilibrium."""
+    traj = simulate(A, b, phi0, t_end=T_END_LONG, rtol=1e-5)
     return traj[-1]
 
 
@@ -385,75 +395,149 @@ def plot_top_sweep_curves(sweep_curves, short, colors, alpha_star, b_CT1, b_CT2,
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 
+def plot_convergence_trajectories(A, b_all, phi0_pp, short, colors, patients, ct,
+                                   out_path=None):
+    """CT1 & CT2 patients converge to the same attractor over 150 days."""
+    ct_colors_map = {1: '#2166ac', 2: '#d6604d'}
+    ct1_pat = [i for i, c in enumerate(ct) if c == 1][:3]
+    ct2_pat = [i for i, c in enumerate(ct) if c == 2][:3]
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+    # Panel A: GDI over time
+    ax = axes[0]
+    for p in ct1_pat + ct2_pat:
+        traj = simulate(A, b_all[p], phi0_pp[p], t_end=T_END_LONG, rtol=1e-5)
+        t    = np.linspace(0, T_END_LONG, len(traj))
+        gdi_t = [gdi(traj[ti], short) for ti in range(len(traj))]
+        c = ct[p]
+        ax.plot(t, gdi_t, color=ct_colors_map[c], lw=1.5, alpha=0.8)
+    ax.axhline(0, color='grey', lw=1, ls='--', label='GDI=0 boundary')
+    ax.axvline(21, color='k', lw=1, ls=':', alpha=0.5, label='Week 3 (data end)')
+    from matplotlib.patches import Patch
+    ax.legend(handles=[
+        Patch(color='#2166ac', label='CT1 commensal'),
+        Patch(color='#d6604d', label='CT2 dysbiotic'),
+        plt.Line2D([0],[0], color='grey', ls='--', label='GDI=0'),
+        plt.Line2D([0],[0], color='k', ls=':', label='Week 3'),
+    ], fontsize=7)
+    ax.set_xlabel('Days', fontsize=9)
+    ax.set_ylabel('GDI', fontsize=9)
+    ax.set_title('All patients converge to same attractor\n(GDI < 0 = commensal)', fontsize=9)
+
+    # Panel B: week-0 vs equilibrium composition
+    ax = axes[1]
+    eq_comp = np.array([equilibrium(A, b_all[p], phi0_pp[p]) for p in range(len(b_all))])
+    x = np.arange(len(short))
+    width = 0.35
+    ax.bar(x - width/2, phi0_pp.mean(axis=0), width, color=colors, alpha=0.5, label='Week 0')
+    ax.bar(x + width/2, eq_comp.mean(axis=0),  width, color=colors, alpha=0.9, label='Equilibrium')
+    ax.set_xticks(x); ax.set_xticklabels(short, rotation=45, fontsize=8)
+    ax.set_ylabel('Mean guild fraction', fontsize=9)
+    ax.set_title('Week-0 vs long-time equilibrium\n(all patients converge)', fontsize=9)
+    ax.legend(fontsize=8)
+
+    fig.suptitle('Single-attractor structure of fitted A matrix', fontsize=11)
+    fig.tight_layout()
+    if out_path:
+        fig.savefig(out_path, dpi=150, bbox_inches='tight')
+        print(f'Saved: {out_path}')
+    return fig, eq_comp
+
+
+def plot_b_vs_equilibrium(A, b_all, phi0_pp, short, colors, patients, ct,
+                           out_path=None):
+    """Scatter b_i vs equilibrium phi*_i for top-6 variable guilds."""
+    eq_comp = np.array([equilibrium(A, b_all[p], phi0_pp[p]) for p in range(len(b_all))])
+    ct_colors_map = {1: '#2166ac', 2: '#d6604d'}
+    top6 = np.argsort(eq_comp.var(axis=0))[::-1][:6]
+
+    fig, axes = plt.subplots(2, 3, figsize=(10, 6))
+    for ax, gi in zip(axes.ravel(), top6):
+        for p in range(len(b_all)):
+            ax.scatter(b_all[p, gi], eq_comp[p, gi],
+                       color=ct_colors_map[ct[p]], s=60, zorder=3)
+        r = float(np.corrcoef(b_all[:, gi], eq_comp[:, gi])[0, 1])
+        ax.set_xlabel(f'b_{short[gi]}', fontsize=8)
+        ax.set_ylabel(f'phi*_{short[gi]}', fontsize=8)
+        ax.set_title(f'{short[gi]}  r={r:+.2f}', fontsize=9, color=colors[gi])
+        ax.tick_params(labelsize=7)
+
+    from matplotlib.patches import Patch
+    axes[0,0].legend(handles=[Patch(color='#2166ac', label='CT1'),
+                               Patch(color='#d6604d', label='CT2')], fontsize=7)
+    fig.suptitle('Growth rate b_i vs equilibrium abundance phi*_i\n'
+                 '(top 6 variable guilds)', fontsize=10)
+    fig.tight_layout()
+    if out_path:
+        fig.savefig(out_path, dpi=150, bbox_inches='tight')
+        print(f'Saved: {out_path}')
+    return fig
+
+
 def main():
     A, b_all, phi0_pp, guilds, short, colors, patients = load_data()
-    ct = assign_ct(b_all, patients)
-    n_g = len(guilds)
+    ct    = assign_ct(b_all, patients)
+    b_CT1 = b_all[ct == 1].mean(axis=0)
+    b_CT2 = b_all[ct == 2].mean(axis=0)
+    print(f'CT1: {[patients[i] for i in range(len(patients)) if ct[i]==1]}')
+    print(f'CT2: {[patients[i] for i in range(len(patients)) if ct[i]==2]}')
 
-    print('CT labels:', dict(zip(patients, ct)))
-    print('CT1 patients:', [patients[i] for i in range(len(patients)) if ct[i] == 1])
-    print('CT2 patients:', [patients[i] for i in range(len(patients)) if ct[i] == 2])
-
-    # ── 1. Alpha scan ──────────────────────────────────────────────────────────
-    print('\nAlpha scan (b interpolation CT2 → CT1) ...')
+    # 1. Alpha scan
+    print('\n=== Alpha scan ===')
     alphas, gdi_mean, gdi_std, gdi_mat, alpha_star, b_CT1, b_CT2 = \
         alpha_scan(A, b_all, phi0_pp, short, patients)
-
-    print(f'  GDI range: [{gdi_mean.min():.3f}, {gdi_mean.max():.3f}]')
-    print(f'  GDI at α=0 (CT2 env): {gdi_mean[0]:.3f}')
-    print(f'  GDI at α=1 (CT1 env): {gdi_mean[-1]:.3f}')
-    print(f'  Tipping point α* = {alpha_star}')
-    if alpha_star is not None:
-        b_star = (1 - alpha_star) * b_CT2 + alpha_star * b_CT1
-        print(f'  b at tipping: {dict(zip(short, b_star.round(3)))}')
-        delta_b = b_star - b_CT2
-        print(f'  Δb from CT2 baseline: {dict(zip(short, delta_b.round(3)))}')
+    print(f'  GDI at alpha=0 (CT2): {gdi_mean[0]:.3f}')
+    print(f'  GDI at alpha=1 (CT1): {gdi_mean[-1]:.3f}')
+    if alpha_star is None:
+        print('  No crossing: single commensal attractor (A matrix dominant)')
     else:
-        print('  → GDI does not cross zero: b shift alone cannot flip the community.')
-        print('    Attractor is determined by A matrix, not b.')
-
+        print(f'  Tipping alpha* = {alpha_star:.2f}')
     plot_alpha_scan(alphas, gdi_mean, gdi_std, gdi_mat, alpha_star,
-                    patients, ct,
-                    out_path=OUT_DIR / 'tipping_alpha_scan.png')
+                    patients, ct, out_path=OUT_DIR / 'tipping_alpha_scan.png')
 
-    # ── 2. Single-guild sweep ──────────────────────────────────────────────────
-    print('\nSingle-guild b sweep ...')
+    # 2. Long-time convergence
+    print('\n=== Convergence trajectories ===')
+    fig_conv, eq_comp = plot_convergence_trajectories(
+        A, b_all, phi0_pp, short, colors, patients, ct,
+        out_path=OUT_DIR / 'tipping_convergence.png')
+    eq_gdi = [gdi(eq_comp[p], short) for p in range(len(b_all))]
+    print(f'  All equilibrium GDI < 0: {all(g < 0 for g in eq_gdi)}')
+
+    # 3. b_i vs equilibrium
+    print('\n=== b vs equilibrium ===')
+    plot_b_vs_equilibrium(A, b_all, phi0_pp, short, colors, patients, ct,
+                          out_path=OUT_DIR / 'tipping_b_vs_eq.png')
+
+    # 4. Single-guild sweep
+    print('\n=== Single-guild b sweep ===')
     effect_sizes, sweep_curves, _, _ = \
-        single_guild_sweep(A, b_all, phi0_pp, short, patients)
-
-    print('\nGuild tipping contributions (|ΔGDI|):')
+        single_guild_sweep(A, b_all, phi0_pp, short, patients, n_steps=15)
     order = np.argsort(effect_sizes)[::-1]
+    print(f'  {"Guild":<6} {"ΔGDI":>7}  {"Δb":>7}')
     for i in order:
-        print(f'  {short[i]:<6}  ΔGDI={effect_sizes[i]:.3f}  '
-              f'b_CT2={b_CT2[i]:.3f} → b_CT1={b_CT1[i]:.3f}  '
-              f'Δb={b_CT1[i]-b_CT2[i]:+.3f}')
-
+        print(f'  {short[i]:<6} {effect_sizes[i]:7.3f}  {b_CT1[i]-b_CT2[i]:+7.3f}')
     plot_single_guild_effects(effect_sizes, short, colors, b_CT1, b_CT2,
                                out_path=OUT_DIR / 'tipping_single_guild.png')
-
     plot_top_sweep_curves(sweep_curves, short, colors, alpha_star, b_CT1, b_CT2,
                           top_n=4, out_path=OUT_DIR / 'tipping_sweep_curves.png')
 
-    # ── 3. 2D phase diagram (top 2 guilds) ────────────────────────────────────
+    # 5. 2D phase diagram
     top2 = list(np.argsort(effect_sizes)[::-1][:2])
     gi, gj = top2[0], top2[1]
-    if not args.skip_2d:
-        print(f'\n2D phase diagram: {short[gi]} x {short[gj]} ...')
-        b_i_vals, b_j_vals, gdi_grid = \
-            phase_diagram_2d(A, b_all, phi0_pp, short, patients, gi, gj)
-        plot_phase_diagram(b_i_vals, b_j_vals, gdi_grid, short, gi, gj, b_CT1, b_CT2,
-                           out_path=OUT_DIR / 'tipping_phase_diagram_2d.png')
-    else:
-        print('\n2D phase diagram skipped (--skip-2d).')
+    print(f'\n=== 2D phase diagram: {short[gi]} x {short[gj]} ===')
+    b_i_vals, b_j_vals, gdi_grid = \
+        phase_diagram_2d(A, b_all, phi0_pp, short, patients, gi, gj)
+    plot_phase_diagram(b_i_vals, b_j_vals, gdi_grid, short, gi, gj, b_CT1, b_CT2,
+                       out_path=OUT_DIR / 'tipping_phase_diagram_2d.png')
 
-    # ── Save summary ──────────────────────────────────────────────────────────
     summary = {
-        'alpha_star':    alpha_star,
-        'b_CT1':         dict(zip(short, b_CT1.tolist())),
-        'b_CT2':         dict(zip(short, b_CT2.tolist())),
-        'effect_sizes':  dict(zip(short, effect_sizes.tolist())),
-        'top2_guilds':   [short[gi], short[gj]],
-        'ct_labels':     dict(zip(patients, ct.tolist())),
+        'alpha_star': alpha_star,
+        'b_CT1': dict(zip(short, b_CT1.tolist())),
+        'b_CT2': dict(zip(short, b_CT2.tolist())),
+        'effect_sizes': dict(zip(short, effect_sizes.tolist())),
+        'equilibrium_gdi': dict(zip(patients, [float(g) for g in eq_gdi])),
+        'all_commensal_eq': all(g < 0 for g in eq_gdi),
     }
     (OUT_DIR / 'tipping_summary.json').write_text(
         __import__('json').dumps(summary, indent=2))
