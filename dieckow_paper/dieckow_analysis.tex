@@ -1112,6 +1112,95 @@ Per-patient error bars on BC divergence confirm that these rankings are robust
 across patients (SD $< 0.12$ for all guilds; available in the supplementary
 JSON output from \texttt{guild\_importance\_analysis.py}).
 
+\subsection{Guild network centrality: influence, vulnerability, and net role}
+\label{ssec:network}
+
+Beyond knockout metrics, the structure of the $\bA$ matrix itself encodes
+asymmetric ecological roles.  We define for each guild $i$:
+\begin{itemize}[noitemsep]
+  \item \textbf{Influence}: $\sum_{j\neq i}|A_{ji}|$ --- total effect of guild $i$
+        on all other guilds (column-sum of $|\bA|$).
+  \item \textbf{Vulnerability}: $\sum_{j\neq i}|A_{ij}|$ --- total effect of all
+        other guilds on guild $i$ (row-sum of $|\bA|$).
+  \item \textbf{Net effect}: $\sum_{j\neq i} A_{ij}$ --- whether guild $i$ is
+        net-facilitated ($>0$, mutualist) or net-inhibited ($<0$, competitor).
+\end{itemize}
+
+Results are summarised in Table~\ref{tab:network}.
+Actinobacteria has the highest influence ($\sum|A_{ji}|=5.58$) and is
+net-facilitated ($+2.02$): it both drives and benefits from the commensal community.
+Bacilli has the highest vulnerability ($\sum|A_{ij}|=8.24$) despite moderate
+influence (1.57), reflecting its position as the target of several strong
+interactions (Actinobacteria $A=+3.43$, Betaproteobacteria $A=-2.10$,
+Bacteroidia $A=-0.63$).
+Betaproteobacteria is the only guild with both high influence (4.17) and
+net-negative effect ($-0.14$), classifying it as the principal competitive
+regulator of the commensal state.
+
+\begin{table}[htb]
+\centering
+\caption{Guild network centrality metrics from the fitted gLV $\bA$ matrix.
+Influence = $\sum_{j\neq i}|A_{ji}|$; Vulnerability = $\sum_{j\neq i}|A_{ij}|$;
+Net effect = $\sum_{j\neq i}A_{ij}$.}
+\label{tab:network}
+\small
+\begin{tabular}{lrrrl}
+\toprule
+Guild & Influence & Vulnerability & Net effect & Role \\
+\midrule
+Actinobacteria      & 5.58 & 4.41 & $+$2.02 & mutualist \\
+Betaproteobacteria  & 4.17 & 2.01 & $-$0.14 & \textbf{competitor} \\
+Negativicutes       & 1.71 & 0.71 & $+$0.19 & mutualist \\
+Bacteroidia         & 1.77 & 1.10 & $+$0.04 & mutualist \\
+Bacilli             & 1.57 & 8.24 & $+$0.38 & mutualist \\
+Gammaproteobacteria & 1.16 & 0.60 & $+$0.02 & mutualist \\
+Clostridia          & 0.47 & 0.06 & $+$0.02 & mutualist \\
+Fusobacteriia       & 0.42 & 0.24 & $-$0.02 & competitor \\
+Coriobacteriia      & 0.38 & 0.12 & $-$0.02 & competitor \\
+Other               & 0.33 & 0.10 & $-$0.01 & competitor \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Tipping point analysis: which growth rates govern the dysbiotic transition?}
+\label{ssec:tipping}
+
+To quantify which ecological growth conditions govern the CT2 (dysbiotic)
+$\to$ CT1 (commensal) transition, we conducted two complementary analyses.
+
+\paragraph{Linear b-interpolation.}
+We defined a one-parameter family of growth vectors
+$\bb(\alpha) = (1-\alpha)\,\bb_{\text{CT2}} + \alpha\,\bb_{\text{CT1}}$,
+where $\bb_{\text{CT1}}$ and $\bb_{\text{CT2}}$ are the per-CT mean growth
+vectors from the fitted 10-patient model ($\alpha=0$: full CT2 environment;
+$\alpha=1$: full CT1 environment).
+For each $\alpha \in [0,1]$, we simulated all 10 patients forward 21 days
+from their observed week-0 compositions and computed the week-3 Guild
+Dysbiosis Index (GDI~$= \log\phi_{\text{dys}} - \log\phi_{\text{com}}$).
+\emph{No value of $\alpha$ drives the mean GDI below zero} (tipping point
+$\alpha^*$ does not exist within $[0,1]$).
+This confirms the attractor-robustness result: even replacing the full
+CT2 growth environment with CT1 growth rates cannot redirect a community
+that starts from a week-0 CT2-like composition, because the $\bA$ matrix
+determines the equilibrium landscape irrespective of $\bb$.
+
+\paragraph{Single-guild b sweep.}
+To identify which individual growth rates most strongly shift GDI, we swept
+each $b_i$ from its CT2 to CT1 value while holding all others at CT2 levels.
+The two largest GDI drivers are Gammaproteobacteria
+($|\Delta\text{GDI}|=1.16$; $\Delta b = -5.31$, i.e.\ CT1 patients have
+substantially lower Gammaproteobacteria growth rate) and Bacteroidia
+($|\Delta\text{GDI}|=0.93$; $\Delta b = -0.96$).
+Reducing Gammaproteobacteria growth rate (e.g.\ via substrate limitation
+or targeted antimicrobials) has the largest single-guild effect on shifting
+the community toward a commensal GDI — despite Gammaproteobacteria having
+only moderate network influence (1.16, Table~\ref{tab:network}).
+This dissociation between network influence and growth-rate sensitivity
+reflects the difference between structural importance (mediated by $\bA$)
+and environmental modulation (mediated by $\bb$): interventions acting
+on the ecological niche of Gammaproteobacteria and Bacteroidia offer the
+most tractable entry points for growth-rate-mediated dysbiosis reversal.
+
 \subsection{In-silico intervention and attractor robustness}
 \label{ssec:intervention}
 
