@@ -431,7 +431,7 @@ with PdfPages(str(OUT_PDF)) as pdf:
         ))
     two_fig(fig,
         R/'guild_tipping'/'relapse_dynamics.png',
-        R/'guild_tipping'/'gdi_w3_vs_relapse.png',
+        R/'guild_relapse'/'gdi_w3_vs_relapse.png',
         '(a)  GDI trajectories to 90 d',
         '(b)  Week-3 GDI as prognostic marker')
     side_panel(fig, [
@@ -467,8 +467,8 @@ with PdfPages(str(OUT_PDF)) as pdf:
             '|  Joshi validation: predicted eq. GDI +0.65 ≈ Joshi PI mean +0.53  (9/10 patients; Δ = 0.12 < SD = 1.30).'
         ))
     two_fig(fig,
-        R/'guild_tipping'/'prevention_threshold.png',
-        R/'guild_tipping'/'joshi_comparison.png',
+        R/'guild_relapse'/'prevention_threshold.png',
+        R/'guild_relapse'/'joshi_comparison.png',
         '(a)  Required Δb per guild',
         '(b)  Joshi 2025 peri-implant cohort')
     side_panel(fig, [
