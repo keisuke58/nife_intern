@@ -281,71 +281,78 @@ def plot_loo_stability(A_full, A_folds, short, colors, out_path=None):
 
 # ── Analysis 3: Permutation test ─────────────────────────────────────────────
 
-def permutation_test(A_full, b_all, phi_all, guilds, short,
-                      n_perm=100, lam=1e-4, seed=42):
-    """
-    Shuffle patient labels (phi_all rows) → fit A → get null distribution of |A_ij|.
-    p-value[i,j] = fraction of permutations where |A_perm[i,j]| >= |A_real[i,j]|
-    """
+def _perm_one(args):
+    """Top-level worker for joblib: fit A on one permuted dataset."""
     from scipy.integrate import solve_ivp
-
-    rng = np.random.default_rng(seed)
-    n_g = len(guilds)
+    from scipy.optimize import minimize
+    A_full, b_all, phi_all, n_g, lam, perm_idx = args
     n_pat = len(b_all)
+    phi_shuffled = phi_all[perm_idx]
 
     def glv_rhs(t, phi, A, b):
         phi = np.maximum(phi, 0)
         return phi * (b + A @ phi)
 
-    def fit_A(phi_shuffled):
-        def loss_fn(params):
-            n_off = n_g * (n_g - 1) // 2
-            A = np.zeros((n_g, n_g))
-            idx = np.triu_indices(n_g, k=1)
-            A[idx] = params[:n_off]
-            A = A + A.T
-            np.fill_diagonal(A, -np.exp(params[n_off:n_off + n_g]))
-            b_mat = params[n_off + n_g:].reshape(n_pat, n_g)
-            loss = 0.0
-            for p in range(n_pat):
-                phi0 = phi_shuffled[p, 0, :]
-                phi0 = phi0 / (phi0.sum() + 1e-12)
-                try:
-                    sol = solve_ivp(glv_rhs, [0, 21], phi0,
-                                    args=(A, b_mat[p]), t_eval=[7, 14, 21],
-                                    method='RK45', rtol=1e-6, atol=1e-8)
-                    traj = sol.y.T
-                    for t in range(min(2, len(traj))):
-                        diff = traj[t] - phi_shuffled[p, t + 1, :]
-                        loss += np.mean(diff**2)
-                except Exception:
-                    loss += 1e3
-            return loss + lam * np.sum(params[:n_off]**2)
-
+    def loss_fn(params):
         n_off = n_g * (n_g - 1) // 2
-        A_tri0 = A_full[np.triu_indices(n_g, k=1)]
-        diag0  = np.log(np.maximum(-np.diag(A_full), 1e-4))
-        b0     = b_all.ravel()
-        x0     = np.concatenate([A_tri0, diag0, b0])
-        result = minimize(loss_fn, x0, method='L-BFGS-B',
-                          options={'maxiter': 400, 'ftol': 1e-8})
-        A_out = np.zeros((n_g, n_g))
-        idx   = np.triu_indices(n_g, k=1)
-        A_out[idx] = result.x[:n_off]
-        A_out = A_out + A_out.T
-        np.fill_diagonal(A_out, -np.exp(result.x[n_off:n_off + n_g]))
-        return A_out
+        A = np.zeros((n_g, n_g))
+        idx = np.triu_indices(n_g, k=1)
+        A[idx] = params[:n_off]
+        A = A + A.T
+        np.fill_diagonal(A, -np.exp(params[n_off:n_off + n_g]))
+        b_mat = params[n_off + n_g:].reshape(n_pat, n_g)
+        loss = 0.0
+        for p in range(n_pat):
+            phi0 = phi_shuffled[p, 0, :]
+            phi0 = phi0 / (phi0.sum() + 1e-12)
+            try:
+                sol = solve_ivp(glv_rhs, [0, 21], phi0,
+                                args=(A, b_mat[p]), t_eval=[7, 14, 21],
+                                method='RK45', rtol=1e-4, atol=1e-6)
+                traj = sol.y.T
+                for t in range(min(2, len(traj))):
+                    diff = traj[t] - phi_shuffled[p, t + 1, :]
+                    loss += np.mean(diff**2)
+            except Exception:
+                loss += 1e3
+        return loss + lam * np.sum(params[:n_off]**2)
 
-    null_A = np.zeros((n_perm, n_g, n_g))
-    for k in range(n_perm):
-        perm_idx = rng.permutation(n_pat)
-        phi_perm = phi_all[perm_idx]
-        null_A[k] = fit_A(phi_perm)
-        if (k + 1) % 10 == 0:
-            print(f'  Permutation {k+1}/{n_perm}')
+    n_off = n_g * (n_g - 1) // 2
+    A_tri0 = A_full[np.triu_indices(n_g, k=1)]
+    diag0  = np.log(np.maximum(-np.diag(A_full), 1e-4))
+    b0     = b_all.ravel()
+    x0     = np.concatenate([A_tri0, diag0, b0])
+    result = minimize(loss_fn, x0, method='L-BFGS-B',
+                      options={'maxiter': 200, 'ftol': 1e-6})
+    A_out = np.zeros((n_g, n_g))
+    idx   = np.triu_indices(n_g, k=1)
+    A_out[idx] = result.x[:n_off]
+    A_out = A_out + A_out.T
+    np.fill_diagonal(A_out, -np.exp(result.x[n_off:n_off + n_g]))
+    return A_out
 
-    # p-values: fraction of permutations where |A_perm| >= |A_real|
-    pval = np.mean(np.abs(null_A) >= np.abs(A_full)[None], axis=0)
+
+def permutation_test(A_full, b_all, phi_all, guilds, short,
+                      n_perm=100, lam=1e-4, seed=42):
+    """
+    Shuffle patient labels (phi_all rows) → fit A → get null distribution of |A_ij|.
+    p-value[i,j] = fraction of permutations where |A_perm[i,j]| >= |A_real[i,j]|
+    Parallelised with joblib across permutations.
+    """
+    from joblib import Parallel, delayed
+    rng   = np.random.default_rng(seed)
+    n_g   = len(guilds)
+    n_pat = len(b_all)
+
+    perm_indices = [rng.permutation(n_pat) for _ in range(n_perm)]
+    jobs = [(A_full, b_all, phi_all, n_g, lam, idx) for idx in perm_indices]
+
+    n_jobs = min(24, n_perm)
+    print(f'  Running {n_perm} permutations on {n_jobs} cores …')
+    results = Parallel(n_jobs=n_jobs, verbose=5)(delayed(_perm_one)(j) for j in jobs)
+
+    null_A = np.array(results)
+    pval   = np.mean(np.abs(null_A) >= np.abs(A_full)[None], axis=0)
     return null_A, pval
 
 
