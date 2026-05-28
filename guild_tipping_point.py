@@ -169,34 +169,47 @@ def alpha_scan(A, b_all, phi0_pp, short, patients, n_alpha=60):
 
 # ── Single-guild b sweep ──────────────────────────────────────────────────────
 
+def _sweep_one(args):
+    """Worker for single_guild_sweep (joblib-safe top-level function)."""
+    A, b_CT2, phi0_pp, short, i, bv = args
+    b_test    = b_CT2.copy()
+    b_test[i] = bv
+    gdi_vals  = []
+    for p in range(len(phi0_pp)):
+        traj = simulate(A, b_test, phi0_pp[p])
+        gdi_vals.append(gdi(week3(traj), short))
+    return np.mean(gdi_vals)
+
+
 def single_guild_sweep(A, b_all, phi0_pp, short, patients, n_steps=20):
     """
     For each guild i, sweep b_i from b_CT2[i] to b_CT1[i] while keeping
     all other b components at b_CT2.  Record mean GDI at week-3.
     Returns: effect_sizes (n_guilds,) = |GDI(b_CT1[i]) - GDI(b_CT2[i])|
+    Uses joblib parallel across all (guild, step) combinations.
     """
+    from joblib import Parallel, delayed
     ct    = assign_ct(b_all, patients)
     b_CT1 = b_all[ct == 1].mean(axis=0)
     b_CT2 = b_all[ct == 2].mean(axis=0)
     n_g   = len(short)
-    n_pat = len(b_all)
+
+    # Build flat job list: (guild_idx, b_value)
+    jobs = [(A, b_CT2, phi0_pp, short, i, bv)
+            for i in range(n_g)
+            for bv in np.linspace(b_CT2[i], b_CT1[i], n_steps)]
+
+    n_jobs = min(24, len(jobs))
+    results = Parallel(n_jobs=n_jobs)(delayed(_sweep_one)(j) for j in jobs)
 
     effect_sizes = np.zeros(n_g)
-    sweep_curves = {}   # guild → (steps, gdi_mean)
-
+    sweep_curves = {}
+    idx = 0
     for i in range(n_g):
-        b_vals = np.linspace(b_CT2[i], b_CT1[i], n_steps)
-        gdi_vals = []
-        for bv in b_vals:
-            b_test     = b_CT2.copy()
-            b_test[i]  = bv
-            gdi_list = []
-            for p in range(n_pat):
-                traj = simulate(A, b_test, phi0_pp[p])
-                gdi_list.append(gdi(week3(traj), short))
-            gdi_vals.append(np.mean(gdi_list))
-        gdi_arr = np.array(gdi_vals)
-        effect_sizes[i] = abs(gdi_arr[-1] - gdi_arr[0])
+        b_vals  = np.linspace(b_CT2[i], b_CT1[i], n_steps)
+        gdi_arr = np.array(results[idx: idx + n_steps])
+        idx    += n_steps
+        effect_sizes[i]      = abs(gdi_arr[-1] - gdi_arr[0])
         sweep_curves[short[i]] = (b_vals, gdi_arr)
 
     return effect_sizes, sweep_curves, b_CT1, b_CT2
@@ -204,36 +217,44 @@ def single_guild_sweep(A, b_all, phi0_pp, short, patients, n_steps=20):
 
 # ── 2D phase diagram ──────────────────────────────────────────────────────────
 
-def phase_diagram_2d(A, b_all, phi0_pp, short, patients, gi, gj, n_grid=12):
+def _phase2d_one(args):
+    """Worker for phase_diagram_2d (joblib-safe)."""
+    A, b_CT2, phi0_pp, short, gi, gj, bvi, bvj = args
+    b_test     = b_CT2.copy()
+    b_test[gi] = bvi
+    b_test[gj] = bvj
+    gdi_list = [gdi(week3(simulate(A, b_test, phi0_pp[p])), short)
+                for p in range(len(phi0_pp))]
+    return np.mean(gdi_list)
+
+
+def phase_diagram_2d(A, b_all, phi0_pp, short, patients, gi, gj, n_grid=20):
     """
-    Scan b_i and b_j on a 2D grid (from b_CT2[i/j] to b_CT1[i/j] + 20% overshoot).
-    Returns: b_i_vals, b_j_vals, gdi_grid (n_grid, n_grid)
+    Scan b_i × b_j on a 2D grid. Returns: b_i_vals, b_j_vals, gdi_grid (n_grid, n_grid).
+    Uses joblib parallel.
     """
+    from joblib import Parallel, delayed
     ct    = assign_ct(b_all, patients)
     b_CT1 = b_all[ct == 1].mean(axis=0)
     b_CT2 = b_all[ct == 2].mean(axis=0)
-    n_pat = len(b_all)
 
-    margin = 0.20
-    b_i_range = np.linspace(min(b_CT2[gi], b_CT1[gi]) - margin * abs(b_CT1[gi] - b_CT2[gi]),
-                             max(b_CT2[gi], b_CT1[gi]) + margin * abs(b_CT1[gi] - b_CT2[gi]),
-                             n_grid)
-    b_j_range = np.linspace(min(b_CT2[gj], b_CT1[gj]) - margin * abs(b_CT1[gj] - b_CT2[gj]),
-                             max(b_CT2[gj], b_CT1[gj]) + margin * abs(b_CT1[gj] - b_CT2[gj]),
-                             n_grid)
+    margin = 0.25
+    def rng(idx):
+        lo = min(b_CT2[idx], b_CT1[idx])
+        hi = max(b_CT2[idx], b_CT1[idx])
+        d  = max(hi - lo, 0.5)           # at least 0.5 width
+        return np.linspace(lo - margin * d, hi + margin * d, n_grid)
 
-    gdi_grid = np.zeros((n_grid, n_grid))
-    for ii, bvi in enumerate(b_i_range):
-        for jj, bvj in enumerate(b_j_range):
-            b_test     = b_CT2.copy()
-            b_test[gi] = bvi
-            b_test[gj] = bvj
-            gdi_list = []
-            for p in range(n_pat):
-                traj = simulate(A, b_test, phi0_pp[p])
-                gdi_list.append(gdi(week3(traj), short))
-            gdi_grid[ii, jj] = np.mean(gdi_list)
+    b_i_range = rng(gi)
+    b_j_range = rng(gj)
 
+    jobs = [(A, b_CT2, phi0_pp, short, gi, gj, bvi, bvj)
+            for bvi in b_i_range for bvj in b_j_range]
+
+    n_jobs = min(24, len(jobs))
+    results = Parallel(n_jobs=n_jobs)(delayed(_phase2d_one)(j) for j in jobs)
+
+    gdi_grid = np.array(results).reshape(n_grid, n_grid)
     return b_i_range, b_j_range, gdi_grid
 
 
