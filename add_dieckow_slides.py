@@ -172,12 +172,58 @@ def main():
     blank = prs.slide_layouts[6]
     s = prs.slides.add_slide(blank)
     add_rect(s, 0, 0, W, H, HEADER_FILL)
-    add_textbox(s, 1.0, 2.8, W - 2.0, 1.0,
+    add_textbox(s, 1.0, 2.5, W - 2.0, 1.0,
                 'Guild-Level Dynamical Analysis', 32, bold=True, color=WHITE,
                 align=PP_ALIGN.CENTER)
-    add_textbox(s, 1.0, 3.8, W - 2.0, 0.5,
-                'Keystone · Network · Tipping · Relapse · Prevention · Phase Diagram',
-                15, bold=False, color=LIGHT_BLUE, align=PP_ALIGN.CENTER)
+    add_textbox(s, 1.0, 3.5, W - 2.0, 0.5,
+                'Keystone · Network · Permutation · Tipping · Relapse · Prevention · Phase Diagram',
+                14, bold=False, color=LIGHT_BLUE, align=PP_ALIGN.CENTER)
+    # Key message box
+    add_rect(s, 1.5, 4.3, W - 3.0, 1.5, RGBColor(0x1A, 0x5C, 0x3A))
+    add_textbox(s, 1.6, 4.38, W - 3.2, 1.35,
+                'Periodontitis relapse is governed by the topology of microbial '
+                'interaction networks, not merely by bacterial growth rates. '
+                'Prevention thresholds and relapse timing can be mathematically '
+                'derived from patient-specific gLV dynamics.',
+                11.5, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+
+    # ── Slide A2: Background & Model ────────────────────────────────────────
+    blank2 = prs.slide_layouts[6]
+    s2 = prs.slides.add_slide(blank2)
+    add_rect(s2, 0, 0, W, HEADER_H, HEADER_FILL)
+    add_textbox(s2, 0.40, 0.06, W - 0.5, 0.40,
+                'Background & Mathematical Model', 20, bold=True, color=WHITE)
+    add_textbox(s2, 0.40, 0.46, W - 0.5, 0.24,
+                'Dieckow et al. 2024  ·  10-guild gLV  ·  N = 10 patients  ·  4 time-points (weeks 0/1/3/6)',
+                11, bold=False, color=LIGHT_BLUE)
+    # ODE equation box
+    add_rect(s2, 0.4, 0.9, W - 0.8, 0.75, HEADER_FILL)
+    add_textbox(s2, 0.5, 0.96, W - 1.0, 0.62,
+                'dφᵢ/dt  =  φᵢ · ( bᵢ  +  Σⱼ Aᵢⱼ · φⱼ )',
+                18, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+    # Parameter descriptions
+    params = [
+        ('φᵢ  = relative abundance of guild i',                                   0.4),
+        ('bᵢ  = intrinsic growth rate (patient-specific oral environment)',        0.9),
+        ('Aᵢⱼ = interaction strength: guild j → guild i  (+ mutualism, − competition)', 1.4),
+        ('GDI = log(φ_dys) − log(φ_com)   GDI < 0 → commensal,   GDI > 0 → dysbiotic', 1.9),
+    ]
+    for txt, y_off in params:
+        add_textbox(s2, 0.5, 1.78 + y_off, W - 1.0, 0.4,
+                    txt, 11, bold=False, color=NAVY)
+    # Biology note
+    add_rect(s2, 0.4, 5.4, W - 0.8, 0.85, FOOTER_FILL)
+    add_textbox(s2, 0.5, 5.48, W - 1.0, 0.70,
+                'Fitting: L-BFGS-B minimises prediction MSE over 4 time-points → recovers A (10×10) and b (10 patients × 10 guilds).  '
+                'The fitted A matrix encodes the ecological interaction network and determines long-term community fate.',
+                10, bold=False, color=NAVY)
+    add_rect(s2, 0, FOOTER_Y, W, FOOTER_H, FOOTER_FILL)
+    add_textbox(s2, 0.35, FOOTER_Y + 0.07, W - 0.6, FOOTER_H - 0.10,
+                '~700 species live in the oral cavity, organised into 10 functional guilds.  '
+                'Healthy (CT1): Acti/Baci dominant, GDI < 0.  '
+                'Dysbiotic (CT2): Bacteroidia/Fusobacteria expand, GDI > 0.  '
+                'Question: why do some patients relapse after treatment while others do not?',
+                10.5, bold=False, color=NAVY)
 
     # ── Slide B: Keystone Analysis ──────────────────────────────────────────
     add_slide(
@@ -300,6 +346,33 @@ def main():
             '→ Confirms: attractor robustness is structural, not initial-condition sensitive.'
         ),
     )
+
+    # ── Slide Z: Conclusion ─────────────────────────────────────────────────
+    blank_z = prs.slide_layouts[6]
+    sz = prs.slides.add_slide(blank_z)
+    add_rect(sz, 0, 0, W, H, HEADER_FILL)
+    add_textbox(sz, 1.0, 0.25, W - 2.0, 0.60,
+                'Conclusion', 28, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+    # Key message
+    add_rect(sz, 0.8, 1.0, W - 1.6, 1.0, RGBColor(0x1A, 0x5C, 0x3A))
+    add_textbox(sz, 0.9, 1.07, W - 1.8, 0.88,
+                'Periodontitis relapse is governed by the topology of microbial interaction networks, '
+                'not merely by bacterial growth rates. '
+                'Prevention thresholds and relapse timing can be mathematically derived '
+                'from patient-specific gLV dynamics.',
+                12, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+    # Numbered findings
+    findings = [
+        '①  Bacilli = compositional keystone (BC = 0.839);  Acti = growth engine.',
+        '②  Baci → Acti (A = +3.43, p = 0.040) is the sole statistically validated interaction.',
+        '③  A matrix creates a single commensal attractor — b alone cannot flip the community state.',
+        '④  Three relapse archetypes: persistent / transient responder / permanent commensal (Patient D only).',
+        '⑤  Patient C preventable with Δb_Bact = 1.33;  98 % of growth-rate space remains dysbiotic.',
+        '⑥  External validation: predicted eq. GDI +0.65 ≈ Joshi 2025 peri-implant cohort mean +0.53.',
+    ]
+    for k, txt in enumerate(findings):
+        add_textbox(sz, 0.6, 2.20 + k * 0.68, W - 1.2, 0.60,
+                    txt, 11.5, bold=False, color=WHITE)
 
     prs.save(str(PPTX_OUT))
     print(f'Saved: {PPTX_OUT}  ({len(prs.slides)} slides total)')

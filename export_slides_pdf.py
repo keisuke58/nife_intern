@@ -150,11 +150,18 @@ with PdfPages(str(OUT_PDF)) as pdf:
                 ha='center', va='center', transform=ax.transAxes,
                 bbox=dict(boxstyle='round,pad=0.5', fc=NAVY_L, ec=col, lw=1.5))
 
-    ax.fill([0.25,0.75,0.75,0.25],[0.33,0.33,0.30,0.30], color='#8ab0cc', alpha=0.3)
-    ax.text(0.5, 0.20,
-            'Key question: What does the fitted gLV A matrix tell us about\n'
-            'the long-term fate of the oral microbiome after dental treatment?',
-            color='#c8d8e8', fontsize=11.5, ha='center', va='center',
+    ax.fill([0.12,0.88,0.88,0.12],[0.35,0.35,0.08,0.08], color='#0d2440', alpha=0.85)
+    ax.text(0.5, 0.285,
+            'Periodontitis relapse is governed by the topology of microbial\n'
+            'interaction networks — not merely by bacterial growth rates.\n'
+            'Prevention thresholds and relapse timing can be mathematically\n'
+            'derived from patient-specific gLV dynamics.',
+            color=WHITE, fontsize=12.5, fontweight='bold',
+            ha='center', va='center', transform=ax.transAxes,
+            linespacing=1.6)
+    ax.text(0.5, 0.105,
+            '— Key message',
+            color=LBLUE, fontsize=9.5, ha='center', va='center',
             transform=ax.transAxes, style='italic')
 
     pdf.savefig(fig, bbox_inches='tight')
@@ -162,7 +169,111 @@ with PdfPages(str(OUT_PDF)) as pdf:
 
 
     # ════════════════════════════════════════════════════════════════════════════
-    # Page 2 — Keystone Analysis
+    # Page 2 — Background & Model
+    # ════════════════════════════════════════════════════════════════════════════
+    fig = base_fig()
+    draw_chrome(fig,
+        title    = 'Background & Mathematical Model',
+        subtitle = 'Dieckow et al. 2024  ·  10-guild gLV fitted to 16S rRNA time-series (N = 10 patients, 4 time-points)',
+        footer   = (
+            'Data: 16S rRNA sequencing at week 0, 1, 3, 6 (dental treatment study, 10 oral bacteria guilds).  '
+            '|  Model: 10-dimensional gLV ODE, 110 parameters (A matrix + b vectors) fitted via L-BFGS-B.  '
+            '|  Downstream: all 6 dynamical analyses derived from the single fitted A matrix.'
+        ))
+
+    ax_bg = fig.add_axes([0, 0, 1, 1], zorder=2)
+    ax_bg.set_xlim(0, 1); ax_bg.set_ylim(0, 1); ax_bg.axis('off')
+
+    # ── Left: Biology panel ──────────────────────────────────────────────────
+    ax_bg.fill([0.02, 0.46, 0.46, 0.02],
+               [CONTENT_BOT, CONTENT_BOT, CONTENT_TOP, CONTENT_TOP],
+               color=LGRAY, alpha=0.7)
+    ax_bg.text(0.24, CONTENT_TOP - 0.015, 'Biology',
+               color=NAVY, fontsize=11, fontweight='bold',
+               ha='center', va='top', transform=ax_bg.transAxes)
+
+    bio_lines = [
+        ('~700 species live in the oral cavity', NAVY, False, 9.5),
+        ('', NAVY, False, 4),
+        ('Healthy state  (CT1)', GREEN, True, 10),
+        ('→  Actinobacteria, Bacilli dominant', GREEN, False, 9),
+        ('→  GDI < 0  (commensal)', GREEN, False, 9),
+        ('', NAVY, False, 4),
+        ('Dysbiotic state  (CT2)', RED, True, 10),
+        ('→  Bacteroidia, Fusobacteria expand', RED, False, 9),
+        ('→  GDI > 0  (dysbiotic)', RED, False, 9),
+        ('', NAVY, False, 4),
+        ('Problem:', NAVY, True, 10),
+        ('Why do some patients relapse', NAVY, False, 9),
+        ('after treatment while others do not?', NAVY, False, 9),
+        ('', NAVY, False, 4),
+        ('Dataset (Dieckow 2024):', NAVY, True, 10),
+        ('10 patients, weeks 0/1/3/6', NAVY, False, 9),
+        ('10 taxonomic guilds (16S rRNA)', NAVY, False, 9),
+    ]
+    ys_bio = np.linspace(CONTENT_TOP - 0.07, CONTENT_BOT + 0.02, len(bio_lines))
+    for (txt, col, bold, fs), y in zip(bio_lines, ys_bio):
+        ax_bg.text(0.04, y, txt, color=col, fontsize=fs,
+                   fontweight='bold' if bold else 'normal',
+                   va='center', ha='left', transform=ax_bg.transAxes)
+
+    # ── Right: Model panel ───────────────────────────────────────────────────
+    ax_bg.fill([0.48, 0.97, 0.97, 0.48],
+               [CONTENT_BOT, CONTENT_BOT, CONTENT_TOP, CONTENT_TOP],
+               color='#EEF4FF', alpha=0.8)
+    ax_bg.text(0.725, CONTENT_TOP - 0.015, 'Generalised Lotka–Volterra Model',
+               color=NAVY, fontsize=11, fontweight='bold',
+               ha='center', va='top', transform=ax_bg.transAxes)
+
+    # ODE box
+    ax_bg.fill([0.50, 0.95, 0.95, 0.50],
+               [CONTENT_TOP - 0.18, CONTENT_TOP - 0.18,
+                CONTENT_TOP - 0.06, CONTENT_TOP - 0.06],
+               color=NAVY, alpha=0.88)
+    ax_bg.text(0.725, CONTENT_TOP - 0.12,
+               'dφᵢ/dt  =  φᵢ · ( bᵢ  +  Σⱼ Aᵢⱼ φⱼ )',
+               color=WHITE, fontsize=13, fontweight='bold',
+               ha='center', va='center', transform=ax_bg.transAxes,
+               family='monospace')
+
+    model_lines = [
+        ('φᵢ', BLUE,  True,  10, '= relative abundance of guild i'),
+        ('bᵢ', GREEN, True,  10, '= intrinsic growth rate (patient-specific)'),
+        ('Aᵢⱼ', GOLD, True, 10, '= interaction: j → i  (+ mutualism, − competition)'),
+        ('GDI', RED,  True,  10, '= log(φ_dys) − log(φ_com)  < 0: commensal'),
+    ]
+    ys_m = np.linspace(CONTENT_TOP - 0.255, CONTENT_TOP - 0.38, len(model_lines))
+    for (sym, col, bold, fs, desc), y in zip(model_lines, ys_m):
+        ax_bg.text(0.50, y, f'  {sym}', color=col, fontsize=fs, fontweight='bold',
+                   va='center', ha='left', transform=ax_bg.transAxes)
+        ax_bg.text(0.555, y, desc, color=NAVY, fontsize=9,
+                   va='center', ha='left', transform=ax_bg.transAxes)
+
+    ax_bg.axhline(CONTENT_TOP - 0.40, xmin=0.48, xmax=0.97,
+                  color='#BBCCDD', lw=0.8)
+
+    fit_lines = [
+        ('Fitting:', NAVY, True, 10),
+        ('L-BFGS-B minimises MSE over 4 time-points', NAVY, False, 9),
+        ('→ recover A  (10×10) and b  (10 patients × 10 guilds)', NAVY, False, 9),
+        ('', NAVY, False, 4),
+        ('What A encodes:', NAVY, True, 10),
+        ('The ecological interaction network —', NAVY, False, 9),
+        ('who promotes whom, who suppresses whom', NAVY, False, 9),
+        ('→ determines long-term community fate', GREEN, False, 9),
+    ]
+    ys_f = np.linspace(CONTENT_TOP - 0.44, CONTENT_BOT + 0.02, len(fit_lines))
+    for (txt, col, bold, fs), y in zip(fit_lines, ys_f):
+        ax_bg.text(0.50, y, f'  {txt}', color=col, fontsize=fs,
+                   fontweight='bold' if bold else 'normal',
+                   va='center', ha='left', transform=ax_bg.transAxes)
+
+    pdf.savefig(fig, bbox_inches='tight')
+    plt.close(fig)
+
+
+    # ════════════════════════════════════════════════════════════════════════════
+    # Page 3 — Keystone Analysis
     # ════════════════════════════════════════════════════════════════════════════
     fig = base_fig()
     draw_chrome(fig,
@@ -468,6 +579,47 @@ with PdfPages(str(OUT_PDF)) as pdf:
         ('Must lower b_Bact, not', NAVY, False, 8.0),
         ('just change φ(0)', NAVY, False, 8.0),
     ])
+    pdf.savefig(fig, bbox_inches='tight')
+    plt.close(fig)
+
+    # ════════════════════════════════════════════════════════════════════════════
+    # Page 10 — Conclusion
+    # ════════════════════════════════════════════════════════════════════════════
+    fig = plt.figure(figsize=(W_IN, H_IN), facecolor=NAVY)
+    ax  = fig.add_axes([0, 0, 1, 1])
+    ax.set_facecolor(NAVY); ax.axis('off')
+
+    ax.fill([0,1,1,0],[0.92,0.92,1,1], color=NAVY_L)
+    ax.text(0.5, 0.96, 'Guild-Level Dynamical Analysis  ·  Summary',
+            color='#7aabcc', fontsize=9.5, ha='center', va='center',
+            style='italic', transform=ax.transAxes)
+
+    ax.text(0.5, 0.80, 'Conclusion', color=WHITE, fontsize=22,
+            fontweight='bold', ha='center', va='center', transform=ax.transAxes)
+
+    # Key message box
+    ax.fill([0.08, 0.92, 0.92, 0.08], [0.55, 0.55, 0.64, 0.64],
+            color='#1a5c3a', alpha=0.85)
+    ax.text(0.5, 0.595,
+            'Periodontitis relapse is governed by the topology of microbial interaction networks,\n'
+            'not merely by bacterial growth rates. Prevention thresholds can be mathematically derived.',
+            color=WHITE, fontsize=12, fontweight='bold',
+            ha='center', va='center', transform=ax.transAxes, linespacing=1.5)
+
+    # Finding bullets
+    findings = [
+        (LBLUE,   '①  Bacilli is the compositional keystone (BC = 0.839); Acti the growth engine.'),
+        ('#A8E6CF','②  Acti → Baci (A = +3.43, p = 0.040) is the sole statistically validated interaction.'),
+        ('#FFD3B6','③  The A matrix creates a single commensal attractor — b alone cannot flip the state.'),
+        ('#FFB3BA','④  Three relapse archetypes: persistent / transient / permanent commensal (Patient D only).'),
+        ('#D4B8E0','⑤  Patient C preventable with Δb_Bact = 1.33; 98% of growth-rate space is dysbiotic.'),
+        ('#B8D4E0','⑥  Model validated externally: eq. GDI +0.65 ≈ Joshi 2025 PI cohort mean +0.53.'),
+    ]
+    ys = np.linspace(0.48, 0.09, len(findings))
+    for (col, txt), y in zip(findings, ys):
+        ax.text(0.08, y, txt, color=col, fontsize=10.5,
+                va='center', ha='left', transform=ax.transAxes)
+
     pdf.savefig(fig, bbox_inches='tight')
     plt.close(fig)
 
