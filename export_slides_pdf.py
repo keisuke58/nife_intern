@@ -314,25 +314,42 @@ with PdfPages(str(OUT_PDF)) as pdf:
             '→ Structural attractor robustness — not initial-condition sensitive.'
         ))
 
+    # Figure takes left 74% — right 26% for key findings text
     paste_img(fig, R / 'guild_phase' / 'phase3d_static.png',
-              (0.03, FOOTER_FRAC + 0.01, 0.94, 1 - HEADER_FRAC - FOOTER_FRAC - 0.02))
+              (0.01, FOOTER_FRAC + 0.01, 0.72, 1 - HEADER_FRAC - FOOTER_FRAC - 0.02))
 
-    # Annotations
-    callout_red(fig, 0.80, 0.80,
-                '98% of grid: dysbiotic\n(GDI > 0)',
-                arrow_to=(0.72, 0.65))
-    callout_blue(fig, 0.15, 0.73,
-                 'Commensal zone\nb_Bact < ~1.5\n(only 2% of space)',
-                 arrow_to=(0.16, 0.60))
-    callout(fig, 0.50, 0.80,
-            'b_Bact (Bacteroidia)\n= dominant axis\n→ crosses boundary at ~1.5',
-            arrow_to=(0.50, 0.68))
-    callout_blue(fig, 0.13, 0.54,
-                 'CT1 patients (○)\nnear or inside\ncommensal zone',
-                 arrow_to=(0.14, 0.44))
-    callout_red(fig, 0.34, 0.56,
-                'CT2 patient A\nb_Bact = 4.5\ndeep dysbiotic',
-                arrow_to=(0.32, 0.46))
+    # Right-side key findings panel
+    ax_txt = fig.add_axes([0.75, FOOTER_FRAC + 0.02, 0.23, 1 - HEADER_FRAC - FOOTER_FRAC - 0.04], zorder=3)
+    ax_txt.set_facecolor('#F4F8FF')
+    ax_txt.set_xlim(0, 1); ax_txt.set_ylim(0, 1)
+    for sp in ax_txt.spines.values():
+        sp.set_color('#BBCCDD'); sp.set_linewidth(1)
+    ax_txt.set_xticks([]); ax_txt.set_yticks([])
+
+    findings = [
+        ('Key findings', 11, True,  NAVY,  0.95),
+        ('', 8, False, NAVY, 0.88),
+        ('98% of b-space', 9, True,  RED,   0.85),
+        ('is dysbiotic', 9, False, RED,   0.80),
+        ('(GDI > 0)', 9, False, RED,   0.75),
+        ('', 8, False, NAVY, 0.68),
+        ('Commensal zone:', 9, True,  BLUE,  0.65),
+        ('b_Bact < ~1.5', 9, False, BLUE,  0.60),
+        ('only 2% of space', 9, False, BLUE,  0.55),
+        ('', 8, False, NAVY, 0.48),
+        ('b_Bact (Bacteroidia)', 9, True,  NAVY,  0.45),
+        ('= dominant axis', 9, False, NAVY,  0.40),
+        ('boundary at ~1.5', 9, False, NAVY,  0.35),
+        ('', 8, False, NAVY, 0.28),
+        ('CT1 (○): near boundary', 8.5, False, BLUE, 0.25),
+        ('CT2 patient A:', 8.5, False, RED,  0.19),
+        ('b_Bact=4.5 → deep dys.', 8.5, False, RED,  0.14),
+        ('', 8, False, NAVY, 0.08),
+        ('→ structural attractor', 8, False, NAVY, 0.06),
+    ]
+    for (txt, fs, bold, col, yy) in findings:
+        ax_txt.text(0.08, yy, txt, fontsize=fs, fontweight='bold' if bold else 'normal',
+                    color=col, va='center', ha='left', transform=ax_txt.transAxes)
 
     pdf.savefig(fig, bbox_inches='tight')
     plt.close(fig)
