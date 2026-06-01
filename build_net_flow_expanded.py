@@ -238,10 +238,16 @@ def build_net_flow_expanded(use_agora=True, verbose=False, agora_weight=1.0,
                 import cobra
                 from cobra.flux_analysis import pfba
                 from guild_agora_signs import (ORAL_MEDIUM, ORAL_MEDIUM_V2,
+                                                ORAL_MEDIUM_GCF,
                                                 ANAEROBIC_GUILDS, apply_medium,
                                                 GUILD_REPS, find_model_path)
 
-                medium_dict = ORAL_MEDIUM_V2 if agora_medium == 'v2' else ORAL_MEDIUM
+                if agora_medium == 'v2':
+                    medium_dict = ORAL_MEDIUM_V2
+                elif agora_medium == 'gcf':
+                    medium_dict = ORAL_MEDIUM_GCF
+                else:
+                    medium_dict = ORAL_MEDIUM
                 THRESHOLD = 0.01  # consistent with compute_micom_signals flux_threshold
                 TOXINS    = {'EX_h2o2(e)', 'EX_h2s(e)'}
 

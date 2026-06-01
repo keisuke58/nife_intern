@@ -120,6 +120,34 @@ Three interaction regimes in fitted A:
 - Extend to Szafrański BIC peri-implantitis data if longitudinal subset available
 - TMCMC posterior on A for identifiable subset (pairs with |A|>0.3)
 
+#### Four innovative directions toward higher ρ
+
+**1. Spatial structure: full PDE reaction-diffusion model**
+Current ODE assumes a well-mixed community; oral biofilm is a stratified structure with steep O₂/pH gradients between surface and deep layers. Extending to reaction-diffusion PDEs (1D depth coordinate) would capture anaerobe enrichment at depth and aerobe dominance near the surface — mechanistically explaining why dysbiotic species dominate despite low relative abundance in bulk measurements.
+- Replace Hamilton ODE with 1D PDE: ∂φ_i/∂t = f_i(φ) + D_i ∂²φ_i/∂x² + r_i(c(x))
+- Nutrient field c(x) from existing 1D solver (Hamilton+PDE hybrid, already implemented in Tmcmc202601)
+- Expected gain: A_ij can become depth-resolved → sign prior validity testable per layer
+
+**2. Host immune/tissue-breakdown parameters**
+Peri-implantitis is driven by host–microbe interaction, not microbial competition alone. GCF (gingival crevicular fluid) provides collagen peptides, haem-iron, and ROS that selectively enrich Pg and anaerobes.
+- Add host-derived metabolites to AGORA2 medium: haem (Pg growth), collagen fragments (Fn proteolysis substrate), lactoferrin (iron chelation, inhibits Aa)
+- Condition-specific medium: healthy → standard oral fluid; peri-implantitis → GCF-enriched (elevated haem, pH drop)
+- Operationalization: MICOM medium construction from GCF metabolomic data (e.g. Ramseier 2009 proteomics)
+
+**3. Patient-specific MAGs (Metagenome-Assembled Genomes)**
+AGORA2 uses reference-strain GEMs; within-species metabolic diversity (accessory genome) is lost. Patients carry strains with distinct carbohydrate utilization and toxin production genes.
+- Reconstruct patient-specific GEMs from Szafrański metagenomic reads via DRAM or CarveMe
+- Replace AGORA2 guild representatives with patient-matched MAG-GEMs
+- Cross-feeding matrix F becomes patient-specific → personalized sign prior → A_ij credible intervals tighten
+- Key challenge: 10 patients × 5 guilds = 50 GEMs; feasibility depends on sequencing depth (>1M reads/sample needed)
+
+**4. Thermodynamic FBA (tFBA) for magnitude constraints on A_ij**
+Sign-only prior succeeded because FBA flux magnitudes ≠ gLV A units. tFBA constrains reaction fluxes using ΔG_r (Gibbs free energy), producing thermodynamically consistent flux bounds that reflect actual metabolic capacity ratios.
+- Use eQuilibrator/TECRDB to assign ΔG_r° to exchange reactions
+- tFBA upper/lower flux bounds → credible magnitude range for F_ij (not just sign)
+- Map F_ij magnitude bounds → A_ij magnitude prior via learned constant c (c estimated from L1+L2 pairs where both sign and magnitude are known)
+- Expected: move from pure sign prior to bounded-magnitude prior, recovering quantitative A_ij without overfitting
+
 ---
 
 ## 5. Conclusions (3–4 bullets)

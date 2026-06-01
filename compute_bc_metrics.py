@@ -262,7 +262,7 @@ ax2.set_xticklabels([DIAG_SHORT[d] for d in DIAG_ORDER])
 ax2.set_ylabel('BC(initial → equilibrium)', fontsize=9)
 ax2.set_title(f'Joshi: how far ODE moves each sample\nKW p={p:.3f}  ρ={rho:.2f}', fontsize=9)
 
-# Panel 3: Joshi — GDI_init vs BC_shift scatter coloured by diagnosis
+# Panel 3: Joshi — R/G ratio_init vs BC_shift scatter coloured by diagnosis
 ax3 = axes[2]
 for d in DIAG_ORDER:
     mask = diag_arr==d

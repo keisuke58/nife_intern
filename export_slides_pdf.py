@@ -193,10 +193,10 @@ with PdfPages(str(OUT_PDF)) as pdf:
     ax_L.axhline(0.76, color='#BBCCDD', lw=0.5, xmin=0.03, xmax=0.97)
     tL(0.04, 0.72, 'Healthy state  (CT1)', GREEN, bold=True, fs=9.5)
     tL(0.04, 0.65, '   Actinobacteria, Bacilli dominant', GREEN, fs=9)
-    tL(0.04, 0.59, '   GDI < 0  (commensal)', GREEN, fs=9)
+    tL(0.04, 0.59, '   R/G ratio < 0  (commensal)', GREEN, fs=9)
     tL(0.04, 0.50, 'Dysbiotic state  (CT2)', RED, bold=True, fs=9.5)
     tL(0.04, 0.43, '   Bacteroidia, Fusobacteria expand', RED, fs=9)
-    tL(0.04, 0.37, '   GDI > 0  (dysbiotic)', RED, fs=9)
+    tL(0.04, 0.37, '   R/G ratio > 0  (dysbiotic)', RED, fs=9)
     ax_L.axhline(0.30, color='#BBCCDD', lw=0.5, xmin=0.03, xmax=0.97)
     tL(0.04, 0.26, 'Clinical question:', NAVY, bold=True, fs=9.5)
     tL(0.04, 0.19, '   Why do some patients relapse after', NAVY, fs=9)
@@ -225,7 +225,7 @@ with PdfPages(str(OUT_PDF)) as pdf:
         ('φᵢ',  BLUE,  '  relative abundance of guild i'),
         ('bᵢ',  GREEN, '  intrinsic growth rate  (patient-specific)'),
         ('Aᵢⱼ', GOLD,  '  interaction j → i  (+ mutualism, − competition)'),
-        ('GDI', RED,   '  log(φ_dys) − log(φ_com)   < 0 = commensal'),
+        ('R/G ratio', RED,   '  log(φ_dys) − log(φ_com)   < 0 = commensal'),
     ]
     for k, (sym, col, desc) in enumerate(params):
         y = 0.65 - k * 0.09
@@ -353,30 +353,30 @@ with PdfPages(str(OUT_PDF)) as pdf:
         title    = 'Tipping Point Analysis: CT2 → CT1 b-Environment Transition',
         subtitle = 'Left: b(α) = (1−α)·b_CT2 + α·b_CT1  |  Right: sweep one b_i while holding others at CT2 mean',
         footer   = (
-            'No α* crossing: GDI < 0 for all α → A matrix drives commensalism regardless of b environment.  '
-            '|  Single-guild drivers: Gammaproteobacteria (ΔGDI = 1.04) and Bacteroidia (ΔGDI = 0.94).  '
+            'No α* crossing: R/G ratio < 0 for all α → A matrix drives commensalism regardless of b environment.  '
+            '|  Single-guild drivers: Gammaproteobacteria (ΔR/G = 1.04) and Bacteroidia (ΔR/G ratio = 0.94).  '
             '→ Structural attractor: interventions must alter A (ecology), not just b.'
         ))
     two_fig(fig,
         R/'guild_tipping'/'tipping_alpha_scan.png',
         R/'guild_tipping'/'tipping_single_guild.png',
         '(a)  α-interpolation CT2 → CT1 environment',
-        '(b)  Single-guild b sweep: |ΔGDI| effect size')
+        '(b)  Single-guild b sweep: |ΔR/G| effect size')
     side_panel(fig, [
         ('Alpha scan:',                   NAVY,  True,  9.0),
-        ('No GDI = 0 crossing',           BLUE,  True,  9.0),
+        ('No R/G ratio = 0 crossing',           BLUE,  True,  9.0),
         ('single commensal attractor',    BLUE,  False, 8.5),
         ('A matrix dominant',             BLUE,  False, 8.5),
         ('',                              NAVY,  False, 4),
         ('Top single-guild drivers:',     NAVY,  True,  9.0),
         ('Gammaproteobact.',              RED,   True,  9.0),
-        ('ΔGDI = 1.04  (#1)',             RED,   False, 8.5),
+        ('ΔR/G = 1.04  (#1)',             RED,   False, 8.5),
         ('Δb = −5.31',                   RED,   False, 8.5),
         ('Bacteroidia',                   GOLD,  True,  9.0),
-        ('ΔGDI = 0.94  (#2)',             GOLD,  False, 8.5),
+        ('ΔR/G ratio = 0.94  (#2)',             GOLD,  False, 8.5),
         ('Δb = −0.96',                   GOLD,  False, 8.5),
         ('',                              NAVY,  False, 4),
-        ('Equilibrium GDI:',              NAVY,  True,  8.5),
+        ('Equilibrium R/G ratio:',              NAVY,  True,  8.5),
         ('Patient D: −0.48 (commensal)',  GREEN, False, 8.0),
         ('All others: > 0',               RED,   False, 8.0),
     ])
@@ -388,9 +388,9 @@ with PdfPages(str(OUT_PDF)) as pdf:
     fig = base_fig()
     draw_chrome(fig,
         title    = '2D Phase Diagram: Gammaproteobacteria × Bacteroidia',
-        subtitle = '20 × 20 grid  ·  all other b fixed at CT2 mean  ·  week-3 GDI  ·  dashed = GDI = 0 tipping boundary',
+        subtitle = '20 × 20 grid  ·  all other b fixed at CT2 mean  ·  week-3 R/G ratio  ·  dashed = R/G ratio = 0 tipping boundary',
         footer   = (
-            'Top-2 tipping guilds (ΔGDI 1.04 and 0.94).  '
+            'Top-2 tipping guilds (ΔR/G 1.04 and 0.94).  '
             'Commensal region at low b_Gamm and low b_Bact.  '
             'CT2 (▼) deep in dysbiotic zone; CT1 (▲) near boundary.  '
             '→ Joint reduction of Gamm and Bact growth rates is the most efficient ecological intervention.'
@@ -399,7 +399,7 @@ with PdfPages(str(OUT_PDF)) as pdf:
               0.01, CONTENT_BOT, 0.725, CONTENT_H)
     side_panel(fig, [
         ('Tipping boundary:',             NAVY,  True,  9.0),
-        ('GDI = 0  (dashed)',             NAVY,  False, 8.5),
+        ('R/G ratio = 0  (dashed)',             NAVY,  False, 8.5),
         ('visible in 2D space',           NAVY,  False, 8.5),
         ('',                              NAVY,  False, 4),
         ('Commensal zone:',               NAVY,  True,  9.0),
@@ -422,22 +422,22 @@ with PdfPages(str(OUT_PDF)) as pdf:
     fig = base_fig()
     draw_chrome(fig,
         title    = 'Predicted Relapse Dynamics: Three Patient Archetypes',
-        subtitle = 'gLV simulation t = 150 d  ·  patient-specific b vectors  ·  GDI = log(φ_dys) − log(φ_com)',
+        subtitle = 'gLV simulation t = 150 d  ·  patient-specific b vectors  ·  R/G ratio = log(φ_dys) − log(φ_com)',
         footer   = (
-            '① Persistent dysbiotic (A,B,E,F,H,K): GDI > 0 throughout.  '
+            '① Persistent dysbiotic (A,B,E,F,H,K): R/G ratio > 0 throughout.  '
             '② Transient responders (C→24d, G→38d, L→48d): commensal at wk-3, relapse by day 50.  '
-            '③ Permanent commensal (D only): stable GDI < 0 at t = 150d.  '
-            '→ Week-3 GDI is a prognostic marker for relapse timing.'
+            '③ Permanent commensal (D only): stable R/G ratio < 0 at t = 150d.  '
+            '→ Week-3 R/G ratio is a prognostic marker for relapse timing.'
         ))
     two_fig(fig,
         R/'guild_tipping'/'relapse_dynamics.png',
         R/'guild_relapse'/'gdi_w3_vs_relapse.png',
-        '(a)  GDI trajectories to 90 d',
-        '(b)  Week-3 GDI as prognostic marker')
+        '(a)  R/G ratio trajectories to 90 d',
+        '(b)  Week-3 R/G ratio as prognostic marker')
     side_panel(fig, [
         ('① Persistent dysbiotic',        RED,   True,  9.0),
         ('A, B, E, F, H, K',              RED,   False, 8.5),
-        ('GDI > 0 from day 1',            RED,   False, 8.5),
+        ('R/G ratio > 0 from day 1',            RED,   False, 8.5),
         ('',                              NAVY,  False, 4),
         ('② Transient responder',         GOLD,  True,  9.0),
         ('C → day 24',                    GOLD,  False, 8.5),
@@ -448,10 +448,10 @@ with PdfPages(str(OUT_PDF)) as pdf:
         ('',                              NAVY,  False, 4),
         ('③ Permanent commensal',         BLUE,  True,  9.0),
         ('Patient D only',                BLUE,  False, 8.5),
-        ('GDI stable < 0',                BLUE,  False, 8.5),
+        ('R/G ratio stable < 0',                BLUE,  False, 8.5),
         ('',                              NAVY,  False, 4),
         ('Prognostic rule:',              NAVY,  True,  8.5),
-        ('GDI(wk3) ↑ → earlier relapse', NAVY,  False, 8.0),
+        ('R/G ratio(wk3) ↑ → earlier relapse', NAVY,  False, 8.0),
     ])
     pdf.savefig(fig, bbox_inches='tight')
     plt.close(fig)
@@ -461,10 +461,10 @@ with PdfPages(str(OUT_PDF)) as pdf:
     fig = base_fig()
     draw_chrome(fig,
         title    = 'Prevention Threshold & External Validation (Joshi 2025)',
-        subtitle = 'Left: min. Δb_i to prevent relapse  ·  Right: model eq. GDI vs Joshi 2025 peri-implant cohort (N = 127)',
+        subtitle = 'Left: min. Δb_i to prevent relapse  ·  Right: model eq. R/G ratio vs Joshi 2025 peri-implant cohort (N = 127)',
         footer   = (
             'Prevention: Patient C convertible with Δb_Bact = 1.33; G & L require multi-guild change → deep attractor.  '
-            '|  Joshi validation: predicted eq. GDI +0.65 ≈ Joshi PI mean +0.53  (9/10 patients; Δ = 0.12 < SD = 1.30).'
+            '|  Joshi validation: predicted eq. R/G ratio +0.65 ≈ Joshi PI mean +0.53  (9/10 patients; Δ = 0.12 < SD = 1.30).'
         ))
     two_fig(fig,
         R/'guild_relapse'/'prevention_threshold.png',
@@ -481,7 +481,7 @@ with PdfPages(str(OUT_PDF)) as pdf:
         ('deep dysbiotic attractor',      RED,   False, 8.5),
         ('',                              NAVY,  False, 4),
         ('Joshi validation:',             NAVY,  True,  9.0),
-        ('Predicted eq. GDI:',            NAVY,  False, 8.5),
+        ('Predicted eq. R/G ratio:',            NAVY,  False, 8.5),
         ('+0.65  (model)',                NAVY,  True,  9.0),
         ('Joshi PI mean:',                NAVY,  False, 8.5),
         ('+0.53  (data)',                 GOLD,  True,  9.0),
@@ -497,7 +497,7 @@ with PdfPages(str(OUT_PDF)) as pdf:
     # ── P10: 3D Phase Diagram ──────────────────────────────────────────────────
     fig = base_fig()
     draw_chrome(fig,
-        title    = '3D Attractor Landscape: GDI = 0 Boundary in Growth-Rate Space',
+        title    = '3D Attractor Landscape: R/G ratio = 0 Boundary in Growth-Rate Space',
         subtitle = '18³ grid  ·  Acti × Baci × Bact  ·  t = 80 d  ·  12-core parallel  ·  blue = commensal  |  red = dysbiotic',
         footer   = (
             '98% of parameter space is dysbiotic.  '
@@ -509,7 +509,7 @@ with PdfPages(str(OUT_PDF)) as pdf:
               0.01, CONTENT_BOT, 0.725, CONTENT_H)
     side_panel(fig, [
         ('Dysbiotic dominance:',          NAVY,  True,  9.0),
-        ('98% of grid: GDI > 0',          RED,   True,  9.5),
+        ('98% of grid: R/G ratio > 0',          RED,   True,  9.5),
         ('Only 2% commensal',             RED,   False, 8.5),
         ('',                              NAVY,  False, 4),
         ('Critical threshold:',           NAVY,  True,  9.0),
@@ -554,7 +554,7 @@ with PdfPages(str(OUT_PDF)) as pdf:
         ('#FFD3B6','③  A matrix creates a single commensal attractor — b alone cannot flip the community state.'),
         ('#FFB3BA','④  Three archetypes: persistent dysbiotic / transient responder / permanent commensal (D only).'),
         ('#D4B8E0','⑤  Patient C preventable with Δb_Bact = 1.33;  98% of growth-rate space is dysbiotic.'),
-        ('#B8D4E0','⑥  Validated externally: model eq. GDI +0.65 ≈ Joshi 2025 peri-implant mean +0.53.'),
+        ('#B8D4E0','⑥  Validated externally: model eq. R/G ratio +0.65 ≈ Joshi 2025 peri-implant mean +0.53.'),
     ]
     for k, (col, txt) in enumerate(findings):
         ax.text(0.09, 0.64 - k * 0.098, txt,

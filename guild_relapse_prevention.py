@@ -7,12 +7,12 @@ Analysis 1: Prevention threshold
   for each guild that converts them from "relapsing" to "permanent commensal".
   → Quantitative treatment target: "reduce b_Bacteroidia by X to prevent relapse"
 
-Analysis 2: Week-3 GDI as relapse predictor
-  Plot week-3 GDI vs relapse day for all transient-responder patients.
+Analysis 2: Week-3 R/G ratio as relapse predictor
+  Plot week-3 R/G ratio vs relapse day for all transient-responder patients.
   → Can week-3 snapshot predict relapse timing? (clinical prognostic marker)
 
 Analysis 3: Joshi cross-validation
-  Compare long-time predicted GDI to Joshi peri-implant GDI distribution.
+  Compare long-time predicted R/G ratio to Joshi peri-implant R/G ratio distribution.
   → Does the 3-week model correctly predict PI-range dysbiosis at equilibrium?
   → External validation of the long-term extrapolation.
 """
@@ -51,7 +51,7 @@ CMAP = plt.get_cmap('tab10')
 # Known CT labels (Dieckow 2024)
 CT_KNOWN = {'A':2,'B':2,'C':2,'D':1,'E':1,'F':2,'G':1,'H':2,'K':1,'L':1}
 
-# Joshi 2025 reference GDI values
+# Joshi 2025 reference R/G ratio values
 JOSHI = {'Health': -2.09, 'Mucositis': -1.74, 'PI': +0.53}
 JOSHI_SD = {'Health': 1.20, 'Mucositis': 1.15, 'PI': 1.30}  # approximate SD
 
@@ -144,7 +144,7 @@ def run_prevention_analysis(A, b_all, phi0_pp, short, patients, colors):
         b  = b_all[pi].copy()
         phi0 = phi0_pp[pi]
         gdi_w3, gdi_eq, flip0 = relapse_day(A, b, phi0)
-        print(f'\n  Patient {pat}: GDI(w3)={gdi_w3:.2f}, relapse={flip0:.0f}d')
+        print(f'\n  Patient {pat}: R/G ratio(w3)={gdi_w3:.2f}, relapse={flip0:.0f}d')
         results[pat] = {'b_orig': b.copy(), 'flip0': flip0, 'gdi_w3': gdi_w3,
                         'thresholds': {}}
 
@@ -236,12 +236,12 @@ def plot_prevention(results, short, colors, patients, b_all, out_path=None):
     return fig
 
 
-# ── Analysis 2: Week-3 GDI as relapse predictor ───────────────────────────────
+# ── Analysis 2: Week-3 R/G ratio as relapse predictor ───────────────────────────────
 
 def plot_gdi_vs_relapse(A, b_all, phi0_pp, patients, short, colors, out_path=None):
     """
-    Scatter: week-3 GDI vs relapse day for all patients.
-    Transient responders (GDI<0 at w3 but flip>0) are the clinically interesting group.
+    Scatter: week-3 R/G ratio vs relapse day for all patients.
+    Transient responders (R/G<0 at w3 but flip>0) are the clinically interesting group.
     """
     gdi_w3_all  = []
     relapse_all = []
@@ -290,15 +290,15 @@ def plot_gdi_vs_relapse(A, b_all, phi0_pp, patients, short, colors, out_path=Non
         x_line = np.linspace(gdi_w3_all[mask].min() - 0.5,
                               gdi_w3_all[mask].max() + 0.5, 50)
         ax.plot(x_line, np.polyval(z, x_line), 'k--', lw=1, alpha=0.5,
-                label=f'Trend (slope={z[0]:.1f} d/GDI)')
+                label=f'Trend (slope={z[0]:.1f} d/R/G ratio)')
 
-    ax.axvline(0, color='grey', lw=1, ls='--', alpha=0.7, label='GDI=0')
+    ax.axvline(0, color='grey', lw=1, ls='--', alpha=0.7, label='R/G=0')
     ax.axhline(90, color='grey', lw=0.5, ls=':', alpha=0.5)
     ax.set_yticks([0, 21, 30, 48, 60, 90, 150, 200])
     ax.set_yticklabels(['0', '21\n(wk3)', '30', '48', '60', '90', '150', '∞\n(never)'])
-    ax.set_xlabel('GDI at week 3  (< 0 = apparent recovery)', fontsize=10)
+    ax.set_xlabel('R/G ratio at week 3  (< 0 = apparent recovery)', fontsize=10)
     ax.set_ylabel('Predicted relapse day', fontsize=10)
-    ax.set_title('Week-3 GDI as a prognostic marker for relapse\n'
+    ax.set_title('Week-3 R/G ratio as a prognostic marker for relapse\n'
                  'Orange = transient responders, Blue = permanent commensal', fontsize=10)
 
     from matplotlib.patches import Patch
@@ -322,11 +322,11 @@ def plot_gdi_vs_relapse(A, b_all, phi0_pp, patients, short, colors, out_path=Non
 def plot_joshi_comparison(A, b_all, phi0_pp, patients, short, out_path=None):
     """
     Compare:
-    - Dieckow week-3 GDI (observed, from simulation)
-    - Dieckow long-time equilibrium GDI (predicted)
+    - Dieckow week-3 R/G ratio (observed, from simulation)
+    - Dieckow long-time equilibrium R/G ratio (predicted)
     - Joshi Health / Mucositis / PI distributions
     """
-    # Compute per-patient GDI at week-3 and equilibrium
+    # Compute per-patient R/G ratio at week-3 and equilibrium
     gdi_w3_all  = []
     gdi_eq_all  = []
     for pi in range(len(patients)):
@@ -346,7 +346,7 @@ def plot_joshi_comparison(A, b_all, phi0_pp, patients, short, out_path=None):
                         alpha=0.25, color=colors_joshi[label], label=f'Joshi {label}')
         ax.axvline(mu, color=colors_joshi[label], lw=1.5, ls='--', alpha=0.8)
 
-    # Dieckow week-3 GDI (strip)
+    # Dieckow week-3 R/G ratio (strip)
     y_w3 = np.random.default_rng(42).uniform(0.55, 0.75, len(patients))
     for pi, pat in enumerate(patients):
         ct = CT_KNOWN.get(pat, 0)
@@ -358,7 +358,7 @@ def plot_joshi_comparison(A, b_all, phi0_pp, patients, short, out_path=None):
             ax.annotate(pat, (gdi_w3_all[pi], y_w3[pi]),
                         xytext=(3, 3), textcoords='offset points', fontsize=7)
 
-    # Dieckow equilibrium GDI (strip)
+    # Dieckow equilibrium R/G ratio (strip)
     y_eq = np.random.default_rng(0).uniform(0.25, 0.45, len(patients))
     for pi, pat in enumerate(patients):
         ct = CT_KNOWN.get(pat, 0)
@@ -370,15 +370,15 @@ def plot_joshi_comparison(A, b_all, phi0_pp, patients, short, out_path=None):
 
     # Mean markers
     ax.axvline(np.mean(gdi_w3_all), color='navy', lw=2, ls='-',
-               label=f'Dieckow week-3 mean (GDI={np.mean(gdi_w3_all):.2f})')
+               label=f'Dieckow week-3 mean (R/G ratio={np.mean(gdi_w3_all):.2f})')
     ax.axvline(np.mean(gdi_eq_all), color='darkred', lw=2, ls='-',
-               label=f'Dieckow eq. mean (GDI={np.mean(gdi_eq_all):.2f})')
+               label=f'Dieckow eq. mean (R/G ratio={np.mean(gdi_eq_all):.2f})')
 
     # Annotations
     ax.text(np.mean(gdi_w3_all) + 0.1, 0.88, 'Week-3', fontsize=8, color='navy')
     ax.text(np.mean(gdi_eq_all) + 0.1, 0.58, 'Equilibrium\n(predicted)', fontsize=8, color='darkred')
 
-    ax.set_xlabel('Guild Dysbiosis Index (GDI)', fontsize=10)
+    ax.set_xlabel('guild-level R/G ratio (R/G ratio)', fontsize=10)
     ax.set_yticks([])
     ax.set_title('Predicted long-term dysbiosis matches Joshi peri-implantitis range\n'
                  '(External validation of gLV equilibrium predictions)', fontsize=10)
@@ -386,8 +386,8 @@ def plot_joshi_comparison(A, b_all, phi0_pp, patients, short, out_path=None):
     ax.set_xlim(-5.5, 3.5)
 
     # Key numbers box
-    txt = (f'Week-3 mean GDI: {np.mean(gdi_w3_all):.2f}\n'
-           f'Eq. mean GDI: {np.mean(gdi_eq_all):.2f}\n'
+    txt = (f'Week-3 mean R/G ratio: {np.mean(gdi_w3_all):.2f}\n'
+           f'Eq. mean R/G ratio: {np.mean(gdi_eq_all):.2f}\n'
            f'Joshi PI mean: {JOSHI["PI"]:.2f}')
     ax.text(0.98, 0.05, txt, transform=ax.transAxes,
             fontsize=8, ha='right', va='bottom',
@@ -405,8 +405,8 @@ def plot_joshi_comparison(A, b_all, phi0_pp, patients, short, out_path=None):
 def main():
     A, b_all, phi0_pp, guilds, short, colors, patients = load_data()
 
-    # ── Analysis 2: Week-3 GDI as relapse predictor (fast) ────────────────────
-    print('=== Analysis 2: Week-3 GDI vs relapse day ===')
+    # ── Analysis 2: Week-3 R/G ratio as relapse predictor (fast) ────────────────────
+    print('=== Analysis 2: Week-3 R/G ratio vs relapse day ===')
     fig2, gdi_w3_all, relapse_all = plot_gdi_vs_relapse(
         A, b_all, phi0_pp, patients, short, colors,
         out_path=OUT_DIR / 'gdi_w3_vs_relapse.png')
@@ -416,8 +416,8 @@ def main():
     fig3, gdi_w3_all2, gdi_eq_all = plot_joshi_comparison(
         A, b_all, phi0_pp, patients, short,
         out_path=OUT_DIR / 'joshi_comparison.png')
-    print(f'  Week-3 mean GDI: {np.mean(gdi_w3_all2):.3f}')
-    print(f'  Equilibrium mean GDI: {np.mean(gdi_eq_all):.3f}  (Joshi PI: +0.53)')
+    print(f'  Week-3 mean R/G ratio: {np.mean(gdi_w3_all2):.3f}')
+    print(f'  Equilibrium mean R/G ratio: {np.mean(gdi_eq_all):.3f}  (Joshi PI: +0.53)')
     n_pi = sum(1 for g in gdi_eq_all if g > 0)
     print(f'  Patients with PI-like equilibrium: {n_pi}/10')
 
