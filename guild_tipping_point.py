@@ -9,16 +9,16 @@ Analysis:
   1. Cluster patients into CT1 / CT2 using k-means on b_all (PC1 of b).
   2. Linear interpolation: b(α) = (1-α)·b_CT2 + α·b_CT1,  α ∈ [0,1].
   3. For each α, simulate gLV from every patient's week-0 phi0; record
-     week-3 GDI = log(φ_dys) - log(φ_com).
-  4. Find tipping α* where mean GDI crosses zero.
+     week-3 R/G ratio = log(φ_dys) - log(φ_com).
+  4. Find tipping α* where mean R/G ratio crosses zero.
   5. Single-guild b sweep: scan b_i from b_CT2[i] to b_CT1[i] one at a time
      to identify which guild's growth rate drives the tipping point.
   6. 2D phase diagram for the two most critical guilds.
 
-GDI definition (consistent with Joshi validation):
+R/G ratio definition (consistent with Joshi validation):
   φ_dys = φ_Bact + φ_Fuso + φ_Clos
   φ_com = φ_Baci + φ_Acti + φ_Nega
-  GDI < 0 → CT1 (commensal), GDI > 0 → CT2 (dysbiotic)
+  R/G ratio < 0 → CT1 (commensal), R/G ratio > 0 → CT2 (dysbiotic)
 """
 
 from __future__ import annotations
@@ -123,7 +123,7 @@ def equilibrium(A, b, phi0):
 
 
 def gdi(phi, short):
-    """Guild Dysbiosis Index (log ratio)."""
+    """guild-level R/G ratio (log ratio)."""
     dys_idx = [short.index(s) for s in ['Bact', 'Fuso', 'Clos'] if s in short]
     com_idx = [short.index(s) for s in ['Baci', 'Acti', 'Nega'] if s in short]
     phi_dys = phi[dys_idx].sum() + 1e-9
@@ -160,7 +160,7 @@ def alpha_scan(A, b_all, phi0_pp, short, patients, n_alpha=60):
     gdi_mean = gdi_mat.mean(axis=0)
     gdi_std  = gdi_mat.std(axis=0)
 
-    # Find tipping point: where mean GDI crosses zero
+    # Find tipping point: where mean R/G ratio crosses zero
     sign_changes = np.where(np.diff(np.sign(gdi_mean)))[0]
     alpha_star   = float(alphas[sign_changes[0]]) if len(sign_changes) else None
 
@@ -184,8 +184,8 @@ def _sweep_one(args):
 def single_guild_sweep(A, b_all, phi0_pp, short, patients, n_steps=20):
     """
     For each guild i, sweep b_i from b_CT2[i] to b_CT1[i] while keeping
-    all other b components at b_CT2.  Record mean GDI at week-3.
-    Returns: effect_sizes (n_guilds,) = |GDI(b_CT1[i]) - GDI(b_CT2[i])|
+    all other b components at b_CT2.  Record mean R/G ratio at week-3.
+    Returns: effect_sizes (n_guilds,) = |R/G ratio(b_CT1[i]) - R/G ratio(b_CT2[i])|
     Uses joblib parallel across all (guild, step) combinations.
     """
     from joblib import Parallel, delayed
@@ -273,7 +273,7 @@ def plot_alpha_scan(alphas, gdi_mean, gdi_std, gdi_mat, alpha_star,
     # Mean + std band
     ax.fill_between(alphas, gdi_mean - gdi_std, gdi_mean + gdi_std,
                     color='grey', alpha=0.2, label='mean ± SD')
-    ax.plot(alphas, gdi_mean, 'k-', lw=2, label='Mean GDI')
+    ax.plot(alphas, gdi_mean, 'k-', lw=2, label='Mean R/G ratio')
 
     ax.axhline(0, color='grey', lw=1, ls='--')
     ax.axvline(0, color='#d6604d', lw=1, ls=':', label='CT2 env (α=0)')
@@ -296,7 +296,7 @@ def plot_alpha_scan(alphas, gdi_mean, gdi_std, gdi_mat, alpha_star,
 
     ax.set_xlabel('Interpolation parameter α  (0 = CT2 environment, 1 = CT1 environment)',
                   fontsize=9)
-    ax.set_ylabel('Guild Dysbiosis Index (GDI)', fontsize=9)
+    ax.set_ylabel('guild-level R/G ratio (R/G ratio)', fontsize=9)
     ax.set_title('Community tipping point: dysbiotic → commensal transition\n'
                  'b(α) = (1-α)·b_CT2 + α·b_CT1', fontsize=10)
 
@@ -318,7 +318,7 @@ def plot_single_guild_effects(effect_sizes, short, colors, b_CT1, b_CT2, out_pat
                   color=[colors[i] for i in order], alpha=0.85)
     ax.set_xticks(range(len(short)))
     ax.set_xticklabels([short[i] for i in order], rotation=45, fontsize=8)
-    ax.set_ylabel('|ΔGDI|  (b_CT2[i] → b_CT1[i])', fontsize=9)
+    ax.set_ylabel('|ΔR/G|  (b_CT2[i] → b_CT1[i])', fontsize=9)
     ax.set_title('Which guild\'s growth rate drives the tipping?', fontsize=9)
     for bar, val in zip(bars, effect_sizes[order]):
         ax.text(bar.get_x() + bar.get_width()/2,
@@ -361,11 +361,11 @@ def plot_phase_diagram(b_i_vals, b_j_vals, gdi_grid, short, gi, gj,
     ax.plot(b_CT1[gj], b_CT1[gi], '^', color='#2166ac', ms=10,
             label='CT1 mean', zorder=5)
 
-    fig.colorbar(im, ax=ax, label='Mean GDI (week-3)')
+    fig.colorbar(im, ax=ax, label='Mean R/G ratio (week-3)')
     ax.set_xlabel(f'b_{short[gj]}  (growth rate of {short[gj]})', fontsize=9)
     ax.set_ylabel(f'b_{short[gi]}  (growth rate of {short[gi]})', fontsize=9)
     ax.set_title(f'2D phase diagram: {short[gi]} × {short[gj]}\n'
-                 'Black dashed: GDI = 0 (tipping boundary)', fontsize=9)
+                 'Black dashed: R/G ratio = 0 (tipping boundary)', fontsize=9)
     ax.legend(fontsize=8)
     fig.tight_layout()
     if out_path:
@@ -376,7 +376,7 @@ def plot_phase_diagram(b_i_vals, b_j_vals, gdi_grid, short, gi, gj,
 
 def plot_top_sweep_curves(sweep_curves, short, colors, alpha_star, b_CT1, b_CT2,
                           top_n=4, out_path=None):
-    """Show GDI vs b_i for the top-N most influential guilds."""
+    """Show R/G ratio vs b_i for the top-N most influential guilds."""
     fig, axes = plt.subplots(1, top_n, figsize=(3.5 * top_n, 4), sharey=True)
 
     effect_sizes = {s: abs(v[1][-1] - v[1][0]) for s, v in sweep_curves.items()}
@@ -402,11 +402,11 @@ def plot_top_sweep_curves(sweep_curves, short, colors, alpha_star, b_CT1, b_CT2,
 
         ax.set_xlabel(f'b_{gname}', fontsize=9)
         if ax == axes[0]:
-            ax.set_ylabel('Mean GDI (week-3)', fontsize=9)
+            ax.set_ylabel('Mean R/G ratio (week-3)', fontsize=9)
         ax.set_title(gname, fontsize=9, color=colors[gi])
         ax.legend(fontsize=6)
 
-    fig.suptitle('GDI tipping curves: sweep one guild\'s b at a time', fontsize=10)
+    fig.suptitle('R/G ratio tipping curves: sweep one guild\'s b at a time', fontsize=10)
     fig.tight_layout()
     if out_path:
         fig.savefig(out_path, dpi=150, bbox_inches='tight')
@@ -425,7 +425,7 @@ def plot_convergence_trajectories(A, b_all, phi0_pp, short, colors, patients, ct
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
 
-    # Panel A: GDI over time
+    # Panel A: R/G ratio over time
     ax = axes[0]
     for p in ct1_pat + ct2_pat:
         traj = simulate(A, b_all[p], phi0_pp[p], t_end=T_END_LONG, rtol=1e-5)
@@ -433,18 +433,18 @@ def plot_convergence_trajectories(A, b_all, phi0_pp, short, colors, patients, ct
         gdi_t = [gdi(traj[ti], short) for ti in range(len(traj))]
         c = ct[p]
         ax.plot(t, gdi_t, color=ct_colors_map[c], lw=1.5, alpha=0.8)
-    ax.axhline(0, color='grey', lw=1, ls='--', label='GDI=0 boundary')
+    ax.axhline(0, color='grey', lw=1, ls='--', label='R/G=0 boundary')
     ax.axvline(21, color='k', lw=1, ls=':', alpha=0.5, label='Week 3 (data end)')
     from matplotlib.patches import Patch
     ax.legend(handles=[
         Patch(color='#2166ac', label='CT1 commensal'),
         Patch(color='#d6604d', label='CT2 dysbiotic'),
-        plt.Line2D([0],[0], color='grey', ls='--', label='GDI=0'),
+        plt.Line2D([0],[0], color='grey', ls='--', label='R/G=0'),
         plt.Line2D([0],[0], color='k', ls=':', label='Week 3'),
     ], fontsize=7)
     ax.set_xlabel('Days', fontsize=9)
-    ax.set_ylabel('GDI', fontsize=9)
-    ax.set_title('All patients converge to same attractor\n(GDI < 0 = commensal)', fontsize=9)
+    ax.set_ylabel('R/G ratio', fontsize=9)
+    ax.set_title('All patients converge to same attractor\n(R/G ratio < 0 = commensal)', fontsize=9)
 
     # Panel B: week-0 vs equilibrium composition
     ax = axes[1]
@@ -508,8 +508,8 @@ def main():
     print('\n=== Alpha scan ===')
     alphas, gdi_mean, gdi_std, gdi_mat, alpha_star, b_CT1, b_CT2 = \
         alpha_scan(A, b_all, phi0_pp, short, patients)
-    print(f'  GDI at alpha=0 (CT2): {gdi_mean[0]:.3f}')
-    print(f'  GDI at alpha=1 (CT1): {gdi_mean[-1]:.3f}')
+    print(f'  R/G ratio at alpha=0 (CT2): {gdi_mean[0]:.3f}')
+    print(f'  R/G ratio at alpha=1 (CT1): {gdi_mean[-1]:.3f}')
     if alpha_star is None:
         print('  No crossing: single commensal attractor (A matrix dominant)')
     else:
@@ -523,7 +523,7 @@ def main():
         A, b_all, phi0_pp, short, colors, patients, ct,
         out_path=OUT_DIR / 'tipping_convergence.png')
     eq_gdi = [gdi(eq_comp[p], short) for p in range(len(b_all))]
-    print(f'  All equilibrium GDI < 0: {all(g < 0 for g in eq_gdi)}')
+    print(f'  All equilibrium R/G ratio < 0: {all(g < 0 for g in eq_gdi)}')
 
     # 3. b_i vs equilibrium
     print('\n=== b vs equilibrium ===')
@@ -535,7 +535,7 @@ def main():
     effect_sizes, sweep_curves, _, _ = \
         single_guild_sweep(A, b_all, phi0_pp, short, patients, n_steps=15)
     order = np.argsort(effect_sizes)[::-1]
-    print(f'  {"Guild":<6} {"ΔGDI":>7}  {"Δb":>7}')
+    print(f'  {"Guild":<6} {"ΔR/G":>7}  {"Δb":>7}')
     for i in order:
         print(f'  {short[i]:<6} {effect_sizes[i]:7.3f}  {b_CT1[i]-b_CT2[i]:+7.3f}')
     plot_single_guild_effects(effect_sizes, short, colors, b_CT1, b_CT2,

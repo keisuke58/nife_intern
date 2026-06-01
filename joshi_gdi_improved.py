@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
 joshi_gdi_improved.py
-  Improved GDI validation against Joshi/mSystems data.
+  Improved R/G ratio validation against Joshi/mSystems data.
   Targets ρ ≥ 0.70 via:
     1. gLV α=0.25 A matrix (best LOO model, averaged across 10 folds)
     2. Zero-imputation of unobserved guilds (reduces shrinkage toward Dieckow mean)
-    3. Instant GDI = −φᵀ(b+Aφ) at observed φ0 (no ODE integration noise)
-    4. Equilibrium GDI with gLV A (for comparison)
-    5. Raw compositional GDI: log(dys/com) directly from observed φ0
+    3. Instant R/G ratio = −φᵀ(b+Aφ) at observed φ0 (no ODE integration noise)
+    4. Equilibrium R/G ratio with gLV A (for comparison)
+    5. Raw compositional R/G ratio: log(dys/com) directly from observed φ0
 
 Usage:
     /home/nishioka/IKM_Hiwi/.venv_jax/bin/python joshi_gdi_improved.py
@@ -136,10 +136,10 @@ def build_phi0_mean(rel5):
 phi0_zero = np.array([build_phi0_zero(rel_5[:, s]) for s in range(n_samp)])
 phi0_mean = np.array([build_phi0_mean(rel_5[:, s]) for s in range(n_samp)])
 
-# ── GDI variants ─────────────────────────────────────────────────────────────
+# ── R/G ratio variants ─────────────────────────────────────────────────────────────
 
 def instant_gdi(phi_mat, A, b):
-    """GDI = −φᵀ(b + A φ) evaluated at observed φ (no ODE integration)."""
+    """R/G ratio = −φᵀ(b + A φ) evaluated at observed φ (no ODE integration)."""
     f_vec = b + (A @ phi_mat.T).T        # (n, N_G)
     mean_f = (phi_mat * f_vec).sum(axis=1)  # (n,)
     return -mean_f
@@ -173,9 +173,9 @@ def guild_di_eq(eq, eps=1e-4):
     return np.log(dys / com)
 
 # ── Compute all variants ──────────────────────────────────────────────────────
-print('Computing instant GDI variants...')
+print('Computing instant R/G ratio variants...')
 
-# Instant GDI variants
+# Instant R/G ratio variants
 ig_glv_zero  = instant_gdi(phi0_zero, A_glv, b_glv)       # gLV A, zero-impute
 ig_glv_mean  = instant_gdi(phi0_mean, A_glv, b_glv)       # gLV A, mean-impute
 ig_glv_bham  = instant_gdi(phi0_zero, A_glv, b_ham)       # gLV A, Hamilton b, zero-impute
@@ -221,7 +221,7 @@ pg_m   = pg_log(phi0_mean)
 pgfs_z = pg_fuso_log(phi0_zero)
 pc1_z  = pca_score(phi0_zero)
 
-# ODE equilibrium GDI with gLV A
+# ODE equilibrium R/G ratio with gLV A
 print('Computing ODE equilibrium (gLV A)...')
 eq_glv_zero = run_to_eq(phi0_zero, A_glv, b_glv)
 eq_glv_mean = run_to_eq(phi0_mean, A_glv, b_glv)
@@ -246,12 +246,12 @@ variants = [
     ('Original: Hamilton A, ODE eq, mean-impute', gdi_eq_ham),
     ('gLV A, ODE eq, zero-impute',                gdi_eq_glv_zero),
     ('gLV A, ODE eq, mean-impute',                gdi_eq_glv_mean),
-    ('gLV A, Instant GDI, zero-impute',           ig_glv_zero),
-    ('gLV A, Instant GDI, mean-impute',           ig_glv_mean),
-    ('gLV A, Instant GDI, Hamilton b, zero-impu', ig_glv_bham),
-    ('Hamilton A, Instant GDI, zero-impute',       ig_ham_zero),
-    ('Hamilton A, Instant GDI, mean-impute',       ig_ham_mean),
-    ('Neutral b, gLV A, Instant GDI, zero-impu',  ig_neutral_z),
+    ('gLV A, Instant R/G ratio, zero-impute',           ig_glv_zero),
+    ('gLV A, Instant R/G ratio, mean-impute',           ig_glv_mean),
+    ('gLV A, Instant R/G ratio, Hamilton b, zero-impu', ig_glv_bham),
+    ('Hamilton A, Instant R/G ratio, zero-impute',       ig_ham_zero),
+    ('Hamilton A, Instant R/G ratio, mean-impute',       ig_ham_mean),
+    ('Neutral b, gLV A, Instant R/G ratio, zero-impu',  ig_neutral_z),
     ('Raw log(dys/com), zero-impute',              raw_zero),
     ('Raw log(dys/com), mean-impute',              raw_mean),
     ('Fitness adv gLV A, zero-impute',             fa_glv_zero),
@@ -292,14 +292,14 @@ def print_detail(gdi, label):
     print(f'  Spearman: {spearman_str(gdi)}')
 
 print_detail(gdi_eq_ham,   'Original (Hamilton A, ODE eq, mean-impute)')
-print_detail(ig_glv_zero,  'Best candidate: gLV A, Instant GDI, zero-impute')
+print_detail(ig_glv_zero,  'Best candidate: gLV A, Instant R/G ratio, zero-impute')
 print_detail(best_gdi,     f'Best overall: {best_name}')
 
 # ── Figure: top 4 variants ────────────────────────────────────────────────────
 top4 = [
     ('Original\n(Hamilton ODE eq)',         gdi_eq_ham),
     ('gLV A, ODE eq\nzero-impute',          gdi_eq_glv_zero),
-    ('gLV A, Instant GDI\nzero-impute',     ig_glv_zero),
+    ('gLV A, Instant R/G ratio\nzero-impute',     ig_glv_zero),
     ('Raw log(dys/com)\nzero-impute',        raw_zero),
 ]
 
@@ -328,8 +328,8 @@ for ax, (title, gdi) in zip(axes, top4):
             transform=ax.transAxes, va='top', fontsize=8,
             bbox=dict(boxstyle='round', fc='white', alpha=0.85))
 
-axes[0].set_ylabel('GDI score', fontsize=9)
-fig.suptitle('Joshi/mSystems GDI variants — n=127 (Health=56, Mucositis=39, PI=32)',
+axes[0].set_ylabel('R/G ratio', fontsize=9)
+fig.suptitle('Joshi/mSystems R/G ratio variants — n=127 (Health=56, Mucositis=39, PI=32)',
              fontsize=10)
 plt.tight_layout()
 out = FIG / 'fig_joshi_gdi_improved.png'
@@ -355,7 +355,7 @@ ax2.axhline(0.70, color='green', ls='--', lw=1, label='Target ρ=0.70')
 ax2.set_xticks(range(len(rhos)))
 ax2.set_xticklabels(names_short, fontsize=8)
 ax2.set_ylabel('Spearman ρ')
-ax2.set_title('GDI variant comparison — Joshi external validation')
+ax2.set_title('R/G ratio variant comparison — Joshi external validation')
 ax2.legend(fontsize=8)
 plt.tight_layout()
 fig2.savefig(FIG / 'fig_joshi_rho_comparison.png', dpi=200, bbox_inches='tight')

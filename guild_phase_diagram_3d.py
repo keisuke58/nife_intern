@@ -3,12 +3,12 @@
 guild_phase_diagram_3d.py — 3D phase diagram of the gLV attractor landscape.
 
 Sweeps b_Acti × b_Baci × b_Bact on a 3D grid, simulates to t=150d,
-computes equilibrium GDI at each point.
+computes equilibrium R/G ratio at each point.
 
 Outputs:
-  results/guild_phase/phase3d_plotly.html  — interactive 3D isosurface (GDI=0)
+  results/guild_phase/phase3d_plotly.html  — interactive 3D isosurface (R/G=0)
   results/guild_phase/phase3d_static.png   — 3-panel 2D slices for paper
-  results/guild_phase/phase3d_data.npz     — raw GDI grid
+  results/guild_phase/phase3d_data.npz     — raw R/G ratio grid
 """
 
 from __future__ import annotations
@@ -81,7 +81,7 @@ def glv_rhs(t, phi, A, b):
 
 
 def equilibrium_gdi(A, b, phi0, short):
-    """Simulate to T_END_EQ and return GDI of final state."""
+    """Simulate to T_END_EQ and return R/G ratio of final state."""
     sol = solve_ivp(glv_rhs, [0, T_END_EQ], phi0,
                     args=(A, b), method='LSODA',
                     rtol=1e-4, atol=1e-6, dense_output=False)
@@ -113,7 +113,7 @@ def _eval_point(args):
 def compute_grid(A, b_mean, phi0_mean, short, axes, n_grid=N_GRID):
     """
     axes: list of 3 (axis_name, b_range_lo, b_range_hi)
-    Returns: (xs, ys, zs, GDI_grid)  shapes: (n,)^3 + (n,n,n)
+    Returns: (xs, ys, zs, R/G ratio_grid)  shapes: (n,)^3 + (n,n,n)
     Uses joblib parallel for speed.
     """
     from joblib import Parallel, delayed
@@ -139,13 +139,13 @@ def compute_grid(A, b_mean, phi0_mean, short, axes, n_grid=N_GRID):
         delayed(_eval_point)(j) for j in jobs
     )
 
-    GDI = np.array(results).reshape(n_grid, n_grid, n_grid)
-    return xs, ys, zs, GDI
+    R/G ratio = np.array(results).reshape(n_grid, n_grid, n_grid)
+    return xs, ys, zs, R/G ratio
 
 
 # ── Plotly 3D isosurface ──────────────────────────────────────────────────────
 
-def plot_plotly(xs, ys, zs, GDI, axes, b_all, short, patients):
+def plot_plotly(xs, ys, zs, R/G ratio, axes, b_all, short, patients):
     try:
         import plotly.graph_objects as go
         import plotly.io as pio
@@ -169,23 +169,23 @@ def plot_plotly(xs, ys, zs, GDI, axes, b_all, short, patients):
 
     fig = go.Figure()
 
-    # GDI=0 isosurface
+    # R/G=0 isosurface
     fig.add_trace(go.Isosurface(
         x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
-        value=GDI.flatten(),
+        value=R/G ratio.flatten(),
         isomin=-0.05, isomax=0.05,
         surface_count=1,
         colorscale=[[0, 'rgba(150,150,150,0.5)'], [1, 'rgba(150,150,150,0.5)']],
         showscale=False,
         caps=dict(x_show=False, y_show=False, z_show=False),
-        name='GDI = 0 boundary',
+        name='R/G ratio = 0 boundary',
     ))
 
-    # Volume coloring: dysbiotic (GDI>0) = red, commensal (GDI<0) = blue
+    # Volume coloring: dysbiotic (R/G>0) = red, commensal (R/G<0) = blue
     fig.add_trace(go.Volume(
         x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
-        value=GDI.flatten(),
-        isomin=GDI.min(), isomax=GDI.max(),
+        value=R/G ratio.flatten(),
+        isomin=R/G ratio.min(), isomax=R/G ratio.max(),
         opacity=0.08,
         surface_count=12,
         colorscale=[
@@ -193,10 +193,10 @@ def plot_plotly(xs, ys, zs, GDI, axes, b_all, short, patients):
             [0.5, 'rgba(240,240,240,0.0)'],
             [1.0, 'rgba(200,40,40,0.6)'],
         ],
-        cmin=GDI.min(), cmax=GDI.max(),
+        cmin=R/G ratio.min(), cmax=R/G ratio.max(),
         showscale=True,
-        colorbar=dict(title='GDI', len=0.5),
-        name='GDI volume',
+        colorbar=dict(title='R/G ratio', len=0.5),
+        name='R/G ratio volume',
     ))
 
     # CT1 patients (commensal)
@@ -223,7 +223,7 @@ def plot_plotly(xs, ys, zs, GDI, axes, b_all, short, patients):
 
     axis_labels = [axes[i][0] for i in range(3)]
     fig.update_layout(
-        title=dict(text='gLV attractor landscape: GDI = 0 boundary in growth-rate space',
+        title=dict(text='gLV attractor landscape: R/G ratio = 0 boundary in growth-rate space',
                    font=dict(size=16)),
         scene=dict(
             xaxis_title=f'b<sub>{axis_labels[0]}</sub>',
@@ -243,10 +243,10 @@ def plot_plotly(xs, ys, zs, GDI, axes, b_all, short, patients):
 
 # ── Matplotlib 2D slices ──────────────────────────────────────────────────────
 
-def plot_slices(xs, ys, zs, GDI, axes, b_all, short, patients):
+def plot_slices(xs, ys, zs, R/G ratio, axes, b_all, short, patients):
     """
     Three 2D slice panels, each with b_Bact (dominant axis) on y-axis.
-    Clip GDI to [-2, 4] so the commensal boundary is colour-visible.
+    Clip R/G ratio to [-2, 4] so the commensal boundary is colour-visible.
     """
     labels = [a[0] for a in axes]   # Acti, Baci, Bact
     cmap   = plt.get_cmap('RdBu_r')
@@ -275,7 +275,7 @@ def plot_slices(xs, ys, zs, GDI, axes, b_all, short, patients):
 
     # ── Panel 1: b_Acti (x) × b_Bact (y) ─ slice at mid b_Baci ─────────────
     ax = axs[0]
-    sl = GDI[:, mid_y, :]          # shape (n_Acti, n_Bact)
+    sl = R/G ratio[:, mid_y, :]          # shape (n_Acti, n_Bact)
     sl_clip = np.clip(sl, VMIN, VMAX)
     im = ax.contourf(xs, zs, sl_clip.T, levels=40, cmap=cmap,
                      vmin=VMIN, vmax=VMAX)
@@ -283,21 +283,21 @@ def plot_slices(xs, ys, zs, GDI, axes, b_all, short, patients):
         ax.contour(xs, zs, sl.T, levels=[0.0], colors='black', linewidths=2.5)
     except Exception:
         pass
-    plt.colorbar(im, ax=ax, label='GDI (eq.)', shrink=0.85)
+    plt.colorbar(im, ax=ax, label='R/G ratio (eq.)', shrink=0.85)
     scatter(ax, short.index(labels[0]), short.index(labels[2]))
     ax.set_xlabel(f'$b_{{\\rm {labels[0]}}}$ (Actinobacteria)', fontsize=10)
     ax.set_ylabel(f'$b_{{\\rm {labels[2]}}}$ (Bacteroidia)', fontsize=10)
     ax.set_title(f'Slice: $b_{{\\rm {labels[1]}}}$ = {ys[mid_y]:.2f}', fontsize=10)
     ax.axhline(0, color='k', lw=0.6, ls='--', alpha=0.4)
     # Zone labels
-    ax.text(0.03, 0.97, '← Commensal\n   (GDI < 0)', transform=ax.transAxes,
+    ax.text(0.03, 0.97, '← Commensal\n   (R/G ratio < 0)', transform=ax.transAxes,
             va='top', fontsize=8, color='#1a6bbf', fontstyle='italic')
-    ax.text(0.97, 0.03, 'Dysbiotic →\n(GDI > 0)', transform=ax.transAxes,
+    ax.text(0.97, 0.03, 'Dysbiotic →\n(R/G ratio > 0)', transform=ax.transAxes,
             va='bottom', ha='right', fontsize=8, color='#c0392b', fontstyle='italic')
 
     # ── Panel 2: b_Baci (x) × b_Bact (y) ─ slice at mid b_Acti ─────────────
     ax = axs[1]
-    sl = GDI[mid_x, :, :]          # shape (n_Baci, n_Bact)
+    sl = R/G ratio[mid_x, :, :]          # shape (n_Baci, n_Bact)
     sl_clip = np.clip(sl, VMIN, VMAX)
     im = ax.contourf(ys, zs, sl_clip.T, levels=40, cmap=cmap,
                      vmin=VMIN, vmax=VMAX)
@@ -305,7 +305,7 @@ def plot_slices(xs, ys, zs, GDI, axes, b_all, short, patients):
         ax.contour(ys, zs, sl.T, levels=[0.0], colors='black', linewidths=2.5)
     except Exception:
         pass
-    plt.colorbar(im, ax=ax, label='GDI (eq.)', shrink=0.85)
+    plt.colorbar(im, ax=ax, label='R/G ratio (eq.)', shrink=0.85)
     scatter(ax, short.index(labels[1]), short.index(labels[2]))
     ax.set_xlabel(f'$b_{{\\rm {labels[1]}}}$ (Bacilli)', fontsize=10)
     ax.set_ylabel(f'$b_{{\\rm {labels[2]}}}$ (Bacteroidia)', fontsize=10)
@@ -314,7 +314,7 @@ def plot_slices(xs, ys, zs, GDI, axes, b_all, short, patients):
 
     # ── Panel 3: b_Acti (x) × b_Baci (y) ─ slice at low b_Bact ─────────────
     ax = axs[2]
-    sl = GDI[:, :, low_z]          # shape (n_Acti, n_Baci) at low Bact
+    sl = R/G ratio[:, :, low_z]          # shape (n_Acti, n_Baci) at low Bact
     sl_clip = np.clip(sl, VMIN, VMAX)
     im = ax.contourf(xs, ys, sl_clip.T, levels=40, cmap=cmap,
                      vmin=VMIN, vmax=VMAX)
@@ -322,7 +322,7 @@ def plot_slices(xs, ys, zs, GDI, axes, b_all, short, patients):
         ax.contour(xs, ys, sl.T, levels=[0.0], colors='black', linewidths=2.5)
     except Exception:
         pass
-    plt.colorbar(im, ax=ax, label='GDI (eq.)', shrink=0.85)
+    plt.colorbar(im, ax=ax, label='R/G ratio (eq.)', shrink=0.85)
     scatter(ax, short.index(labels[0]), short.index(labels[1]))
     ax.set_xlabel(f'$b_{{\\rm {labels[0]}}}$ (Actinobacteria)', fontsize=10)
     ax.set_ylabel(f'$b_{{\\rm {labels[1]}}}$ (Bacilli)', fontsize=10)
@@ -337,16 +337,16 @@ def plot_slices(xs, ys, zs, GDI, axes, b_all, short, patients):
                markeredgecolor='white', markersize=9, label='CT1 patients (commensal)'),
         Line2D([0], [0], marker='s', color='w', markerfacecolor='#c0392b',
                markeredgecolor='white', markersize=9, label='CT2 patients (dysbiotic)'),
-        Line2D([0], [0], color='k', linewidth=2.5, label='GDI = 0 boundary'),
-        Patch(facecolor='#3a7fd5', alpha=0.7, label='Commensal attractor (GDI < 0)'),
-        Patch(facecolor='#d53a3a', alpha=0.7, label='Dysbiotic attractor (GDI > 0)'),
+        Line2D([0], [0], color='k', linewidth=2.5, label='R/G ratio = 0 boundary'),
+        Patch(facecolor='#3a7fd5', alpha=0.7, label='Commensal attractor (R/G ratio < 0)'),
+        Patch(facecolor='#d53a3a', alpha=0.7, label='Dysbiotic attractor (R/G ratio > 0)'),
     ]
     fig.legend(handles=handles, loc='lower center', ncol=5,
                bbox_to_anchor=(0.5, -0.07), fontsize=8.5, framealpha=0.95)
 
     fig.suptitle(
-        'gLV attractor landscape: equilibrium GDI as a function of guild-specific growth rates\n'
-        r'(other $b_i$ fixed at population mean;  colour saturated at GDI $\in [-2,+4]$)',
+        'gLV attractor landscape: equilibrium R/G ratio as a function of guild-specific growth rates\n'
+        r'(other $b_i$ fixed at population mean;  colour saturated at R/G ratio $\in [-2,+4]$)',
         fontsize=11, y=1.03)
 
     plt.tight_layout()
@@ -358,7 +358,7 @@ def plot_slices(xs, ys, zs, GDI, axes, b_all, short, patients):
 
 # ── 3D isosurface (matplotlib + marching cubes) ───────────────────────────────
 
-def plot_3d_isosurface(xs, ys, zs, GDI, axes, b_all, short, patients):
+def plot_3d_isosurface(xs, ys, zs, R/G ratio, axes, b_all, short, patients):
     try:
         from skimage.measure import marching_cubes
     except ImportError:
@@ -366,7 +366,7 @@ def plot_3d_isosurface(xs, ys, zs, GDI, axes, b_all, short, patients):
         return
 
     labels = [a[0] for a in axes]
-    verts, faces, normals, values = marching_cubes(GDI, level=0.0,
+    verts, faces, normals, values = marching_cubes(R/G ratio, level=0.0,
                                                     spacing=(xs[1]-xs[0],
                                                              ys[1]-ys[0],
                                                              zs[1]-zs[0]))
@@ -384,12 +384,12 @@ def plot_3d_isosurface(xs, ys, zs, GDI, axes, b_all, short, patients):
                             facecolor='#888888', edgecolor='none')
     ax.add_collection3d(mesh)
 
-    # Commensal zone hint: scatter a thin cloud of GDI<-0.5 points
-    mask_com = GDI < -0.5
+    # Commensal zone hint: scatter a thin cloud of R/G ratio<-0.5 points
+    mask_com = R/G ratio < -0.5
     X3, Y3, Z3 = np.meshgrid(xs, ys, zs, indexing='ij')
     ax.scatter(X3[mask_com][::4], Y3[mask_com][::4], Z3[mask_com][::4],
                c='royalblue', alpha=0.04, s=4)
-    mask_dys = GDI > 0.5
+    mask_dys = R/G ratio > 0.5
     ax.scatter(X3[mask_dys][::4], Y3[mask_dys][::4], Z3[mask_dys][::4],
                c='firebrick', alpha=0.04, s=4)
 
@@ -409,7 +409,7 @@ def plot_3d_isosurface(xs, ys, zs, GDI, axes, b_all, short, patients):
     ax.set_xlabel(f'$b_{{\\rm {labels[0]}}}$', labelpad=6)
     ax.set_ylabel(f'$b_{{\\rm {labels[1]}}}$', labelpad=6)
     ax.set_zlabel(f'$b_{{\\rm {labels[2]}}}$', labelpad=6)
-    ax.set_title('gLV attractor boundary (GDI = 0 isosurface)\n'
+    ax.set_title('gLV attractor boundary (R/G ratio = 0 isosurface)\n'
                  'Blue dots = commensal zone, Red = dysbiotic zone',
                  fontsize=11)
 
@@ -419,7 +419,7 @@ def plot_3d_isosurface(xs, ys, zs, GDI, axes, b_all, short, patients):
                markersize=9, label='CT1 patients (commensal)'),
         Line2D([0], [0], marker='^', color='w', markerfacecolor='firebrick',
                markersize=9, label='CT2 patients (dysbiotic)'),
-        plt.Rectangle((0,0), 1, 1, fc='#888888', alpha=0.4, label='GDI = 0 surface'),
+        plt.Rectangle((0,0), 1, 1, fc='#888888', alpha=0.4, label='R/G ratio = 0 surface'),
     ]
     ax.legend(handles=handles, fontsize=8, loc='upper left')
 
@@ -449,7 +449,7 @@ def main():
 
     axes = [rng('Acti'), rng('Baci'), rng('Bact')]
 
-    print(f"\nComputing 3D GDI grid ({N_GRID}^3 = {N_GRID**3} points)...")
+    print(f"\nComputing 3D R/G ratio grid ({N_GRID}^3 = {N_GRID**3} points)...")
     print(f"  Axes: {[a[0] for a in axes]}")
     print(f"  Ranges: {[(round(a[1],2), round(a[2],2)) for a in axes]}")
 
@@ -458,33 +458,33 @@ def main():
     if cache.exists():
         print("  Loading cached grid...")
         data = np.load(cache)
-        xs, ys, zs, GDI = data['xs'], data['ys'], data['zs'], data['GDI']
+        xs, ys, zs, R/G ratio = data['xs'], data['ys'], data['zs'], data['R/G ratio']
         # Check grid size matches
-        if GDI.shape[0] != N_GRID:
+        if R/G ratio.shape[0] != N_GRID:
             print("  Grid size mismatch, recomputing...")
-            xs, ys, zs, GDI = compute_grid(A, b_mean, phi0_mean, short, axes)
-            np.savez(cache, xs=xs, ys=ys, zs=zs, GDI=GDI)
+            xs, ys, zs, R/G ratio = compute_grid(A, b_mean, phi0_mean, short, axes)
+            np.savez(cache, xs=xs, ys=ys, zs=zs, R/G ratio=R/G ratio)
     else:
-        xs, ys, zs, GDI = compute_grid(A, b_mean, phi0_mean, short, axes)
-        np.savez(cache, xs=xs, ys=ys, zs=zs, GDI=GDI)
+        xs, ys, zs, R/G ratio = compute_grid(A, b_mean, phi0_mean, short, axes)
+        np.savez(cache, xs=xs, ys=ys, zs=zs, R/G ratio=R/G ratio)
         print(f"  Saved cache: {cache}")
 
-    print(f"\nGDI range: [{GDI.min():.2f}, {GDI.max():.2f}]")
-    dys_frac = (GDI > 0).sum() / GDI.size
+    print(f"\nR/G ratio range: [{R/G ratio.min():.2f}, {R/G ratio.max():.2f}]")
+    dys_frac = (R/G ratio > 0).sum() / R/G ratio.size
     print(f"Dysbiotic fraction of grid: {dys_frac:.1%}")
 
     print("\nGenerating 2D slice figure (paper-ready)...")
-    plot_slices(xs, ys, zs, GDI, axes, b_all, short, patients)
+    plot_slices(xs, ys, zs, R/G ratio, axes, b_all, short, patients)
 
     try:
         from skimage.measure import marching_cubes  # noqa: F401
         print("Generating 3D isosurface (matplotlib)...")
-        plot_3d_isosurface(xs, ys, zs, GDI, axes, b_all, short, patients)
+        plot_3d_isosurface(xs, ys, zs, R/G ratio, axes, b_all, short, patients)
     except ImportError:
         print("skimage not found — skipping matplotlib 3D isosurface")
 
     print("Generating interactive 3D plot (plotly HTML)...")
-    plot_plotly(xs, ys, zs, GDI, axes, b_all, short, patients)
+    plot_plotly(xs, ys, zs, R/G ratio, axes, b_all, short, patients)
 
     print(f"\nAll outputs in: {OUT_DIR}")
 

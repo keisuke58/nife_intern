@@ -18,12 +18,17 @@ parser.add_argument('--nsteps',     type=int,   default=100)
 parser.add_argument('--no-agora',   action='store_true')
 parser.add_argument('--w-agora',    type=float, default=1.0,  help='AGORA L3 sign-prior weight')
 parser.add_argument('--prior-mode', type=str,   default='sign',
-                    choices=['sign', 'macarthur'],
-                    help='sign: current sign penalty; macarthur: Gaussian prior from FBA Phi')
-parser.add_argument('--c-agora',    type=float, default=0.1,
-                    help='[macarthur mode] scaling constant c in A~N(c·Phi, sigma²)')
+                    choices=['sign', 'macarthur', 'combined'],
+                    help='sign: sign penalty; macarthur: Gaussian prior from FBA Phi; '
+                         'combined: sign + magnitude (additive, OLS-calibrated)')
+parser.add_argument('--c-agora',    type=float, default=None,
+                    help='[macarthur/combined] scaling constant c; None = OLS-calibrate from agora_w1p0 fit')
 parser.add_argument('--sigma-mac',  type=float, default=0.5,
                     help='[macarthur mode] prior std sigma')
+parser.add_argument('--gamma-mag',  type=float, default=0.5,
+                    help='[combined mode] weight for magnitude penalty (0=sign only, 1=equal weight)')
+parser.add_argument('--sigma-mag',  type=float, default=0.3,
+                    help='[combined mode] std for magnitude Gaussian prior')
 parser.add_argument('--out-suffix', type=str,   default='',   help='suffix for output filename')
 args = parser.parse_args()
 
@@ -45,7 +50,10 @@ if args.out_suffix:
 elif args.no_agora:
     _suffix = '_no_agora'
 elif args.prior_mode == 'macarthur':
-    _suffix = f'_mac_c{args.c_agora:.3f}'.replace('.', 'p')
+    c_str = f'{args.c_agora:.3f}' if args.c_agora is not None else 'cal'
+    _suffix = f'_mac_c{c_str}'.replace('.', 'p')
+elif args.prior_mode == 'combined':
+    _suffix = f'_combined_g{args.gamma_mag:.2f}'.replace('.', 'p')
 else:
     _suffix = f'_agora_w{args.w_agora:.1f}'.replace('.', 'p')
 OUT      = _here / 'results' / 'dieckow_cr' / f'fit_glv_hamilton_kegg_expanded{_suffix}.json'
@@ -104,22 +112,44 @@ diag_idx_np = np.array([j * (j + 1) // 2 + j for j in range(n_sp)])
 
 nsteps = args.nsteps
 
-# ── MacArthur prior (optional) ────────────────────────────────────────────────
+# ── MacArthur / combined prior (optional) ────────────────────────────────────
 PRIOR_MODE = args.prior_mode
-C_AGORA    = args.c_agora
 SIGMA_MAC  = args.sigma_mac
+GAMMA_MAG  = args.gamma_mag
+SIGMA_MAG  = args.sigma_mag
 phi_mac_j  = None
 mac_mask_j = None
+C_AGORA    = args.c_agora  # may be None → OLS-calibrated below
 
-if PRIOR_MODE == 'macarthur' and use_agora:
+_need_phi = (PRIOR_MODE in ('macarthur', 'combined')) and use_agora
+if _need_phi:
     from guild_agora_signs import get_agora_phi_matrix
     agora_dir = _here / 'data' / 'homd_db' / 'agora_gems'
-    print(f'Computing MacArthur Phi matrix (c={C_AGORA}, sigma={SIGMA_MAC})...', flush=True)
+    print(f'Computing AGORA Phi matrix...', flush=True)
     phi_mac_np, mac_mask_np = get_agora_phi_matrix(agora_dir, verbose=True)
     phi_mac_j  = jnp.array(phi_mac_np)
     mac_mask_j = jnp.array(mac_mask_np)
     print(f'Phi range: [{phi_mac_np.min():.3f}, {phi_mac_np.max():.3f}]  '
           f'non-zero pairs: {int(mac_mask_np.sum())}', flush=True)
+
+    # OLS-calibrate c from best existing full-fit if not provided
+    if C_AGORA is None:
+        cal_path = _here / 'results' / 'dieckow_cr' / 'fit_glv_hamilton_kegg_expanded_agora_w1p0.json'
+        if cal_path.exists():
+            import json as _json
+            _d    = _json.load(open(cal_path))
+            A_cal = np.array(_d['A'])[:n_sp, :n_sp]
+            _mask = mac_mask_np & (~np.eye(n_sp, dtype=bool))
+            F_cal = phi_mac_np[_mask]
+            A_cal_v = A_cal[_mask]
+            C_AGORA = float((F_cal @ A_cal_v) / (F_cal @ F_cal))
+            print(f'OLS-calibrated c = {C_AGORA:.4f}  '
+                  f'(r(Phi,A)={np.corrcoef(F_cal, A_cal_v)[0,1]:.3f})', flush=True)
+        else:
+            C_AGORA = 0.1
+            print(f'Calibration file not found; using c={C_AGORA}', flush=True)
+    else:
+        print(f'Using provided c={C_AGORA}', flush=True)
 
 # ── ODE helpers ───────────────────────────────────────────────────────────────
 def _run_sim(theta, phi_init):
@@ -155,21 +185,30 @@ def loss_fn(theta_A, b_all):
     rmse = jnp.sqrt(sq / (n_p * 2 * n_sp))
     A    = _unpack_A(theta_A)
 
+    sp_j = jnp.sign(net_sym_j)
+    sign_mask = (sp_j != 0) & (~jnp.eye(n_sp, dtype=bool))
+
     if PRIOR_MODE == 'macarthur' and phi_mac_j is not None:
-        # MacArthur Gaussian prior: A[i,j] ~ N(c · Phi[i,j], sigma²)
-        # L = Σ_{i≠j,mask} (A[i,j] − c·Phi[i,j])² / (2σ²)
+        # MacArthur: replace sign prior with Gaussian A ~ N(c·Phi, σ²)
         pen = jnp.where(
             mac_mask_j,
             (A - C_AGORA * phi_mac_j) ** 2 / (2.0 * SIGMA_MAC ** 2),
             0.0
         ).sum()
+    elif PRIOR_MODE == 'combined' and phi_mac_j is not None:
+        # Combined: sign prior + additive magnitude soft constraint
+        pen_sign = jnp.where(sign_mask,
+                             jnp.abs(net_sym_j) * jnp.maximum(0.0, -sp_j * A) ** 2 / (2 * SIGMA ** 2),
+                             0.0).sum()
+        pen_mag  = jnp.where(mac_mask_j & sign_mask,
+                             (A - C_AGORA * phi_mac_j) ** 2 / (2.0 * SIGMA_MAG ** 2),
+                             0.0).sum()
+        pen = pen_sign + GAMMA_MAG * pen_mag
     else:
         # Sign prior (default): penalise wrong sign weighted by flow magnitude
-        sp_j = jnp.sign(net_sym_j)
-        mask = (sp_j != 0) & (~jnp.eye(n_sp, dtype=bool))
-        pen  = jnp.where(mask,
-                         jnp.abs(net_sym_j) * jnp.maximum(0.0, -sp_j * A) ** 2 / (2 * SIGMA ** 2),
-                         0.0).sum()
+        pen = jnp.where(sign_mask,
+                        jnp.abs(net_sym_j) * jnp.maximum(0.0, -sp_j * A) ** 2 / (2 * SIGMA ** 2),
+                        0.0).sum()
 
     return rmse + pen + LAM * jnp.sum(theta_A ** 2)
 

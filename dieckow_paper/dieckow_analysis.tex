@@ -432,12 +432,12 @@ to their respective guilds; the remaining 5 guilds are zero-imputed ($\phi=10^{-
 so that the signal is carried entirely by the observed 5 genera.  The Guild Dysbiosis
 Index is computed \emph{directly} from the observed composition:
 \begin{equation}
-  \text{GDI} = \log\!\bigl(\phi_\text{Fuso}+\phi_\text{Bact}+\phi_\text{Clos}\bigr)
+  \text{R/G ratio} = \log\!\bigl(\phi_\text{Fuso}+\phi_\text{Bact}+\phi_\text{Clos}\bigr)
              - \log\!\bigl(\phi_\text{Bac}+\phi_\text{Act}+\phi_\text{Neg}\bigr),
   \label{eq:gdi}
 \end{equation}
-without ODE integration.  We compared this \emph{compositional} GDI against
-model-based variants (Hamilton ODE equilibrium, instant GDI $= -\bphi^\top(\bb+\bA\bphi)$
+without ODE integration.  We compared this \emph{compositional} R/G ratio against
+model-based variants (Hamilton ODE equilibrium, instant R/G ratio $= -\bphi^\top(\bb+\bA\bphi)$
 with the gLV $\alpha=0.25$ interaction matrix); the raw compositional ratio consistently
 outperformed ODE-based variants for cross-sectional data, where individual trajectories
 are at arbitrary points rather than near attractor equilibria.
@@ -854,12 +854,12 @@ not ecologically predictive, whereas FBA sign information is.
 \subsection{External validation: peri-implant dysbiosis}
 \label{ssec:joshi_results}
 
-Table~\ref{tab:joshi} and Figure~\ref{fig:joshi} show GDI distributions across
-diagnostic groups in the Joshi dataset.  Health and Mucositis have similar GDI
+Table~\ref{tab:joshi} and Figure~\ref{fig:joshi} show R/G ratio distributions across
+diagnostic groups in the Joshi dataset.  Health and Mucositis have similar R/G ratio
 (mean $-2.09$ vs.\ $-1.74$); Peri-implantitis shows a large positive shift
 (mean $+0.53$, median $+0.76$).  Kruskal-Wallis $H=34.7$, $p<0.0001$;
 Mann-Whitney Health $<$ PI $p<0.0001$; Spearman
-$\rho(\text{diagnosis severity}, \text{GDI}) = 0.46$, $p=5\times10^{-8}$
+$\rho(\text{diagnosis severity}, \text{R/G ratio}) = 0.46$, $p=5\times10^{-8}$
 ($N=127$).  Restricting to the binary Health vs.\ Peri-implantitis contrast
 ($N=88$) yields $\rho=0.59$, $p=2\times10^{-9}$.
 The moderate three-way $\rho$ reflects the biological proximity of Health
@@ -870,13 +870,13 @@ dysbiosis.
 
 \begin{table}[htb]
 \centering
-\caption{Guild Dysbiosis Index by diagnosis (Joshi et~al.\ 2025, 127 samples).
-         GDI $=\log(\phi_\mathrm{dys})-\log(\phi_\mathrm{com})$ evaluated at
+\caption{guild-level R/G ratio by diagnosis (Joshi et~al.\ 2025, 127 samples).
+         R/G ratio $= \log(\phi_{\text{dys}}) - \log(\phi_{\text{com}})$ evaluated at
          observed composition (zero-imputation for undetected guilds).}
 \label{tab:joshi}
 \begin{tabular}{lcccc}
 \toprule
-Diagnosis & $n$ & Mean GDI & Median GDI & vs.\ Health \\
+Diagnosis & $n$ & Mean R/G ratio & Median R/G ratio & vs.\ Health \\
 \midrule
 Health           & 56 & $-2.09$ & $-1.88$ & --- \\
 Mucositis        & 39 & $-1.74$ & $-1.65$ & $p=0.47$ \\
@@ -890,10 +890,10 @@ Spearman $\rho=0.46$, $p=5\times10^{-8}$.}
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.82\linewidth]{fig3_joshi_attractor.pdf}
-\caption{External validation: Guild Dysbiosis Index in Joshi~et~al.~(2025) peri-implant
-         samples. \textbf{(A)} Violin + strip plot of GDI by diagnosis.  Health and
+\caption{External validation: guild-level R/G ratio in Joshi~et~al.~(2025) peri-implant
+         samples. \textbf{(A)} Violin + strip plot of R/G ratio by diagnosis.  Health and
          Mucositis overlap substantially; Peri-implantitis shows a strong positive shift
-         (GDI $>0$).  \textbf{(B)} Comparison of GDI variants: the raw compositional
+         (R/G ratio $>0$).  \textbf{(B)} Comparison of R/G ratio variants: the raw compositional
          log-ratio (ρ$=0.46$) outperforms ODE-equilibrium variants (ρ$=0.37$--$0.39$)
          because cross-sectional samples are not at attractor equilibria.
          The interaction matrix generalises from 10-patient abutment data to 127-sample
@@ -1054,7 +1054,7 @@ peri-implant samples ($p<0.0001$). This supports the ecological principle that s
 attractors are determined by $\bA$ alone~\citep{hofbauer1998}: the equilibrium landscape
 is a property of the interaction network, not of individual patient growth rates.
 
-The Mucositis--Health equivalence at equilibrium (GDI difference~$=0.15$, $p=0.61$)
+The Mucositis--Health equivalence at equilibrium (R/G ratio difference~$=0.15$, $p=0.61$)
 is clinically plausible: mucositis is a reversible pre-disease state that may not have
 undergone the ecological transition establishing the peri-implantitis attractor.
 This interpretation should be qualified: the mapping of genera to guilds is
@@ -1176,8 +1176,8 @@ vectors from the fitted 10-patient model ($\alpha=0$: full CT2 environment;
 $\alpha=1$: full CT1 environment).
 For each $\alpha \in [0,1]$, we simulated all 10 patients forward 21 days
 from their observed week-0 compositions and computed the week-3 Guild
-Dysbiosis Index (GDI~$= \log\phi_{\text{dys}} - \log\phi_{\text{com}}$).
-\emph{No value of $\alpha$ drives the mean GDI below zero} (tipping point
+Dysbiosis Index (R/G ratio~$= \log\phi_{\text{dys}} - \log\phi_{\text{com}}$).
+\emph{No value of $\alpha$ drives the mean R/G ratio below zero} (tipping point
 $\alpha^*$ does not exist within $[0,1]$).
 This confirms the attractor-robustness result: even replacing the full
 CT2 growth environment with CT1 growth rates cannot redirect a community
@@ -1185,15 +1185,15 @@ that starts from a week-0 CT2-like composition, because the $\bA$ matrix
 determines the equilibrium landscape irrespective of $\bb$.
 
 \paragraph{Single-guild b sweep.}
-To identify which individual growth rates most strongly shift GDI, we swept
+To identify which individual growth rates most strongly shift R/G ratio, we swept
 each $b_i$ from its CT2 to CT1 value while holding all others at CT2 levels.
-The two largest GDI drivers are Gammaproteobacteria
-($|\Delta\text{GDI}|=1.16$; $\Delta b = -5.31$, i.e.\ CT1 patients have
+The two largest R/G ratio drivers are Gammaproteobacteria
+($|\Delta\text{R/G ratio}|=1.16$; $\Delta b = -5.31$, i.e.\ CT1 patients have
 substantially lower Gammaproteobacteria growth rate) and Bacteroidia
-($|\Delta\text{GDI}|=0.93$; $\Delta b = -0.96$).
+($|\Delta\text{R/G ratio}|=0.93$; $\Delta b = -0.96$).
 Reducing Gammaproteobacteria growth rate (e.g.\ via substrate limitation
 or targeted antimicrobials) has the largest single-guild effect on shifting
-the community toward a commensal GDI — despite Gammaproteobacteria having
+the community toward a commensal R/G ratio — despite Gammaproteobacteria having
 only moderate network influence (1.16, Table~\ref{tab:network}).
 This dissociation between network influence and growth-rate sensitivity
 reflects the difference between structural importance (mediated by $\bA$)
@@ -1207,27 +1207,27 @@ most tractable entry points for growth-rate-mediated dysbiosis reversal.
 A direct clinical implication of the fitted gLV dynamics is the predicted
 long-term fate of each patient after the 3-week observation window.
 We integrated the patient-specific gLV ($\bA$, $\hat{\bb}^{(p)}$, week-0 $\phi_0^{(p)}$)
-for 90 days and tracked the Guild Dysbiosis Index (GDI).
+for 90 days and tracked the guild-level R/G ratio.
 
 Three distinct trajectories emerge (Figure~\ref{fig:relapse}):
 
 \begin{enumerate}[noitemsep]
   \item \textbf{Persistently dysbiotic (6/10 patients: A, B, E, F, H, K):}
-        GDI $>0$ already at week 3 and remains positive.
+        R/G ratio $>0$ already at week 3 and remains positive.
         These patients' $\hat{b}^{(p)}$ vectors have elevated dysbiotic guild growth
         rates that maintain a dysbiotic attractor despite the shared $\bA$.
 
   \item \textbf{Transient responders (3/10 patients: C, G, L):}
-        GDI $<0$ at week 3 (apparent commensal recovery), but the model predicts
-        a GDI crossing to positive at days 24, 38, and 48, respectively.
-        Patient L shows the most striking profile: GDI~$=-5.66$ at week 3
+        R/G ratio $<0$ at week 3 (apparent commensal recovery), but the model predicts
+        a R/G ratio crossing to positive at days 24, 38, and 48, respectively.
+        Patient L shows the most striking profile: R/G ratio~$=-5.66$ at week 3
         (deepest apparent recovery) yet relapses at day 48.
         This suggests that the week-3 commensal state is a transient deflection
         imposed by the initial condition, not a stable attractor under their
         patient-specific growth dynamics.
 
   \item \textbf{Permanent commensal (1/10 patients: D):}
-        GDI remains $<0$ throughout, converging to a stable commensal equilibrium.
+        R/G ratio remains $<0$ throughout, converging to a stable commensal equilibrium.
         Patient~D (CT1) is the only patient whose $\hat{b}^{(p)}$ vector supports
         a commensal long-time attractor under the inferred $\bA$.
 \end{enumerate}
@@ -1238,7 +1238,7 @@ same $\bA$ matrix, yet most converge to dysbiosis at long times because their
 fitted growth rates encode a dysbiotic ecological niche.
 This is consistent with the clinical reality of caries recovery: dental
 intervention (scaling, prophylaxis) temporarily disrupts the dysbiotic
-community (transient GDI reduction) but does not permanently alter the
+community (transient R/G ratio reduction) but does not permanently alter the
 patient's underlying oral environment.
 Long-term commensalism requires a lasting shift in $b_i$ --- for instance,
 through diet modification (reducing fermentable substrate availability,
@@ -1253,10 +1253,10 @@ data beyond week 3 (unavailable in the current Dieckow dataset).
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.90\linewidth]{relapse_dynamics.pdf}
-\caption{Predicted relapse dynamics: GDI trajectories for all 10 patients
+\caption{Predicted relapse dynamics: R/G ratio trajectories for all 10 patients
          simulated to 90 days using patient-specific gLV
          ($\bA$, $\hat{\bb}^{(p)}$, week-0 $\phi_0^{(p)}$).
-         Green shading: 3-week data window. Dashed line: GDI~$=0$ boundary
+         Green shading: 3-week data window. Dashed line: R/G ratio~$=0$ boundary
          (below = commensal, above = dysbiotic).
          \textbf{Blue}: Patient~D (permanent commensal, never relapses).
          \textbf{Orange}: Transient responders C, G, L (commensal at week 3,
@@ -1319,11 +1319,11 @@ at least within the timescale and data regime of the present study.
 The relapse dynamics (Section~\ref{ssec:relapse}) raise an immediate translational question:
 \emph{how large must a clinical change in the ecological growth environment be to convert a transient
 responder into a permanent commensal?}
-For patients C, G and L — who each showed commensal-like GDI at week 3 but subsequently
+For patients C, G and L — who each showed commensal-like R/G ratio at week 3 but subsequently
 re-dysbiosed at days 24, 38, and 48, respectively — we performed a single-guild $b$-sweep:
 for each of four candidate target guilds (Bacteroidia, Fusobacteria, Gammaproteobacteria,
 Bacilli) we reduced $b_i$ stepwise from its fitted value by up to $\Delta b = 2.0$ and
-identified the minimum reduction that eliminates the later GDI sign-change (i.e.\ achieves
+identified the minimum reduction that eliminates the later R/G ratio sign-change (i.e.\ achieves
 permanent commensalism over 150 days).
 
 Only one threshold was identified within the sweep range: for patient~C, reducing the
@@ -1339,29 +1339,29 @@ for most patients the dysbiotic attractor is robust to realistic single-paramete
 perturbations, consistent with the near-zero BC improvement found in the initial-condition
 intervention scan (Section~\ref{ssec:intervention}).
 
-\paragraph{Week-3 GDI as a prognostic marker.}
-Among the three transient responders, the week-3 GDI correlates inversely with relapse day:
+\paragraph{Week-3 R/G ratio as a prognostic marker.}
+Among the three transient responders, the week-3 R/G ratio correlates inversely with relapse day:
 patient~L achieves the most commensal-like state at week 3
-($\mathrm{GDI}_{w3} = -5.66$, relapse: day 48), patient~C
-($\mathrm{GDI}_{w3} = -2.15$, relapse: day 24), and patient~G
-($\mathrm{GDI}_{w3} = -1.20$, relapse: day 38).
+($\text{R/G}_{w3} = -5.66$, relapse: day 48), patient~C
+($\text{R/G}_{w3} = -2.15$, relapse: day 24), and patient~G
+($\text{R/G}_{w3} = -1.20$, relapse: day 38).
 While $N=3$ precludes statistical inference, this ordering is consistent with the hypothesis
-that a more negative week-3 GDI reflects deeper penetration into the commensal basin,
+that a more negative week-3 R/G ratio reflects deeper penetration into the commensal basin,
 buying additional time before the dysbiotic attractor reasserts dominance.
-If confirmed in larger cohorts, the week-3 GDI could serve as a simple prognostic
-clinical marker: patients whose GDI remains above approximately $-2$ at the first
+If confirmed in larger cohorts, the week-3 R/G ratio could serve as a simple prognostic
+clinical marker: patients whose R/G ratio remains above approximately $-2$ at the first
 follow-up appointment are at elevated short-term relapse risk ($<$4 weeks), whereas
-$\mathrm{GDI}_{w3} < -5$ may predict durable remission of at least 6 weeks.
+$\text{R/G}_{w3} < -5$ may predict durable remission of at least 6 weeks.
 
 \paragraph{External validation via peri-implant reference distribution.}
 A potential concern with the relapse projections is that they extrapolate from
 3-week calibration data to 150-day equilibria, with no held-out longitudinal validation.
-To partially address this, we compared the model-predicted long-time GDI distribution
+To partially address this, we compared the model-predicted long-time R/G ratio distribution
 to the independent peri-implant dataset of Joshi et~al.~\citep{joshi2025}.
-Across all 10 Dieckow patients, the mean equilibrium GDI predicted by the model is
-$+0.65$ (SD $=0.87$); for 9 of 10 patients the equilibrium GDI falls in the
+Across all 10 Dieckow patients, the mean equilibrium R/G ratio predicted by the model is
+$+0.65$ (SD $=0.87$); for 9 of 10 patients the equilibrium R/G ratio falls in the
 peri-implantitis (PI) range of Joshi et~al.\ ($\mu_\mathrm{PI}=+0.53$, $\sigma=1.30$).
-By contrast, the mean week-3 GDI for the same patients is $-0.50$, consistent with
+By contrast, the mean week-3 R/G ratio for the same patients is $-0.50$, consistent with
 the Joshi mucositis/health range ($\mu_\mathrm{Muc}=-1.74$, $\mu_\mathrm{Health}=-2.09$).
 
 The $0.12$-unit offset between our predicted equilibrium ($+0.65$) and the
@@ -1369,7 +1369,7 @@ Joshi PI mean ($+0.53$) falls well within the Joshi SD ($1.30$), and is partly
 attributable to the 5-guild zero-imputation required by the incomplete guild
 overlap (see Section~\ref{ssec:limitations}).
 This concordance provides cross-sectional support for the long-term model extrapolation:
-an untreated caries microbiome converging to a GDI indistinguishable from
+an untreated caries microbiome converging to a R/G ratio indistinguishable from
 peri-implantitis is ecologically plausible, as both conditions are characterised by
 a shift toward Bacteroidia/Fusobacteria dominance at the expense of Actinobacteria/Streptococcus.
 
@@ -1417,7 +1417,7 @@ or mechanistic conclusions are drawn:
         (Actinomyces, Streptococcus, Porphyromonas, Fusobacterium, Veillonella); the
         remaining 5 are zero-imputed.  Cross-sectional samples are unlikely to be at
         ODE equilibria, which is why the raw compositional log-ratio outperforms
-        ODE-equilibrium GDI ($\rho=0.46$ vs.\ $0.37$--$0.39$).  Adding major
+        ODE-equilibrium R/G ratio ($\rho=0.46$ vs.\ $0.37$--$0.39$).  Adding major
         pathogens (Treponema, Tannerella, Prevotella) would substantially improve
         sensitivity to early dysbiosis stages (Health vs.\ Mucositis).
 \end{enumerate}

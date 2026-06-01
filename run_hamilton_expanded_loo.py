@@ -27,12 +27,21 @@ parser.add_argument('--alpha',        type=float, default=0.0,
 parser.add_argument('--use-agora',    action='store_true',
                     help='include AGORA2 FBA layer (L3) in sign prior')
 parser.add_argument('--agora-medium', type=str, default='v1',
-                    choices=['v1', 'v2', 'micom'],
-                    help='AGORA mode: v1=blood-plasma pFBA, v2=saliva pFBA, micom=community FBA')
+                    choices=['v1', 'v2', 'micom', 'gcf'],
+                    help='AGORA mode: v1=blood-plasma pFBA, v2=saliva pFBA, micom=community FBA, gcf=GCF peri-implantitis')
 parser.add_argument('--micom-fraction', type=float, default=0.5,
                     help='MICOM cooperative tradeoff fraction tau (default 0.5, Diener 2020)')
 parser.add_argument('--no-prior',     action='store_true',
                     help='disable sign prior entirely (pure data fit, baseline)')
+parser.add_argument('--prior-mode',  type=str, default='sign',
+                    choices=['sign', 'combined'],
+                    help='sign: sign penalty only; combined: sign + OLS-calibrated magnitude penalty')
+parser.add_argument('--gamma-mag',   type=float, default=0.5,
+                    help='[combined] weight for magnitude penalty')
+parser.add_argument('--sigma-mag',   type=float, default=0.3,
+                    help='[combined] std for magnitude Gaussian prior')
+parser.add_argument('--c-agora',     type=float, default=None,
+                    help='[combined] scaling constant c; None = OLS-calibrate from fit-file')
 args = parser.parse_args()
 
 import os
@@ -105,6 +114,32 @@ b_tr_warm    = b_w[tr_idx]    # (9,10)
 phi_tr_j  = jnp.array(phi_tr)
 net_sym_j = jnp.array(net_sym)
 
+# ── Combined prior: load AGORA Phi + OLS-calibrate c ─────────────────────────
+PRIOR_MODE = args.prior_mode
+GAMMA_MAG  = args.gamma_mag
+SIGMA_MAG  = args.sigma_mag
+phi_mac_j  = None
+mac_mask_j = None
+C_AGORA    = args.c_agora
+
+if PRIOR_MODE == 'combined' and args.use_agora:
+    from guild_agora_signs import get_agora_phi_matrix
+    agora_dir = _here / 'data' / 'homd_db' / 'agora_gems'
+    print('Computing AGORA Phi matrix for combined prior...', flush=True)
+    phi_mac_np, mac_mask_np = get_agora_phi_matrix(agora_dir, verbose=False)
+    phi_mac_j  = jnp.array(phi_mac_np)
+    mac_mask_j = jnp.array(mac_mask_np)
+    if C_AGORA is None:
+        A_cal   = np.array(d['A'])
+        _mask   = mac_mask_np & (~np.eye(n_sp, dtype=bool))
+        F_cal   = phi_mac_np[_mask]
+        A_cal_v = A_cal[_mask]
+        C_AGORA = float((F_cal @ A_cal_v) / (F_cal @ F_cal))
+        print(f'OLS c = {C_AGORA:.4f}  (r={np.corrcoef(F_cal, A_cal_v)[0,1]:.3f})', flush=True)
+elif PRIOR_MODE == 'combined':
+    print('WARNING: combined mode requires --use-agora; falling back to sign', flush=True)
+    PRIOR_MODE = 'sign'
+
 def _run_sim(theta, phi_init):
     phibar = simulate_0d_nsp(theta, n_sp=n_sp, n_steps=NSTEPS, dt=1e-4,
                               phi_init=phi_init, c_const=25.0, alpha_const=100.0)
@@ -129,12 +164,19 @@ def loss_fn(theta_A, b_tr):
     rmse = jnp.sqrt(sq / (n_tr * 2 * n_sp))
     if _no_prior:
         return rmse + LAM * jnp.sum(theta_A**2)
-    A    = _unpack_A(theta_A)
-    sp_j = jnp.sign(net_sym_j)
-    mask = (sp_j != 0) & (~jnp.eye(n_sp, dtype=bool))
-    pen  = jnp.where(mask,
-                     jnp.abs(net_sym_j) * jnp.maximum(0., -sp_j * A)**2 / (2*SIGMA**2),
-                     0.).sum()
+    A      = _unpack_A(theta_A)
+    sp_j   = jnp.sign(net_sym_j)
+    s_mask = (sp_j != 0) & (~jnp.eye(n_sp, dtype=bool))
+    pen_sign = jnp.where(s_mask,
+                         jnp.abs(net_sym_j) * jnp.maximum(0., -sp_j * A)**2 / (2*SIGMA**2),
+                         0.).sum()
+    if PRIOR_MODE == 'combined' and phi_mac_j is not None:
+        pen_mag = jnp.where(mac_mask_j & s_mask,
+                            (A - C_AGORA * phi_mac_j)**2 / (2.0 * SIGMA_MAG**2),
+                            0.).sum()
+        pen = pen_sign + GAMMA_MAG * pen_mag
+    else:
+        pen = pen_sign
     return rmse + pen + LAM * jnp.sum(theta_A**2)
 
 n_flat = n_A + n_tr * n_sp
@@ -216,8 +258,9 @@ medium_tag   = f'_med{args.agora_medium}' if args.use_agora and args.agora_mediu
 frac_tag     = f'_f{str(args.micom_fraction).replace(".","p")}' \
                if args.use_agora and args.agora_medium == 'micom' and args.micom_fraction != 0.5 else ''
 noprior_tag  = '_noprior' if args.no_prior else ''
+combined_tag = f'_comb_g{args.gamma_mag:.2f}'.replace('.', 'p') if PRIOR_MODE == 'combined' else ''
 tag          = f'_{args.tag}' if args.tag else ''
-fname = f'loo_expanded{noprior_tag}{agora_tag}{medium_tag}{frac_tag}{alpha_tag}{tag}_fold{hold}.json'
+fname = f'loo_expanded{noprior_tag}{agora_tag}{medium_tag}{frac_tag}{alpha_tag}{combined_tag}{tag}_fold{hold}.json'
 out = {'patient': PATIENTS[hold], 'hold_idx': hold, 'rmse': rmse,
        'sign_agreement': f'{n_agree}/{n_tot}', 'fit_file': args.fit_file,
        'alpha': args.alpha, 'use_agora': args.use_agora,

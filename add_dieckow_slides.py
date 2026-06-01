@@ -206,7 +206,7 @@ def main():
         ('φᵢ  = relative abundance of guild i',                                   0.4),
         ('bᵢ  = intrinsic growth rate (patient-specific oral environment)',        0.9),
         ('Aᵢⱼ = interaction strength: guild j → guild i  (+ mutualism, − competition)', 1.4),
-        ('GDI = log(φ_dys) − log(φ_com)   GDI < 0 → commensal,   GDI > 0 → dysbiotic', 1.9),
+        ('R/G ratio = log(φ_dys) − log(φ_com)   R/G ratio < 0 → commensal,   R/G ratio > 0 → dysbiotic', 1.9),
     ]
     for txt, y_off in params:
         add_textbox(s2, 0.5, 1.78 + y_off, W - 1.0, 0.4,
@@ -220,8 +220,8 @@ def main():
     add_rect(s2, 0, FOOTER_Y, W, FOOTER_H, FOOTER_FILL)
     add_textbox(s2, 0.35, FOOTER_Y + 0.07, W - 0.6, FOOTER_H - 0.10,
                 '~700 species live in the oral cavity, organised into 10 functional guilds.  '
-                'Healthy (CT1): Acti/Baci dominant, GDI < 0.  '
-                'Dysbiotic (CT2): Bacteroidia/Fusobacteria expand, GDI > 0.  '
+                'Healthy (CT1): Acti/Baci dominant, R/G ratio < 0.  '
+                'Dysbiotic (CT2): Bacteroidia/Fusobacteria expand, R/G ratio > 0.  '
                 'Question: why do some patients relapse after treatment while others do not?',
                 10.5, bold=False, color=NAVY)
 
@@ -272,15 +272,15 @@ def main():
     add_two_fig_slide(
         prs,
         title       = 'Tipping Point Analysis: CT2 → CT1 b-Environment Transition',
-        subtitle    = 'Left: α-interpolation b(α) = (1-α)·b_CT2 + α·b_CT1  |  Right: single-guild b sweep |ΔGDI|',
+        subtitle    = 'Left: α-interpolation b(α) = (1-α)·b_CT2 + α·b_CT1  |  Right: single-guild b sweep |ΔR/G|',
         fig_left    = R / 'guild_tipping' / 'tipping_alpha_scan.png',
         fig_right   = R / 'guild_tipping' / 'tipping_single_guild.png',
-        caption_left  = 'α-scan: no GDI=0 crossing (single commensal attractor)',
+        caption_left  = 'α-scan: no R/G=0 crossing (single commensal attractor)',
         caption_right = 'Single-guild effect sizes: Gamm #1, Bact #2',
         footer_text = (
             'No α* crossing: A matrix drives system to commensal for all b interpolations — structural attractor dominant.  '
-            '|  Top drivers: Gammaproteobacteria (ΔGDI = 1.04) and Bacteroidia (ΔGDI = 0.94).  '
-            '|  Equilibrium GDI: Patient D = −0.48 (only commensal); all others > 0 (dysbiotic).'
+            '|  Top drivers: Gammaproteobacteria (ΔR/G = 1.04) and Bacteroidia (ΔR/G ratio = 0.94).  '
+            '|  Equilibrium R/G ratio: Patient D = −0.48 (only commensal); all others > 0 (dysbiotic).'
         ),
     )
 
@@ -288,11 +288,11 @@ def main():
     add_slide(
         prs,
         title    = '2D Phase Diagram: Gammaproteobacteria × Bacteroidia Growth-Rate Space',
-        subtitle = '20 × 20 grid · all other b at CT2 mean · week-3 GDI · black dashed = GDI = 0 tipping boundary',
+        subtitle = '20 × 20 grid · all other b at CT2 mean · week-3 R/G ratio · black dashed = R/G ratio = 0 tipping boundary',
         fig_path = R / 'guild_tipping' / 'tipping_phase_diagram_2d.png',
         footer_text = (
-            'Gamm × Bact: top-2 single-guild tipping drivers (ΔGDI 1.04 and 0.94).  '
-            'GDI = 0 boundary visible — commensal region at low b_Gamm and low b_Bact.  '
+            'Gamm × Bact: top-2 single-guild tipping drivers (ΔR/G 1.04 and 0.94).  '
+            'R/G ratio = 0 boundary visible — commensal region at low b_Gamm and low b_Bact.  '
             'CT2 mean (▼) deep in dysbiotic zone; CT1 mean (▲) near tipping boundary.  '
             '→ Joint reduction of Gamm and Bact growth rates is the most efficient ecological intervention.'
         ),
@@ -305,13 +305,13 @@ def main():
         subtitle    = 'Long-time simulation (t = 150 d) from patient-specific b vectors',
         fig_left    = R / 'guild_tipping' / 'relapse_dynamics.png',
         fig_right   = R / 'guild_relapse' / 'gdi_w3_vs_relapse.png',
-        caption_left  = 'GDI trajectories to 90 days (per patient)',
-        caption_right = 'Week-3 GDI → relapse day (prognostic marker)',
+        caption_left  = 'R/G ratio trajectories to 90 days (per patient)',
+        caption_right = 'Week-3 R/G ratio → relapse day (prognostic marker)',
         footer_text = (
-            '① Persistent dysbiotic (A,B,E,F,H,K): GDI > 0 throughout.  '
+            '① Persistent dysbiotic (A,B,E,F,H,K): R/G ratio > 0 throughout.  '
             '② Transient responder (C→24d, G→38d, L→48d): commensal at wk-3, dysbiotic by t < 50d.  '
-            '③ Permanent commensal (D): only patient with stable GDI < 0.  '
-            '→ Week-3 GDI as prognostic marker: lower = longer remission.'
+            '③ Permanent commensal (D): only patient with stable R/G ratio < 0.  '
+            '→ Week-3 R/G ratio as prognostic marker: lower = longer remission.'
         ),
     )
 
@@ -323,11 +323,11 @@ def main():
         fig_left    = R / 'guild_relapse' / 'prevention_threshold.png',
         fig_right   = R / 'guild_relapse' / 'joshi_comparison.png',
         caption_left  = 'Required Δb per guild (patient C only actionable)',
-        caption_right = 'Predicted eq. GDI vs Joshi PI distribution',
+        caption_right = 'Predicted eq. R/G ratio vs Joshi PI distribution',
         footer_text = (
             'Prevention: only Patient C convertible by single-guild intervention '
             '(Δb_Bact = 1.33). Patients G & L require multi-guild change → deep attractor.  '
-            '|  External validation: predicted equilibrium GDI = +0.65 ≈ Joshi PI mean +0.53  '
+            '|  External validation: predicted equilibrium R/G ratio = +0.65 ≈ Joshi PI mean +0.53  '
             '(9/10 patients in PI range, difference < 0.12 within Joshi SD=1.30).'
         ),
     )
@@ -335,11 +335,11 @@ def main():
     # ── Slide F: Phase Diagram ──────────────────────────────────────────────
     add_slide(
         prs,
-        title    = '3D Attractor Landscape: GDI = 0 Boundary in Growth-Rate Space',
-        subtitle = 'Equilibrium GDI on 18³ grid (Acti × Baci × Bact), 12-core parallel, t = 80 d',
+        title    = '3D Attractor Landscape: R/G ratio = 0 Boundary in Growth-Rate Space',
+        subtitle = 'Equilibrium R/G ratio on 18³ grid (Acti × Baci × Bact), 12-core parallel, t = 80 d',
         fig_path = R / 'guild_phase' / 'phase3d_static.png',
         footer_text = (
-            '98% of parameter space is dysbiotic (GDI > 0).  '
+            '98% of parameter space is dysbiotic (R/G ratio > 0).  '
             'Commensal region (blue) confined to b_Bact < ~1.5 — Bacteroidia growth rate is the dominant control variable.  '
             'CT1 patients with low b_Bact (G, K, L) cluster near boundary; '
             'CT2 patients (A: b_Bact=4.5) deep in dysbiotic zone.  '
@@ -368,7 +368,7 @@ def main():
         '③  A matrix creates a single commensal attractor — b alone cannot flip the community state.',
         '④  Three relapse archetypes: persistent / transient responder / permanent commensal (Patient D only).',
         '⑤  Patient C preventable with Δb_Bact = 1.33;  98 % of growth-rate space remains dysbiotic.',
-        '⑥  External validation: predicted eq. GDI +0.65 ≈ Joshi 2025 peri-implant cohort mean +0.53.',
+        '⑥  External validation: predicted eq. R/G ratio +0.65 ≈ Joshi 2025 peri-implant cohort mean +0.53.',
     ]
     for k, txt in enumerate(findings):
         add_textbox(sz, 0.6, 2.20 + k * 0.68, W - 1.2, 0.60,

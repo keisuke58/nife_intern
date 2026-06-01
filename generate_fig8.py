@@ -30,7 +30,7 @@ from guild_replicator_dieckow import GUILD_ORDER, N_G
 DIR     = HERE / 'results' / 'dieckow_cr'
 OUT_DIR = HERE / 'results'
 PATIENTS = list('ABCDEFGHKL')
-GS = ['Actin.', 'Bacil.', 'Bact.', 'β-Prot.',
+GS = ['Actin.', 'Bacil.', 'Bctrd.', 'β-Prot.',
       'Clost.', 'Corio.', 'Fusob.', 'γ-Prot.', 'Negat.', 'Other']
 
 C_ALIGN  = '#2166ac'

@@ -39,7 +39,7 @@ HERE    = Path(__file__).resolve().parent
 DIR     = HERE / 'results' / 'dieckow_cr'
 OUT_DIR = HERE / 'results'
 PATIENTS = list('ABCDEFGHKL')
-GUILD_SHORT = ['Actin.', 'Bacil.', 'Bact.', 'β-Prot.',
+GUILD_SHORT = ['Actin.', 'Bacil.', 'Bctrd.', 'β-Prot.',
                'Clost.', 'Corio.', 'Fusob.', 'γ-Prot.', 'Negat.', 'Other']
 
 # ── colour palette ─────────────────────────────────────────────────────────
@@ -310,11 +310,9 @@ def make_fig5():
 # ═══════════════════════════════════════════════════════════════════════════
 
 def make_fig6():
-    # Mean A across 10 folds
-    As = [np.array(json.loads((DIR / f'loo_glv_a0p25_fold{i}.json').read_text())['A'])
-          for i in range(10)]
-    A_mean = np.mean(As, axis=0)
-    A_std  = np.std(As, axis=0)
+    # AGORA W=1.0 MAP A (biological interpretation model, SA=100%)
+    d_map  = json.loads((DIR / 'fit_glv_hamilton_kegg_expanded_agora_w1p0.json').read_text())
+    A_mean = np.array(d_map['A'])
 
     F_l12  = build_net_flow_expanded(use_agora=False, verbose=False)
     F_full = build_net_flow_expanded(use_agora=True,  verbose=False)
@@ -328,11 +326,11 @@ def make_fig6():
                 continue
             a = A_mean[i, j]
             f = F_full[i, j]
-            if f != 0 and np.sign(a) * np.sign(f) > 0 and abs(a) > 0.25:
+            if f != 0 and np.sign(a) * np.sign(f) > 0 and abs(a) > 0.15:
                 regime[i, j] = 'aligned'
-            elif f != 0 and np.sign(a) * np.sign(f) > 0 and abs(a) <= 0.1:
+            elif f != 0 and np.sign(a) * np.sign(f) > 0 and abs(a) <= 0.15:
                 regime[i, j] = 'muted'
-            elif f == 0 and abs(a) > 0.25:
+            elif f == 0 and abs(a) > 0.15:
                 regime[i, j] = 'data_driven'
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.8),
@@ -340,7 +338,7 @@ def make_fig6():
 
     # ── Panel A: A_ij heatmap ────────────────────────────────────────────
     ax = axes[0]
-    vmax = np.percentile(np.abs(A_mean[~np.eye(N_G, dtype=bool)]), 95)
+    vmax = max(np.abs(A_mean[~np.eye(N_G, dtype=bool)]).max(), 0.5)
     im = ax.imshow(A_mean, cmap='RdBu_r', vmin=-vmax, vmax=vmax,
                    aspect='auto')
 
@@ -362,7 +360,7 @@ def make_fig6():
     ax.set_yticks(range(N_G)); ax.set_yticklabels(GUILD_SHORT, fontsize=8)
     ax.set_xlabel('Source guild $j$', fontsize=9)
     ax.set_ylabel('Target guild $i$', fontsize=9)
-    ax.set_title(r'(A) Mean $A_{ij}$ (gLV $\alpha$=0.25, 10-fold LOO)', fontsize=9.5, loc='left')
+    ax.set_title(r'(A) $A_{ij}$ MAP (AGORA $W$=1.0, SA=100%)', fontsize=9.5, loc='left')
     fig.colorbar(im, ax=ax, fraction=0.038, pad=0.03, label=r'$A_{ij}$')
 
     legend_handles = [

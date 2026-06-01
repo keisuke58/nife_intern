@@ -12,6 +12,18 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from pathlib import Path
 
+matplotlib.rcParams.update({
+    'font.family': 'serif',
+    'font.serif': ['Times New Roman', 'Times', 'DejaVu Serif'],
+    'mathtext.fontset': 'stix',
+    'font.size': 10,
+    'axes.labelsize': 10,
+    'axes.titlesize': 10,
+    'xtick.labelsize': 8,
+    'ytick.labelsize': 8,
+    'legend.fontsize': 8,
+})
+
 _here = Path(__file__).resolve().parent
 sys.path.insert(0, str(_here))
 from guild_replicator_dieckow import GUILD_ORDER, N_G
@@ -33,7 +45,7 @@ nfs   = (nf + nf.T) / 2          # symmetrised prior flow
 A_loo = []
 folds_used = []
 for fold in range(10):
-    p = CR / f'loo_expanded_agora_w1p0_fold{fold}.json'
+    p = CR / f'loo_expanded_agora_a0p0_comb_g0p25_combined_fold{fold}.json'
     if not p.exists(): continue
     d = json.load(open(p))
     if 'A' not in d: continue
@@ -112,67 +124,94 @@ for _, r in df.iterrows():
     SC_mat[int(r.i), int(r.j)] = r.sign_consistency
     SC_mat[int(r.j), int(r.i)] = r.sign_consistency
 
-fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-plt.rcParams.update({'font.size': 8})
+REGIME_COLORS = {'data+prior aligned':    '#c0392b',
+                 'prior-constrained muted': '#e67e22',
+                 'data-driven no prior':    '#2980b9',
+                 'variable':                '#95a5a6'}
+REGIME_LABELS = {'data+prior aligned':    'Data+prior aligned (n=13)',
+                 'prior-constrained muted': 'Prior-constrained muted (n=21)',
+                 'data-driven no prior':    'Data-driven, no prior (n=10)',
+                 'variable':                'Variable (n=1)'}
 
+# Unambiguous 5-char abbreviations (Bacil ≠ Bctrd)
+ABBR = ['Actin', 'Bacil', 'Bctrd', 'β-Pro', 'Clost', 'Corio', 'Fusob', 'γ-Pro', 'Negat', 'Other']
+
+fig, axes = plt.subplots(1, 3, figsize=(16, 5.2))
+
+# ── Panel A: Sign consistency heatmap ────────────────────────────────────────
 ax1 = axes[0]
 im1 = ax1.imshow(SC_mat, cmap='RdYlGn', vmin=0, vmax=1, aspect='auto')
-plt.colorbar(im1, ax=ax1, shrink=0.8, label='Sign consistency')
+cbar = plt.colorbar(im1, ax=ax1, shrink=0.82, label='Sign consistency')
+cbar.ax.tick_params(labelsize=8)
+
 ax1.set_xticks(range(N_G)); ax1.set_yticks(range(N_G))
-ax1.set_xticklabels(GS, fontsize=6.5, rotation=45, ha='right')
-ax1.set_yticklabels(GS, fontsize=6.5)
-ax1.set_title(f'LOO sign consistency ({n_folds}/10 folds)\n(green=stable, red=variable)', fontsize=8)
-# Mark pairs with prior
+ax1.set_xticklabels(ABBR, fontsize=7.5, rotation=45, ha='right')
+ax1.set_yticklabels(ABBR, fontsize=7.5)
+ax1.set_title(f'(A) LOO sign consistency\n({n_folds}/10 folds; black border = sign prior)', fontsize=9)
+
+# Mark pairs with AGORA/sign prior
 for i, j in pairs:
     if nfs[i, j] != 0:
         for ri, rj in [(i,j),(j,i)]:
             ax1.add_patch(plt.Rectangle((rj-0.5, ri-0.5), 1, 1, fill=False,
-                                         edgecolor='black', lw=1.2))
+                                         edgecolor='black', lw=1.4))
 
-# ── Figure 2: A_map vs A_std scatter (stability) ─────────────────────────────
+# ── Panel B: |A_map| vs std scatter (log x-scale) ────────────────────────────
 ax2 = axes[1]
-REGIME_COLORS = {'data+prior aligned': '#e74c3c',
-                 'prior-constrained muted': '#f39c12',
-                 'data-driven no prior': '#2980b9',
-                 'variable': '#95a5a6'}
 for regime_name, grp in df.groupby('regime'):
-    ax2.scatter(grp.A_map.abs(), grp.A_std, color=REGIME_COLORS[regime_name],
-                label=regime_name, alpha=0.7, s=50, zorder=3)
+    ax2.scatter(grp.A_map.abs() + 1e-4, grp.A_std,   # +ε for log scale
+                color=REGIME_COLORS[regime_name],
+                label=REGIME_LABELS[regime_name],
+                alpha=0.75, s=45, zorder=3,
+                edgecolors='none')
     for _, r in grp[grp.A_map.abs() > 0.25].iterrows():
-        ax2.annotate(f'{GS[int(r.i)]}↔{GS[int(r.j)]}',
-                     (abs(r.A_map), r.A_std), fontsize=5.5,
-                     xytext=(3,1), textcoords='offset points')
-ax2.set_xlabel('|A_map| (MAP fit, all patients)', fontsize=8)
-ax2.set_ylabel('Std across LOO folds', fontsize=8)
-ax2.set_title('A stability: MAP magnitude vs LOO variability\n(regimes coloured)', fontsize=8)
-ax2.legend(fontsize=7, loc='upper left')
+        lbl = f'{ABBR[int(r.i)]}↔{ABBR[int(r.j)]}'
+        ax2.annotate(lbl, (abs(r.A_map) + 1e-4, r.A_std),
+                     fontsize=6.5, xytext=(4, 2), textcoords='offset points')
 
-# ── Figure 3: Per-pair boxplot for top ±8 MAP pairs ──────────────────────────
+ax2.set_xscale('log')
+ax2.set_xlabel(r'$|A_{ij}|$ MAP estimate (all 10 patients, log scale)')
+ax2.set_ylabel(r'Std across LOO folds')
+ax2.set_title('(B) MAP magnitude vs LOO variability', fontsize=9)
+ax2.legend(loc='upper left', framealpha=0.9, fontsize=7)
+ax2.set_ylim(bottom=-0.003)
+
+# ── Panel C: Boxplot of top 12 pairs by |A_map| ───────────────────────────────
 ax3 = axes[2]
-top_pairs = df.reindex(df.A_map.abs().nlargest(12).index)
-top_pairs = top_pairs.sort_values('A_map', ascending=True)
+top_pairs = df.reindex(df.A_map.abs().nlargest(12).index).sort_values('A_map', ascending=True)
 
-box_data = []
-labels   = []
-box_colors = []
+box_data, labels, box_colors = [], [], []
 for _, r in top_pairs.iterrows():
     vals = A_stack[:, int(r.i), int(r.j)]
     box_data.append(vals)
-    labels.append(f'{GS[int(r.i)]}↔{GS[int(r.j)]}')
-    box_colors.append('#e74c3c' if r.A_map > 0 else '#2980b9')
+    labels.append(f'{ABBR[int(r.i)]}↔{ABBR[int(r.j)]}')
+    box_colors.append(REGIME_COLORS[r.regime])
 
 bp = ax3.boxplot(box_data, vert=False, patch_artist=True,
-                  medianprops={'color': 'k', 'lw': 1.5})
+                 medianprops={'color': 'k', 'lw': 1.5},
+                 flierprops={'marker': 'o', 'markersize': 3, 'alpha': 0.5},
+                 boxprops={'lw': 0.8}, whiskerprops={'lw': 0.8},
+                 capprops={'lw': 0.8})
 for patch, col in zip(bp['boxes'], box_colors):
-    patch.set_facecolor(col); patch.set_alpha(0.6)
-ax3.set_yticks(range(1, len(labels)+1))
-ax3.set_yticklabels(labels, fontsize=6.5)
-ax3.axvline(0, color='k', lw=0.5, ls='--')
-ax3.set_xlabel('A_ij across LOO folds', fontsize=8)
-ax3.set_title(f'Top 12 pairs: LOO A distribution\n({n_folds} folds)', fontsize=8)
+    patch.set_facecolor(col); patch.set_alpha(0.65)
 
-fig.suptitle(f'A matrix LOO stability (AGORA W=1.0, {n_folds}/10 folds)', fontsize=10)
+ax3.set_yticks(range(1, len(labels)+1))
+ax3.set_yticklabels(labels, fontsize=8)
+ax3.axvline(0, color='k', lw=0.7, ls='--')
+ax3.set_xlabel(r'$A_{ij}$ across LOO folds')
+ax3.set_title(f'(C) Top 12 pairs: LOO distribution\n({n_folds} folds)', fontsize=9)
+
+# Regime colour legend on panel C
+legend_patches = [mpatches.Patch(facecolor=REGIME_COLORS[k], alpha=0.7,
+                                  label=REGIME_LABELS[k].split(' (')[0])
+                  for k in REGIME_COLORS if k != 'variable']
+ax3.legend(handles=legend_patches, loc='lower right', fontsize=6.5, framealpha=0.9)
+
+fig.suptitle(r'$A$ matrix LOO stability  (AGORA $W$=1.0, all 10 folds)',
+             fontsize=11, y=1.01)
 fig.tight_layout()
-out = FIG / 'fig_loo_stability.png'
-fig.savefig(out, dpi=150, bbox_inches='tight')
-print(f'\nSaved {out}')
+
+for ext in ('png', 'pdf'):
+    out = FIG / f'fig_loo_stability.{ext}'
+    fig.savefig(out, dpi=150, bbox_inches='tight')
+    print(f'Saved {out}')

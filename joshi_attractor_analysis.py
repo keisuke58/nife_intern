@@ -112,8 +112,8 @@ def build_phi0(rel5_sample):
 
 phi0_all = np.array([build_phi0(rel_5[:, s]) for s in range(n_samp)])  # (127, 10)
 
-# ── Primary GDI: raw log(dysbiotic/commensal) at observed φ ──────────────────
-# This out-performs ODE equilibrium GDI for cross-sectional data (ρ=0.46 vs 0.37)
+# ── Primary R/G ratio: raw log(dysbiotic/commensal) at observed φ ──────────────────
+# This out-performs ODE equilibrium R/G ratio for cross-sectional data (ρ=0.46 vs 0.37)
 # because the ODE equilibrium washes out inter-individual composition differences.
 def guild_di(phi_mat, eps=1e-4):
     """log(dysbiotic / commensal) evaluated at the observed composition."""
@@ -128,7 +128,7 @@ _glv_folds = sorted(CR.glob('loo_glv_agora_a0p25_fold*.json'))
 A_glv  = np.mean([np.array(json.load(open(f))['A']) for f in _glv_folds], axis=0)
 b_glv  = np.mean([np.array(json.load(open(f))['b_ho']) for f in _glv_folds], axis=0)
 
-# Instant GDI with gLV A: −φᵀ(b + A φ)
+# Instant R/G ratio with gLV A: −φᵀ(b + A φ)
 def instant_gdi(phi_mat, A, b):
     f   = b + (A @ phi_mat.T).T
     mf  = (phi_mat * f).sum(axis=1)
@@ -189,10 +189,10 @@ def print_stats(gdi, label):
     print(f'  Mann-Whitney Health < PI: U={t:.0f}  p={p_mw:.4f}')
     # Spearman correlation with diagnosis ordinal
     rho, p_sp = stats.spearmanr(diag_num, gdi)
-    print(f'  Spearman ρ(diag, GDI)={rho:.3f}  p={p_sp:.4f}')
+    print(f'  Spearman ρ(diag, R/G ratio)={rho:.3f}  p={p_sp:.4f}')
 
 print_stats(gdi_raw,          '★ Raw log(dys/com) at observed φ [BEST]')
-print_stats(gdi_instant_glv,  'Instant GDI gLV α=0.25 A')
+print_stats(gdi_instant_glv,  'Instant R/G ratio gLV α=0.25 A')
 print_stats(gdi_mean,         'Hamilton ODE equilibrium (mean b̂)')
 
 # Binary Health vs PI
@@ -206,7 +206,7 @@ plt.rcParams.update({'font.size': 9})
 
 configs = [
     (gdi_raw,         '★ Raw log(dys/com)\n(zero-impute)'),
-    (gdi_instant_glv, 'Instant GDI\ngLV α=0.25 A'),
+    (gdi_instant_glv, 'Instant R/G ratio\ngLV α=0.25 A'),
     (gdi_mean,        'Hamilton ODE eq\n(mean b̂)'),
     (gdi_ct1,         'Hamilton ODE eq\n(CT1 b̂)'),
 ]
@@ -239,8 +239,8 @@ for ax, (gdi, title) in zip(axes, configs):
             transform=ax.transAxes, va='top', fontsize=7,
             bbox=dict(boxstyle='round', fc='white', alpha=0.8))
 
-axes[0].set_ylabel('GDI score', fontsize=9)
-fig.suptitle('Joshi/mSystems GDI analysis — n=127 (Health=56, Mucositis=39, PI=32)\n'
+axes[0].set_ylabel('R/G ratio', fontsize=9)
+fig.suptitle('Joshi/mSystems R/G ratio analysis — n=127 (Health=56, Mucositis=39, PI=32)\n'
              'Primary metric: raw log(dys/com) at observed φ (ρ=0.460, p<10⁻⁷)',
              fontsize=10)
 

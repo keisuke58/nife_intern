@@ -172,6 +172,27 @@ ORAL_MEDIUM = {
     'EX_co2(e)':     5.0,
 }
 
+# ── ORAL_MEDIUM GCF: Gingival Crevicular Fluid (peri-implantitis) ────────────
+# Based on ORAL_MEDIUM (v1) with GCF-specific enrichments:
+#   - Haem ×10: GCF contains haem from erythrocyte/tissue breakdown (key Pg growth factor)
+#   - Gly/Pro ×4-5: Type I collagen degradation by Fn/Pg gingipains (Potempa 2013)
+#   - Fe ×6: blood-derived iron, not lactoferrin-chelated in inflamed tissue
+#   - Glucose ×1.5: GCF glucose ~3-5 mM (approaches blood level, vs ~0.08 mM saliva)
+#   - O2 ×0.25: subgingival pocket is more anaerobic (favours Pg, Fn, Vd)
+#   - Hypoxanthine/xanthine: from host DNA/purine catabolism in inflammation
+ORAL_MEDIUM_GCF = {**ORAL_MEDIUM,
+    'EX_pheme(e)':  5.0,    # haem ×10  (was 0.5)
+    'EX_sheme(e)':  1.0,    # siroheme ×10
+    'EX_gly(e)':    8.0,    # Gly ×5   (collagen fragment)
+    'EX_pro_L(e)':  4.0,    # Pro ×4   (collagen fragment)
+    'EX_fe2(e)':    3.0,    # Fe²⁺ ×6  (blood-derived)
+    'EX_fe3(e)':    3.0,    # Fe³⁺ ×6
+    'EX_glc_D(e)': 15.0,    # glucose ×1.5 (GCF near blood level)
+    'EX_o2(e)':     0.5,    # O2 ×0.25 (anaerobic subgingival)
+    'EX_hxan(e)':   0.2,    # hypoxanthine (purine from tissue)
+    'EX_xan(e)':    0.1,    # xanthine
+}
+
 # ── ORAL_MEDIUM v2: realistic saliva concentrations ──────────────────────────
 # v1 was ~100× too high (blood-plasma scale).
 # v2 based on Dawes 2008, Tenovuo 1998 (unstimulated whole saliva, mM → mmol/gDW/h
