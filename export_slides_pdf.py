@@ -250,14 +250,14 @@ with PdfPages(str(OUT_PDF)) as pdf:
         title    = 'Guild-Level Keystone Analysis',
         subtitle = 'Knockout: remove one guild → simulate 21 d → measure Bray-Curtis shift / volume change',
         footer   = (
-            'Bacilli: BC divergence 0.839 (highest), vol_drop −0.73 → compositional keystone & competitive suppressor.  '
+            'Bacilli: BC divergence 0.839 (highest), vol_drop −0.73 → keystone guild & competitive suppressor.  '
             '|  Actinobacteria: vol_drop +0.846 → growth engine.  '
             '|  Strongest off-diagonal interaction: Acti → Baci  A = +3.43.'
         ))
     paste_img(fig, R/'guild_importance'/'knockout_bars_base.png',
               0.01, CONTENT_BOT, 0.725, CONTENT_H)
     side_panel(fig, [
-        ('Compositional keystone:',       NAVY,  True,  9.0),
+        ('Keystone guild:',       NAVY,  True,  9.0),
         ('Bacilli  BC = 0.839',           RED,   True,  9.5),
         ('removal shifts community most', RED,   False, 8.5),
         ('',                              NAVY,  False, 4),
@@ -283,7 +283,7 @@ with PdfPages(str(OUT_PDF)) as pdf:
         title    = 'Guild Network Centrality: Influence, Vulnerability, Net Role',
         subtitle = 'Influence = Σ|A_ji|  ·  Vulnerability = Σ|A_ij|  ·  Net = ΣA_ij  ·  LOO sign consistency across 10 folds',
         footer   = (
-            'Actinobacteria: influence 5.58, net +2.02 → mutualist hub.  '
+            'Actinobacteria: influence 5.58, net +2.02 → hub guild.  '
             'Bacilli: vulnerability 8.24 → most regulated.  '
             'Betaproteobacteria: net −0.14 → only net competitor.  '
             'LOO: Acti→* sign consistency = 1.0 (all folds agree).'
@@ -291,7 +291,7 @@ with PdfPages(str(OUT_PDF)) as pdf:
     paste_img(fig, R/'guild_network'/'guild_centrality_summary.png',
               0.01, CONTENT_BOT, 0.725, CONTENT_H)
     side_panel(fig, [
-        ('Mutualist hub:',                NAVY,  True,  9.0),
+        ('Hub guild:',                NAVY,  True,  9.0),
         ('Actinobacteria',                BLUE,  True,  9.5),
         ('influence = 5.58  (highest)',   BLUE,  False, 8.5),
         ('net effect = +2.02',            BLUE,  False, 8.5),
@@ -549,7 +549,7 @@ with PdfPages(str(OUT_PDF)) as pdf:
     ax.axhline(0.70, xmin=0.1, xmax=0.9, color='#4a6a8a', lw=0.5)
 
     findings = [
-        (LBLUE,   '①  Bacilli = compositional keystone (BC = 0.839);  Actinobacteria = growth engine.'),
+        (LBLUE,   '①  Bacilli = keystone guild (BC = 0.839);  Actinobacteria = growth engine.'),
         ('#A8E6CF','②  Baci → Acti (A = +3.43, p = 0.040) is the sole statistically validated interaction.'),
         ('#FFD3B6','③  A matrix creates a single commensal attractor — b alone cannot flip the community state.'),
         ('#FFB3BA','④  Three archetypes: persistent dysbiotic / transient responder / permanent commensal (D only).'),

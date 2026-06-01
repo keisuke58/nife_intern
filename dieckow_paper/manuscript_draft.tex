@@ -53,11 +53,11 @@
 Oral biofilm dysbiosis underlies periodontitis and peri-implantitis, yet
 quantitative models of inter-guild interactions remain poorly constrained from
 short clinical time-series.
-We introduce a three-layer sign prior that combines experimental interaction
+We introduce a three-layer sign constraint that combines experimental interaction
 evidence (Szafra\'{n}ski L1+L2) with genome-scale metabolic model
 cross-feeding predictions (AGORA2 L3) to regularise generalised Lotka-Volterra
 (gLV) parameter inference from 10-patient, 3-week 16S rRNA data.
-An AGORA weight of $W{=}1.0$ achieves a phase transition to 100\% sign
+An AGORA weight of $W{=}1.0$ achieves a abrupt transition to 100\% sign
 agreement between the metabolic prior and the fitted interaction matrix,
 simultaneously minimising training RMSE.
 Leave-one-patient-out cross-validation confirms improved generalisation:
@@ -99,15 +99,15 @@ $10 \times 2 = 200$ scalar observations, making prior regularisation essential.
 Existing regularisation strategies fall into three categories:
 (i)~$\ell_1$/$\ell_2$ regularisation (sparse or ridge~$A$), which treats all
 pairs symmetrically;
-(ii)~literature-curated sign constraints from co-culture experiments, which
-are sparse and biased toward well-studied pairs; and
+(ii)~literature-curated sign constraints~\citep{kutz2019} from co-culture
+experiments, which are sparse and biased toward well-studied pairs; and
 (iii)~consumer-resource (MacArthur) models that translate metabolic flux
 magnitudes directly into ecological interaction strengths.
 We demonstrate that approach~(iii) fails for oral guilds because FBA flux
 units are not commensurate with gLV interaction units (see §\ref{ssec:wSweep}),
 whereas approach~(ii) succeeds but leaves many pairs unconstrained.
 
-Here we propose a three-layer sign prior that unifies experimental evidence
+Here we propose a three-layer sign constraint that unifies experimental evidence
 (L1: Szafra\'{n}ski direct observations; L2: Szafra\'{n}ski predicted
 interactions) with genome-scale metabolic model cross-feeding predictions
 (L3: AGORA2 pFBA~\citep{heinken2023}).
@@ -118,10 +118,10 @@ agreement with the fitted $\bA$).
 
 Our main contributions are:
 \begin{enumerate}[noitemsep]
-  \item A three-layer sign prior integrating AGORA2 FBA into gLV inference,
+  \item A three-layer sign constraint integrating AGORA2 FBA into gLV inference,
         achieving 100\% metabolic--ecological sign agreement at $W{=}1.0$.
   \item Demonstration that $W{=}1.0$ is a biologically motivated calibration
-        point (L2-equivalent weight), exhibiting a phase transition in sign
+        point (L2-equivalent weight), exhibiting a abrupt transition in sign
         agreement.
   \item LOO-CV validation showing 2.2\% RMSE improvement over unconstrained
         gLV and 13.5\% over the Hamilton replicator (L1+L2 only).
@@ -213,10 +213,10 @@ using a JAX implementation~\citep{bradbury2018}.
 Parameters are optimised by L-BFGS-B~\citep{zhu1997} with 5000 iterations
 and warm-starting from a prior run.
 
-\subsection{Three-Layer Sign Prior}
+\subsection{Three-Layer Sign Constraint}
 \label{ssec:prior}
 
-Inter-guild interactions are constrained by a three-layer sign prior that
+Inter-guild interactions are constrained by a three-layer sign constraint that
 combines evidence from three sources of increasing computational derivation:
 
 \paragraph{L1 -- Szafra\'{n}ski experimental~\citep{szafranski2025}.}
@@ -240,11 +240,11 @@ The cross-feeding net-flow between guilds $i$ and $j$ is:
 \end{equation}
 where the sum is over exchange metabolites $\alpha$.
 The symmetric flow $F^\text{sym}_{ij} = (F_{ij}+F_{ji})/2$ defines the
-sign prior: positive $F^\text{sym}_{ij}$ predicts positive $A_{ij}$.
+sign constraint: positive $F^\text{sym}_{ij}$ predicts positive $A_{ij}$.
 Weight $W \in \{0.5, 1.0, 1.5, 2.0\}$ is swept; $W{=}1.0$ is adopted
 (§\ref{ssec:wSweep}).
 
-The combined sign penalty is:
+The combined constraint penalty is:
 \begin{equation}
   \mathcal{P}(\bA) = \sum_{\substack{(i,j):\, F^\text{sym}_{ij} \neq 0}}
     \frac{|F^\text{sym}_{ij}|}{2\sigma^2}
@@ -278,7 +278,7 @@ patient-specific $\bb^{(p)}$ re-fitted on W1 only.
 Performance is quantified by RMSE over all guilds and timepoints.
 The asymmetric-$\bA$ gLV variant (no symmetry constraint, $\alpha$-scaling
 of $\bA$ with $\alpha=0.25$) is also evaluated to isolate the contribution
-of the sign prior from that of the symmetry assumption.
+of the sign constraint from that of the symmetry assumption.
 
 \paragraph{Sign agreement (SA).}
 For each constrained pair $(i,j)$ with $F^\text{sym}_{ij}\neq 0$ we report
@@ -330,7 +330,7 @@ and \textit{data-driven no prior} ($F^\text{sym}_{ij}=0$, $|A_{ij}|>0.15$).
 \caption{AGORA2 genome-scale metabolic prior construction.
          \textbf{(A)} Pipeline: 10 guild-representative AGORA2 SBML models,
          oral-fluid medium (Dawes 2008), pFBA per guild, cross-feeding score
-         $F_{ij}$ (secretion $-$ uptake), and sign prior $\sgn(F_{ij}) \to$
+         $F_{ij}$ (secretion $-$ uptake), and sign constraint $\sgn(F_{ij}) \to$
          penalty.
          \textbf{(B)} Constrained pair count by layer: L1 (experimental) $= 10$;
          L1+L2 (+ predicted) $= 22$; L1+L2+L3 (+ AGORA FBA) $= 35$.
@@ -368,7 +368,7 @@ is the ecologically predictive quantity from FBA.
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.88\linewidth]{fig3_agora_sign_validation}
-\caption{AGORA2 sign prior validation.
+\caption{AGORA2 sign constraint validation.
          \textbf{(A)} Scatter of AGORA prior sign $\sgn(F_{ij})$ vs.\ fitted
          $A_{ij}$ (AGORA $W{=}1.0$) for all 72 directional constrained pairs.
          Green-shaded quadrants: sign agreement (66/72 = 91.7\%).
@@ -379,14 +379,14 @@ is the ecologically predictive quantity from FBA.
 \label{fig:signval}
 \end{figure}
 
-\subsection{W\,=\,1.0 Phase Transition in Sign Agreement}
+\subsection{W\,=\,1.0 Abrupt Transition in Sign Agreement}
 \label{ssec:wSweep}
 
 Figure~\ref{fig:wsweep} shows training RMSE and sign agreement as functions
 of AGORA weight $W \in \{0, 0.5, 1.0, 1.5, 2.0\}$ (here $W{=}0$ corresponds
 to L1+L2 only, 22 pairs).
 Sign agreement rises from 94\% at $W{=}0.5$ to \textbf{100\%} at $W{=}1.0$,
-then returns to 94\% at $W{=}1.5$, tracing a discrete phase transition.
+then returns to 94\% at $W{=}1.5$, tracing a discrete abrupt transition.
 At the same $W{=}1.0$ point, training RMSE reaches its minimum (0.0565)
 among all AGORA weights, confirming that this weight simultaneously maximises
 biological consistency and minimises training error.
@@ -406,17 +406,17 @@ FBA cross-feeding direction is ecologically informative, but flux
 \centering
 \includegraphics[width=0.88\linewidth]{fig4_w_sweep}
 \caption{AGORA weight sweep ($W \in \{0, 0.5, 1.0, 1.5, 2.0\}$).
-         \textbf{(A)} Sign agreement: discrete phase transition at $W{=}1.0$
+         \textbf{(A)} Sign agreement: discrete abrupt transition at $W{=}1.0$
          (100\%, red point); 94\% at flanking values.
          Pair counts annotated below ($n{=}34$--$35$).
          \textbf{(B)} Training RMSE vs.\ $W$ (green line); horizontal reference
          lines: LOO-RMSE for no-prior gLV (dotted), L1+L2 (dashed), and
          AGORA $W{=}1.0$ (dash-dot). Minimum training RMSE at $W{=}1.0$
-         coincides with SA phase transition.}
+         coincides with SA abrupt transition.}
 \label{fig:wsweep}
 \end{figure}
 
-\subsection{LOO-CV: Sign Prior Improves Generalisation}
+\subsection{LOO-CV: Sign Constraint Improves Generalisation}
 \label{ssec:looResults}
 
 Table~\ref{tab:comparison} compares LOO-RMSE across model variants.
@@ -427,7 +427,7 @@ and L1+L2 prior} (LOO-RMSE $= 0.0490 \pm 0.016$), a
 The full AGORA L3 layer raises SA to 100\% but yields a slightly higher
 LOO-RMSE ($0.0499$), suggesting that the additional 13 L3 constraints impose
 a small generalisation cost for this sample size.
-LOO improves for 8/10 patients with the sign prior relative to
+LOO improves for 8/10 patients with the sign constraint relative to
 unconstrained gLV (Figure~\ref{fig:loo}).
 
 \begin{table}[htb]
@@ -625,7 +625,7 @@ R/G ratio prediction from baseline data.
 We have demonstrated that AGORA2 genome-scale metabolic models provide
 biologically valid sign priors for gLV interaction inference from short
 oral microbiome time-series.
-A weight of $W{=}1.0$ (L2-equivalent) achieves a phase transition to
+A weight of $W{=}1.0$ (L2-equivalent) achieves a abrupt transition to
 100\% sign agreement, simultaneously minimising training RMSE.
 The sign prior improves LOO cross-validation performance by 2.2--13.5\%
 depending on model form, and biological regime analysis identifies 13 pairs
