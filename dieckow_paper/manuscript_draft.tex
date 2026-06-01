@@ -492,10 +492,13 @@ Porphyromonas/Prevotella.
 $|A_{ij}| \leq 0.15$ and sign agrees with prior.
 The textbook Streptococcus-lactate-Veillonella cross-feeding axis
 (Bacilli--Negativicutes, $A = +0.003$; $|F^\text{sym}| = 5.0$)
-falls in this regime: despite strong metabolic evidence the interaction
-is not ecologically dominant on the 3-week abutment window,
-consistent with the hypothesis that competition for space or nutrients
-outweighs metabolic syntrophy at this timescale~\citep{mikx1975}.
+falls in this regime: despite strong metabolic evidence the guild-level
+signal is suppressed because the Bacilli guild aggregates both
+lactate-producing (\textit{Streptococcus}) and non-lactate-producing
+taxa (\textit{Gemella}, \textit{Enterococcus}), diluting the
+cross-feeding signal~\citep{mikx1975}.
+With only $N{=}10$ patients and $T{=}3$ timepoints, statistical power
+to detect weak interactions ($|A|<0.01$) is inherently limited.
 
 \paragraph{Data-driven, no prior (10 pairs).}
 $F^\text{sym}_{ij} = 0$ (no AGORA2 coverage).
@@ -579,16 +582,22 @@ metabolic network structure, not on flux magnitudes.
 The textbook Streptococcus-lactate-Veillonella cross-feeding axis ranks as
 the strongest L3 prior pair ($|F^\text{sym}| = 5.0$) yet yields one of the
 smallest fitted interactions ($|A| = 0.003$).
-Three non-exclusive explanations are consistent with this result:
-(i) the 3-week abutment window is too short to resolve the ecological impact
-of a metabolic interaction operating on longer timescales;
-(ii) competition for shared carbon sources dominates over the lactate
-syntrophy at the relative-abundance level; and
-(iii) guild-level aggregation merges distinct Streptococcus and Veillonella
-phylotypes with different metabolic capacities.
-The prediction that longer time-series would detect a stronger
-Bacilli--Negativicutes $A$ is testable with the peri-implantitis cohort
-of Szafra\'{n}ski~et~al.
+Two non-exclusive explanations are most parsimonious.
+First, \textbf{guild-level aggregation} dilutes the signal: the Bacilli
+guild contains both lactate-producing (\textit{Streptococcus}) and
+non-lactate-producing taxa (\textit{Gemella}, \textit{Enterococcus}),
+so the bulk Bacilli abundance is a poor proxy for the cross-feeding
+substrate.
+Second, \textbf{limited statistical power}: with $N{=}10$ patients and
+$T{=}3$ timepoints only, weak interactions ($|A|<0.01$) cannot be
+reliably distinguished from noise.
+Lactate cross-feeding itself operates on hour-to-day timescales and
+would be detectable within 3 weeks if it were the dominant driver of
+abundance change; the muted $A$ therefore reflects detectability, not
+timescale.
+Species-resolved models with patient-specific MAG-derived genomes would
+disentangle within-guild diversity and provide a sharper test of this
+interaction.
 
 \subsection{Limitations}
 
