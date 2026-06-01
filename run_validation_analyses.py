@@ -12,7 +12,9 @@ Analysis 2: Random baseline
   → show AGORA sign constraint is significantly better than random
 
 Usage:
-    python run_validation_analyses.py [--gpu 2] [--n-random 100]
+    python run_validation_analyses.py [--gpu 1] [--n-random 100]
+    python run_validation_analyses.py --skip-fba [--gpu 1]  # random baseline only
+    XLA_FLAGS='--xla_gpu_enable_command_buffer=' python run_validation_analyses.py ...  # OOM fix
 """
 import argparse, json, sys, time
 from pathlib import Path
@@ -145,8 +147,19 @@ if not args.skip_fba:
                         ('v2_saliva', ORAL_MEDIUM_V2),
                         ('gcf',       ORAL_MEDIUM_GCF)]:
         media_results[label] = run_pfba_medium(med, label)
+    # Save intermediate FBA results immediately
+    _interim = {'medium_sensitivity': media_results, 'random_baseline': None}
+    with open(OUT_JSON, 'w') as _f:
+        json.dump(_interim, _f, indent=2)
+    print(f'\n  [Intermediate] FBA results saved → {OUT_JSON}')
 else:
-    print('  (skipped — use cached results)')
+    # Load previously saved FBA results if available
+    if OUT_JSON.exists():
+        _prev = json.load(open(OUT_JSON))
+        media_results = _prev.get('medium_sensitivity', {})
+        print(f'  Loaded cached FBA results from {OUT_JSON}')
+    else:
+        print('  (skipped — no cached results found)')
 
 
 # ══════════════════════════════════════════════════════════════════════════
