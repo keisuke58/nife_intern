@@ -163,11 +163,27 @@ else:
 
 
 # ══════════════════════════════════════════════════════════════════════════
-# ANALYSIS 2: Random baseline (shuffle sign constraint)
+# ANALYSIS 2: Random baseline — run in subprocess to isolate cobra memory
 # ══════════════════════════════════════════════════════════════════════════
 print('\n' + '='*60)
 print('ANALYSIS 2: Random baseline (sign permutation)')
 print('='*60)
+print('  Launching subprocess to avoid cobra/JAX GPU memory conflict...')
+
+import subprocess, sys as _sys
+result2 = subprocess.run(
+    [_sys.executable, str(_here / 'run_random_baseline.py'),
+     '--gpu', str(args.gpu), '--n-random', str(args.n_random),
+     '--out', str(OUT_JSON)],
+    capture_output=False,
+)
+if result2.returncode != 0:
+    print('  Random baseline subprocess failed — see output above')
+
+# Reload final result
+result = json.load(open(OUT_JSON)) if OUT_JSON.exists() else {}
+print(f'\nFinal results saved → {OUT_JSON}')
+import sys; sys.exit(0)
 
 # gLV fitter (simplified — full fit, not LOO)
 from hamilton_ode_jax_nsp import simulate_0d_nsp
