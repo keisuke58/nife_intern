@@ -232,7 +232,7 @@ def main():
         subtitle = 'Which guild, when removed, shifts the community most?',
         fig_path = R / 'guild_importance' / 'knockout_bars_base.png',
         footer_text = (
-            '🔑  Bacilli: highest BC divergence (0.839) — compositional keystone. '
+            '🔑  Bacilli: highest BC divergence (0.839) — keystone guild. '
             'Removal increases volume → competitive suppressor. '
             '  |  '
             'Actinobacteria: vol_drop = +0.846 → growth engine. '
@@ -247,7 +247,7 @@ def main():
         subtitle = 'Column-sum |A| = influence;  Row-sum |A| = vulnerability;  Σ A_ij = net mutualist (+) / competitor (−)',
         fig_path = R / 'guild_network' / 'guild_centrality_summary.png',
         footer_text = (
-            'Actinobacteria: influence = 5.58 (highest), net = +2.02 (mutualist hub).  '
+            'Actinobacteria: influence = 5.58 (highest), net = +2.02 (hub guild).  '
             'Bacilli: vulnerability = 8.24 (most regulated by others).  '
             'Betaproteobacteria: net = −0.14 → net competitor.  '
             'LOO sign consistency: Acti→* = 1.0 (stable across all 10 folds); Gamm→* ≈ 0 (data-limited).'
@@ -363,7 +363,7 @@ def main():
                 12, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
     # Numbered findings
     findings = [
-        '①  Bacilli = compositional keystone (BC = 0.839);  Acti = growth engine.',
+        '①  Bacilli = keystone guild (BC = 0.839);  Acti = growth engine.',
         '②  Baci → Acti (A = +3.43, p = 0.040) is the sole statistically validated interaction.',
         '③  A matrix creates a single commensal attractor — b alone cannot flip the community state.',
         '④  Three relapse archetypes: persistent / transient responder / permanent commensal (Patient D only).',

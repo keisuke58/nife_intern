@@ -237,7 +237,7 @@ $dt=10^{-4}$, 100~steps per week.
 \label{sssec:glv}
 
 For comparison, we fit the gLV in replicator form with an \emph{asymmetric}
-$A_{ij}$ (no sign prior, $\calP=0$) using \texttt{scipy.integrate.solve\_ivp}.
+$A_{ij}$ (no sign constraint, $\calP=0$) using \texttt{scipy.integrate.solve\_ivp}.
 This benchmark doubles the off-diagonal free parameters (90 vs.\ 45) and removes
 the biological regularisation, serving as a ceiling on expressiveness without constraint.
 We also evaluate the gLV with the same sign prior layers as the Hamilton model
@@ -269,13 +269,13 @@ to cause gradient blow-up due to $|\nabla|\approx 187$ at the warm-start).
 \subsection{Sign prior construction}
 \label{ssec:prior}
 
-Figure~\ref{fig:pipeline} shows the full three-layer sign prior construction pipeline.
+Figure~\ref{fig:pipeline} shows the full three-layer sign constraint construction pipeline.
 We build a net-flow matrix $F_{ij}$ from three evidence layers:
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=\linewidth]{fig0b_agora_pipeline.pdf}
-\caption{AGORA2 sign prior construction pipeline.
+\caption{AGORA2 sign constraint construction pipeline.
          \textbf{(A)} Workflow: oral-fluid medium composition → per-guild pFBA → cross-feeding
          matrix $F_{ij}$. \textbf{(B)} Constrained pair count by layer: L1 (10), L1+L2 (22),
          L1+L2+L3 (66 pairs). \textbf{(C)} Signed $F_{ij}$ matrix; triangles indicate
@@ -596,7 +596,7 @@ and achieves perfect sign agreement (72/72, 100\%) with the fitted $\bA$.
 
 Among gLV variants, the asymmetric model with $\alpha=0.25$ (L1+L2 only) achieves the
 overall best LOO-RMSE ($0.0490 \pm 0.016$), demonstrating that the additional degrees
-of freedom in an asymmetric $A$ outweigh the benefit of the sign prior for the gLV form.
+of freedom in an asymmetric $A$ outweigh the benefit of the sign constraint for the gLV form.
 Adding the MICOM L3 layer — whether at $\alpha=0.0$ ($0.0519$) or $\alpha=0.25$
 ($0.0516$, 100\% SA) — improves sign agreement to perfect (72/72) but increases
 RMSE by $5$--$6\%$ relative to gLV $\alpha{=}0.25$ (L1+L2), suggesting that the additional
@@ -800,7 +800,7 @@ the fraction of folds in which $\sgn(A_{ij})$ agrees with the full-data estimate
 \centering
 \includegraphics[width=0.90\linewidth]{fig7_loo_stability.pdf}
 \caption{A matrix LOO stability (gLV $\alpha$=0.25, best model, 10 folds).
-         \textbf{(A)} Sign consistency (SC) heatmap; boxed cells have a non-zero sign prior.
+         \textbf{(A)} Sign consistency (SC) heatmap; boxed cells have a non-zero sign constraint.
          31/45 pairs: SC$=1.00$; 40/45: SC$\geq 0.90$; 1 pair: SC$<0.70$.
          \textbf{(B)} $|\bar{A}_{ij}|$ vs.\ LOO std, coloured by regime
          (blue=data$+$prior aligned, light blue=prior-muted, red=data-driven).
@@ -829,7 +829,7 @@ magnitude uncertain).
 \label{ssec:agora_weight}
 
 Figure~\ref{fig:agora_weight} plots training RMSE, Pearson $r$, and sign agreement
-as a function of AGORA weight $w_{L3}$. A phase transition at $w=1.0$ achieves
+as a function of AGORA weight $w_{L3}$. A abrupt transition at $w=1.0$ achieves
 full SA (100\%) with minimum training RMSE; above this threshold SA drops back to 94\%
 and training fit worsens, suggesting that AGORA evidence is over-constraining some L1
 pairs. MacArthur-style quantitative Gaussian prior ($A_{ij}\sim\mathcal{N}(c\Phi_{ij},\sigma^2)$)
@@ -842,7 +842,7 @@ not ecologically predictive, whereas FBA sign information is.
 \caption{AGORA weight sweep ($w_{L3}\in\{0,0.5,1.0,1.5,2.0\}$).
          Panels: \textbf{(A)} training RMSE (mean~$\pm$ std, LOO folds);
          \textbf{(B)} Pearson $r$; \textbf{(C)} sign agreement (SA).
-         A discrete phase transition at $w=1.0$: SA jumps from 94\% to 100\%
+         A discrete abrupt transition at $w=1.0$: SA jumps from 94\% to 100\%
          with a simultaneous drop in training RMSE (0.063~$\to$~0.057).
          At $w>1.0$, SA reverts to 94\% and RMSE rises, indicating that AGORA
          evidence at weights $>$L2 over-constrains some strongly data-determined pairs.
@@ -935,7 +935,7 @@ interactions arise when cross-feeding is reciprocal — as in many oral syntroph
 However, asymmetric interactions are documented: Streptococcus produces $\text{H}_2\text{O}_2$
 that inhibits Fusobacterium but not vice versa. The gLV free baseline (asymmetric,
 no prior) achieves RMSE~$=0.059$ (worse than the best Hamilton at $0.048$), suggesting
-the symmetry constraint, combined with the sign prior, provides net regularisation
+the symmetry constraint, combined with the sign constraint, provides net regularisation
 benefit exceeding the loss in expressiveness. Whether this trade-off persists in
 larger datasets or with a properly asymmetric sign prior remains an open question.
 
@@ -1087,7 +1087,7 @@ and Betaproteobacteria ($A_{\text{Beta,Acti}}=+1.74$). This is consistent
 with Actinomyces being the archetypal early coloniser that provides surface
 receptors for Streptococcal adhesion and metabolic bridging~\citep{kolenbrander2000}.
 
-\paragraph{Bacilli — compositional keystone with competitive suppression.}
+\paragraph{Bacilli — keystone guild with competitive suppression.}
 Removing Bacilli produces the highest BC divergence (0.839), yet the volume
 growth \emph{increases} by 73\% (volume drop~$=-0.733$). This apparent paradox
 reflects competitive suppression: Bacilli (Streptococci) inhibit Betaproteobacteria
@@ -1426,7 +1426,7 @@ or mechanistic conclusions are drawn:
 \section{Conclusions}
 \label{sec:conclusions}
 
-We have shown that a metabolically informed three-layer sign prior substantially
+We have shown that a metabolically informed three-layer sign constraint substantially
 regularises both Hamilton (symmetric) and gLV (asymmetric) replicator dynamics
 for oral microbiome prediction. Key results are:
 \begin{itemize}[noitemsep]
@@ -1527,7 +1527,7 @@ $\mu\in[0.11, 1.66]\ \text{h}^{-1}$ (verified).
 The exchange reaction identifiers use the AGORA2 BiGG legacy format
 (\texttt{EX\_met(e)}).
 
-\section{\texorpdfstring{$\sigma$}{sigma} sensitivity of sign penalty}
+\section{\texorpdfstring{$\sigma$}{sigma} sensitivity of constraint penalty}
 \label{app:sigma}
 
 All models achieve identical sign agreement for $\sigma\in[0.05,0.30]$, with LOO-RMSE
