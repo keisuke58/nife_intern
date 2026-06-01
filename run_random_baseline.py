@@ -48,21 +48,32 @@ triu_r, triu_c = np.tril_indices(n_sp)
 
 pairs_constrained = [(i, j) for i in range(n_sp) for j in range(i+1, n_sp)
                      if sign_agora[i, j] != 0]
-print(f'  Constrained pairs: {len(pairs_constrained)}')
-
-from hamilton_ode_jax_nsp import simulate_0d_nsp
+print(f'  Constrained pairs: {len(pairs_constrained)}', flush=True)
 
 def make_A(theta_A):
     A = jnp.zeros((n_sp, n_sp))
     A = A.at[triu_r, triu_c].set(theta_A)
     return A + A.T - jnp.diag(jnp.diag(A))
 
+@jax.jit
+def glv_step(phi, Ab):
+    """One week of gLV replicator dynamics (Euler, 50 microsteps)."""
+    A, b = Ab
+    def body(phi, _):
+        f = b + A @ phi
+        f_bar = jnp.dot(phi, f)
+        phi = phi + 0.02 * phi * (f - f_bar)
+        phi = jnp.clip(phi, 0.0, None)
+        s = phi.sum()
+        return jnp.where(s > 1e-12, phi / s, phi), None
+    phi_out, _ = jax.lax.scan(body, phi, None, length=50)
+    return phi_out
+
 def pred_week(theta_A, b_p, phi0):
-    theta = jnp.concatenate([theta_A, b_p])
-    phi2 = simulate_0d_nsp(theta, n_sp=n_sp, n_steps=100, dt=1e-2,
-                            phi_init=phi0, c_const=25.0, alpha_const=100.0)[-1]
-    phi3 = simulate_0d_nsp(theta, n_sp=n_sp, n_steps=100, dt=1e-2,
-                            phi_init=phi2, c_const=25.0, alpha_const=100.0)[-1]
+    A  = make_A(theta_A)
+    Ab = (A, b_p)
+    phi2 = glv_step(phi0, Ab)
+    phi3 = glv_step(phi2, Ab)
     return phi2, phi3
 
 _pred_all = jax.jit(jax.vmap(pred_week, in_axes=(None, 0, 0)))
@@ -105,12 +116,12 @@ def fit_glv(sign_mat_np, n_steps=300, seed=0):
     return rmse, sa
 
 # AGORA reference
-print('  Fitting AGORA W=1.0 reference...')
+print('  Fitting AGORA W=1.0 reference...', flush=True)
 rmse_agora, sa_agora = fit_glv(sign_agora, n_steps=500)
-print(f'  AGORA: RMSE={rmse_agora:.4f}  SA={sa_agora:.1%}')
+print(f'  AGORA: RMSE={rmse_agora:.4f}  SA={sa_agora:.1%}', flush=True)
 
 # Random permutations
-print(f'\n  Running {args.n_random} random permutations...')
+print(f'\n  Running {args.n_random} random permutations...', flush=True)
 rng = np.random.default_rng(42)
 random_rmses, random_sas = [], []
 t0 = time.time()
@@ -126,17 +137,17 @@ for k in range(args.n_random):
     random_sas.append(sa_r)
     if (k+1) % 10 == 0:
         print(f'  {k+1:3d}/{args.n_random}  mean RMSE={np.mean(random_rmses):.4f}  '
-              f't={time.time()-t0:.0f}s')
+              f't={time.time()-t0:.0f}s', flush=True)
 
 random_rmses = np.array(random_rmses)
 random_sas   = np.array(random_sas)
 pct_better   = float((random_rmses > rmse_agora).mean()) * 100
 
-print(f'\n  === Random baseline results ===')
-print(f'  AGORA RMSE:  {rmse_agora:.4f}  SA={sa_agora:.1%}')
-print(f'  Random RMSE: {random_rmses.mean():.4f} ± {random_rmses.std():.4f}')
-print(f'  Random SA:   {random_sas.mean():.1%} ± {random_sas.std():.1%}  (expected ~50%)')
-print(f'  AGORA beats {pct_better:.0f}% of random permutations')
+print(f'\n  === Random baseline results ===', flush=True)
+print(f'  AGORA RMSE:  {rmse_agora:.4f}  SA={sa_agora:.1%}', flush=True)
+print(f'  Random RMSE: {random_rmses.mean():.4f} ± {random_rmses.std():.4f}', flush=True)
+print(f'  Random SA:   {random_sas.mean():.1%} ± {random_sas.std():.1%}  (expected ~50%)', flush=True)
+print(f'  AGORA beats {pct_better:.0f}% of random permutations', flush=True)
 
 # Merge with existing FBA results and save
 out_path = Path(args.out)
@@ -155,4 +166,4 @@ existing['random_baseline'] = {
 }
 with open(out_path, 'w') as f:
     json.dump(existing, f, indent=2)
-print(f'\nSaved → {out_path}')
+print(f'\nSaved → {out_path}', flush=True)
