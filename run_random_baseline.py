@@ -58,9 +58,10 @@ def make_A(theta_A):
     return A + A.T - jnp.diag(jnp.diag(A))
 
 def pred_week(theta_A, b_p, phi0):
-    phi2 = simulate_0d_nsp(theta_A, n_sp=n_sp, n_steps=100, dt=1e-2,
+    theta = jnp.concatenate([theta_A, b_p])
+    phi2 = simulate_0d_nsp(theta, n_sp=n_sp, n_steps=100, dt=1e-2,
                             phi_init=phi0, c_const=25.0, alpha_const=100.0)[-1]
-    phi3 = simulate_0d_nsp(theta_A, n_sp=n_sp, n_steps=100, dt=1e-2,
+    phi3 = simulate_0d_nsp(theta, n_sp=n_sp, n_steps=100, dt=1e-2,
                             phi_init=phi2, c_const=25.0, alpha_const=100.0)[-1]
     return phi2, phi3
 
