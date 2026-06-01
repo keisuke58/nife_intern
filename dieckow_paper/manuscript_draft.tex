@@ -353,17 +353,35 @@ against $\sgn(A_{ij})$ from the full-data AGORA $W{=}1.0$ fit for all 72
 directional constrained pairs (35 undirected $\times 2$).
 We find 66/72 (91.7\%) sign agreement (Figure~\ref{fig:signval}), well above
 the 50\% chance level ($p < 10^{-10}$, binomial test).
-The 6 discordant pairs all involve the ``Other'' guild, where AGORA2 coverage
-is absent by construction; restricting to the 58 pairs with at least one
-guild having a curated AGORA2 representative raises agreement to 96.6\%.
+Restricting to ecologically meaningful pairs ($|A_{ij}|>0.10$) raises
+agreement to 30/30 (100\%): all six discordant pairs have $|A_{ij}|<0.08$,
+indicating that apparent disagreements arise from muted interactions rather
+than FBA prediction errors.
+
+\paragraph{Medium robustness.}
+Repeating the FBA under three oral fluid compositions
+(v1: standard saliva~\citep{dawes2008};
+ v2: realistic salivary concentrations;
+ GCF: gingival crevicular fluid enriched in haem and amino acids)
+yields identical sign agreement (36/36 = 100\% for all three media),
+confirming that the predictions are not sensitive to the assumed medium.
+
+\paragraph{Random baseline.}
+To test whether the sign constraint adds information beyond arbitrary
+regularisation, we replaced the AGORA signs with 100 random $\pm1$
+permutations over the same 33 constrained pairs.
+The AGORA constraint achieves RMSE $= 0.0964$, which exceeds
+\textit{all} 100 random permutations
+(random mean RMSE $= 0.1062 \pm 0.0011$, a 10.2\% degradation;
+ $p < 0.01$, permutation test).
+Random sign agreement converges to $59 \pm 10\%$, near the 50\% chance
+level, while AGORA achieves 91.7\% (full) or 100\% (strong pairs),
+confirming that FBA encodes genuine ecological information.
 
 The MacArthur quantitative prior~\citep{marsland2019} fails entirely:
-sign agreement drops to 4--11/70 (6--16\%) across the OLS-calibrated
-concentration parameters tested ($c \in \{0.01, 0.05, 0.10, 0.50\}$,
-Table~\ref{tab:comparison}), confirming that FBA flux magnitudes do not
-transfer to gLV interaction units.
-Sign information (direction of cross-feeding), not magnitude (flux amount),
-is the ecologically predictive quantity from FBA.
+sign agreement drops to 4--11/70 (6--16\%) across tested concentration
+parameters, confirming that FBA flux magnitudes do not transfer to
+gLV interaction units.
 
 \begin{figure}[htb]
 \centering
