@@ -1,0 +1,172 @@
+{
+  "nperm": 10000,
+  "seed": 0,
+  "alphas": [
+    0.0,
+    0.25,
+    0.5,
+    1.0
+  ],
+  "models": {
+    "glv": {
+      "label": "gLV (asymmetric A, run_glv_loo.py)",
+      "n_folds": 10,
+      "files": [
+        "loo_glv_noprior_a0p0_fold0.json",
+        "loo_glv_noprior_a0p0_fold1.json",
+        "loo_glv_noprior_a0p0_fold2.json",
+        "loo_glv_noprior_a0p0_fold3.json",
+        "loo_glv_noprior_a0p0_fold4.json",
+        "loo_glv_noprior_a0p0_fold5.json",
+        "loo_glv_noprior_a0p0_fold6.json",
+        "loo_glv_noprior_a0p0_fold7.json",
+        "loo_glv_noprior_a0p0_fold8.json",
+        "loo_glv_noprior_a0p0_fold9.json"
+      ],
+      "directed": true,
+      "n_candidate_cells": 90,
+      "alpha_results": [
+        {
+          "alpha": 0.0,
+          "n_prior_cells": 21,
+          "prior_pos": 21,
+          "prior_neg": 0,
+          "observed_agreement": 0.38095238095238093,
+          "agreement_on_predicted_pos": 0.38095238095238093,
+          "agreement_on_predicted_neg": null,
+          "pooled_pos_frac_on_prior": 0.4142857142857143,
+          "pooled_pos_frac_off_prior": 0.5347826086956522,
+          "perm_mean": 0.5226142857142857,
+          "perm_std": 0.0963538215860708,
+          "p_value": 0.9575042495750425,
+          "z_score": -1.4702261148395759
+        },
+        {
+          "alpha": 0.25,
+          "n_prior_cells": 33,
+          "prior_pos": 17,
+          "prior_neg": 16,
+          "observed_agreement": 0.3939393939393939,
+          "agreement_on_predicted_pos": 0.35294117647058826,
+          "agreement_on_predicted_neg": 0.4375,
+          "pooled_pos_frac_on_prior": 0.4575757575757576,
+          "pooled_pos_frac_off_prior": 0.5350877192982456,
+          "perm_mean": 0.5015333333333333,
+          "perm_std": 0.08759850622020343,
+          "p_value": 0.9198080191980802,
+          "z_score": -1.2282622619413568
+        },
+        {
+          "alpha": 0.5,
+          "n_prior_cells": 31,
+          "prior_pos": 12,
+          "prior_neg": 19,
+          "observed_agreement": 0.4838709677419355,
+          "agreement_on_predicted_pos": 0.4166666666666667,
+          "agreement_on_predicted_neg": 0.5263157894736842,
+          "pooled_pos_frac_on_prior": 0.45483870967741935,
+          "pooled_pos_frac_off_prior": 0.5338983050847458,
+          "perm_mean": 0.4949645161290322,
+          "perm_std": 0.08966368419994805,
+          "p_value": 0.6257374262573743,
+          "z_score": -0.12372398575809802
+        },
+        {
+          "alpha": 1.0,
+          "n_prior_cells": 27,
+          "prior_pos": 4,
+          "prior_neg": 23,
+          "observed_agreement": 0.4074074074074074,
+          "agreement_on_predicted_pos": 0.0,
+          "agreement_on_predicted_neg": 0.4782608695652174,
+          "pooled_pos_frac_on_prior": 0.45555555555555555,
+          "pooled_pos_frac_off_prior": 0.5285714285714286,
+          "perm_mean": 0.48371481481481476,
+          "perm_std": 0.08872410582661576,
+          "p_value": 0.8596140385961404,
+          "z_score": -0.8600527071601816
+        }
+      ]
+    },
+    "hamilton_expanded": {
+      "label": "Hamilton (symmetric A, run_hamilton_expanded_loo.py)",
+      "n_folds": 10,
+      "files": [
+        "loo_expanded_noprior_a0p0_fold0.json",
+        "loo_expanded_noprior_a0p0_fold1.json",
+        "loo_expanded_noprior_a0p0_fold2.json",
+        "loo_expanded_noprior_a0p0_fold3.json",
+        "loo_expanded_noprior_a0p0_fold4.json",
+        "loo_expanded_noprior_a0p0_fold5.json",
+        "loo_expanded_noprior_a0p0_fold6.json",
+        "loo_expanded_noprior_a0p0_fold7.json",
+        "loo_expanded_noprior_a0p0_fold8.json",
+        "loo_expanded_noprior_a0p0_fold9.json"
+      ],
+      "directed": false,
+      "n_candidate_cells": 45,
+      "alpha_results": [
+        {
+          "alpha": 0.0,
+          "n_prior_cells": 14,
+          "prior_pos": 14,
+          "prior_neg": 0,
+          "observed_agreement": 0.7857142857142857,
+          "agreement_on_predicted_pos": 0.7857142857142857,
+          "agreement_on_predicted_neg": null,
+          "pooled_pos_frac_on_prior": 0.7214285714285714,
+          "pooled_pos_frac_off_prior": 0.26129032258064516,
+          "perm_mean": 0.3772857142857142,
+          "perm_std": 0.10772404275627193,
+          "p_value": 0.00039996000399960006,
+          "z_score": 3.7914337502989826
+        },
+        {
+          "alpha": 0.25,
+          "n_prior_cells": 17,
+          "prior_pos": 11,
+          "prior_neg": 6,
+          "observed_agreement": 0.6470588235294118,
+          "agreement_on_predicted_pos": 0.7272727272727273,
+          "agreement_on_predicted_neg": 0.5,
+          "pooled_pos_frac_on_prior": 0.6529411764705882,
+          "pooled_pos_frac_off_prior": 0.25357142857142856,
+          "perm_mean": 0.46605294117647056,
+          "perm_std": 0.1164283284889914,
+          "p_value": 0.09829017098290171,
+          "z_score": 1.5546549941967187
+        },
+        {
+          "alpha": 0.5,
+          "n_prior_cells": 11,
+          "prior_pos": 5,
+          "prior_neg": 6,
+          "observed_agreement": 0.5454545454545454,
+          "agreement_on_predicted_pos": 0.6,
+          "agreement_on_predicted_neg": 0.5,
+          "pooled_pos_frac_on_prior": 0.5818181818181818,
+          "pooled_pos_frac_off_prior": 0.34705882352941175,
+          "perm_mean": 0.5130636363636363,
+          "perm_std": 0.14787615742196,
+          "p_value": 0.5367463253674633,
+          "z_score": 0.21904078152547368
+        },
+        {
+          "alpha": 1.0,
+          "n_prior_cells": 17,
+          "prior_pos": 2,
+          "prior_neg": 15,
+          "observed_agreement": 0.35294117647058826,
+          "agreement_on_predicted_pos": 0.5,
+          "agreement_on_predicted_neg": 0.3333333333333333,
+          "pooled_pos_frac_on_prior": 0.6529411764705882,
+          "pooled_pos_frac_off_prior": 0.25357142857142856,
+          "perm_mean": 0.5923,
+          "perm_std": 0.10448961786806638,
+          "p_value": 0.9966003399660034,
+          "z_score": -2.290742644205542
+        }
+      ]
+    }
+  }
+}

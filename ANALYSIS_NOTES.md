@@ -266,3 +266,116 @@ Bergey/Dieckow 文献予測と in vivo TMCMC posterior の比較:
 
 - PBS サーバーがノードを `down` 認識 → qdel 不可 → 放置（実害なし）
 - 全30サンプルの taxonomy TSV は既に `results/dieckow_taxonomy/` に存在
+
+---
+
+## 5. no-prior 符号一致の検証（エンリッチメント再解釈, 2026-06-02）
+
+`--no-prior`（sign penalty を切った純データフィット）での LOO 10-fold 符号一致を、
+basic prior と expanded AGORA prior の両方で確認した。
+
+**出力**: `results/dieckow_cr/loo_glv_noprior_a0p0_fold{0..9}.json`,
+`results/dieckow_cr/loo_expanded_noprior_a0p0_fold{0..9}.json`
+（warm-start fit_file は両方 `fit_glv_hamilton_kegg_expanded_agora_w0p5.json`、`no_prior:true, alpha:0.0`）
+
+| prior セット | スクリプト | fold別 SA | 合算 |
+|---|---|---|---|
+| basic gLV（非対称A, 21要素） | `run_glv_loo.py` | 8,10,9,8,8,10,7,10,9,8 /21 | **87/210 = 41.4%** |
+| expanded AGORA（対称Hamilton A, 28要素） | `run_hamilton_expanded_loo.py` | 20,22,22,22,22,20,18,20,18,18 /28 | **202/280 = 72.1%** |
+
+### 重要：alpha=0 の prior は両方とも「全て正」
+
+`build_net_flow_expanded.net_flow_glv / net_flow_hamilton(competition_weight=0.0)` は
+cross-feeding 層のみで competition を入れないため、prior は basic 21/21・expanded 28/28 が
+**全て正**。よってこの設定の "sign agreement" は **「無制約フィット A のうち代謝リンクセルが正である割合」**と同義で、
+多数決ベースライン（全部+と予測）は 100%。正しい対照は **prior 外の off-diagonal セルの正の割合**。
+
+### エンリッチメント（on-prior vs off-prior, 正の割合）
+
+| モデル | prior セル（=SA） | 非prior off-diag | 差 |
+|---|---|---|---|
+| gLV（非対称, 21） | 41.4% | **53.5%** | −12 pt（signal なし／むしろ逆） |
+| Hamilton（対称, 28） | 72.1% | **26.1%** | **+46 pt（強い signal）** |
+
+### 考察
+
+1. **72% は本物の独立検証（Hamilton）**。off-prior が 26%しか正でない（対称replicator＝大半が競争＝負）中で、
+   AGORA が cross-feeding 判定したセルだけ 72%正 → 代謝(FBA)と生態(時系列フィット)が prior 無しで収束。
+   PAPER_OUTLINE の「独立性 → prior は循環論法でない」根拠そのもの。裸の 72%でなく **72 vs 26 の対比**で出すのが誠実。
+2. **basic gLV prior は signal ゼロ（41 vs 53、むしろ逆）**。理由：(a) prior が degenerate（全部正＝競争を一切予測しない）、
+   (b) 非対称gLVを 3週×10患者で同定するのは弱く off-prior≈53%≈コインフリップ。
+   → Heine→Dieckow 43%（別比較）と同様、「代謝と生態が矛盾」ではなく「basic prior にも gLV 符号にも情報が乗っていない」と読む。negative control 扱い。
+3. **モデル選択の証拠**：代謝と整合するのは対称 Hamilton で、非対称 gLV ではない。Hamilton 採用・W=1.0 100%相転移と整合。
+
+### 注意点（論文記載時）
+
+- **degenerate prior**: alpha=0 は prior に負(競争)が無く、「予測競争が実際に負か」を未検証。対称化するには alpha>0 prior でも no-prior agreement を出すか、上のエンリッチメント対比を報告。
+- **fold は非独立**: 10-fold は各々9/10患者共有 → 280要素 ≠ n=280。実効 n ≈ 1フィット（対称なので14独立ペア）。正式には prior セルを shuffle する permutation test が必要（fold間 18–22/28 の安定性は単一fold由来でない傍証）。
+- **gLV vs Hamilton は model×prior の二重交絡**（net_flow_glv 非対称21 vs net_flow_hamilton 対称28）。各モデル内エンリッチメントは妥当だが「41 vs 72」直接比較は交絡込み。
+
+### Permutation test 結果（`permutation_test_noprior_signs.py`, 2026-06-02）
+
+検定単位を fold ではなく**行列セル**にするため、10 fold を per-cell consensus 符号 `sign(mean_folds A)` に畳み、
+consensus 符号を候補セル間でシャッフルする permutation（gLV=off-diag 90, Hamilton=上三角 45, nperm=10000, seed=0）で
+prior 予測符号との一致が有意かを検定。出力 `results/dieckow_cr/noprior_permutation_test.json`。
+
+| model | alpha | prior(+/−) | SA | +cells | −cells | perm平均 | p | z |
+|---|---|---|---|---|---|---|---|---|
+| **Hamilton** | 0.00 | 14/0 | **0.786** | 0.79 | — | 0.377 | **0.0004** | **+3.79** |
+| Hamilton | 0.25 | 11/6 | 0.647 | 0.73 | 0.50 | 0.466 | 0.098 | +1.55 |
+| Hamilton | 0.50 | 5/6 | 0.545 | 0.60 | 0.50 | 0.513 | 0.537 | +0.22 |
+| Hamilton | 1.00 | 2/15 | 0.353 | 0.50 | 0.33 | 0.592 | 0.997 | −2.29 |
+| gLV | 0.00 | 21/0 | 0.381 | 0.38 | — | 0.523 | 0.958 | −1.47 |
+| gLV | 0.25–1.0 | — | 0.39–0.48 | — | — | ~0.50 | 0.63–0.92 | ≤0 |
+
+**確定した結論:**
+1. **cross-feeding（正）方向のみ有意に独立検証される（Hamilton, p=0.0004, z=+3.79）**。
+   off-prior 26%・perm平均 37.7% に対し prior セルが 78.6%正 → 代謝(FBA cross-feeding)と生態(時系列)が prior 無しで収束。
+2. **competition（負）方向は検証されない**：予測負セルの一致は全 alpha で ~0.50（チャンス）、alpha=1.0 では 0.33 で
+   有意に悪い（p=0.997）。→ 独立検証されるのは **協調(cross-feeding)半分だけ**。競争 prior は生態フィットと独立一致しない。
+3. **gLV はどの alpha でも非有意**（p=0.63–0.96, z≤0）。negative control。
+
+**warm-start 汚染チェック（重要）:** no-prior LOO は prior 付きフィット(w0p5)を初期値にするため汚染懸念があったが、
+no-prior フィットは off-diag 符号の **44–49% を warm-start から反転**させており初期値に固着していない。
+さらに gLV は warm-start の cross-feeding バイアス(20/21 正)を no-prior で 8/21 まで**消去** → 「データが支持しない warm-start 符号は
+最適化で捨てられる」ことを示す自然な対照。よって Hamilton が 11/14 を保持したのは warm-start 残渣でなく**データ駆動**と判断。
+（残課題: gold standard は neutral init からの no-prior 再フィット = クラスタジョブ。）
+
+`use_agora` True/False で prior の符号マスクは同一（L3 は符号を変えず magnitude のみ）→ AGORA prior でも結果同じ。
+
+**論文向け推奨:** 裸の 72% でなく「Hamilton cross-feeding: SA 78.6%, permutation p=0.0004 (vs random-cell 37.7%)」と報告し、
+「検証されるのは協調方向であり競争方向ではない」点を明示。gLV no-prior は null として併記。
+
+---
+
+## 6. ネットワーク解析（A を符号付き有向網として, 2026-06-02）
+
+方針転換: A を「パラメータ行列」でなく 10 ギルド/5 種上のネットワークとして解析。
+スクリプト: `analyze_interaction_network.py`（Dieckow 10-guild の A/B/E）,
+`analyze_network_rewiring.py`（Heine 5 種 10000p の D, データは `paper_data.py` 経由）。
+出力: `results/dieckow_cr/network_analysis.json`, `network_rewiring.json`, `figures/network_analysis.png`, `network_rewiring.png`。
+
+**A) 中心性 → keystone/bridge 検定（no-prior consensus 網）**
+- **Pg(=Bacteroidia) は構造的 keystone でない**: eig中心性 rank4 / 存在量 rank5（gap +1）。
+- **bridge は Fusobacterium でなく Bacilli(Streptococcus)**（betweenness 0.78、他はほぼ 0）。最中心は Actinobacteria。
+- → 古典的 Pg-keystone / Fn-bridge 仮説は in-vivo class レベルでは非支持。中心は高存在量の初期コロナイザー。
+- 注意: class≠species（Bacteroidia は Pg だけでない）、網が密で betweenness 退化、希少 guild はノイズ。
+
+**B) trophic coherence（有向 AGORA cross-feeding, MacKay F0）**
+- F0=0.652 vs ランダム 0.646±0.13（p=0.50）→ 栄養段階的に**非整合**。閉路型の相互給餌で明確な階層なし。
+- 栄養段位: Fusob.=basal producer (h=0)、Negat.(Veillonella)=高消費 (h=1.28)、γ-Prot.=top (1.55) は生物学的に妥当。
+
+**E) concordant backbone（生態 Hamilton 層 × AGORA 層, 11 エッジ全て正）** — §5 の p=0.0004 のネットワーク図。
+- **Negativicutes(Veillonella) が主要 sink**（Bacil/Bact/βProt/Fusob → Negat）= 既知の乳酸クロスフィーディングを再構成。**最も強い成果**。
+
+**D) CS↔DH リワイヤリング（Heine 5 種, 列中心化 A_eff, posterior）**
+- **ゲージ注意**: replicator の A は列方向の定数シフトに不変 → 意味を持つのは列中心化 `A_eff = A - mean_i(A_:,j)`。
+  推定 A は全エントリ正だが、符号解釈は必ず A_eff で（メモの「Heine A に負値」もこれ由来）。DH MAP は多峰性 → posterior 使用。
+- **So↔Vd（Streptococcus–Veillonella 相利共生）が dysbiosis で競争に反転**（P_fac 1.00→0.00）= 基盤クロスフィーディングの崩壊。
+- An→Fn, Vd→Fn が競争→促進（dysbiosis で Fusobacterium が支援される）。
+- **Pg の eig中心性が dysbiosis で上昇**（CS 0.32 → DH 0.51 最大）、DH では Pg が他種を正味抑制（P_fac 0.27）。
+  → A（静的・class）では keystone でないが、**DH 動的状態で Pg が中心化＝keystone 的**。A と D が整合する物語。
+
+**論文ナラティブ案**: E（代謝-生態が一致する Veillonella クロスフィーディング backbone）を主検証図、
+D（commensal の Strep-Veillonella 相利が dysbiosis で崩壊＋Pg が DH で中心化）を状態遷移の機構図に。
+keystone-pathogen 仮説は「静的中心性」でなく「dysbiotic 状態での動的中心化」として支持される、と整理。

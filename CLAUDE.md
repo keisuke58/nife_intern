@@ -80,6 +80,7 @@ The four ODE attractors recur as the codes **CS / CH / DS / DH** (commensal/dysb
 ## Conventions
 
 - **Outputs go to `results/<run_name>/`** (timestamped like `Dysbiotic_HOBIC_20260226_040107`, or descriptive like `dieckow_fits/`). COMETS outputs go to `comets/pipeline_results/`. Many result subdirs are committed; large data, DBs, FASTQs, `*.qza/*.qzv`, and PDFs are gitignored (see `.gitignore`).
+- **論文用データの正典は `paper_data.py`** (single source of truth). 5-種アトラクター(CS/CH/DS/DH)の論文グレード posterior は **10000-particle TMCMC** = `results/ultimate_10000p/`（DH は `dh_baseline`）。どの run が論文用かを毎回探さず、`from paper_data import paper_5sp_samples, paper_5sp_theta` を使う。論文用 run を差し替えるときは `paper_data.py` の定数だけ直す。`results/` には同状態の探索的な timestamped/`_1000p`/`deeponet_*` run が多数あるが、それらは論文用ではない。
 - **Scripts are argparse CLIs** (~60 of them). When adding a runnable script, follow suit and write results as JSON/`.npy` keyed to `GUILD_ORDER`.
 - **Plotting**: shared publication style in `pub_style.py`; guild colors/short-labels in `guild_replicator_dieckow.py`. Paper figures are produced by `generate_fig*.py` / `generate_dieckow_paper_figures.py` (vector PDF, Times New Roman).
 - **Versioned experiments via filename suffix**, not branches: `_v2`, `_w1p0` (weight=1.0), `_a025` (α=0.25), `loo_nsp_ift_v7_gpu.py`. New variants are typically new files rather than edits to old ones — preserve the old variant unless asked to replace it.
