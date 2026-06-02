@@ -125,13 +125,27 @@ def leading_int(name):
 
 def series_day(img_name, path, file_day):
     """Day for one series, following the Heine naming convention for this file.
-    HOBIC24: leading integer of the series name (multiple days per file).
-    Otherwise: the file-level day (…TagN), with a series-name parse as backup."""
+    HOBIC24: leading integer of the series name (multiple days per file), else
+    the file day. All other files: the file-level day (…TagN) — the series name
+    is NOT parsed (some HOBIC22 series carry stray tokens like 'Tag11 8 1' in a
+    Tag10 file, which must not override the experiment day)."""
     if is_hobic24(path):
         d = leading_int(img_name)
         if d is not None:
             return d
-    return parse_day(img_name, file_day)
+    return file_day
+
+
+def series_substrate(img_name):
+    """'ti' / 'glass' if the series name labels a substrate, else None.
+    HOBIC24 files mix titanium and glass FOVs (e.g. '6 Ti 1' vs '6 Glass 1');
+    the HOBIC implant model is titanium, so by default we keep Ti + unlabelled."""
+    n = str(img_name)
+    if re.search(r'\bglass\b', n, re.IGNORECASE):
+        return 'glass'
+    if re.search(r'\bti\b', n, re.IGNORECASE):
+        return 'ti'
+    return None
 
 
 # Species ↔ analysis-graph colour (mirrors COLORS in nsp_pde_1d_heine.py /
@@ -258,33 +272,48 @@ def averaged_profile(profiles, cmap, n_grid=40):
 
 
 def _plot_depth(avg_for_plot, out_csv):
-    """Quick depth-profile figure (per-z renormalised fractions), one panel per
-    (condition, day). Keys may be a bare day or a (condition, day) tuple."""
+    """Depth-profile figure (per-z renormalised fractions) as a condition × day
+    grid (rows = CH/DH…, cols = days). Keys may be a bare day or (condition, day)."""
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
+    plt.rcParams.update({                                   # Times-family, like the docs
+        'font.family': 'serif',
+        'font.serif': ['Nimbus Roman', 'Times New Roman', 'DejaVu Serif'],
+    })
     COL = {'S.oralis': '#1f77b4', 'A.naeslundii': '#2ca02c', 'Vd/Vp': '#bcbd22',
            'F.nucleatum': '#9467bd', 'P.gingivalis': '#d62728'}
-    keys = sorted(avg_for_plot)
-    fig, axes = plt.subplots(1, len(keys), figsize=(2.6 * len(keys), 3.4), squeeze=False)
-    for j, key in enumerate(keys):
-        ax = axes[0][j]
-        grid, avg, depth = avg_for_plot[key]
-        sp_list = list(avg)
-        M = np.stack([avg[sp] for sp in sp_list], axis=1)      # (n_grid, nsp)
-        s = M.sum(axis=1, keepdims=True); s[s == 0] = 1.0
-        frac = M / s
-        z_um = grid * depth
-        for si, sp in enumerate(sp_list):
-            ax.plot(frac[:, si], z_um, color=COL.get(sp, 'k'), lw=2, label=sp)
-        title = f'{key[0]} d{key[1]}' if isinstance(key, tuple) else f'Day {key}'
-        ax.set_title(title, fontsize=9)
-        ax.set_xlabel('fraction'); ax.set_xlim(0, 1); ax.invert_yaxis()
-        if j == 0:
-            ax.set_ylabel('depth z (µm)')
-    axes[0][-1].legend(fontsize=6, loc='best')
-    fig.suptitle('FISH depth profiles (FOV-averaged, per-z renormalised)', fontsize=10)
-    fig.tight_layout()
+    items = {}
+    for k, v in avg_for_plot.items():
+        cond, day = k if isinstance(k, tuple) else ('', k)
+        items[(cond, day)] = v
+    conds = sorted({c for c, _ in items})
+    days = sorted({d for _, d in items})
+    nr, nc = len(conds), len(days)
+    fig, axes = plt.subplots(nr, nc, figsize=(2.7 * nc, 3.3 * nr), squeeze=False)
+    for ri, cond in enumerate(conds):
+        for ci, day in enumerate(days):
+            ax = axes[ri][ci]
+            if (cond, day) not in items:
+                ax.axis('off'); continue
+            grid, avg, depth = items[(cond, day)]
+            sp_list = list(avg)
+            M = np.stack([avg[sp] for sp in sp_list], axis=1)
+            s = M.sum(axis=1, keepdims=True); s[s == 0] = 1.0
+            frac = M / s
+            z_um = grid * depth
+            for si, sp in enumerate(sp_list):
+                ax.plot(frac[:, si], z_um, color=COL.get(sp, 'k'), lw=2.2, label=sp)
+            ax.set_title(f'{cond} day {day}'.strip(), fontsize=13)
+            ax.set_xlim(0, 1); ax.invert_yaxis()
+            if ri == nr - 1:
+                ax.set_xlabel('fraction', fontsize=12)
+            if ci == 0:
+                ax.set_ylabel((f'{cond}\n' if cond else '') + 'depth z (µm)', fontsize=12)
+    axes[0][nc - 1].legend(fontsize=10, loc='best')
+    fig.suptitle('FISH depth profiles (FOV-averaged, per-z renormalised fractions)',
+                 fontsize=15)
+    fig.tight_layout(rect=(0, 0, 1, 0.99))
     p = Path(out_csv).with_suffix('.png')
     fig.savefig(p, dpi=150, bbox_inches='tight')
     print(f'Saved plot: {p}')
@@ -320,6 +349,10 @@ def main():
                     help='CS/CH/DS/DH tag; if omitted, auto from filename '
                          '(HOBIC22→CH commensal, HOBIC24→DH dysbiotic)')
     ap.add_argument('--day', type=int, default=None, help='day value (fallback if not in series/file name)')
+    ap.add_argument('--substrate', choices=['all', 'ti', 'glass'], default='all',
+                    help="keep only this substrate (HOBIC24 mixes 'Ti' and 'Glass' FOVs); "
+                         "'ti'/'glass' also keep unlabelled series, dropping only the other "
+                         "substrate. Default 'all'. Use 'ti' for the titanium implant model.")
     ap.add_argument('--out', type=str, default=None,
                     help='output CSV path; default results/diffusion_fit/zprofiles_<stem>.csv')
     ap.add_argument('--n-grid', type=int, default=40, help='depth grid points for the averaged profile')
@@ -370,8 +403,14 @@ def main():
         file_day = parse_day(Path(path).stem, args.day)
         print(f'  {Path(path).name}: condition={condition} (auto={args.condition is None}), '
               f'LUTs={luts}, {len(sel)} FOV(s)')
+        n_skip = 0
         for i in sel:
             img = images[i]
+            if args.substrate != 'all':
+                sub = series_substrate(img.name)
+                if sub is not None and sub != args.substrate:
+                    n_skip += 1
+                    continue
             day = series_day(img.name, path, file_day)
             if day is None:
                 sys.exit(f'{Path(path).name} series [{i}] {img.name!r}: no day; pass --day')
@@ -386,6 +425,8 @@ def main():
                     f'vol3d_{condition}_day{day}_{Path(path).stem}_s{i}.npy')
                 np.save(vp, vol)
                 print(f'    saved 3D volume: {vp}  shape={vol.shape} (c,z,y,x)')
+        if n_skip:
+            print(f'    [substrate={args.substrate}] dropped {n_skip} other-substrate FOV(s)')
 
     out_path = out_path_default(args)
 
