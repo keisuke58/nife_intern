@@ -17,7 +17,7 @@ export JAX_PLATFORM_NAME=cpu
 
 echo "gLV+MICOM α=0.25 LOO fold ${FOLD} on $(hostname) at $(date)"
 
-/home/nishioka/IKM_Hiwi/.venv_jax/bin/python run_glv_loo.py \
+/home/nishioka/IKM_Hiwi/.venv_jax/bin/python scripts/loo_cv/run_glv_loo.py \
     --hold ${FOLD} \
     --alpha 0.25 \
     --fit-file fit_glv_hamilton_kegg_expanded_agora_w1p0.json \

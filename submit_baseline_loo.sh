@@ -9,8 +9,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON="/home/nishioka/IKM_Hiwi/.venv_jax/bin/python"
-HAM_SCRIPT="${SCRIPT_DIR}/run_hamilton_expanded_loo.py"
-GLV_SCRIPT="${SCRIPT_DIR}/run_glv_loo.py"
+HAM_SCRIPT="${SCRIPT_DIR}/scripts/loo_cv/run_hamilton_expanded_loo.py"
+GLV_SCRIPT="${SCRIPT_DIR}/scripts/loo_cv/run_glv_loo.py"
 FIT_FILE="fit_glv_hamilton_kegg_expanded_agora_w0p5.json"
 NODE="frontale04"
 PPN=4

@@ -21,7 +21,7 @@ export XLA_FLAGS="--xla_force_host_platform_device_count=4"
 
 echo "Starting LOO fold ${FOLD} on $(hostname) at $(date)"
 
-/home/nishioka/IKM_Hiwi/.venv_jax/bin/python run_hamilton_expanded_loo.py \
+/home/nishioka/IKM_Hiwi/.venv_jax/bin/python scripts/loo_cv/run_hamilton_expanded_loo.py \
     --hold ${FOLD} \
     --gpu -1 \
     --fit-file fit_glv_hamilton_kegg_expanded_agora_w1p0.json \
