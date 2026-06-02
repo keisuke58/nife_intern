@@ -8,4 +8,4 @@
 mkdir -p /home/nishioka/IKM_Hiwi/nife/logs
 
 cd /home/nishioka/IKM_Hiwi/nife
-/home/nishioka/IKM_Hiwi/.venv_jax/bin/python guild_tipping_point.py
+/home/nishioka/IKM_Hiwi/.venv_jax/bin/python scripts/analysis/guild_tipping_point.py

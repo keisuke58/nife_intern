@@ -7,4 +7,4 @@
 
 export PATH="/home/nishioka/miniconda3/bin:$PATH"
 cd /home/nishioka/IKM_Hiwi/nife
-PYTHONUNBUFFERED=1 python3 fit_cr_dieckow.py
+PYTHONUNBUFFERED=1 python3 scripts/fitting/fit_cr_dieckow.py

@@ -12,6 +12,6 @@ export NUMBA_DISABLE_CACHING=1
 export NUMBA_CACHE_DIR=/tmp/numba_cache_$$
 
 echo "MDSINE2 LOO fold ${FOLD} on $(hostname) at $(date)"
-/home/nishioka/IKM_Hiwi/.venv_jax/bin/python run_mdsine2_loo.py \
+/home/nishioka/IKM_Hiwi/.venv_jax/bin/python scripts/loo_cv/run_mdsine2_loo.py \
     --fold ${FOLD} --burnin 500 --n_samples 2500
 echo "Done at $(date)"

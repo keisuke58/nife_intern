@@ -7,4 +7,4 @@
 
 export PATH="/home/nishioka/.pyenv/versions/miniconda3-latest/bin:$PATH"
 cd /home/nishioka/IKM_Hiwi/nife
-PYTHONUNBUFFERED=1 python3 fit_glv_heine.py
+PYTHONUNBUFFERED=1 python3 scripts/fitting/fit_glv_heine.py

@@ -11,4 +11,4 @@ cd /home/nishioka/IKM_Hiwi/nife
 mkdir -p results/dirichlet_loo
 
 PYTHONUNBUFFERED=1 /home/nishioka/IKM_Hiwi/.venv_jax/bin/python \
-    loo_cv_dirichlet_pymc.py --all
+    scripts/loo_cv/loo_cv_dirichlet_pymc.py --all

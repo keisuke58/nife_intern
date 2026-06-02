@@ -113,6 +113,6 @@ echo "  Classified: $(wc -l < $TAX_OUT) reads"
 # ── Step 6: Build guild phi array ─────────────────────────────────────────────
 echo ""
 echo "=== Step 6: Build guild phi array ==="
-$PYTHON $NIFE/build_guild_phi_725874.py --blast6 $TAX_OUT
+$PYTHON $NIFE/scripts/preprocessing/build_guild_phi_725874.py --blast6 $TAX_OUT
 echo ""
 echo "=== All done: $(date) ==="

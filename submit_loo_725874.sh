@@ -10,7 +10,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON="/home/nishioka/IKM_Hiwi/.venv_jax/bin/python"
-RUNNER="${SCRIPT_DIR}/run_glv_loo_725874.py"
+RUNNER="${SCRIPT_DIR}/scripts/loo_cv/run_glv_loo_725874.py"
 PHI="${SCRIPT_DIR}/data/prjna725874/phi_guild.npy"
 NODE=""   # no node pinning — let PBS schedule across free nodes
 PPN=4

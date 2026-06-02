@@ -12,7 +12,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON="/home/nishioka/IKM_Hiwi/.venv_jax/bin/python"
-LOO_SCRIPT="${SCRIPT_DIR}/run_glv_loo.py"
+LOO_SCRIPT="${SCRIPT_DIR}/scripts/loo_cv/run_glv_loo.py"
 NODE="frontale04"
 PPN=4
 

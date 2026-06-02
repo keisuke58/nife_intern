@@ -11,7 +11,7 @@ source /home/nishioka/.bashrc
 conda activate /home/nishioka/IKM_Hiwi/.venv_jax 2>/dev/null || \
     source /home/nishioka/IKM_Hiwi/.venv_jax/bin/activate 2>/dev/null || true
 
-python3 dieckow_hamilton_fit.py \
+python3 scripts/analysis/dieckow_hamilton_fit.py \
     --fit \
     --n-particles ${NPART:-500} \
     --sigma ${SIGMA:-0.05} \

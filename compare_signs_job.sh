@@ -11,5 +11,5 @@
 cd /home/nishioka/IKM_Hiwi/nife
 export CUDA_VISIBLE_DEVICES=""
 echo "compare_agora_v1_v2 (with MICOM perfect) on $(hostname) at $(date)"
-/home/nishioka/IKM_Hiwi/.venv_jax/bin/python compare_agora_v1_v2.py
+/home/nishioka/IKM_Hiwi/.venv_jax/bin/python scripts/analysis/compare_agora_v1_v2.py
 echo "Done at $(date)"
