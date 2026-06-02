@@ -264,17 +264,105 @@ print(f'  Spearman ρ(diagnosis, CT2 prediction) = {rho_ct:.3f}  p={p_ct:.4f}')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# ANALYSIS 4: Pathobiont effective growth rate (R/G-free)
+# f_i = b_i + Σ_j A_ij φ_j  for dysbiotic guilds
+# ══════════════════════════════════════════════════════════════════════════════
+print('\n=== Analysis 4: Pathobiont effective growth rate (R/G-free) ===')
+
+def pathobiont_growth(phi_mat, A, b):
+    """Per-sample effective growth rate of each guild under A and b."""
+    return b + (A @ phi_mat.T).T          # (n_samp, N_G)
+
+f_agora = pathobiont_growth(phi0_all, A,     b_mean)   # (127, 10)
+f_glv   = pathobiont_growth(phi0_all, A_glv, b_glv)
+
+for guild_name, gi in [('Bacteroidia (Porphyromonas)',  GUILD_IDX['Bacteroidia']),
+                        ('Fusobacteriia (Fusobacterium)', GUILD_IDX['Fusobacteriia']),
+                        ('Bacilli (Streptococcus)',        GUILD_IDX['Bacilli'])]:
+    rho_a, p_a = stats.spearmanr(diag_num, f_agora[:, gi])
+    rho_g, p_g = stats.spearmanr(diag_num, f_glv[:, gi])
+    print(f'  {guild_name}')
+    print(f'    AGORA A: ρ={rho_a:+.3f}  p={p_a:.3f}  |  gLV A: ρ={rho_g:+.3f}  p={p_g:.3f}')
+
+# Dysbiotic − commensal mean growth (R/G-free summary)
+f_dysbiotic = f_agora[:, DYS_IDX].mean(axis=1)
+f_commensal = f_agora[:, COM_IDX].mean(axis=1)
+f_diff      = f_dysbiotic - f_commensal
+rho_fd, p_fd = stats.spearmanr(diag_num, f_diff)
+print(f'  Δf(dys−com) AGORA A: ρ={rho_fd:+.3f}  p={p_fd:.4f}')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ANALYSIS 5: Bray-Curtis from healthy equilibrium (R/G-free)
+# ══════════════════════════════════════════════════════════════════════════════
+print('\n=== Analysis 5: Bray-Curtis from healthy equilibrium (R/G-free) ===')
+
+from scipy.spatial.distance import braycurtis
+
+# Healthy equilibrium centroid (from ODE)
+health_eq = eq_true[diag_arr == 'Health']
+health_centroid = health_eq.mean(axis=0)
+
+bc_from_health = np.array([braycurtis(eq_true[s], health_centroid)
+                            for s in range(n_samp)])
+rho_bc, p_bc = stats.spearmanr(diag_num, bc_from_health)
+print(f'  BC from healthy eq centroid: ρ={rho_bc:.3f}  p={p_bc:.4f}')
+for d in DIAG_ORDER:
+    v = bc_from_health[diag_arr == d]
+    print(f'    {d:22s}: mean BC={v.mean():.3f} ± {v.std():.3f}')
+
+h_bc, ph_bc = stats.kruskal(*[bc_from_health[diag_arr==d] for d in DIAG_ORDER])
+print(f'  Kruskal-Wallis H={h_bc:.2f}  p={ph_bc:.4f}')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ANALYSIS 6: Permutation test using Bray-Curtis (R/G-free, true A validation)
+# ══════════════════════════════════════════════════════════════════════════════
+print('\n=== Analysis 6: Permutation test — BC outcome (R/G-free, n=200) ===')
+
+perm_rhos_bc = []
+for k in range(N_PERM):
+    perm = np.random.default_rng(k + 1000).permutation(N_G)
+    A_perm = A[np.ix_(perm, perm)]
+    A_p_j2  = jnp.array(A_perm)
+
+    def run_perm2(phi0, b_vec):
+        theta = jnp.concatenate([A_p_j2.ravel(), jnp.array(b_vec)])
+        phibar = simulate_0d_nsp(theta, n_sp=N_G, n_steps=300, dt=1e-4,
+                                  phi_init=jnp.array(phi0),
+                                  c_const=25.0, alpha_const=100.0)
+        eq = phibar[-1]; s = eq.sum()
+        return jnp.where(s > 1e-10, eq / s, jnp.ones(N_G) / N_G)
+    run_perm2_jit = jax.jit(run_perm2)
+
+    eq_p2  = np.array([run_perm2_jit(phi0_all[s], b_mean) for s in range(n_samp)])
+    hc_p   = eq_p2[diag_arr == 'Health'].mean(axis=0)
+    bc_p   = np.array([braycurtis(eq_p2[s], hc_p) for s in range(n_samp)])
+    rho_p2, _ = stats.spearmanr(diag_num, bc_p)
+    perm_rhos_bc.append(rho_p2)
+
+    if (k + 1) % 50 == 0:
+        print(f'  {k+1}/{N_PERM}  perm mean ρ={np.mean(perm_rhos_bc):.3f}', flush=True)
+
+perm_rhos_bc = np.array(perm_rhos_bc)
+p_perm_bc    = float((perm_rhos_bc >= rho_bc).mean())
+print(f'\n  True A BC ρ   = {rho_bc:.3f}')
+print(f'  Perm BC ρ     = {perm_rhos_bc.mean():.3f} ± {perm_rhos_bc.std():.3f}')
+print(f'  Permutation p = {p_perm_bc:.4f}')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Save results
 # ══════════════════════════════════════════════════════════════════════════════
 results = {
     'n_samples': int(n_samp),
-    'analysis1_velocity': {
+    'analysis1_velocity_rg': {
         'agora': {'rho': float(stats.spearmanr(diag_num, vel_agora)[0]),
                   'p':   float(stats.spearmanr(diag_num, vel_agora)[1])},
         'glv':   {'rho': float(stats.spearmanr(diag_num, vel_glv)[0]),
                   'p':   float(stats.spearmanr(diag_num, vel_glv)[1])},
     },
-    'analysis2_permutation': {
+    'analysis2_permutation_rg': {
         'true_rho':        float(rho_true),
         'true_p':          float(p_true),
         'perm_rho_mean':   float(perm_rhos.mean()),
@@ -288,6 +376,26 @@ results = {
         'fisher_p':        float(p_fisher),
         'fisher_or':       float(odds),
         'ct2_rate_by_diag': {d: float(ct_bin[diag_arr==d].mean()) for d in DIAG_ORDER},
+    },
+    'analysis4_pathobiont_growth': {
+        'Bacteroidia': {'rho': float(stats.spearmanr(diag_num, f_agora[:, GUILD_IDX['Bacteroidia']])[0]),
+                        'p':   float(stats.spearmanr(diag_num, f_agora[:, GUILD_IDX['Bacteroidia']])[1])},
+        'Fusobacteriia': {'rho': float(stats.spearmanr(diag_num, f_agora[:, GUILD_IDX['Fusobacteriia']])[0]),
+                          'p':   float(stats.spearmanr(diag_num, f_agora[:, GUILD_IDX['Fusobacteriia']])[1])},
+        'delta_f_dys_com': {'rho': float(rho_fd), 'p': float(p_fd)},
+    },
+    'analysis5_bray_curtis': {
+        'rho_bc_diag': float(rho_bc),
+        'p_bc_diag':   float(p_bc),
+        'kw_p':        float(ph_bc),
+        'mean_bc_by_diag': {d: float(bc_from_health[diag_arr==d].mean()) for d in DIAG_ORDER},
+    },
+    'analysis6_permutation_bc': {
+        'true_rho':        float(rho_bc),
+        'perm_rho_mean':   float(perm_rhos_bc.mean()),
+        'perm_rho_std':    float(perm_rhos_bc.std()),
+        'perm_p':          float(p_perm_bc),
+        'n_perm':          N_PERM,
     },
 }
 out_json = CR / 'joshi_Amatrix_validation.json'
