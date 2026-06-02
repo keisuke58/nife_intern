@@ -27,15 +27,65 @@ import argparse
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import math
+
 import matplotlib
 
 matplotlib.use("Agg")
+import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
 import numpy as np
 from readlif.reader import LifFile
 
 from fish_decode import SPECIES_ORDER, SPECIES_RGB, channel_luts as fd_luts
 from fish_decode import decode as fd_decode, norm_scalars as fd_norm
+
+
+def _setup_style() -> None:
+    """Times-family text, larger fonts (image annotations match the EN docs)."""
+    plt.rcParams.update({
+        "font.family": "serif",
+        "font.serif": ["Nimbus Roman", "Times New Roman", "Liberation Serif",
+                       "DejaVu Serif"],
+        "mathtext.fontset": "stix",          # ∩ etc. render even with a Times text font
+        "axes.titlesize": 19,
+        "axes.labelsize": 16,
+        "figure.titlesize": 24,
+    })
+
+
+def px_per_um(img) -> float | None:
+    """Pixels per µm in x (from the readlif scale); None if unavailable."""
+    s = getattr(img, "scale", None)
+    if s is not None and len(s) > 0 and s[0]:
+        return float(s[0])
+    return None
+
+
+def _nice_bar_um(width_um: float) -> float:
+    """A round scale-bar length (1/2/5 × 10ⁿ) close to ~1/5 of the field width."""
+    target = max(width_um / 5.0, 1e-6)
+    mag = 10 ** math.floor(math.log10(target))
+    for m in (1, 2, 5, 10):
+        if m * mag >= target:
+            return m * mag
+    return 10 * mag
+
+
+def add_scalebar(ax, ppu: float | None, w_px: int, h_px: int) -> None:
+    """Draw a white µm scale bar (black halo) bottom-right of an image axis."""
+    if not ppu or ppu <= 0:
+        return
+    bar_um = _nice_bar_um(w_px / ppu)
+    bar_px = bar_um * ppu
+    x1 = w_px * 0.97
+    x0 = x1 - bar_px
+    y = h_px * 0.95
+    ax.plot([x0, x1], [y, y], color="white", lw=6, solid_capstyle="butt",
+            path_effects=[pe.withStroke(linewidth=9, foreground="black")])
+    ax.text((x0 + x1) / 2, y - h_px * 0.02, f"{bar_um:g} µm",
+            color="white", ha="center", va="bottom", fontsize=17, fontweight="bold",
+            path_effects=[pe.withStroke(linewidth=3, foreground="black")])
 
 # Leica LUT name -> (R,G,B) tint applied to that channel's grey intensities.
 LUT_RGB = {
@@ -98,26 +148,29 @@ def overview(lif: LifFile, stem: str, outdir: Path) -> Path:
     luts = channel_luts(lif, series[0].channels or 1)
     nrows = len(series)
     ncols = (series[0].channels or 1) + 1
-    fig, axes = plt.subplots(nrows, ncols, figsize=(2.4 * ncols, 2.4 * nrows),
+    fig, axes = plt.subplots(nrows, ncols, figsize=(3.2 * ncols, 3.2 * nrows),
                              squeeze=False)
     for r, img in enumerate(series):
         stack = series_stack(img)            # (C,Z,Y,X)
+        ppu = px_per_um(img)
+        h_px, w_px = stack.shape[-2:]
         mips = [_norm(stack[c].max(0)) for c in range(stack.shape[0])]
         for c, mip in enumerate(mips):
             ax = axes[r][c]
             tint = np.array(LUT_RGB.get(luts[c], (1, 1, 1)), np.float32)
             ax.imshow(mip[..., None] * tint[None, None, :])
             if r == 0:
-                ax.set_title(f"ch{c}: {luts[c]}", fontsize=9)
+                ax.set_title(f"ch{c}: {luts[c]}", fontsize=19)
             ax.set_xticks([]); ax.set_yticks([])
             if c == 0:
-                ax.set_ylabel(f"[{r}] {img.name}\nz={img.dims.z}", fontsize=8)
+                ax.set_ylabel(f"[{r}] {img.name}\nz={img.dims.z}", fontsize=15)
         ax = axes[r][ncols - 1]
         ax.imshow(composite_rgb(mips, luts))
+        add_scalebar(ax, ppu, w_px, h_px)
         if r == 0:
-            ax.set_title("composite (MIP)", fontsize=9)
+            ax.set_title("composite (MIP)", fontsize=19)
         ax.set_xticks([]); ax.set_yticks([])
-    fig.suptitle(stem, fontsize=11)
+    fig.suptitle(stem, fontsize=23)
     fig.tight_layout(rect=(0, 0, 1, 0.99))
     out = outdir / f"{stem}__overview.png"
     fig.savefig(out, dpi=130)
@@ -129,10 +182,14 @@ def montage(lif: LifFile, stem: str, sidx: int, outdir: Path) -> Path:
     img = list(lif.get_iter_image())[sidx]
     luts = channel_luts(lif, img.channels or 1)
     stack = series_stack(img)                # (C,Z,Y,X)
+    ppu = px_per_um(img)
+    dz_um = (1.0 / img.scale[2]) if (getattr(img, "scale", None) and len(img.scale) > 2
+                                     and img.scale[2]) else None
+    h_px, w_px = stack.shape[-2:]
     nz = stack.shape[1]
     ncols = int(np.ceil(np.sqrt(nz)))
     nrows = int(np.ceil(nz / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(1.7 * ncols, 1.7 * nrows),
+    fig, axes = plt.subplots(nrows, ncols, figsize=(2.5 * ncols, 2.5 * nrows),
                              squeeze=False)
     for z in range(nrows * ncols):
         ax = axes[z // ncols][z % ncols]
@@ -140,11 +197,14 @@ def montage(lif: LifFile, stem: str, sidx: int, outdir: Path) -> Path:
         if z < nz:
             planes = [_norm(stack[c, z]) for c in range(stack.shape[0])]
             ax.imshow(composite_rgb(planes, luts))
-            ax.set_title(f"z={z}", fontsize=7)
+            zlab = f"z={z}" + (f" ({z * dz_um:.0f} µm)" if dz_um else "")
+            ax.set_title(zlab, fontsize=15)
+            if z == 0:
+                add_scalebar(ax, ppu, w_px, h_px)
         else:
             ax.axis("off")
     fig.suptitle(f"{stem} — series [{sidx}] {img.name} (z-montage, composite)",
-                 fontsize=10)
+                 fontsize=19)
     fig.tight_layout(rect=(0, 0, 1, 0.98))
     out = outdir / f"{stem}__series{sidx}_zmontage.png"
     fig.savefig(out, dpi=120)
@@ -159,9 +219,11 @@ def species_overview(lif: LifFile, stem: str, outdir: Path) -> Path:
     luts = fd_luts(lif, series[0].channels or 1)
     ncols = len(SPECIES_ORDER) + 1
     fig, axes = plt.subplots(len(series), ncols,
-                             figsize=(2.4 * ncols, 2.4 * len(series)), squeeze=False)
+                             figsize=(3.2 * ncols, 3.2 * len(series)), squeeze=False)
     for r, img in enumerate(series):
         stack = series_stack(img)                          # (C,Z,Y,X) raw
+        ppu = px_per_um(img)
+        h_px, w_px = stack.shape[-2:]
         sp_vol = fd_decode(stack, luts, fd_norm(stack, luts))  # voxel-wise decode
         mips = {}
         for c, sp in enumerate(SPECIES_ORDER):
@@ -171,19 +233,20 @@ def species_overview(lif: LifFile, stem: str, outdir: Path) -> Path:
             ax = axes[r][c]
             ax.imshow(mip[..., None] * np.array(SPECIES_RGB[sp], np.float32)[None, None, :])
             if r == 0:
-                ax.set_title(sp, fontsize=8)
+                ax.set_title(sp, fontsize=20)
             ax.set_xticks([]); ax.set_yticks([])
             if c == 0:
-                ax.set_ylabel(f"[{r}] {img.name}\nz={img.dims.z}", fontsize=8)
+                ax.set_ylabel(f"[{r}] {img.name}\nz={img.dims.z}", fontsize=15)
         comp = np.zeros(stack.shape[-2:] + (3,), np.float32)
         for sp in SPECIES_ORDER:
             comp += mips[sp][..., None] * np.array(SPECIES_RGB[sp], np.float32)[None, None, :]
         ax = axes[r][ncols - 1]
         ax.imshow(np.clip(comp, 0, 1))
+        add_scalebar(ax, ppu, w_px, h_px)
         if r == 0:
-            ax.set_title("5-species composite", fontsize=8)
+            ax.set_title("5-species composite", fontsize=20)
         ax.set_xticks([]); ax.set_yticks([])
-    fig.suptitle(f"{stem} — species decode (Fn = blue∩red)", fontsize=11)
+    fig.suptitle(rf"{stem} — species decode (Fn = blue $\cap$ red)", fontsize=23)
     fig.tight_layout(rect=(0, 0, 1, 0.99))
     out = outdir / f"{stem}__species.png"
     fig.savefig(out, dpi=130)
@@ -200,6 +263,7 @@ def main() -> None:
     ap.add_argument("--out", default="figures/lif_quicklook", help="output dir")
     args = ap.parse_args()
 
+    _setup_style()
     outdir = Path(args.out)
     outdir.mkdir(parents=True, exist_ok=True)
     for path in args.lif:

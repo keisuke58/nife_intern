@@ -15,18 +15,18 @@
 
 ## 1. どんなデータを処理したのか
 
-Leica 共焦点（CLSM）の `.lif` ファイル。1ファイル＝ある実験日のバイオフィルムを複数視野(FOV)で撮った z スタック（輪切り画像の束）。
+Leica 共焦点（CLSM）の `.lif` ファイル全11本（1画素 0.18 µm、z 間隔 2 µm）。1ファイル＝ある実験日のバイオフィルムを複数視野(FOV)で撮った z スタック。**commensal (HOBIC22 → CH) と dysbiotic (HOBIC24 → DH) の2モデル**が揃った。
 
-| ファイル | モデル | 日 (Day) | 視野数 | z枚数/視野 | 1画素 |
-|---|---|---|---|---|---|
-| 220518_HOBIC22 | commensal | 1 | 6 | 12–24 | 0.18 µm |
-| 220601_HOBIC22 | commensal | 1 | 5 | 〃 | 〃 |
-| 220720_HOBIC22 | commensal | 1 | 4 | 〃 | 〃 |
-| 220817_HOBIC22_Tag15 | commensal | 15 | 7 | 〃 | 〃 |
-| 220817_HOBIC22_Tag21 | commensal | 21 | 4 | 〃 | 〃 |
+| 実験ファイル | 条件 | Day | 基質 |
+|---|---|---|---|
+| 220518 / 220601 / 220720 (Tag1) | CH | 1 | Ti |
+| 220817 (Tag15 / Tag21) | CH | 15, 21 | Ti |
+| 240416 (Tag6 / Tag10 / Tag15 / Tag21) | CH | 6, 10, 15, 21 | Ti |
+| 241203 (Tag1) | DH | 1 | Ti |
+| 241018 | DH | 6, 10, 15, 21 | **Ti ＋ Glass 混在** |
 
-- **環境はヘッドレス**（`DISPLAY` 無し）→ Fiji / napari の GUI は使えない。
-- そこで `readlif` で読んで **PNG に書き出す自作ツール**で確認・可視化した（`lif_quicklook.py`）。
+- **基質**: HOBIC はチタンインプラントモデル。241018(DH) のみ各日に Ti と Glass の2基質が混在するため、**既定で Ti を採用**（CH も無印＝Ti なので同一基質で比較可能）。Glass 9 FOV は除外し別解析用に温存（`--substrate glass`）。
+- **環境はヘッドレス**（`DISPLAY` 無し）→ Fiji / napari の GUI は使えない。`readlif` で読んで **PNG に書き出す自作ツール**で確認・可視化（`lif_quicklook.py`、Times フォント＋µm スケールバー）。
 
 ### 生の4チャンネル（撮ったまま）
 
@@ -90,6 +90,7 @@ F. nucleatum（紫）が S.oralis / P.gingivalis とは別の疎な分布とし�
 
 - **複数 `.lif` を一括入力**し、`(condition, day)` でFOVを**プール（生プロファイルを1回だけ平均）**。
 - **Day 1 は別実験日3本（220518/220601/220720）の biological replicate** → 15 視野としてまとめて平均。
+- **基質フィルタ** `--substrate ti`：HOBIC24 の Ti/Glass 混在から Ti のみ採用（無印FOVも保持、反対基質だけ除外）。
 
 ### Heine のメール規約をツールに実装
 
@@ -99,22 +100,22 @@ Nils Heine からのメール（2026-05-26）の命名規約を自動適用：
 - 日付は通常ファイル名末尾（`…Tag1`, `…Tag15`）。**HOBIC24 のみ1ファイルに複数日**が混在し、採取日は各 series 名の先頭整数 → 自動でグループ分け。
 
 ```bash
-# 一発で全部処理（条件・日・レプリケート統合すべて自動）
-python lif_to_zprofiles.py "HOBIC FISH"/*.lif
+# 一発で全部処理（条件・日・レプリケート統合・基質フィルタすべて自動）
+python scripts/pde/lif_to_zprofiles.py "HOBIC FISH"/*.lif --substrate ti \
+    --out results/diffusion_fit/zprofiles_all_ti.csv
 ```
 
-### 結果：commensal HOBIC の深さ時系列
+### 結果：CH / DH の深さ時系列（Ti）
 
-![depth profiles](../results/diffusion_fit/zprofiles_CH_merged.png)
+![depth profiles](../results/diffusion_fit/zprofiles_all_ti.png)
 
-| condition | day | プールFOV | 深さ |
-|---|---|---|---|
-| CH | 1 | 15 | 43 µm |
-| CH | 15 | 7 | 79 µm |
-| CH | 21 | 4 | 69 µm |
+| 条件 | Day | プールFOV |
+|---|---|---|
+| CH | 1 / 6 / 10 / 15 / 21 | 15 / 5 / 15 / 16 / 16 |
+| DH | 1 / 6 / 10 / 15 / 21 | 7 / 3 / 3 / 2 / 2 |
 
-→ `results/diffusion_fit/zprofiles_CH_merged.csv`（120行 = 3日 × 40深さ格子）。
-バイオフィルムが時間とともに厚くなり、組成も深さ方向にシフトする様子が出ている。
+→ `results/diffusion_fit/zprofiles_all_ti.csv`（400行 = 2条件 × 5日 × 40深さ格子）。
+commensal/dysbiotic とも Day1→21 で厚化し、組成が深さ方向にシフト。DH は後期の FOV 数が少ない（Glass 除外のため）。
 
 ---
 
@@ -135,7 +136,13 @@ D_i, u を仮定 → PDEを解いて深さプロファイルを予測 → 実測
 6パラメータ **D = [D_So, D_An, D_V, D_Fn, D_Pg], u** を、実測の深さプロファイルに合わせて決める。
 最適化の1ステップごとに PDE を時間積分するので計算は重い（JAX で高速化）。
 
-**今回はパイプライン疎通のテスト**。本番は全データ（DH＝dysbiotic、欠けている Day 3/6/10）が揃ってから。
+```bash
+# 本番フィット（条件ごと、Ti統合データ）
+python scripts/pde/fit_diffusion_clsm.py --cond CH --data results/diffusion_fit/zprofiles_all_ti.csv
+python scripts/pde/fit_diffusion_clsm.py --cond DH --data results/diffusion_fit/zprofiles_all_ti.csv
+```
+
+全データ（CH/DH × Day1/6/10/15/21, Ti）が揃ったので**本番フィットを実行**。各条件の `D_fit_<cond>.json` と `fit_<cond>.png`（予測 vs 実測）を出力。
 
 ---
 
@@ -144,9 +151,10 @@ D_i, u を仮定 → PDEを解いて深さプロファイルを予測 → 実測
 | ファイル | 役割 |
 |---|---|
 | `fish_decode.py` | **新規**。4ch→5種の正典デコーダ（Fn=blue∩red）。両ツール共有 |
-| `lif_quicklook.py` | **新規**。ヘッドレス可視化（readlif→PNG）。`--mode overview/species/montage` |
-| `lif_to_zprofiles.py` | **修正**。colocalization 解読 ＋ 複数ファイル統合 ＋ メール規約自動適用 |
-| `figures/lif_quicklook/*.png` | 生4ch・解読5種の確認画像 |
-| `results/diffusion_fit/zprofiles_CH_merged.csv` | PDE フィット入力（CH 深さ時系列） |
+| `scripts/pde/lif_quicklook.py` | **新規**。ヘッドレス可視化（readlif→PNG, Times＋µmバー）。`--mode overview/species/montage` |
+| `scripts/pde/lif_to_zprofiles.py` | **修正**。colocalization 解読 ＋ 複数ファイル統合 ＋ メール規約 ＋ 基質フィルタ |
+| `figures/lif_quicklook/*.png` | 生4ch・解読5種の確認画像（全11ファイル） |
+| `results/diffusion_fit/zprofiles_all_ti.csv` | PDE フィット入力（CH/DH 深さ時系列, Ti） |
+| `results/diffusion_fit/D_fit_{CH,DH}.json` | 本番フィット結果（拡散係数 D・移流 u） |
 
-**データの限界（要注意）**: 手元は全部 commensal（CH）のみ。dysbiotic（DH）未着。CH も Day 1/15/21 のみ（3/6/10 欠）。static（CS/DS）は本 FISH セットに含まれない。
+**データの限界（要注意）**: HOBIC（flow chamber）由来なので条件は **CH/DH（HOBIC側）のみ**、static（CS/DS）は本 FISH セットに無い。241018(DH) の **Glass 基質は除外**（別解析用に温存）。DH 後期（Day15/21）は **Ti FOV が2枚**と少なく統計は弱い。

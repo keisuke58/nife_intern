@@ -25,17 +25,16 @@ New `fish_decode.py` / `lif_quicklook.py`, updated `lif_to_zprofiles.py`
 
 ## Input data: HOBIC FISH `.lif`
 
-One file = the biofilm on a given experiment day, several FOVs as a z-stack.
+All 11 files. **Both models present: commensal (HOBIC22->CH) and dysbiotic (HOBIC24->DH).**
 
-| File | Model | Day | FOVs |
+| Experiment | Cond. | Day | Substrate |
 |---|---|---|---|
-| 220518 / 220601 / 220720 | commensal | 1 | 6 / 5 / 4 |
-| 220817_Tag15 | commensal | 15 | 7 |
-| 220817_Tag21 | commensal | 21 | 4 |
+| 220518/601/720, 220817, 240416 | CH | 1,6,10,15,21 | Ti |
+| 241203 (Tag1) | DH | 1 | Ti |
+| 241018 | DH | 6,10,15,21 | **Ti + Glass mixed** |
 
-- pixel 0.18 µm, z-step 2 µm
-- **Headless environment** (no `DISPLAY`) -> no Fiji / napari
-- -> read with `readlif`, write **PNG quick-looks** with a custom tool
+- pixel 0.18 µm, z-step 2 µm. **Substrate = Ti** (HOBIC is a Ti implant; CH unlabelled = Ti). 9 Glass FOVs excluded, kept for separate analysis.
+- **Headless** -> no Fiji/napari. `readlif` -> **PNG** (Times font + µm scale bar)
 
 ---
 
@@ -112,19 +111,20 @@ Fixed via `fish_decode.py` (canonical decoder shared by both tools).
 
 - HOBIC22 = commensal -> **CH** / HOBIC24 = dysbiotic -> **DH** (auto)
 - Day = filename suffix `TagN` (HOBIC24 only: leading int of series name)
+- **Substrate filter** `--substrate ti` (Ti from the Ti/Glass mix)
 
 ```bash
-python scripts/pde/lif_to_zprofiles.py "HOBIC FISH"/*.lif   # all automatic
+python scripts/pde/lif_to_zprofiles.py "HOBIC FISH"/*.lif --substrate ti
 ```
 
 ---
 
-## Result: commensal HOBIC depth time-series
+## Result: CH / DH depth time-series (Ti)
 
-![](results/diffusion_fit/zprofiles_CH_merged.png){ height=58% }
+![](results/diffusion_fit/zprofiles_all_ti.png){ height=62% }
 
-CH: Day 1 (15 FOV, 43µm) / Day 15 (7, 79µm) / Day 21 (4, 69µm)
--> `zprofiles_CH_merged.csv` (120 rows). Thickening + depth-wise composition shift.
+CH/DH × Day 1/6/10/15/21 -> `zprofiles_all_ti.csv` (400 rows).
+Both thicken with depth-wise composition shifts. DH late days: few Ti FOVs (Glass excluded).
 
 ---
 
@@ -141,7 +141,7 @@ guess D_i, u -> solve PDE -> predicted vs observed (MSE)
 ```
 
 Estimate per-species **mobility** D=[So,An,V,Fn,Pg] and advection u.
-This run is a pipeline smoke-test; the real fit awaits full data (DH, Days 3/6/10).
+**Production fit run on the full data** (CH/DH × Days 1/6/10/15/21, Ti).
 
 ---
 
@@ -150,8 +150,8 @@ This run is a pipeline smoke-test; the real fit awaits full data (DH, Days 3/6/1
 | File | Role |
 |---|---|
 | `fish_decode.py` | New · canonical decoder (Fn=blue∩red) |
-| `lif_quicklook.py` | New · headless visualiser (readlif->PNG) |
-| `lif_to_zprofiles.py` | Updated · decode + merge + conventions |
-| `zprofiles_CH_merged.csv` | PDE input (CH depth time-series) |
+| `scripts/pde/lif_quicklook.py` | New · visualiser (Times + µm bar) |
+| `scripts/pde/lif_to_zprofiles.py` | Updated · decode+merge+conv.+substrate |
+| `zprofiles_all_ti.csv` / `D_fit_*.json` | PDE input + fit results |
 
-**Limits**: commensal (CH) only in hand. **DH not yet received**; CH only **Days 1/15/21** (3/6/10 missing); static (CS/DS) not in this FISH set.
+**Limits**: flow-chamber data -> **CH/DH only** (no static CS/DS). 241018 (DH) **Glass excluded**. DH late days (15/21): only 2 Ti FOVs.
