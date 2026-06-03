@@ -143,7 +143,7 @@ def composite_rgb(planes2d: list[np.ndarray], luts: list[str]) -> np.ndarray:
     return np.clip(rgb, 0, 1)
 
 
-def overview(lif: LifFile, stem: str, outdir: Path) -> Path:
+def overview(lif: LifFile, stem: str, outdir: Path, dpi: int = 130) -> Path:
     series = list(lif.get_iter_image())
     luts = channel_luts(lif, series[0].channels or 1)
     nrows = len(series)
@@ -173,12 +173,12 @@ def overview(lif: LifFile, stem: str, outdir: Path) -> Path:
     fig.suptitle(stem, fontsize=23)
     fig.tight_layout(rect=(0, 0, 1, 0.99))
     out = outdir / f"{stem}__overview.png"
-    fig.savefig(out, dpi=130)
+    fig.savefig(out, dpi=dpi)
     plt.close(fig)
     return out
 
 
-def montage(lif: LifFile, stem: str, sidx: int, outdir: Path) -> Path:
+def montage(lif: LifFile, stem: str, sidx: int, outdir: Path, dpi: int = 120) -> Path:
     img = list(lif.get_iter_image())[sidx]
     luts = channel_luts(lif, img.channels or 1)
     stack = series_stack(img)                # (C,Z,Y,X)
@@ -207,12 +207,12 @@ def montage(lif: LifFile, stem: str, sidx: int, outdir: Path) -> Path:
                  fontsize=19)
     fig.tight_layout(rect=(0, 0, 1, 0.98))
     out = outdir / f"{stem}__series{sidx}_zmontage.png"
-    fig.savefig(out, dpi=120)
+    fig.savefig(out, dpi=dpi)
     plt.close(fig)
     return out
 
 
-def species_overview(lif: LifFile, stem: str, outdir: Path) -> Path:
+def species_overview(lif: LifFile, stem: str, outdir: Path, dpi: int = 130) -> Path:
     """Per series, decode the 4 channels into the 5 species (F.nucleatum = blue∩red)
     and show a MIP per species in its analysis colour + a 5-species composite."""
     series = list(lif.get_iter_image())
@@ -249,7 +249,7 @@ def species_overview(lif: LifFile, stem: str, outdir: Path) -> Path:
     fig.suptitle(rf"{stem} — species decode (Fn = blue $\cap$ red)", fontsize=23)
     fig.tight_layout(rect=(0, 0, 1, 0.99))
     out = outdir / f"{stem}__species.png"
-    fig.savefig(out, dpi=130)
+    fig.savefig(out, dpi=dpi)
     plt.close(fig)
     return out
 
@@ -261,6 +261,7 @@ def main() -> None:
     ap.add_argument("--mode", choices=["overview", "species", "montage"], default="overview")
     ap.add_argument("--series", type=int, default=0, help="series index for montage")
     ap.add_argument("--out", default="figures/lif_quicklook", help="output dir")
+    ap.add_argument("--dpi", type=int, default=100, help="output PNG dpi (lower = smaller file)")
     args = ap.parse_args()
 
     _setup_style()
@@ -271,11 +272,11 @@ def main() -> None:
         lif = LifFile(str(p))
         stem = p.stem
         if args.mode == "overview":
-            out = overview(lif, stem, outdir)
+            out = overview(lif, stem, outdir, args.dpi)
         elif args.mode == "species":
-            out = species_overview(lif, stem, outdir)
+            out = species_overview(lif, stem, outdir, args.dpi)
         else:
-            out = montage(lif, stem, args.series, outdir)
+            out = montage(lif, stem, args.series, outdir, args.dpi)
         print(f"wrote {out}")
 
 
