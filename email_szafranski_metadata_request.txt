@@ -1,0 +1,27 @@
+To: szafranski@[institute].de
+Subject: Sample metadata for Joshi et al. 2025 (PRJNA1192962) — 16S profiles
+
+Dear Prof. Szafranski,
+
+I am currently extending our peri-implantitis dysbiosis model by validating the
+Guild Dysbiosis Index (GDI) against the cohort from Joshi et al. (2025, npj
+Biofilms and Microbiomes). I am processing the full-length 16S data deposited in
+PRJNA1192962 to include additional diagnostic genera (Treponema, Tannerella,
+Prevotella) beyond the five guilds in our Hamilton ODE model.
+
+Could you share the clinical metadata table mapping the sample IDs (PBM_XXX) to
+their diagnostic group (Health / Mucositis / Peri-implantitis)?
+
+Alternatively, if a processed genus-level relative-abundance table per sample is
+already available from your QIIME2 pipeline, that would be equally helpful and
+would save considerable processing time.
+
+This metadata would allow me to compute per-sample Spearman correlations between
+the GDI and clinical severity, and to assess whether the expanded genera
+significantly improve the model's discriminatory power.
+
+Thank you very much in advance.
+
+Best regards,
+Keisuke Nishioka
+Institute for Mechatronics (IKM)

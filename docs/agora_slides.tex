@@ -1,0 +1,471 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{space}{xeCJK}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{AGORA を軸とした代謝---生態の統合}
+\subtitle{ゲノムスケール代謝モデルから相互作用符号へ --- 形式的取り扱い}
+\author{西岡佳祐 --- NIFE / SFB TRR-298}
+\date{2026-06-03}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[]{Noto Serif CJK JP}
+  \setmonofont[]{Noto Sans Mono CJK JP}
+  \ifXeTeX
+    \usepackage{xeCJK}
+    \setCJKmainfont[]{Noto Serif CJK JP}
+  \fi
+  \ifLuaTeX
+    \usepackage[]{luatexja-fontspec}
+    \setmainjfont[]{Noto Serif CJK JP}
+  \fi
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={AGORA を軸とした代謝---生態の統合},
+  pdfauthor={西岡佳祐 --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{caption}
+% Make caption package work with longtable
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{amsmath,amssymb}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\relu}[1]{\left[#1\right]_{+}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{このデッキの位置づけ}
+\protect\hypertarget{ux3053ux306eux30c7ux30c3ux30adux306eux4f4dux7f6eux3065ux3051}{}
+本プロジェクト = 3 本柱 ＋ 空間拡張。データの流れ：
+
+raw 16S → guild \(\varphi\) → gLV/Hamilton（＋符号 prior）→ LOO 検証 →
+空間 PDE
+
+デッキ構成（◀ = 本デッキ）：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Overview}（傘）--- 全体像と3本柱
+\item
+  \textbf{AGORA} --- 代謝 → 符号 prior（生態モデルの入力） ◀
+  \textbf{本デッキ}
+\item
+  \textbf{Dieckow} --- in-vivo 相互作用の推定と検証（生態モデル本体）
+\item
+  \textbf{Network} --- 相互作用行列 \(A\) の構造解析
+\item
+  \textbf{Spatial-PDE} --- FISH 深さプロファイルの反応拡散
+\item
+  \textbf{FISH pipeline} --- .lif → 5 種深さ組成
+\end{itemize}
+\end{frame}
+
+\begin{frame}{狙いと主張}
+\protect\hypertarget{ux72d9ux3044ux3068ux4e3bux5f35}{}
+\textbf{生態学的相互作用行列}を、\textbf{ゲノムから計算した代謝（AGORA2）}で制約し、
+その制約がどこまで経験的に支持されるかを定量する。
+
+\begin{itemize}
+\tightlist
+\item
+  生態モデル：一般化 Lotka--Volterra (gLV) / replicator
+\item
+  代謝エンジン：flux-balance analysis (FBA, pFBA, MICOM)
+\item
+  橋渡し：cross-feeding フラックスから導く \textbf{符号 prior}
+  \(P_{ij}=\operatorname{sgn}(F_{ij})\)
+\item
+  検証：prior 抜きフィットの permutation test、2 コホート再現
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{主張：}
+代謝シグナルが制約するのは協調的相互作用の\textbf{符号}（大きさでも競争でもない）。
+\(p=4\times10^{-4}\) で支持。
+\end{frame}
+
+\begin{frame}{生態モデル}
+\protect\hypertarget{ux751fux614bux30e2ux30c7ux30eb}{}
+絶対量 \(x_i\) の一般化 Lotka--Volterra：
+\[\dot{x}_i = x_i\Big(b_i + \sum_{j=1}^{S} A_{ij}\,x_j\Big),\qquad i=1,\dots,S=10 .\]
+
+単体上の組成 \(\varphi_i = x_i/\sum_k x_k\)（16S は組成データ）に対する
+replicator / Hamilton 形：
+\[\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big],
+\qquad \sum_i \varphi_i = 1 .\]
+
+\begin{itemize}
+\tightlist
+\item
+  \(A_{ij}>0\)：\(j\) が \(i\)
+  を\textbf{促進}、\(A_{ij}<0\)：\textbf{抑制}。
+\item
+  推定は\textbf{劣決定}：\(\mathcal{O}(S^2)=100\) パラメータ vs \(10\)
+  患者 \(\times\,3\) 週。 存在量だけでは \(A\) の符号は識別不能
+  \(\Rightarrow\) \textbf{代謝符号 prior} を加える。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{FBA（Flux Balance Analysis）= 線形計画}
+\protect\hypertarget{fbaflux-balance-analysis-ux7ddaux5f62ux8a08ux753b}{}
+ゲノムスケールモデルは化学量論行列 \(S\in\mathbb{R}^{m\times n}\)
+（代謝物 \(\times\) 反応）を与える。定常成長は LP：
+\[\max_{v}\; c^{\!\top} v \quad\text{s.t.}\quad S v = 0,\;\; v^{-}\le v \le v^{+},\]
+\(c\) がバイオマス反応を選ぶ（\(\mu = c^{\!\top}v\)）。\textbf{pFBA}
+はフラックスループを 第2段で除去：
+\[\min_{v}\; \sum_{j}\lvert v_j\rvert \quad\text{s.t.}\quad c^{\!\top}v=\mu^{\star},\; Sv=0,\; v^{-}\le v\le v^{+}.\]
+
+交換フラックスから、ギルドごとの \textbf{分泌}
+\(s_{j\alpha}=\left[v^{\text{ex}}_{j\alpha}\right]_{+}\)、
+\textbf{取り込み}
+\(u_{i\alpha}=\left[-v^{\text{ex}}_{i\alpha}\right]_{+}\)（代謝物
+\(\alpha\)）を得る。
+\end{frame}
+
+\begin{frame}{AGORA2 が与えるもの}
+\protect\hypertarget{agora2-ux304cux4e0eux3048ux308bux3082ux306e}{}
+\textbf{AGORA2}（Heinken et al., \emph{Nat. Biotechnol.} 2023,
+41:1320）：\textbf{7,302} 株の
+ゲノムスケール再構成。腸内から\textbf{口腔}菌へ拡張。ギルドごとに代表
+SBML を 1 つ。
+
+\begin{itemize}
+\tightlist
+\item
+  代表株：Bacilli = \emph{S. gordonii}、Negativicutes = \emph{V.
+  parvula}、 Bacteroidia = \emph{P. melaninogenica}、Fusobacteriia =
+  \emph{F. nucleatum} \ldots{}
+\item
+  口腔液培地（Dawes
+  2008）：糖・20アミノ酸・B群ビタミン・微量元素・細胞壁前駆体
+  \(\Rightarrow\) 全 10
+  ギルドで正の増殖（\(\mu = 0.11\text{–}1.66\,\mathrm{h^{-1}}\)）。
+\end{itemize}
+
+\vspace{0.3em}
+
+培地設計は本質的な感度：貧弱だと \(\mu\to0\) で cross-feeding
+信号が消える。
+\end{frame}
+
+\begin{frame}{cross-feeding スコア \(\to\) 符号 prior}
+\protect\hypertarget{cross-feeding-ux30b9ux30b3ux30a2-to-ux7b26ux53f7-prior}{}
+毒素を \(\mathcal{T}=\{\text{H}_2\text{O}_2,\text{H}_2\text{S}\}\)
+とし、\(j\to i\) の \textbf{正味代謝フロー}を定義：
+\[F_{ij} \;=\; \underbrace{\sum_{\alpha\notin\mathcal{T}} w_\alpha\, s_{j\alpha}\,u_{i\alpha}}_{\text{cross-feeding }(+)}
+\;-\; \underbrace{\sum_{\alpha\in\mathcal{T}} w_\alpha\, s_{j\alpha}\,u_{i\alpha}}_{\text{toxin }(-)} .\]
+
+\textbf{符号 prior} は方向のみを残す：
+\[P_{ij} = \operatorname{sgn}(F_{ij}) \in \{-1,\,0,\,+1\}.\]
+
+大きさは設計上捨てる --- FBA フラックス単位 \(\neq\) 生態的単位。
+\(10\times 9=90\) 方向ペアから制約集合
+\(\mathcal{M}=\{(i,j): P_{ij}\neq 0\}\) を得る。
+\end{frame}
+
+\begin{frame}{パイプライン全体像}
+\protect\hypertarget{ux30d1ux30a4ux30d7ux30e9ux30a4ux30f3ux5168ux4f53ux50cf}{}
+\includegraphics[width=\textwidth,height=0.64\textheight]{results/fig2_agora_pipeline.png}
+
+\begin{enumerate}
+[(A)]
+\tightlist
+\item
+  手順；(B) 層追加で \(|\mathcal{M}|\) が \(10\to22\to58\)（AGORA L3 で
+  +36）；
+\item
+  出来上がる符号 prior 行列 \(P=\operatorname{sgn}(F)\)。
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{ベイズ統合：符号 prior の罰則}
+\protect\hypertarget{ux30d9ux30a4ux30baux7d71ux5408ux7b26ux53f7-prior-ux306eux7f70ux5247}{}
+フィットは軌道誤差に、\textbf{符号違反のみ}（大きさは不問）を罰する片側ヒンジを加える：
+\[\mathcal{L}(A,b) = \frac{1}{2\sigma^{2}}\sum_{t}\big\lVert \varphi^{\text{obs}}_{t}-\varphi^{\text{pred}}_{t}(A,b)\big\rVert^{2}
+\;+\; W\!\!\sum_{(i,j)\in\mathcal{M}}\!\! \left[-\,P_{ij}\,A_{ij}\right]_{+} .\]
+
+\begin{itemize}
+\tightlist
+\item
+  \(\left[-P_{ij}A_{ij}\right]_{+}=\max(0,-P_{ij}A_{ij})\) は
+  \(\operatorname{sgn}(A_{ij})=P_{ij}\) のとき \(0\)。
+\item
+  \(W\) = prior の硬さ、\(\sigma\) = 観測スケール。
+\item
+  5 種アトラクターの posterior は \textbf{TMCMC}（\(10^4\)
+  粒子）、ギルドは L-BFGS-B / TMCMC。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{3 つの証拠層}
+\protect\hypertarget{ux3064ux306eux8a3cux62e0ux5c64}{}
+\begin{longtable}[]{@{}llll@{}}
+\toprule
+層 & ソース & \(w_\alpha\) & 根拠 \\
+\midrule
+\endhead
+\textbf{L1} & Szafrański Suppl.（実験 + KEGG/HMDB） & 2.0 & 直接観測 \\
+\textbf{L1} & Szafrański Suppl.（実験・注釈なし） & 1.5 & 直接観測 \\
+\textbf{L2} & Szafrański Suppl.（予測） & 1.0 & 予測 \\
+\textbf{L3} & \textbf{AGORA2 pFBA cross-feeding} & 1.0 &
+ゲノムスケール \\
+\bottomrule
+\end{longtable}
+
+\(w_\alpha=\) 代謝物 \(\alpha\) の行ごと重みの max。代表例 ---
+\textbf{乳酸}：
+\[\text{Bacilli (Strep)} \xrightarrow{\ \text{lactate}\ } \text{Negativicutes (Veillonella), Actinobacteria}.\]
+\end{frame}
+
+\begin{frame}{なぜ量 prior は失敗するか --- MacArthur の視点}
+\protect\hypertarget{ux306aux305cux91cf-prior-ux306fux5931ux6557ux3059ux308bux304b-macarthur-ux306eux8996ux70b9}{}
+消費者--資源理論（MacArthur 1970；Marsland 2019）は次を導く：
+\[A_{ij} = \underbrace{\sum_{\alpha} s_{j\alpha}\,c_{i\alpha}}_{\text{cross-feeding}\,(+)}
+\;-\; \underbrace{\frac{c_i\!\cdot\! c_j}{\lVert c_i\rVert\,\lVert c_j\rVert}}_{\text{niche overlap}\,(-)} .\]
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{ニッチ重複（cosine）項が飽和}：口腔菌は generalist で
+  \(\cos(c_i,c_j)\approx1\) → ほぼ全ペアが競争と誤判定（実測 正 \(6\) /
+  負 \(84\) ペア＝使えない）。
+\item
+  Growth-rate-suppression も貧栄養培地で同様に破綻。
+\end{itemize}
+
+\(\Rightarrow\) \(\operatorname{sgn}(A_{ij})\) を残し、大きさは捨てる。
+\end{frame}
+
+\begin{frame}{経験的 sign agreement（naive 推定）}
+\protect\hypertarget{ux7d4cux9a13ux7684-sign-agreementnaive-ux63a8ux5b9a}{}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/fig3_agora_sign_validation.png}
+
+\[\mathrm{SA}=\frac{1}{|\mathcal{M}|}\sum_{(i,j)\in\mathcal{M}}\mathbb{1}\!\left[\operatorname{sgn}(\hat A_{ij})=P_{ij}\right]=\frac{66}{72}=92\%.\]
+\textcolor{red}{これは過大評価——prior は符号縮退している（次スライド）。}
+\end{frame}
+
+\begin{frame}{MICOM --- 群集 FBA}
+\protect\hypertarget{micom-ux7fa4ux96c6-fba}{}
+単種 pFBA は\textbf{実行可能性}のみ（\(j\) が \(X\) を出せる・\(i\) が
+\(X\) を食べられる）。 \textbf{MICOM}（Diener
+2020）は群集を同時に解き、実際にフラックスが\textbf{流れるか}を、
+\textbf{cooperative trade-off} で判定する：
+\[\max\; \min_{i}\frac{\mu_i}{\mu_i^{\max}}\quad\text{s.t.}\quad
+\sum_i \mu_i \ge \tau\sum_i \mu_i^{\max},\;\; S^{\text{com}}v=0,\;\tau=0.5 .\]
+
+\begin{itemize}
+\tightlist
+\item
+  各菌に最大成長の \(\tau\)
+  倍以上を保証した上で、共有フラックス配分を確定。
+\item
+  generalist でも\textbf{実際に群集フラックスを運ぶ経路のみ}が活性化 →
+  「全員競合」の 非特異アーティファクトが消える。
+\item
+  群集解の交換フラックス \(s_{j\alpha},u_{i\alpha}\) をそのまま
+  \(F_{ij}\) に渡す。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{MICOM --- 結果}
+\protect\hypertarget{micom-ux7d50ux679c}{}
+\begin{longtable}[]{@{}lcc@{}}
+\toprule
+手法 & Sign Agreement & \(|\mathcal{M}|\) \\
+\midrule
+\endhead
+文献 L1+L2 & 45\% (5/11) & 11/45 \\
+単種 pFBA v1 & 88\% (29/33) & 33/45 \\
+\textbf{MICOM（群集）} & \textbf{100\% (36/36)} & \textbf{36/45} \\
+\bottomrule
+\end{longtable}
+
+群集内で直接解けた乳酸交換：
+\[\text{Bacilli}\xrightarrow[\;-97.9\;]{\;+97.7\;\text{mmol gDW}^{-1}\text{h}^{-1}}\text{Negativicutes}\quad(\mathrm{EX\_lac\_L}).\]
+注意：\(\hat A\) は v1 prior 下で推定 → \(100\%\) は包含による可能性。
+\end{frame}
+
+\begin{frame}{prior の硬さ \(W\) --- 相転移}
+\protect\hypertarget{prior-ux306eux786cux3055-w-ux76f8ux8ee2ux79fb}{}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/fig_agora_weight_sensitivity.png}
+
+\(W=1.0\) で
+\(\mathrm{SA}\to100\%\)、\(\mathrm{LOO\text{-}RMSE}\approx0.050\)。
+prior-free gLV は \(0.0455\) とさらに低い → prior の価値は予測精度でなく
+\textbf{解釈可能性・符号整合性}にある（誠実な位置づけ）。
+\end{frame}
+
+\begin{frame}{批判的検証：prior はデータから独立に裏づくか}
+\protect\hypertarget{ux6279ux5224ux7684ux691cux8a3cprior-ux306fux30c7ux30fcux30bfux304bux3089ux72ecux7acbux306bux88cfux3065ux304fux304b}{}
+\(\alpha=0\) で prior は\textbf{全正}（cross-feeding のみ）→
+\(\mathrm{SA}\) は過大。 正しい対照は \textbf{prior 外}セルとのラベル
+permutation 比較、統計量：
+\[z=\frac{\mathrm{SA}-\mathbb{E}_\pi[\mathrm{SA}]}{\sqrt{\operatorname{Var}_\pi[\mathrm{SA}]}},\qquad n_\pi=10^4 .\]
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.33}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.33}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.33}}@{}}
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedright
+モデル
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+cross-feeding 方向
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+競争方向
+\end{minipage} \\
+\midrule
+\endhead
+\textbf{Hamilton（対称）, \(\alpha=0\)} & \(\mathbf{78.6\%}\) (11/14) vs
+\(\mathbb{E}_\pi=37.7\%\), \(\;p=4\!\times\!10^{-4},\,z=+3.79\) &
+\(\approx\) chance \\
+gLV（非対称） & 41\%（null） & null \\
+\bottomrule
+\end{longtable}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{検証されるのは協調(cross-feeding)方向のみ}。競争方向は支持されない。
+\item
+  AGORA prior は 16S 力学で\textbf{再現されない} \(\Rightarrow\)
+  モデリング選択（データ確認済みではない）。
+\item
+  \textbf{2 コホート}（Dieckow \(\times\) Botelho）を prior
+  抜きで比べ、強ペア符号が \(\mathbf{89\%}\) 一致（\(p\approx0.02\)）。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{機械論的クロスチェック（COMETS 動的 FBA）}
+\protect\hypertarget{ux6a5fux68b0ux8ad6ux7684ux30afux30edux30b9ux30c1ux30a7ux30c3ux30afcomets-ux52d5ux7684-fba}{}
+同じ AGORA GEM が 5 種 \textbf{dFBA} 前向きシミュレーション（Monod
+連成交換）を駆動、 prior とは独立：
+
+\includegraphics[width=\textwidth,height=0.5\textheight]{comets/pipeline_results/sweep_crossfeeding.png}
+
+健常：So/An 優占・乳酸 cross-feeding・\(\mathrm{DI}=0.15\)。 疾患：Pg/Fn
+増殖・\(\mathrm{DI}=0.70\)。commensal\(\leftrightarrow\)dysbiotic
+の分岐が 前向きにも出現し、推定した相互作用を裏づける。
+\end{frame}
+
+\begin{frame}{限界と結論}
+\protect\hypertarget{ux9650ux754cux3068ux7d50ux8ad6}{}
+\textbf{限界：} ギルド \(=\) class（代表株 \(\neq\)
+ギルド全体）；阻害行の \(20/22\) は酸素 （生産者不在）\(\Rightarrow\)
+毒素は H\(_2\)O\(_2\) のみ発火；\(w_\alpha\) は代謝物ごと max；
+大きさは捨てている。
+
+\textbf{結論：} 1.
+\(\text{AGORA pFBA}\to F_{ij}\to P_{ij}=\operatorname{sgn}(F_{ij})\)
+という変換が方法論的新規性。 2.
+\textbf{符号は使え、量は使えない}（MacArthur cosine 飽和を回避）。 3.
+単種（\(92\%\)）\(\to\) \textbf{MICOM（\(100\%\)）} が群集文脈を捕捉。
+4. 誠実な検証：\textbf{協調方向のみ} \(p=4\times10^{-4}\)；2 コホート
+\(89\%\)；prior はモデリング選択。 5. COMETS dFBA が dysbiotic
+分岐を前向きにも再現。
+\end{frame}
+
+\end{document}

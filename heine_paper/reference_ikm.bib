@@ -572,3 +572,181 @@
   year    = {2025},
   note    = {in review},
 }
+
+% ==========================================================================
+%  Spatial reaction--diffusion PDE fitting (Heine 3D CLSM/FISH extension)
+%  Added 2026-06-02 — diffusion-coefficient estimation + RD biofilm models
+% ==========================================================================
+
+% --- Diffusion coefficients in biofilms: review + measurement (for D_i) ---
+@article{Stewart2003DiffusionBiofilms,
+  author  = {Stewart, Philip S.},
+  title   = {Diffusion in biofilms},
+  journal = {Journal of Bacteriology},
+  volume  = {185},
+  number  = {5},
+  pages   = {1485--1491},
+  year    = {2003},
+  doi     = {10.1128/jb.185.5.1485-1491.2003},
+}
+
+@article{vandenBerg2021DiffusionMeasure,
+  author  = {van den Berg, Lenno and van Loosdrecht, Mark C. M. and de Kreuk, Merle K.},
+  title   = {How to measure diffusion coefficients in biofilms: A critical analysis},
+  journal = {Biotechnology and Bioengineering},
+  volume  = {118},
+  number  = {3},
+  pages   = {1273--1285},
+  year    = {2021},
+  doi     = {10.1002/bit.27650},
+}
+
+@article{Waharte2010FRAP,
+  author  = {Waharte, Fran{\c{c}}ois and Steenkeste, Karine and Briandet, Romain and
+             Fontaine-Aupart, Marie-Pierre},
+  title   = {Diffusion measurements inside biofilms by image-based fluorescence
+             recovery after photobleaching ({FRAP}) analysis with a commercial
+             confocal laser scanning microscope},
+  journal = {Applied and Environmental Microbiology},
+  volume  = {76},
+  number  = {17},
+  pages   = {5860--5869},
+  year    = {2010},
+  doi     = {10.1128/AEM.00754-10},
+}
+
+% --- Multispecies reaction--diffusion biofilm models (PDE framework) ---
+@article{WannerGujer1986Multispecies,
+  author  = {Wanner, Oskar and Gujer, Willi},
+  title   = {A multispecies biofilm model},
+  journal = {Biotechnology and Bioengineering},
+  volume  = {28},
+  number  = {3},
+  pages   = {314--328},
+  year    = {1986},
+  doi     = {10.1002/bit.260280304},
+}
+
+@article{Eberl2001Continuum,
+  author  = {Eberl, Hermann J. and Parker, David F. and van Loosdrecht, Mark C. M.},
+  title   = {A new deterministic spatio-temporal continuum model for biofilm development},
+  journal = {Journal of Theoretical Medicine},
+  volume  = {3},
+  number  = {3},
+  pages   = {161--175},
+  year    = {2001},
+  doi     = {10.1080/10273660108833072},
+}
+
+@article{Picioreanu2004ParticleBased,
+  author  = {Picioreanu, Cristian and Kreft, Jan-Ulrich and van Loosdrecht, Mark C. M.},
+  title   = {Particle-based multidimensional multispecies biofilm model},
+  journal = {Applied and Environmental Microbiology},
+  volume  = {70},
+  number  = {5},
+  pages   = {3024--3040},
+  year    = {2004},
+  doi     = {10.1128/aem.70.5.3024-3040.2004},
+}
+
+% --- Inverse-problem method for estimating D_i / u from data (PINN) ---
+@article{Raissi2019PINN,
+  author  = {Raissi, Maziar and Perdikaris, Paris and Karniadakis, George Em},
+  title   = {Physics-informed neural networks: A deep learning framework for
+             solving forward and inverse problems involving nonlinear partial
+             differential equations},
+  journal = {Journal of Computational Physics},
+  volume  = {378},
+  pages   = {686--707},
+  year    = {2019},
+  doi     = {10.1016/j.jcp.2018.10.045},
+}
+
+% ==========================================================================
+%  Direct precedents for the spatial-gLV-PDE positioning (novelty framing)
+%  Added 2026-06-02 — see note: theory/IBM precedents exist (2025), but
+%  the data-fitted, species-resolved, oral inverse-D_i niche is unoccupied.
+% ==========================================================================
+
+% --- Closest: spatial generalized-LV / cross-diffusion PDE (THEORY/IBM only) ---
+@misc{Freingruber2025MicrobialAggregates,
+  author        = {Freingruber, Viktoria and Gonzalez-Cabaleiro, Rebeca and Yolda\c{s}, Havva},
+  title         = {Ecological interactions and spatial dynamics in microbial
+                   aggregates: A novel modelling framework},
+  year          = {2025},
+  eprint        = {2512.13156},
+  archivePrefix = {arXiv},
+  primaryClass  = {q-bio.PE},
+  note          = {Cross-diffusion + reaction PDE; validated vs individual-based model, not fitted to data},
+}
+
+@misc{Salvatore2025SpatialGLV,
+  author        = {Salvatore, Alessandro and Aguirre-L{\'o}pez, Fabi{\'a}n and Zakine, Ruben},
+  title         = {Patterns robust to disorder in spatially-interacting
+                   generalized {Lotka--Volterra} ecosystems},
+  year          = {2025},
+  eprint        = {2501.03809},
+  archivePrefix = {arXiv},
+  primaryClass  = {cond-mat.dis-nn},
+  note          = {Spatial gLV + nonlocal diffusion, nonlocal FKPP; pure pattern-formation theory},
+}
+
+% --- Scoop-adjacent: must be addressed in related work ---
+@article{PerezPicioreanu2025DEMO,
+  author  = {P{\'e}rez, Julio and Picioreanu, Cristian},
+  title   = {Diffusion-based mechanism explains spatial organization in
+             cross-feeding biofilms},
+  journal = {npj Biofilms and Microbiomes},
+  volume  = {11},
+  pages   = {102},
+  year    = {2025},
+  doi     = {10.1038/s41522-025-00719-5},
+  note    = {Substrate-diffusion-driven (DEMO), reaction term is NOT an ecological interaction matrix},
+}
+
+@article{Brander2023InverseBiofilm,
+  author  = {Brander, Tommi and Lesnic, Daniel and Cao, Kai},
+  title   = {Inverse problems for a model of biofilm growth},
+  journal = {IMA Journal of Applied Mathematics},
+  volume  = {88},
+  number  = {2},
+  pages   = {258--281},
+  year    = {2023},
+  doi     = {10.1093/imamat/hxad008},
+  note    = {Recovers diffusion/kinetic coefficients from measurements; single-biomass Wanner-type, not species-resolved},
+}
+
+% --- Methodological + oral diffusion-measurement precedents ---
+@misc{Thakur2024PINNDiffusion,
+  author        = {Thakur, Sukirt and Esmaili, Ehsan and Libring, Sarah and
+                   Solorio, Luis and Ardekani, Arezoo M.},
+  title         = {Inverse resolution of spatially varying diffusion coefficient
+                   using physics-informed neural networks},
+  year          = {2024},
+  eprint        = {2403.03970},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+}
+
+@article{Zhang2011SmutansDiffusion,
+  author  = {Zhang, Zeshi and Nadezhina, Elena and Wilkinson, Kevin J.},
+  title   = {Quantifying diffusion in a biofilm of {Streptococcus mutans}},
+  journal = {Antimicrobial Agents and Chemotherapy},
+  volume  = {55},
+  number  = {3},
+  pages   = {1075--1081},
+  year    = {2011},
+  doi     = {10.1128/AAC.01329-10},
+}
+
+% --- Formulation basis for volume-filling cross-diffusion (rigorous transport) ---
+@article{PainterHillen2002VolumeFilling,
+  author  = {Painter, Kevin J. and Hillen, Thomas},
+  title   = {Volume-filling and quorum-sensing in models for chemosensitive movement},
+  journal = {Canadian Applied Mathematics Quarterly},
+  volume  = {10},
+  number  = {4},
+  pages   = {501--544},
+  year    = {2002},
+  note    = {Origin of the size-exclusion / volume-filling flux used in the cross-diffusion transport},
+}

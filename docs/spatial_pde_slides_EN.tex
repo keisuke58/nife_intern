@@ -1,0 +1,449 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{Spatial Reaction--Diffusion of the Biofilm (Heine HOBIC)}
+\subtitle{Inverse estimation of spatial transport from FISH depth
+profiles --- formal treatment}
+\author{Keisuke Nishioka --- NIFE / SFB TRR-298}
+\date{2026-06-03}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[Path=/home/nishioka/texlive/2025/texmf-dist/fonts/opentype/public/stix2-otf/, BoldFont=STIXTwoText-Bold.otf, ItalicFont=STIXTwoText-Italic.otf, BoldItalicFont=STIXTwoText-BoldItalic.otf]{STIXTwoText-Regular.otf}
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Spatial Reaction--Diffusion of the Biofilm (Heine HOBIC)},
+  pdfauthor={Keisuke Nishioka --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{caption}
+% Make caption package work with longtable
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% EN builds use a Times-family text font (STIX Two Text) that lacks a few set /
+% relation glyphs. Route those Unicode symbols through math mode so they always
+% render (regardless of the text/mono font), keeping clean Times for the prose.
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{↑}{\ensuremath{\uparrow}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{Where this deck sits}
+\protect\hypertarget{where-this-deck-sits}{}
+The project = three pillars + a spatial extension. Data flow:
+
+raw 16S → guild \(\varphi\) → gLV/Hamilton (+ sign prior) → LOO
+validation → spatial PDE
+
+The decks (you-are-here in \textbf{bold marker}):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Overview} (umbrella) --- the whole picture, three pillars
+\item
+  \textbf{AGORA} --- metabolism → sign prior (input to the ecological
+  model)
+\item
+  \textbf{Dieckow} --- in-vivo interaction inference \& validation (the
+  model)
+\item
+  \textbf{Network} --- structural analysis of the interaction matrix
+  \(A\)
+\item
+  \textbf{Spatial-PDE} --- reaction-diffusion of the FISH depth profiles
+  --- \textbf{(you are here)}
+\item
+  \textbf{FISH pipeline} --- .lif → 5-species depth composition
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Question: adding WHERE to WHO}
+\protect\hypertarget{question-adding-where-to-who}{}
+The bulk ODE fit gives \textbf{who interacts with whom (WHO)}; the FISH
+depth profiles add \textbf{where that interaction happens (WHERE)}.
+
+\begin{itemize}
+\tightlist
+\item
+  Known: bulk gLV/Hamilton interaction matrix \(A\) and growth vector
+  \(b\) (Dieckow fit).
+\item
+  Unknown: per-species \textbf{transport} along the substratum depth
+  axis.
+\item
+  Goal: with the reaction term fixed from the bulk fit, infer
+  \textbf{only the spatial transport parameters} from the depth-resolved
+  FISH data.
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{Thesis.} Dysbiosis manifests not as a change in bulk composition
+but as a \textbf{spatial reorganisation} --- in particular \emph{P.
+gingivalis} sinks deep and decouples from \emph{F. nucleatum}.
+\end{frame}
+
+\begin{frame}[fragile]{Data: HOBIC flow-chamber FISH (Heine 2025)}
+\protect\hypertarget{data-hobic-flow-chamber-fish-heine-2025}{}
+\textbf{11 \texttt{.lif} files}, two conditions \(\times\) five days,
+titanium substratum:
+
+\begin{itemize}
+\tightlist
+\item
+  Conditions: \textbf{CH} (commensal, HOBIC22) and \textbf{DH}
+  (dysbiotic, HOBIC24).
+\item
+  Days: 1 / 6 / 10 / 15 / 21.
+\item
+  Five species: So (\emph{S. oralis}), An (\emph{Actinomyces}), Vd/Vp
+  (\emph{Veillonella}), Fn (\emph{F. nucleatum}), Pg (\emph{P.
+  gingivalis}).
+\item
+  Pooled FOV counts: CH \(=15/5/15/16/16\), DH \(=7/3/3/2/2\).
+\end{itemize}
+
+\vspace{0.3em}
+
+The 4-channel FISH is decoded into 5 species (\emph{F. nucleatum} \(=\)
+blue \(\cap\) red double label; see FISH deck). The \(z\)-axis voxel
+intensities give the depth-resolved composition \(\varphi_i(z,t)\).
+\end{frame}
+
+\begin{frame}{Depth profiles: CH vs DH}
+\protect\hypertarget{depth-profiles-ch-vs-dh}{}
+\includegraphics[width=\textwidth,height=0.68\textheight]{results/diffusion_fit/zprofiles_all_ti_overlay.png}
+
+Per-species \(\varphi_i(z)\) overlaid for CH (commensal) and DH
+(dysbiotic). Depth \(z\) runs from the substratum (\(z=0\)) to the bulk
+(\(z=L\)).
+\end{frame}
+
+\begin{frame}{Per-depth stacked composition}
+\protect\hypertarget{per-depth-stacked-composition}{}
+\includegraphics[width=\textwidth,height=0.68\textheight]{results/diffusion_fit/zprofiles_all_ti_stacked.png}
+
+Stacked \(\{\varphi_i(z)\}_i\) at each depth \(z\). At every \(z\) the
+constraint \(\sum_i \varphi_i + \varphi_0 = 1\) holds (\(\varphi_0\) =
+void / unoccupied).
+\end{frame}
+
+\begin{frame}{Governing equation (reaction--diffusion PDE)}
+\protect\hypertarget{governing-equation-reactiondiffusion-pde}{}
+For depth \(z\in[0,L]\) and composition \(\varphi_i(z,t)\), the
+reaction--advection--diffusion equation is
+\[\frac{\partial \varphi_i}{\partial t}
+ = D_i\,\frac{\partial^2 \varphi_i}{\partial z^2}
+ \;-\; u\,\frac{\partial \varphi_i}{\partial z}
+ \;+\; R_i(\varphi).\]
+
+\begin{itemize}
+\tightlist
+\item
+  \(R_i(\varphi)\) is the replicator / Hamilton reaction; \(A,b\) are
+  \textbf{fixed} from the bulk fit,
+  \[R_i(\varphi)=\varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big]+\gamma\,\varphi_i.\]
+\item
+  The \textbf{only free parameters are the diffusivities \(D_i\) and the
+  advection \(u\)}.
+\item
+  \(\gamma\) is a Lagrange term enforcing
+  \(\sum_i \varphi_i + \varphi_0 = 1\) at each \(z\).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Boundary conditions and numerics}
+\protect\hypertarget{boundary-conditions-and-numerics}{}
+\textbf{Boundary conditions:}
+\[\left.\frac{\partial \varphi_i}{\partial z}\right|_{z=0}=0\quad(\text{substratum, no-flux}),\qquad
+\varphi_i\big|_{z=L}=\varphi_{\text{bulk},i}\quad(\text{bulk, Dirichlet}).\]
+\(\varphi_{\text{bulk},i}\) is fixed to the Day-1 median.
+
+\textbf{Numerics (Method of Lines):} Lie operator splitting alternates
+reaction and transport,
+\[e^{\Delta t\,\mathcal{L}} \approx e^{\Delta t\,\mathcal{R}}\,e^{\Delta t\,\mathcal{T}} + \mathcal{O}(\Delta t).\]
+
+\begin{itemize}
+\tightlist
+\item
+  Reaction \(\mathcal{R}\): implicit Euler with Newton iteration per
+  \(z\)-node (stiff).
+\item
+  Transport \(\mathcal{T}\): explicit finite difference (central
+  \(\partial_z^2\), upwind \(\partial_z\)).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Inverse problem}
+\protect\hypertarget{inverse-problem}{}
+Least-squares estimation of the transport parameters against the
+observation \(\varphi^{\text{obs}}(z,t)\):
+\[\min_{D,\,u}\;\; \sum_t \sum_z
+ \big\lVert \varphi^{\text{pred}}(z,t;D,u) - \varphi^{\text{obs}}(z,t)\big\rVert^2 .\]
+
+\begin{itemize}
+\tightlist
+\item
+  Optimiser: \textbf{L-BFGS-B}, with a numerical gradient through the
+  stiff PDE (JAX forward model).
+\item
+  The forward model is the MoL solver above; with \(A,b\) fixed the
+  unknowns are \(D\in\mathbb{R}^5\) and \(u\).
+\item
+  Non-dimensionalisation: the \textbf{Péclet number}
+  \(\mathrm{Pe} = uL/D_i\) measures advection vs diffusion
+  (\(\mathrm{Pe}\gg1\) advection-dominated, \(\mathrm{Pe}\ll1\)
+  diffusion-dominated).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Predicted vs observed depth profiles}
+\protect\hypertarget{predicted-vs-observed-depth-profiles}{}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\includegraphics[width=\textwidth,height=0.62\textheight]{results/diffusion_fit/fit_CH.png}
+
+CH (commensal)
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\includegraphics[width=\textwidth,height=0.62\textheight]{results/diffusion_fit/fit_DH.png}
+
+DH (dysbiotic)
+\end{column}
+\end{columns}
+
+Predicted (solid) vs observed (points) depth profiles. Reaction term
+fixed, transport only fitted.
+\end{frame}
+
+\begin{frame}{Fitted parameters (preliminary)}
+\protect\hypertarget{fitted-parameters-preliminary}{}
+\begin{longtable}[]{@{}lcc@{}}
+\toprule
+Species & \(D\) (CH) & \(D\) (DH) \\
+\midrule
+\endhead
+So & \(0.0123\) & \(0.0596\) \\
+An & \(0.0121\) & \(0.0021\) \\
+Vd/Vp & \(0.0042\) & \(2.1\times10^{-5}\) \\
+Fn & \(0.0075\) & \(0.0019\) \\
+Pg & \(0.0115\) & \(0.0083\) \\
+\textbf{\(u\) (advection)} & \(0.0038\) & \(0.0060\) \\
+\textbf{loss} & \(0.128\) & \(0.102\) \\
+\bottomrule
+\end{longtable}
+
+\vspace{0.2em}
+
+\textcolor{red}{**Preliminary**: both conditions report `success=False` (optimiser not converged).}
+A hyperparameter sweep with faster-converging settings is running on the
+HPC.
+\end{frame}
+
+\begin{frame}{Spatial-ecology finding 1: Pg sinks deep in dysbiosis}
+\protect\hypertarget{spatial-ecology-finding-1-pg-sinks-deep-in-dysbiosis}{}
+\includegraphics[width=\textwidth,height=0.58\textheight]{results/diffusion_fit/depth_niche.png}
+
+The center-of-mass of \emph{P. gingivalis} shifts up to
+\(+30\,\mu\mathrm{m}\) \textbf{deeper} in DH from Day 6 onward ---
+sedimentation into the deep anaerobic niche.
+\end{frame}
+
+\begin{frame}{Spatial-ecology finding 2: Fn--Pg bridging is early-only}
+\protect\hypertarget{spatial-ecology-finding-2-fnpg-bridging-is-early-only}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/diffusion_fit/fn_pg_coloc.png}
+
+Manders \(M_1\) (fraction of Pg co-localised with Fn): DH Day 1
+\(=0.76\), then \(0.15\text{–}0.20\) from Day 6; CH stays
+\(0.33\text{–}0.49\). \(\Rightarrow\) Pg \textbf{decouples} from Fn and
+goes autonomous.
+\end{frame}
+
+\begin{frame}{Other: bulk CH ≈ DH}
+\protect\hypertarget{other-bulk-ch-dh}{}
+The CH--DH \textbf{Bray--Curtis divergence} is \(\approx 0.2\) and
+\textbf{flat from Day 1}.
+
+\begin{itemize}
+\tightlist
+\item
+  The difference is set by the inoculum and barely grows over time.
+\item
+  In bulk composition CH \(\approx\) DH \(\Rightarrow\) dysbiosis is
+  \textbf{spatial / temporal}, not a shift in bulk composition.
+\end{itemize}
+
+\vspace{0.4em}
+
+This is consistent with findings 1--2: the difference is not ``who and
+how much'' but ``where they sit and what they partner with''.
+\end{frame}
+
+\begin{frame}{Diffusivity vs ecological centrality}
+\protect\hypertarget{diffusivity-vs-ecological-centrality}{}
+\includegraphics[width=\textwidth,height=0.52\textheight]{results/diffusion_fit/d_vs_centrality.png}
+
+The fitted diffusivity \(D_i\) correlates \textbf{negatively} with gLV
+interaction strength (centrality): CH \(r=-0.40\), DH \(r=-0.47\) (5
+species, illustrative).
+
+\vspace{0.2em}
+
+\(\Rightarrow\) ``central species move less'': ecological hubs tend to
+be spatially pinned.
+\end{frame}
+
+\begin{frame}{In-vitro ↔ in-vivo mapping}
+\protect\hypertarget{in-vitro-in-vivo-mapping}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/diffusion_fit/hobic_vs_dieckow.png}
+
+Mapping the 5 HOBIC species onto the 5 Dieckow guilds, the \textbf{rank
+order agrees}: Spearman \(\rho = 0.70\).
+
+\begin{itemize}
+\tightlist
+\item
+  In-vivo is \emph{S. oralis}-dominated; the defined inoculum is even.
+\item
+  The rank structure is preserved \(\Rightarrow\) the in-vitro model is
+  a valid reduction of the in-vivo community.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusions}
+\protect\hypertarget{conclusions}{}
+\begin{enumerate}
+\tightlist
+\item
+  We build a framework that adds FISH depth profiles (WHERE) to the bulk
+  ODE (WHO) and, with the reaction term fixed, infers \textbf{only the
+  transport parameters \(D_i,u\)}.
+\item
+  \textbf{Dysbiosis \(=\) spatial reorganisation}: \emph{P. gingivalis}
+  sinks deep (\(+30\,\mu\mathrm{m}\)) and goes autonomous from \emph{F.
+  nucleatum} (Manders \(M_1\) high only early).
+\item
+  Bulk is CH \(\approx\) DH (Bray--Curtis \(\approx0.2\), flat) --- the
+  difference is spatial, not bulk.
+\item
+  ``Central species move less'' (\(D\) anti-correlates with centrality);
+  the in-vitro↔in-vivo rank order agrees (\(\rho=0.70\)).
+\item
+  \textcolor{red}{Transport parameters are **preliminary** (not converged)};
+  a sweep with faster settings is converging on the HPC.
+\end{enumerate}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,438 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{Reading the Interaction Matrix as a Network}
+\subtitle{Beyond fitting A --- keystones, bridges, trophic layers, and
+rewiring}
+\author{Keisuke Nishioka --- NIFE / SFB TRR-298}
+\date{2026-06-03}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[Path=/home/nishioka/texlive/2025/texmf-dist/fonts/opentype/public/stix2-otf/, BoldFont=STIXTwoText-Bold.otf, ItalicFont=STIXTwoText-Italic.otf, BoldItalicFont=STIXTwoText-BoldItalic.otf]{STIXTwoText-Regular.otf}
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Reading the Interaction Matrix as a Network},
+  pdfauthor={Keisuke Nishioka --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% EN builds use a Times-family text font (STIX Two Text) that lacks a few set /
+% relation glyphs. Route those Unicode symbols through math mode so they always
+% render (regardless of the text/mono font), keeping clean Times for the prose.
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{↑}{\ensuremath{\uparrow}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{Where this deck sits}
+\protect\hypertarget{where-this-deck-sits}{}
+The project = three pillars + a spatial extension. Data flow:
+
+raw 16S → guild \(\varphi\) → gLV/Hamilton (+ sign prior) → LOO
+validation → spatial PDE
+
+The decks (you-are-here in \textbf{bold marker}):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Overview} (umbrella) --- the whole picture, three pillars
+\item
+  \textbf{AGORA} --- metabolism → sign prior (input to the ecological
+  model)
+\item
+  \textbf{Dieckow} --- in-vivo interaction inference \& validation (the
+  model)
+\item
+  \textbf{Network} --- structural analysis of the interaction matrix
+  \(A\) --- \textbf{(you are here)}
+\item
+  \textbf{Spatial-PDE} --- reaction-diffusion of the FISH depth profiles
+\item
+  \textbf{FISH pipeline} --- .lif → 5-species depth composition
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Motivation: from fitting \(A\) to reading it}
+\protect\hypertarget{motivation-from-fitting-a-to-reading-it}{}
+Beyond inferring the interaction matrix \(A\), read its \textbf{graph
+structure}.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{keystone} --- a taxon that governs the community despite low
+  abundance (high centrality).
+\item
+  \textbf{bridge} --- a mediator linking trophic layers (high
+  betweenness).
+\item
+  \textbf{trophic layer} --- producer \(\to\) consumer hierarchy of
+  cross-feeding.
+\item
+  \textbf{rewiring} --- edge signs that flip between health and
+  dysbiosis.
+\end{itemize}
+
+\vspace{0.4em}
+
+The textbook picture of oral biofilms is ``\emph{P. gingivalis} =
+keystone, \emph{F. nucleatum} = bridge.'' This deck tests whether that
+picture is \textbf{supported} at the in-vivo class level, using network
+statistics.
+\end{frame}
+
+\begin{frame}{Gauge invariance: read \(A_{\text{eff}}\), not \(A\)}
+\protect\hypertarget{gauge-invariance-read-a_texteff-not-a}{}
+The replicator dynamics
+\[\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big],\qquad \sum_i\varphi_i=1\]
+are invariant under \textbf{column-wise constant shifts}
+\(A_{ij}\to A_{ij}+c_j\) (they cancel on \(\sum_i\varphi_i=1\)).
+
+\(\Rightarrow\) the sign/magnitude of the raw \(A_{ij}\) are
+\textbf{gauge-dependent} and meaningless. Only the
+\textbf{column-centered} matrix
+\[A_{\text{eff}}[i,j] = A_{ij} - \frac{1}{S}\sum_{k} A_{kj}\] is
+gauge-invariant. \textbf{All sign and centrality interpretation below
+uses \(A_{\text{eff}}\).}
+
+Define a directed weighted graph \(G=(V,E)\) with
+\(w_{ij}=A_{\text{eff}}[i,j]\) (\(|V|=S=10\) guilds).
+\end{frame}
+
+\begin{frame}{Centrality definitions}
+\protect\hypertarget{centrality-definitions}{}
+Compute several centralities from \(A_{\text{eff}}\):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{eigenvector centrality} --- leading eigenvector \(v\) of
+  \(A\,v = \lambda\,v\); recursively, ``a taxon is central if it
+  connects to central taxa.''
+\item
+  \textbf{betweenness} --- fraction of shortest paths through vertex
+  \(i\),
+  \[g(i)=\sum_{s\neq i\neq t}\frac{\sigma_{st}(i)}{\sigma_{st}}.\]
+\item
+  \textbf{PageRank} --- stationary law
+  \(\pi = (1-d)\,\mathbf{1}/S + d\,M\pi\) (\(M\) = column-normalised
+  transition).
+\item
+  \textbf{in/out strength} ---
+  \(\;s^{\text{in}}_i=\sum_j |A_{\text{eff}}[i,j]|,\quad s^{\text{out}}_j=\sum_i |A_{\text{eff}}[i,j]|.\)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Centrality results (Dieckow 10-guild, no-prior consensus)}
+\protect\hypertarget{centrality-results-dieckow-10-guild-no-prior-consensus}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/guild_network/guild_centrality_summary.png}
+
+Eigenvector centrality: Bacilli \textbf{0.61}, Actinobacteria
+\textbf{0.58}, Betaproteobacteria 0.44, Negativicutes 0.22, Bacteroidia
+(\(\approx\) \emph{P. gingivalis}) 0.19. Betweenness: Bacilli
+\textbf{0.78}, Actinobacteria 0.22, all others 0. Mean abundance:
+Bacilli \textbf{0.547} (dominant), Actinobacteria 0.203, Bacteroidia
+0.047.
+\end{frame}
+
+\begin{frame}{Keystone / bridge test: does the textbook hold?}
+\protect\hypertarget{keystone-bridge-test-does-the-textbook-hold}{}
+Cross-check centrality against abundance ranks:
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{P. gingivalis} (Bacteroidia) is eigen-centrality rank
+  \(\sim\)\textbf{4} and abundance rank \(\sim\)\textbf{5}.
+  \(\Rightarrow\) \textbf{not a structural keystone} (low abundance and
+  low centrality).
+\item
+  the bridge (highest betweenness) is \textbf{Bacilli
+  (\emph{Streptococcus})}, \textbf{not Fusobacterium}.
+\end{itemize}
+
+\vspace{0.3em}
+
+\(\Rightarrow\) the classic ``Pg-keystone / Fn-bridge'' picture is
+\textbf{unsupported at the in-vivo class level}.
+
+\vspace{0.3em}
+
+\textcolor{red}{Caveat (do not over-read): class $\neq$ species; a dense graph degenerates
+betweenness; rare guilds are noisy.}
+\end{frame}
+
+\begin{frame}{Influence vs vulnerability (out- vs in-strength)}
+\protect\hypertarget{influence-vs-vulnerability-out--vs-in-strength}{}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/guild_network/influence_vulnerability.png}
+
+Out-strength \(s^{\text{out}}_j=\sum_i|A_{\text{eff}}[i,j]|\) measures
+the \textbf{influence} \(j\) exerts on others; in-strength
+\(s^{\text{in}}_i=\sum_j|A_{\text{eff}}[i,j]|\) measures the
+\textbf{vulnerability} of \(i\). Their asymmetry separates drivers from
+driven taxa.
+\end{frame}
+
+\begin{frame}{Trophic coherence (directed AGORA cross-feeding)}
+\protect\hypertarget{trophic-coherence-directed-agora-cross-feeding}{}
+On the directed cross-feeding graph, measure MacKay's \textbf{trophic
+incoherence} \(F_0\) (assign trophic levels \(h_i\); variance of level
+gaps across edges):
+\[F_0 = \frac{1}{w}\sum_{ij} W_{ij}\,(h_i - h_j - 1)^2 .\]
+
+\begin{itemize}
+\tightlist
+\item
+  Observed \(F_0 = \mathbf{0.652}\) vs random \(0.646\), \(p=0.50\).
+\item
+  \(\Rightarrow\) \textbf{trophically incoherent} = no hierarchy,
+  \textbf{cyclic mutual cross-feeding}.
+\end{itemize}
+
+\vspace{0.3em}
+
+Biologically sensible: Fusobacterium is a basal producer and Veillonella
+a high consumer, yet they entangle in loops rather than forming a clean
+one-way food chain.
+\end{frame}
+
+\begin{frame}{Concordant backbone: ecology layer \(\times\) metabolic
+layer}
+\protect\hypertarget{concordant-backbone-ecology-layer-times-metabolic-layer}{}
+Overlay two independent layers --- the ecological (Hamilton) layer and
+the AGORA metabolic layer --- and keep edges where both \textbf{agree in
+sign}:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{11 edges, all positive (facilitation)}, \(p=4\times10^{-4}\)
+  (the same independent validation as the AGORA deck).
+\item
+  Negativicutes (\emph{Veillonella}) is the main metabolic
+  \textbf{sink}:
+  \[\{\text{Bacilli, Bacteroidia, }\beta\text{Proteo, Fusobacteria}\}\ \longrightarrow\ \text{Negativicutes}.\]
+\item
+  This corresponds to reconstructed \textbf{lactate cross-feeding}.
+\end{itemize}
+
+\vspace{0.3em}
+
+\textbf{The strongest network result.} The sign-level backbone is
+supported independently by both layers.
+\end{frame}
+
+\begin{frame}{LOO stability of the network}
+\protect\hypertarget{loo-stability-of-the-network}{}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/guild_network/loo_stability.png}
+
+Re-estimate \(A_{\text{eff}}\) under leave-one-patient-out and measure
+each pair's sign-consistency. \textbf{All pairs have sign-consistency
+\(\geq 0.70\)} \(\Rightarrow\) the network's sign structure is robust to
+individual patients.
+\end{frame}
+
+\begin{frame}{Permutation test of edge magnitudes (honestly)}
+\protect\hypertarget{permutation-test-of-edge-magnitudes-honestly}{}
+\includegraphics[width=\textwidth,height=0.48\textheight]{results/guild_network/permutation_test.png}
+
+Compare each off-diagonal edge \textbf{magnitude} to a permutation null:
+\textbf{only 2 of 90 pairs} individually exceed it at \(p<0.05\).
+
+\vspace{0.3em}
+
+\(\Rightarrow\) the network is dense and individual edge
+\textbf{magnitudes are weakly resolved}. What is robust is the
+\textbf{sign-level backbone} of the previous slide, not the individual
+magnitudes.
+\end{frame}
+
+\begin{frame}{CS \(\leftrightarrow\) DH rewiring (Heine 5-species,
+posterior)}
+\protect\hypertarget{cs-leftrightarrow-dh-rewiring-heine-5-species-posterior}{}
+Compare the posterior of the 5-species attractors (CS =
+commensal-static, DH = dysbiotic-HOBIC) in the column-centered
+\(A_{\text{eff}}\). Define the \textbf{facilitation probability}
+\[P_{\text{facilitation}}(i\!\leftarrow\! j) = \Pr\big[\,A_{\text{eff}}[i,j] > 0\,\big]\]
+(the posterior probability that \(A_{\text{eff}}[i,j]>0\)).
+
+\(P_{\text{fac}}\to 1\) means facilitation; \(\to 0\) means competition
+/ suppression. How \(P_{\text{fac}}\) moves between CS and DH quantifies
+the rewiring.
+\end{frame}
+
+\begin{frame}{Rewiring results}
+\protect\hypertarget{rewiring-results}{}
+From CS \(\to\) DH the facilitation probability \(P_{\text{fac}}\)
+changes dramatically:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{So \(\leftrightarrow\) Vd mutualism collapses}:
+  \emph{Streptococcus}--\emph{Veillonella} symbiosis becomes competition
+  in dysbiosis.
+  \[P_{\text{fac}}(\text{So}\!\to\!\text{Vd}):\ 1.00 \to 0.03,\qquad
+    P_{\text{fac}}(\text{Vd}\!\to\!\text{So}):\ 0.9995 \to 0.00.\]
+\item
+  \textbf{Fusobacterium becomes supported}: An\(\to\)Fn and Vd\(\to\)Fn
+  flip competition \(\to\) facilitation.
+  \[P_{\text{fac}}(\text{An}\!\to\!\text{Fn}):\ 0.23 \to 0.97,\qquad
+    P_{\text{fac}}(\text{Vd}\!\to\!\text{Fn}):\ 0.09 \to 0.77.\]
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\emph{P. gingivalis} centralisation}
+\protect\hypertarget{p.-gingivalis-centralisation}{}
+Eigenvector centrality: CS \textbf{0.32} \(\to\) DH \textbf{0.51}
+(highest in DH).
+
+\begin{itemize}
+\tightlist
+\item
+  Yet in DH, Pg is net suppressive: the \(P_{\text{facilitation}}\) of
+  its outgoing edges is \(0.27\).
+\item
+  \(\Rightarrow\) Pg is \textbf{not a static keystone}, but
+  \textbf{becomes keystone-like} in the dynamic dysbiotic state.
+\end{itemize}
+
+\vspace{0.3em}
+
+Consistent with the FISH finding: in dysbiosis Pg sinks deep, loses
+neighbour-dependence, and \textbf{goes autonomous (centralises)}. A
+keystone is a function of state, not a fixed attribute.
+\end{frame}
+
+\begin{frame}{Conclusions}
+\protect\hypertarget{conclusions}{}
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{The metabolic backbone is robust}: lactate cross-feeding with
+  Veillonella as the main sink is supported in sign independently by the
+  ecological and metabolic layers (11 edges, all positive,
+  \(p=4\times10^{-4}\)).
+\item
+  \textbf{The textbook keystone is not supported}: at the in-vivo class
+  level Pg is not a structural keystone, and the bridge is Bacilli, not
+  Fusobacterium.
+\item
+  \textbf{Dysbiosis is a rewiring, not a mere abundance shift}: loss of
+  So--Vd mutualism plus Pg centralisation.
+\item
+  Individual edge magnitudes are weakly resolved (2/90 by permutation)
+  --- only the sign structure is robust. class \(\neq\) species,
+  dense-graph degeneracy, and rare-guild noise remain limitations.
+\end{enumerate}
+\end{frame}
+
+\end{document}
