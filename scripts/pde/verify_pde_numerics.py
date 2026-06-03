@@ -73,13 +73,8 @@ from pathlib import Path
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
-matplotlib.rcParams.update({
-    "font.family": "serif",
-    "font.serif": ["Times New Roman", "Times", "DejaVu Serif"],
-    "mathtext.fontset": "stix",
-    "font.size": 10,
-})
 import matplotlib.pyplot as plt
+from thesis_style import use as thesis_style   # shared usetex/lmodern thesis style
 
 HERE = Path(__file__).resolve().parents[2]
 OUT = HERE / "results" / "nsp_pde"
@@ -271,7 +266,7 @@ def conservation_study(Nz=80, L=1.0, n_steps=300, crowded=False):
 
 def plot_convergence(conv, bdry, path):
     dz, err = np.array(conv["dz"]), np.array(conv["err"])
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(8.4, 3.4))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=thesis_style(1.0, aspect=0.42))
     ax.loglog(dz, err, "o-", color="#1f77b4", label="eigenvalue error")
     ref = err[0] * (dz / dz[0]) ** 2
     ax.loglog(dz, ref, "k--", lw=1, label=r"$\mathcal{O}(\Delta z^2)$ reference")
@@ -280,11 +275,12 @@ def plot_convergence(conv, bdry, path):
     ax.set_title(f"Diffusion stencil (interior+Neumann mode)\nslope {conv['ls_slope']:.3f}")
     ax.legend(fontsize=8); ax.grid(True, which="both", alpha=0.3)
     # boundary-order honesty panel
+    _disp = {"cos_neumann_mode": "cos (Neumann mode)", "generic_neumann": "generic Neumann"}
     for name, c, mk in (("cos_neumann_mode", "#1f77b4", "o"),
                         ("generic_neumann", "#d62728", "s")):
         d = bdry[name]
         ax2.loglog(d["dz"], d["err"], mk + "-", color=c,
-                   label=f"{name} (wall order {d['wall_order']:.2f})")
+                   label=f"{_disp[name]} (wall order {d['wall_order']:.2f})")
     dzb = np.array(bdry["generic_neumann"]["dz"])
     ax2.loglog(dzb, bdry["generic_neumann"]["err"][0] * (dzb / dzb[0]), "k:",
                lw=1, label=r"$\mathcal{O}(\Delta z)$")
@@ -298,7 +294,7 @@ def plot_convergence(conv, bdry, path):
 
 
 def plot_conservation(sub, crow, path):
-    fig, axes = plt.subplots(2, 2, figsize=(9.0, 6.2))
+    fig, axes = plt.subplots(2, 2, figsize=thesis_style(1.0, aspect=0.66))
     for row, (cons, tag) in enumerate(((sub, "sub-critical IC"), (crow, "crowded IC"))):
         steps = np.arange(cons["n_steps"]) * cons["dt"]
         axm, axr = axes[row]
