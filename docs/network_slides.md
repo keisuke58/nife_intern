@@ -162,8 +162,8 @@ $\Rightarrow$ ネットワークは密で、個々のエッジ**強度は弱く�
 
 ## CS $\leftrightarrow$ DH リワイヤリング（Heine 5 種・posterior）
 
-5 種アトラクター（CS = commensal-static、DH = dysbiotic-HOBIC）の posterior を、
-列中心化 $A_{\text{eff}}$ で比較する。**促進確率**を
+**① Heine 5 菌種 GPU-Bayesian TMCMC** の 4 アトラクター posterior（CS = commensal-static、
+DH = dysbiotic-HOBIC, `ultimate_10000p`）を、列中心化 $A_{\text{eff}}$ で比較する。**促進確率**を
 $$P_{\text{facilitation}}(i\!\leftarrow\! j) = \Pr\big[\,A_{\text{eff}}[i,j] > 0\,\big]$$
 （posterior 上で $A_{\text{eff}}[i,j]>0$ となる確率）と定義。
 

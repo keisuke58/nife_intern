@@ -34,14 +34,29 @@ raw 16S → guild $\varphi$ → gLV/Hamilton（＋符号 prior）→ LOO 検証 
 bulk な ODE フィットは **誰が誰と相互作用するか（WHO）** を与える。
 FISH 深さプロファイルは **それがどこで起こるか（WHERE）** を加える。
 
-- 既知：bulk gLV/Hamilton の相互作用行列 $A$、増殖ベクトル $b$（Dieckow フィット）。
+- 既知：bulk gLV/Hamilton の相互作用行列 $A$、増殖ベクトル $b$
+  （**① Heine 5 菌種 TMCMC posterior**）。
 - 未知：種ごとの基質深さ方向の**輸送**（拡散・移流）。
-- 目標：反応項を bulk から固定したまま、**空間輸送パラメータのみ**を
+- 目標：反応項を①から固定したまま、**空間輸送パラメータのみ**を
   深さ分解 FISH データから逆推定する。
 
 \vspace{0.4em}
 **主張：** dysbiosis は bulk 組成の変化ではなく、**空間的再編成**として現れる。
 特に *P. gingivalis* が深部へ沈み、*F. nucleatum* から自律化する。
+
+---
+
+## 土台：① Heine 5 菌種 GPU-Bayesian モデル
+
+本デッキは **Heine 2025 の 5 菌種 in-vitro 研究（①）の空間拡張**である。
+
+![](results/heine2025/glv_heine_fit_paper.png){ height=40% }
+
+- ① で **GPU 加速 TMCMC**（$N_p=10{,}000$）により対称 $A$ の posterior を推定し、
+  4 アトラクター CS/CH/DS/DH を再現（`ultimate_10000p`）。
+- その **$A,b$（反応項）を固定**し、同じ Heine 系の **HOBIC FISH 深さデータ**へ拡張 →
+  空間輸送 $D_i,u$ を加える。
+- すなわち①＝**時間動態**（WHO）、本デッキ＝**空間構造**（WHERE）。Heine 系が一貫した主役。
 
 ---
 
@@ -87,9 +102,10 @@ $$\frac{\partial \varphi_i}{\partial t}
  \;-\; u\,\frac{\partial \varphi_i}{\partial z}
  \;+\; R_i(\varphi).$$
 
-- $R_i(\varphi)$ は replicator / Hamilton 反応項。$A,b$ は bulk フィットから **固定**。
+- $R_i(\varphi)$ は replicator / Hamilton 反応項。$A,b$ は **① Heine 5 菌種 TMCMC
+  posterior**（$N_p=10{,}000$, `ultimate_10000p`）から **固定**（本デッキはその空間拡張）。
   $$R_i(\varphi)=\varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big]+\gamma\,\varphi_i.$$
-- **自由パラメータは拡散率 $D_i$ と移流 $u$ のみ**。
+- **自由パラメータは拡散率 $D_i$ と移流 $u$ のみ**（反応は①で確定済み）。
 - $\gamma$ は Lagrange 項：各 $z$ で $\sum_i \varphi_i + \varphi_0 = 1$ を強制する。
 
 ---
