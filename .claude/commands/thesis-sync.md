@@ -122,13 +122,16 @@ thesis repo (`30_Masterarbeit/notes/`), so both repos carry an identical copy. P
 NO `stash`/`pull`):
 
 ```bash
-GUIDE=docs/THESIS_WRITING_GUIDE.md
 THESIS=/home/nishioka/LUHsummer26/30_Masterarbeit
-if [ -f "$GUIDE" ] && [ -d "$THESIS/notes" ]; then
-  cp "$GUIDE" "$THESIS/notes/writing_guide.md"
-  git -C "$THESIS" add notes/writing_guide.md
-  git -C "$THESIS" diff --cached --quiet notes/writing_guide.md || \
-    { git -C "$THESIS" commit -q -m "notes: sync writing_guide from nife/docs/THESIS_WRITING_GUIDE.md"; \
+# canonical-in-nife docs -> thesis-repo notes mirror (src:dest pairs)
+mirror_pairs="docs/THESIS_WRITING_GUIDE.md:writing_guide.md docs/EXAMINER_STRATEGY.md:examiner_strategy.md"
+if [ -d "$THESIS/notes" ]; then
+  for pair in $mirror_pairs; do
+    src="${pair%%:*}"; dst="${pair##*:}"
+    [ -f "$src" ] && cp "$src" "$THESIS/notes/$dst" && git -C "$THESIS" add "notes/$dst"
+  done
+  git -C "$THESIS" diff --cached --quiet notes/ || \
+    { git -C "$THESIS" commit -q -m "notes: sync writing_guide + examiner_strategy from nife/docs"; \
       git -C "$THESIS" push 2>&1 | tail -1; }
 fi
 ```
