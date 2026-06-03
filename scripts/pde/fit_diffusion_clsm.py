@@ -145,9 +145,14 @@ def build_loss(A, b, phi_bulk, phi_ic, obs, t_days, Nz, dt=0.05):
 
 
 def fit_diffusion(A, b, phi_obs, obs_zprofile, z_grid, t_days,
-                  Nz=40, dt=0.05, n_restarts=3):
+                  Nz=40, dt=0.05, n_restarts=3,
+                  maxiter=300, ftol=1e-9, gtol=1e-6, fd_eps=1e-3):
     """
     Fit log(D_i) and log(u) by L-BFGS-B minimisation of MSE on z-profiles.
+
+    The forward PDE is stiff and the gradient is numerical (finite differences),
+    so the default ftol=1e-12 was unreachable → success=False. We loosen ftol and
+    use a larger finite-difference step (fd_eps) so the line search succeeds.
 
     Returns:
         D_fit : (N_SP,) fitted diffusivities
@@ -174,8 +179,10 @@ def fit_diffusion(A, b, phi_obs, obs_zprofile, z_grid, t_days,
         x0 = x0_mean + 0.3 * rng.standard_normal(N_SP + 1)
         x0 = np.clip(x0, lb, ub)
         res = minimize(loss_fn, x0, method='L-BFGS-B', bounds=bounds,
-                       options={'maxiter': 500, 'ftol': 1e-12})
-        print(f'  Trial {trial+1}: loss={res.fun:.6f}  success={res.success}')
+                       options={'maxiter': maxiter, 'ftol': ftol, 'gtol': gtol,
+                                'eps': fd_eps})
+        print(f'  Trial {trial+1}: loss={res.fun:.6f}  success={res.success}  '
+              f'({res.message if isinstance(res.message, str) else res.message.decode(errors="ignore")})')
         if best_res is None or res.fun < best_res.fun:
             best_res = res
 
@@ -226,6 +233,12 @@ def main():
     parser.add_argument('--Nz',        type=int,   default=40)
     parser.add_argument('--dt',        type=float, default=0.05)
     parser.add_argument('--restarts',  type=int,   default=3)
+    parser.add_argument('--maxiter',   type=int,   default=300, help='L-BFGS-B max iterations per restart')
+    parser.add_argument('--ftol',      type=float, default=1e-9, help='L-BFGS-B ftol (1e-12 was unreachable → success=False)')
+    parser.add_argument('--gtol',      type=float, default=1e-6, help='L-BFGS-B gtol')
+    parser.add_argument('--fd-eps',    type=float, default=1e-3,
+                        help='finite-difference step for the numerical gradient '
+                             '(larger = less noisy on the stiff PDE)')
     parser.add_argument('--crossdiff', action='store_true',
                         help='Use rigorous volume-filling cross-diffusion model '
                              '(nsp_pde_1d_heine_xdiff) instead of the diagonal baseline')
@@ -267,6 +280,7 @@ def main():
     D_fit, u_fit, res = fit_diffusion(
         A, b, phi_obs, obs, z_grid, t_days,
         Nz=args.Nz, dt=args.dt, n_restarts=args.restarts,
+        maxiter=args.maxiter, ftol=args.ftol, gtol=args.gtol, fd_eps=args.fd_eps,
     )
     print(f'\nFitted D = {D_fit}')
     print(f'Fitted u = {u_fit:.5f}')

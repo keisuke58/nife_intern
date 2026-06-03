@@ -62,6 +62,26 @@ def px_per_um(img) -> float | None:
     return None
 
 
+def _series_substrate(name) -> str | None:
+    """'ti'/'glass' if the series name labels a substrate, else None (HOBIC24
+    mixes 'N Ti k' and 'N Glass k' FOVs). Mirrors lif_to_zprofiles."""
+    import re
+    n = str(name)
+    if re.search(r"\bglass\b", n, re.IGNORECASE):
+        return "glass"
+    if re.search(r"\bti\b", n, re.IGNORECASE):
+        return "ti"
+    return None
+
+
+def _filter_series(series, substrate):
+    """Keep series of the requested substrate (+ unlabelled); 'all' keeps every one."""
+    if substrate == "all":
+        return series
+    return [im for im in series
+            if _series_substrate(im.name) in (substrate, None)]
+
+
 def _nice_bar_um(width_um: float) -> float:
     """A round scale-bar length (1/2/5 × 10ⁿ) close to ~1/5 of the field width."""
     target = max(width_um / 5.0, 1e-6)
@@ -212,11 +232,16 @@ def montage(lif: LifFile, stem: str, sidx: int, outdir: Path, dpi: int = 120) ->
     return out
 
 
-def species_overview(lif: LifFile, stem: str, outdir: Path, dpi: int = 130) -> Path:
+def species_overview(lif: LifFile, stem: str, outdir: Path, dpi: int = 130,
+                     substrate: str = "all") -> Path:
     """Per series, decode the 4 channels into the 5 species (F.nucleatum = blue∩red)
     and show a MIP per species in its analysis colour + a 5-species composite."""
-    series = list(lif.get_iter_image())
-    luts = fd_luts(lif, series[0].channels or 1)
+    all_series = list(lif.get_iter_image())
+    luts = fd_luts(lif, all_series[0].channels or 1)
+    series = _filter_series(all_series, substrate)
+    if not series:
+        raise SystemExit(f"no series match substrate={substrate!r} in {stem}")
+    tag = "" if substrate == "all" else f"_{substrate}"
     ncols = len(SPECIES_ORDER) + 1
     fig, axes = plt.subplots(len(series), ncols,
                              figsize=(3.2 * ncols, 3.2 * len(series)), squeeze=False)
@@ -246,9 +271,10 @@ def species_overview(lif: LifFile, stem: str, outdir: Path, dpi: int = 130) -> P
         if r == 0:
             ax.set_title("5-species composite", fontsize=20)
         ax.set_xticks([]); ax.set_yticks([])
-    fig.suptitle(rf"{stem} — species decode (Fn = blue $\cap$ red)", fontsize=23)
+    sub_lbl = "" if substrate == "all" else f" [{substrate}]"
+    fig.suptitle(rf"{stem}{sub_lbl} — species decode (Fn = blue $\cap$ red)", fontsize=23)
     fig.tight_layout(rect=(0, 0, 1, 0.99))
-    out = outdir / f"{stem}__species.png"
+    out = outdir / f"{stem}__species{tag}.png"
     fig.savefig(out, dpi=dpi)
     plt.close(fig)
     return out
@@ -262,6 +288,9 @@ def main() -> None:
     ap.add_argument("--series", type=int, default=0, help="series index for montage")
     ap.add_argument("--out", default="figures/lif_quicklook", help="output dir")
     ap.add_argument("--dpi", type=int, default=100, help="output PNG dpi (lower = smaller file)")
+    ap.add_argument("--substrate", choices=["all", "ti", "glass"], default="all",
+                    help="species mode: keep only this substrate's FOVs (HOBIC24 mixes "
+                         "Ti/Glass); output suffixed __species_<sub>.png")
     args = ap.parse_args()
 
     _setup_style()
@@ -274,7 +303,7 @@ def main() -> None:
         if args.mode == "overview":
             out = overview(lif, stem, outdir, args.dpi)
         elif args.mode == "species":
-            out = species_overview(lif, stem, outdir, args.dpi)
+            out = species_overview(lif, stem, outdir, args.dpi, args.substrate)
         else:
             out = montage(lif, stem, args.series, outdir, args.dpi)
         print(f"wrote {out}")
