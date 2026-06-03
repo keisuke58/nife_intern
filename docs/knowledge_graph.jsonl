@@ -62,7 +62,7 @@
 {"type":"entity","name":"fifawc","entityType":"infra","observations":["PBS cluster (CPU, JAX-CPU .venv_jax)","SHARED — diffusion-fit sweep jobs run here"]}
 {"type":"entity","name":"vancouver01","entityType":"infra","observations":["GPU host, 4x CUDA, jax 0.6.2, conda klempt_fem","SHARED — non-destructive scratch clone /home/nishioka/nife_gpurun"]}
 {"type":"entity","name":"ultimate_10000p","entityType":"infra","observations":["results/ultimate_10000p = canonical 5sp 10000-particle posterior","DH = dh_baseline"]}
-{"type":"entity","name":"Junker","entityType":"person","observations":["Prof. Philipp Junker, IKM/LUH; thesis supervisor (Betreuer)","Hamilton/Extended-Hamilton principle"]}
+{"type":"entity","name":"Junker","entityType":"person","observations":["Prof. Philipp Junker, IKM/LUH; thesis supervisor (Betreuer)","Hamilton/Extended-Hamilton principle","THESIS PRIMARY EXAMINER / supervisor (Erstpruefer)","Prof. Dr.-Ing. habil. Philipp Junker, head of IKM, LUH","expertise: continuum mechanics, the extended Hamilton principle (Junker & Balzani 2021), thermodynamically-consistent dissipative microstructure evolution, computational mechanics (FEM), Bayesian model updating","will scrutinise: thermodynamic consistency, variational/Hamilton-principle rigour, dissipation & internal-variable (psi) treatment, numerics, and how the biology connects to the mechanics formalism","no email stored in graph (PII kept local only)"]}
 {"type":"entity","name":"Klempt","entityType":"person","observations":["Felix Klempt, IKM; Hamilton ODE / NSP","conda env klempt_fem named after"]}
 {"type":"entity","name":"Szafranski","entityType":"person","observations":["Szymon P. Szafranski, Hannover Medical School / NIFE","FISH data lab + metabolic interaction supplement (L1/L2 prior)"]}
 {"type":"entity","name":"Heine","entityType":"person","observations":["Nils Heine; HOBIC flow-chamber FISH experiments"]}
@@ -120,6 +120,8 @@
 {"type":"entity","name":"Good2000Permutation","entityType":"reference","observations":["Good 2000, Permutation Tests 2nd ed, Springer, doi 10.1007/978-1-4757-3235-1","permutation/resampling test methodology"]}
 {"type":"entity","name":"Hajishengallis2012Keystone","entityType":"reference","observations":["Hajishengallis, Darveau & Curtis 2012, Nat Rev Microbiol 10:717-725, doi 10.1038/nrmicro2873","keystone-pathogen hypothesis (bibkey Hajishengallis2014Polymicrobial)"]}
 {"type":"entity","name":"Lamont2018OralMicrobiota","entityType":"reference","observations":["Lamont, Koo & Hajishengallis 2018, Nat Rev Microbiol 16:745-759, doi 10.1038/s41579-018-0089-x","oral microbiota dynamic communities & host interactions (bibkey Lamont2018Periodontal)"]}
+{"type":"entity","name":"Geisler","entityType":"person","observations":["Hendrik Geisler, IKM (Institut fuer Kontinuumsmechanik), LUH — Junker group","coauthor on the continuum biofilm model (Klempt2024/2025) and the Bayesian surrogate paper (Fritsch2025)","expertise (inferred): computational mechanics, scientific ML / neural-network surrogates, Bayesian inference & UQ for mechanics","no email stored in graph (PII kept local only)","role: 3rd / supporting (NOT a thesis examiner); the secondary examiner is Soleimani"]}
+{"type":"entity","name":"Soleimani","entityType":"person","observations":["Meisam Soleimani, IKM (Institut fuer Kontinuumsmechanik), LUH — Junker group","THESIS SECONDARY EXAMINER (Zweitpruefer)","coauthor on the continuum biofilm model (Klempt2024/2025), the Bayesian surrogate (Fritsch2025), and the Heine2025 in-vitro paper","expertise (inferred): computational mechanics, FEM, numerical methods / nonlinear solvers, continuum modelling","no email stored in graph (PII kept local only)"]}
 {"type":"relation","from":"Masterarbeit","to":"ch1_introduction","relationType":"has_chapter"}
 {"type":"relation","from":"Masterarbeit","to":"ch2_theory","relationType":"has_chapter"}
 {"type":"relation","from":"Masterarbeit","to":"ch3_heine","relationType":"has_chapter"}
@@ -301,3 +303,15 @@
 {"type":"relation","from":"Lamont2018OralMicrobiota","to":"Masterarbeit","relationType":"background_for"}
 {"type":"relation","from":"Rognes2016VSEARCH","to":"Dieckow2024","relationType":"preprocesses"}
 {"type":"relation","from":"Quast2013SILVA","to":"Dieckow2024","relationType":"preprocesses"}
+{"type":"relation","from":"Junker","to":"Masterarbeit","relationType":"is_primary_examiner_of"}
+{"type":"relation","from":"Geisler","to":"Junker","relationType":"group_member_of"}
+{"type":"relation","from":"Klempt2025ContinuumBiofilm","to":"Geisler","relationType":"authored_by"}
+{"type":"relation","from":"Fritsch2025BayesianMicrofilms","to":"Geisler","relationType":"authored_by"}
+{"type":"relation","from":"Geisler","to":"NSP_Hamilton_model","relationType":"co_develops"}
+{"type":"relation","from":"Soleimani","to":"Masterarbeit","relationType":"is_secondary_examiner_of"}
+{"type":"relation","from":"Soleimani","to":"Junker","relationType":"group_member_of"}
+{"type":"relation","from":"Soleimani","to":"NSP_Hamilton_model","relationType":"co_develops"}
+{"type":"relation","from":"Klempt2024ContinuumGrowth","to":"Soleimani","relationType":"authored_by"}
+{"type":"relation","from":"Klempt2025ContinuumBiofilm","to":"Soleimani","relationType":"authored_by"}
+{"type":"relation","from":"Fritsch2025BayesianMicrofilms","to":"Soleimani","relationType":"authored_by"}
+{"type":"relation","from":"Geisler","to":"Masterarbeit","relationType":"supports"}
