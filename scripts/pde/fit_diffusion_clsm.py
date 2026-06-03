@@ -239,6 +239,9 @@ def main():
     parser.add_argument('--fd-eps',    type=float, default=1e-3,
                         help='finite-difference step for the numerical gradient '
                              '(larger = less noisy on the stiff PDE)')
+    parser.add_argument('--tag',       type=str,   default='',
+                        help='suffix for output files (D_fit_<cond>_<tag>.json) — '
+                             'use for parameter sweeps so runs do not overwrite')
     parser.add_argument('--crossdiff', action='store_true',
                         help='Use rigorous volume-filling cross-diffusion model '
                              '(nsp_pde_1d_heine_xdiff) instead of the diagonal baseline')
@@ -289,8 +292,10 @@ def main():
         rel_err = np.abs(D_fit - D_true) / (D_true + 1e-12)
         print(f'Rel err   = {rel_err.round(3)}')
 
-    # Save fitted params
-    out_json = OUT_DIR / f'D_fit_{args.cond}.json'
+    # Save fitted params (--tag suffixes the output so a parameter sweep does not
+    # overwrite the canonical D_fit_<cond>.json)
+    tag = f'_{args.tag}' if args.tag else ''
+    out_json = OUT_DIR / f'D_fit_{args.cond}{tag}.json'
     result   = {
         'cond': args.cond,
         'D_fit': D_fit.tolist(),
@@ -298,6 +303,10 @@ def main():
         'D_species': SHORT,
         'loss': float(res.fun),
         'success': bool(res.success),
+        'hparams': {'Nz': args.Nz, 'dt': args.dt, 'restarts': args.restarts,
+                    'maxiter': args.maxiter, 'ftol': args.ftol, 'gtol': args.gtol,
+                    'fd_eps': args.fd_eps},
+        'tag': args.tag or '',
     }
     out_json.write_text(json.dumps(result, indent=2))
     print(f'Saved: {out_json}')
@@ -309,7 +318,7 @@ def main():
         Nz=args.Nz, D=jnp.array(D_fit), u=u_fit, dt=args.dt,
     )
     plot_fit(phi_pred, obs, z_grid, t_days, D_fit, u_fit, args.cond,
-             out_path=OUT_DIR / f'fit_{args.cond}.png')
+             out_path=OUT_DIR / f'fit_{args.cond}{tag}.png')
 
 
 if __name__ == '__main__':
