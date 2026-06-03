@@ -12,6 +12,23 @@ header-includes:
   - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
+## Where this deck sits
+
+The project = three pillars + a spatial extension. Data flow:
+
+raw 16S → guild $\varphi$ → gLV/Hamilton (+ sign prior) → LOO validation → spatial PDE
+
+The decks (you-are-here in **bold marker**):
+
+- **Overview** (umbrella) — the whole picture, three pillars
+- **AGORA** — metabolism → sign prior (input to the ecological model)  — **(you are here)**
+- **Dieckow** — in-vivo interaction inference & validation (the model)
+- **Network** — structural analysis of the interaction matrix $A$
+- **Spatial-PDE** — reaction-diffusion of the FISH depth profiles
+- **FISH pipeline** — .lif → 5-species depth composition
+
+---
+
 ## Scope and claim
 
 Constrain an **ecological interaction matrix** with **metabolism computed from
