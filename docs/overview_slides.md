@@ -28,6 +28,14 @@ header-includes:
 
 ---
 
+## 概念図（全体像）
+
+![](results/figures/concept_overview_pub.png){ height=78% }
+
+代謝が相互作用の**符号**を決め、dysbiosis は**リワイヤリング＋空間再編**（Pg の中心化・深部沈降）として現れる。
+
+---
+
 ## 統一オブジェクト — 10 ギルド分類
 
 全データ・全モデルが共有する正典 = **class レベルの 10 ギルド分類**
@@ -61,15 +69,13 @@ header-includes:
 
 ---
 
-## データフロー
+## データフロー（実データ）
 
-![](comets/pipeline_results/pipeline_overview.png){ height=58% }
+![](results/figures/pipeline_overview_pub.png){ height=66% }
 
-$$\text{生 16S reads}\xrightarrow{\text{vsearch/SILVA}}\varphi\;(N_{\text{pat}}\times T\times 10)
-\xrightarrow{\text{gLV/Hamilton LOO-CV}}\texttt{fit\_*.json}\to\text{LOO}\to\text{図}.$$
-
-\texttt{fit\_*.json}（$A$ 行列 + 患者ごと $b$ ベクトル）が**交換フォーマット**：
-fit が既にあるなら再計算しない。
+実 Dieckow データ：guild $\varphi$（10 患者 $\times$ 3 週）→ AGORA 符号 prior →
+gLV/Hamilton フィット（$\hat A$, $r=0.95$, SA 70/70）→ LOO-CV 検証 → 4 アトラクター。
+`fit_*.json` が交換フォーマット。
 
 ---
 

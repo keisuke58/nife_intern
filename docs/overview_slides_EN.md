@@ -30,6 +30,15 @@ pillars and the shared data/model contract that connects them.
 
 ---
 
+## Graphical abstract
+
+![](results/figures/concept_overview_pub.png){ height=78% }
+
+Metabolism fixes the **sign** of interactions; dysbiosis appears as a **re-wiring
++ spatial re-organisation** (P. gingivalis centralises and sinks deep).
+
+---
+
 ## The unifying object — the 10-guild taxonomy
 
 The canonical object shared by all data and all models is the
@@ -64,14 +73,13 @@ and the **`fit_*.json` interchange format.**
 
 ---
 
-## Data flow
+## Data flow (real data)
 
-![](comets/pipeline_results/pipeline_overview.png){ height=46% }
+![](results/figures/pipeline_overview_pub.png){ height=66% }
 
-$$\text{raw 16S}\xrightarrow{\text{vsearch/SILVA}}\varphi\,(N_{\text{pat}}\!\times\! T\!\times\!10)
-\xrightarrow{\text{gLV/Hamilton LOO-CV}}\texttt{fit\_*.json}\to\text{LOO}\to\text{figures}.$$
-
-\texttt{fit\_*.json} ($A$ + per-patient $b$) is the **interchange format** — reused, never recomputed.
+Real Dieckow data: guild $\varphi$ (10 patients $\times$ 3 wk) $\to$ AGORA sign
+prior $\to$ gLV/Hamilton fit ($\hat A$, $r=0.95$, SA 70/70) $\to$ LOO-CV $\to$ the
+four attractors. \texttt{fit\_*.json} is the interchange format.
 
 ---
 
