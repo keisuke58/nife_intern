@@ -292,8 +292,9 @@ def plot_convergence(conv, bdry, path):
     ax2.set_title("Ghost-node BOUNDARY order\n(2nd only for Neumann modes)")
     ax2.legend(fontsize=7); ax2.grid(True, which="both", alpha=0.3)
     fig.tight_layout()
-    fig.savefig(path, dpi=150, bbox_inches="tight")
-    print(f"Saved: {path}")
+    fig.savefig(path, dpi=200, bbox_inches="tight")
+    fig.savefig(Path(path).with_suffix(".pdf"), bbox_inches="tight")
+    print(f"Saved: {path} (+ .pdf)")
 
 
 def plot_conservation(sub, crow, path):
@@ -314,8 +315,9 @@ def plot_conservation(sub, crow, path):
         axr.set_title(rf"$\max_z\rho$ — {tag} (IC max {cons['ic_max_rho']:.2f})")
         axr.set_xlabel("t"); axr.legend(fontsize=7)
     fig.tight_layout()
-    fig.savefig(path, dpi=150, bbox_inches="tight")
-    print(f"Saved: {path}")
+    fig.savefig(path, dpi=200, bbox_inches="tight")
+    fig.savefig(Path(path).with_suffix(".pdf"), bbox_inches="tight")
+    print(f"Saved: {path} (+ .pdf)")
 
 
 def main():
