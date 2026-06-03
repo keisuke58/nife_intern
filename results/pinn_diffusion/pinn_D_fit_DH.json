@@ -1,0 +1,34 @@
+{
+  "cond": "DH",
+  "D_fit": [
+    0.0008156968088662182,
+    0.0007012115454445956,
+    0.0008048932506653403,
+    0.0007890113197008683,
+    0.0008659463184953669
+  ],
+  "u_fit": -1.7614955960312282,
+  "D_species": [
+    "S.o",
+    "A.n",
+    "Vd/Vp",
+    "F.n",
+    "P.g"
+  ],
+  "final_loss_total": 0.0006781121781046969,
+  "final_loss_data": 0.0006597211831169787,
+  "final_loss_phys": 1.839099498771825e-05,
+  "epochs": 4000,
+  "optimizer": "optax.adam",
+  "hparams": {
+    "lr": 0.002,
+    "hidden": 64,
+    "depth": 4,
+    "collocation": 512,
+    "w_data": 1.0,
+    "w_phys": 1.0,
+    "seed": 0
+  },
+  "units": "D_i, u in normalised units (z/L in [0,1], t in days/t_max)",
+  "smoke": false
+}
