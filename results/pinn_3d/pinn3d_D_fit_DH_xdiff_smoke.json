@@ -1,0 +1,49 @@
+{
+  "cond": "DH",
+  "crossdiff": true,
+  "D_fit": [
+    0.015235797445698923,
+    0.007878617594074041,
+    0.01182015567136307,
+    0.011834210157724479,
+    0.005072094611957212
+  ],
+  "u_fit": -0.00997849541081287,
+  "D_species": [
+    "S.o",
+    "A.n",
+    "Vd/Vp",
+    "F.n",
+    "P.g"
+  ],
+  "final_loss_total": 0.007230956816886395,
+  "final_loss_data": 0.005837525753024637,
+  "final_loss_phys": 0.001393431063861758,
+  "init_loss_total": 0.011210239498034423,
+  "epochs": 8,
+  "optimizer": "handrolled_jax_adam",
+  "phi_probe_min": 0.08117718947133998,
+  "phi_probe_max": 0.28494173245654336,
+  "phi_probe_sum_max": 0.8883581828186027,
+  "hparams": {
+    "lr": 0.002,
+    "hidden": 12,
+    "depth": 2,
+    "collocation": 48,
+    "w_data": 1.0,
+    "w_phys": 1.0,
+    "n_data": 20000,
+    "batch_data": 64,
+    "seed": 0
+  },
+  "days": [
+    1,
+    6,
+    10,
+    15,
+    21
+  ],
+  "units": "D_i, u in normalised units (x,y,z in [0,1], t = day/21)",
+  "note": "ILLUSTRATIVE / methodology demonstration only. Spatial voxels are abundant but there are only 5 timepoints and few replicates, so absolute D_i and u are weakly identifiable and should NOT be over-interpreted quantitatively.",
+  "smoke": true
+}
