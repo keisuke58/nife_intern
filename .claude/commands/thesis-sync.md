@@ -133,6 +133,16 @@ if [ -f "$GUIDE" ] && [ -d "$THESIS/notes" ]; then
 fi
 ```
 
+The **bibliography goes the other way**: its canonical home is the thesis repo
+(`30_Masterarbeit/references.bib`, used by `main.tex`); mirror a read-only copy into
+`nife/docs/` so the factory repo (paper drafts, knowledge-graph export) can see it.
+Staged with the nife commit in step (e):
+
+```bash
+[ -f "$THESIS/references.bib" ] && cp "$THESIS/references.bib" docs/references.bib && \
+  echo "bib: $(grep -c '^@' docs/references.bib) entries mirrored, $(grep -c 'TODO' docs/references.bib) TODO flags"
+```
+
 ## (e) Commit & push (only the regenerated artefacts)
 
 Stage just what this run regenerated, commit, and push the current branch. Do NOT
