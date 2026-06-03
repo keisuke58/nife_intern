@@ -12,6 +12,23 @@ header-includes:
   - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
+## このデッキの位置づけ
+
+本プロジェクト = 3 本柱 ＋ 空間拡張。データの流れ：
+
+raw 16S → guild $\varphi$ → gLV/Hamilton（＋符号 prior）→ LOO 検証 → 空間 PDE
+
+デッキ構成（◀ = 本デッキ）：
+
+- **Overview**（傘）— 全体像と3本柱
+- **AGORA** — 代謝 → 符号 prior（生態モデルの入力）
+- **Dieckow** — in-vivo 相互作用の推定と検証（生態モデル本体）
+- **Network** — 相互作用行列 $A$ の構造解析
+- **Spatial-PDE** — FISH 深さプロファイルの反応拡散  ◀ **本デッキ**
+- **FISH pipeline** — .lif → 5 種深さ組成
+
+---
+
 ## 問い：WHO に WHERE を足す
 
 bulk な ODE フィットは **誰が誰と相互作用するか（WHO）** を与える。
