@@ -141,7 +141,17 @@ python scripts/pde/fit_diffusion_clsm.py --cond CH --data results/diffusion_fit/
 python scripts/pde/fit_diffusion_clsm.py --cond DH --data results/diffusion_fit/zprofiles_all_ti.csv
 ```
 
-With the full dataset in hand (CH/DH × Days 1/6/10/15/21, Ti), the **production fit is run**, writing `D_fit_<cond>.json` and `fit_<cond>.png` (predicted vs observed) per condition.
+With the full dataset in hand (CH/DH × Days 1/6/10/15/21, Ti), the **production fit is run on the HPC** (`fit_diffusion_clsm_job.sh`, frontale01).
+
+**Results (preliminary)** — diffusivities D (normalised units) and advection u:
+
+| | S.o | A.n | Vd/Vp | F.n | P.g | u | loss |
+|---|---|---|---|---|---|---|---|
+| **CH** | 0.012 | 0.012 | 0.004 | 0.008 | 0.011 | 0.0038 | 0.128 |
+| **DH** | 0.060 | 0.002 | ~2e-5 | 0.002 | 0.008 | 0.0060 | 0.102 |
+
+-> `D_fit_{CH,DH}.json` + `fit_{CH,DH}.png` (predicted vs observed).
+**Caveat**: both fits report `success=False` (L-BFGS did not reach tolerance), so these are **preliminary**. DH is weakly constrained at late days (2 Ti FOVs), with Vd/Vp pinned at the lower bound (~1e-5). Needs more restarts / revised convergence settings.
 
 ---
 

@@ -140,8 +140,8 @@ guess D_i, u -> solve PDE -> predicted vs observed (MSE)
             ^___ search D_i, u minimising the mismatch (L-BFGS) ___|
 ```
 
-Estimate per-species **mobility** D=[So,An,V,Fn,Pg] and advection u.
-**Production fit run on the full data** (CH/DH × Days 1/6/10/15/21, Ti).
+**Production fit run on the HPC** (CH/DH, Ti). Preliminary u: CH 0.0038 / DH 0.0060.
+Note: both `success=False` (not converged) = preliminary; DH weakly constrained (few late Ti FOVs) -> needs more restarts.
 
 ---
 

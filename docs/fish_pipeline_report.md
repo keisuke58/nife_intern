@@ -142,7 +142,17 @@ python scripts/pde/fit_diffusion_clsm.py --cond CH --data results/diffusion_fit/
 python scripts/pde/fit_diffusion_clsm.py --cond DH --data results/diffusion_fit/zprofiles_all_ti.csv
 ```
 
-全データ（CH/DH × Day1/6/10/15/21, Ti）が揃ったので**本番フィットを実行**。各条件の `D_fit_<cond>.json` と `fit_<cond>.png`（予測 vs 実測）を出力。
+全データ（CH/DH × Day1/6/10/15/21, Ti）が揃ったので **HPC(PBS)で本番フィットを実行**（`fit_diffusion_clsm_job.sh`、frontale01）。
+
+**結果（暫定）** — 拡散係数 D（正規化単位）と移流 u:
+
+| | S.o | A.n | Vd/Vp | F.n | P.g | u | loss |
+|---|---|---|---|---|---|---|---|
+| **CH** | 0.012 | 0.012 | 0.004 | 0.008 | 0.011 | 0.0038 | 0.128 |
+| **DH** | 0.060 | 0.002 | ~2e-5 | 0.002 | 0.008 | 0.0060 | 0.102 |
+
+→ `D_fit_{CH,DH}.json` ＋ `fit_{CH,DH}.png`（予測 vs 実測）。
+**注意**: 両条件とも L-BFGS は `success=False`（許容誤差まで未収束）で**暫定値**。DH は後期(Day15/21)が Ti 2 FOV と少なく、Vd/Vp が下限(≈1e-5)に張り付くなど**弱く拘束**。要 restart 増・収束条件見直し。
 
 ---
 
