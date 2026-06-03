@@ -218,6 +218,30 @@ a spatial validation of the metabolic backbone. (*A. naeslundii* not significant
 
 ---
 
+## Spatial-ecology finding 4: Fn–Pg decoupling is a *depth* separation
+
+![](results/fish_3d/fish_3d_fnpg_coloc.png){ height=48% }
+
+A full per-voxel 3-D decode of all 84 FOVs splits Manders $M_1$ by dimension:
+
+- **Lateral (xy-projection)** $M_1 \approx 1.0$ in DH (saturates from Day 6) — same $x,y$ footprint.
+- **3-D (voxel)** $M_1$ **drops to $0.22\text{–}0.33$** from Day 6 (CH stays $0.4\text{–}0.7$).
+- $\Rightarrow$ same footprint but **separated in depth $z$**: the dysbiotic Fn–Pg decoupling is a **vertical separation**, Pg **below** Fn. A 3-D confirmation that *Pg sinks deep*.
+
+---
+
+## Spatial-ecology finding 5: DH homogenises laterally (confluent mat)
+
+![](results/fish_3d/fish_3d_lateral_heterogeneity.png){ height=50% }
+
+Lateral (xy) heterogeneity tracked over time (mean xy-CV):
+
+- **DH** becomes laterally **uniform**, CV $\approx 0.33$ from Day 6 — a continuous **confluent mat**.
+- **CH** stays **patchy**, CV $0.4\text{–}0.9$ — microcolony structure is retained.
+- $\Rightarrow$ dysbiosis **smooths** laterally while the commensal **keeps micro-structure**; complementary to the vertical separation in finding 4.
+
+---
+
 ## Other: bulk CH ≈ DH
 
 The CH–DH **Bray–Curtis divergence** is $\approx 0.2$ and **flat from Day 1**.
