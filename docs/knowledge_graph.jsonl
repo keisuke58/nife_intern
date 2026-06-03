@@ -93,6 +93,33 @@
 {"type":"entity","name":"nishioka_heine_paper","entityType":"paper","observations":["Tmcmc202601/docs(or nife/heine_paper)/nishioka_heine_paper.tex","authors: Nishioka, Klempt, Geisler, Soleimani, Mukherjee, Szafranski, Stiesch, Junker","the Stage-1 manuscript; source for thesis ch3"]}
 {"type":"entity","name":"FEM_Pg_model","entityType":"method","observations":["FEM model of a P. gingivalis biofilm (multiscale extension)","comets/fem_pg_model.py; roughness/coverage fits"]}
 {"type":"entity","name":"oral_fluid_medium","entityType":"concept","observations":["Dawes 2008 saliva-based FBA medium (v1 blood-plasma scale, v2 realistic)","medium design drives whether cross-feeding signal appears (mu->0 if too poor)"]}
+{"type":"entity","name":"ChingChen2007TMCMC","entityType":"reference","observations":["Ching & Chen 2007, J Eng Mech 133:816-832, doi 10.1061/(ASCE)0733-9399(2007)133:7(816)","originating TMCMC algorithm paper"]}
+{"type":"entity","name":"Betz2016TMCMC","entityType":"reference","observations":["Betz, Papaioannou & Straub 2016, J Eng Mech 142(5):04016016, doi 10.1061/(ASCE)EM.1943-7889.0001066","TMCMC improvements"]}
+{"type":"entity","name":"Hoffman2014NUTS","entityType":"reference","observations":["Hoffman & Gelman 2014, JMLR 15:1593-1623","No-U-Turn Sampler"]}
+{"type":"entity","name":"Lu2021DeepONet","entityType":"reference","observations":["Lu et al. 2021, Nat Mach Intell 3:218-229, doi 10.1038/s42256-021-00302-5","DeepONet operator learning"]}
+{"type":"entity","name":"Li2021FNO","entityType":"reference","observations":["Li et al. 2021, ICLR (arXiv:2010.08895)","Fourier Neural Operator"]}
+{"type":"entity","name":"JunkerBalzani2021ExtendedHamilton","entityType":"reference","observations":["Junker & Balzani 2021, Continuum Mech Thermodyn 33:1931-1956, doi 10.1007/s00161-021-01017-z","extended Hamilton principle — basis of the NSP biofilm model"]}
+{"type":"entity","name":"Klempt2024ContinuumGrowth","entityType":"reference","observations":["Klempt, Soleimani, Wriggers & Junker 2024, Biomech Model Mechanobiol 23(6):2091-2113, doi 10.1007/s10237-024-01883-x","Hamilton-principle diffusion-driven biofilm growth"]}
+{"type":"entity","name":"Klempt2025ContinuumBiofilm","entityType":"reference","observations":["Klempt, Geisler, Soleimani & Junker 2025, arXiv:2509.01274","continuum multi-species biofilm model, novel interaction scheme"]}
+{"type":"entity","name":"Fritsch2025BayesianMicrofilms","entityType":"reference","observations":["Fritsch et al. 2025, arXiv:2512.15145","Bayesian updating with surrogate model for biofilms"]}
+{"type":"entity","name":"Heinken2023AGORA2","entityType":"reference","observations":["Heinken et al. 2023, Nat Biotechnol 41:1320-1331, doi 10.1038/s41587-022-01628-0","AGORA2 7302 GEMs"]}
+{"type":"entity","name":"Diener2020MICOM","entityType":"reference","observations":["Diener, Gibbons & Resendis-Antonio 2020, mSystems 5(1):e00606-19, doi 10.1128/mSystems.00606-19","MICOM cooperative tradeoff"]}
+{"type":"entity","name":"OrthThiele2010WhatIsFBA","entityType":"reference","observations":["Orth, Thiele & Palsson 2010, Nat Biotechnol 28(3):245-248, doi 10.1038/nbt.1614","FBA primer"]}
+{"type":"entity","name":"Mahadevan2002DynamicFBA","entityType":"reference","observations":["Mahadevan, Edwards & Doyle 2002, Biophys J 83(3):1331-1340, doi 10.1016/S0006-3495(02)73903-9","dynamic FBA originating paper"]}
+{"type":"entity","name":"Dukovski2021COMETS","entityType":"reference","observations":["Dukovski et al. 2021, Nat Protoc 16(11):5030-5082, doi 10.1038/s41596-021-00593-3","COMETS spatial dFBA platform"]}
+{"type":"entity","name":"Turing1952Morphogenesis","entityType":"reference","observations":["Turing 1952, Phil Trans R Soc B 237(641):37-72, doi 10.1098/rstb.1952.0012","chemical basis of morphogenesis (Turing instability)"]}
+{"type":"entity","name":"Murray2003MathBiologyII","entityType":"reference","observations":["Murray 2003, Mathematical Biology II, 3rd ed, Springer, doi 10.1007/b98869","reaction-diffusion / pattern formation reference"]}
+{"type":"entity","name":"PainterHillen2002VolumeFilling","entityType":"reference","observations":["Painter & Hillen 2002, Can Appl Math Q 10(4):501-543","volume-filling / cross-diffusion flux limiter"]}
+{"type":"entity","name":"KingmaBa2015Adam","entityType":"reference","observations":["Kingma & Ba 2015, ICLR (arXiv:1412.6980)","Adam optimizer"]}
+{"type":"entity","name":"Manders1993Colocalization","entityType":"reference","observations":["Manders, Verbeek & Aten 1993, J Microsc 169(3):375-382, doi 10.1111/j.1365-2818.1993.tb03313.x","Manders M1/M2 colocalization coefficients"]}
+{"type":"entity","name":"May1972Stability","entityType":"reference","observations":["May 1972, Nature 238(5364):413-414, doi 10.1038/238413a0","large random interaction matrices are generically unstable"]}
+{"type":"entity","name":"TaylorJonker1978Replicator","entityType":"reference","observations":["Taylor & Jonker 1978, Math Biosci 40:145-156, doi 10.1016/0025-5564(78)90077-9","replicator dynamics originating paper"]}
+{"type":"entity","name":"Marsland2019MicrobialCRM","entityType":"reference","observations":["Marsland et al. 2019, PLOS Comput Biol 15(2):e1006793, doi 10.1371/journal.pcbi.1006793","MacArthur consumer-resource model"]}
+{"type":"entity","name":"Rognes2016VSEARCH","entityType":"reference","observations":["Rognes et al. 2016, PeerJ 4:e2584, doi 10.7717/peerj.2584","vsearch metagenomics tool"]}
+{"type":"entity","name":"Quast2013SILVA","entityType":"reference","observations":["Quast et al. 2013, Nucleic Acids Res 41(D1):D590-D596, doi 10.1093/nar/gks1219","SILVA rRNA database"]}
+{"type":"entity","name":"Good2000Permutation","entityType":"reference","observations":["Good 2000, Permutation Tests 2nd ed, Springer, doi 10.1007/978-1-4757-3235-1","permutation/resampling test methodology"]}
+{"type":"entity","name":"Hajishengallis2012Keystone","entityType":"reference","observations":["Hajishengallis, Darveau & Curtis 2012, Nat Rev Microbiol 10:717-725, doi 10.1038/nrmicro2873","keystone-pathogen hypothesis (bibkey Hajishengallis2014Polymicrobial)"]}
+{"type":"entity","name":"Lamont2018OralMicrobiota","entityType":"reference","observations":["Lamont, Koo & Hajishengallis 2018, Nat Rev Microbiol 16:745-759, doi 10.1038/s41579-018-0089-x","oral microbiota dynamic communities & host interactions (bibkey Lamont2018Periodontal)"]}
 {"type":"relation","from":"Masterarbeit","to":"ch1_introduction","relationType":"has_chapter"}
 {"type":"relation","from":"Masterarbeit","to":"ch2_theory","relationType":"has_chapter"}
 {"type":"relation","from":"Masterarbeit","to":"ch3_heine","relationType":"has_chapter"}
@@ -240,3 +267,37 @@
 {"type":"relation","from":"oral_fluid_medium","to":"AGORA_sign_prior","relationType":"used_by"}
 {"type":"relation","from":"oral_fluid_medium","to":"MICOM","relationType":"used_by"}
 {"type":"relation","from":"Junker","to":"NSP_Hamilton_model","relationType":"originated_principle"}
+{"type":"relation","from":"ChingChen2007TMCMC","to":"TMCMC","relationType":"grounds"}
+{"type":"relation","from":"ChingChen2007TMCMC","to":"TMCMC_sampler","relationType":"grounds"}
+{"type":"relation","from":"Betz2016TMCMC","to":"TMCMC_sampler","relationType":"grounds"}
+{"type":"relation","from":"Hoffman2014NUTS","to":"NUTS_HMC","relationType":"grounds"}
+{"type":"relation","from":"Lu2021DeepONet","to":"DeepONet_surrogate","relationType":"grounds"}
+{"type":"relation","from":"Li2021FNO","to":"Q_FNO_surrogate","relationType":"grounds"}
+{"type":"relation","from":"JunkerBalzani2021ExtendedHamilton","to":"NSP_Hamilton_model","relationType":"grounds"}
+{"type":"relation","from":"JunkerBalzani2021ExtendedHamilton","to":"Junker","relationType":"authored_by"}
+{"type":"relation","from":"Klempt2024ContinuumGrowth","to":"NSP_Hamilton_model","relationType":"grounds"}
+{"type":"relation","from":"Klempt2024ContinuumGrowth","to":"Klempt","relationType":"authored_by"}
+{"type":"relation","from":"Klempt2025ContinuumBiofilm","to":"NSP_Hamilton_model","relationType":"grounds"}
+{"type":"relation","from":"Klempt2025ContinuumBiofilm","to":"Klempt","relationType":"authored_by"}
+{"type":"relation","from":"Fritsch2025BayesianMicrofilms","to":"DeepONet_surrogate","relationType":"grounds"}
+{"type":"relation","from":"Heinken2023AGORA2","to":"AGORA_sign_prior","relationType":"grounds"}
+{"type":"relation","from":"Diener2020MICOM","to":"MICOM","relationType":"grounds"}
+{"type":"relation","from":"OrthThiele2010WhatIsFBA","to":"AGORA_sign_prior","relationType":"grounds"}
+{"type":"relation","from":"Mahadevan2002DynamicFBA","to":"COMETS_dFBA","relationType":"grounds"}
+{"type":"relation","from":"Dukovski2021COMETS","to":"COMETS_dFBA","relationType":"grounds"}
+{"type":"relation","from":"Turing1952Morphogenesis","to":"Turing_instability","relationType":"grounds"}
+{"type":"relation","from":"Turing1952Morphogenesis","to":"F_no_turing_patterns","relationType":"contextualises"}
+{"type":"relation","from":"Murray2003MathBiologyII","to":"spatial_PDE","relationType":"grounds"}
+{"type":"relation","from":"PainterHillen2002VolumeFilling","to":"cross_diffusion","relationType":"grounds"}
+{"type":"relation","from":"KingmaBa2015Adam","to":"PINN_3D","relationType":"grounds"}
+{"type":"relation","from":"Manders1993Colocalization","to":"Manders_M1","relationType":"grounds"}
+{"type":"relation","from":"May1972Stability","to":"sign_prior_penalty","relationType":"motivates"}
+{"type":"relation","from":"May1972Stability","to":"identifiability","relationType":"contextualises"}
+{"type":"relation","from":"TaylorJonker1978Replicator","to":"gLV_replicator","relationType":"grounds"}
+{"type":"relation","from":"Marsland2019MicrobialCRM","to":"AGORA_sign_prior","relationType":"compares_with"}
+{"type":"relation","from":"Good2000Permutation","to":"permutation_test","relationType":"grounds"}
+{"type":"relation","from":"Hajishengallis2012Keystone","to":"F_pg_centralises","relationType":"background_for"}
+{"type":"relation","from":"Hajishengallis2012Keystone","to":"P.gingivalis","relationType":"background_for"}
+{"type":"relation","from":"Lamont2018OralMicrobiota","to":"Masterarbeit","relationType":"background_for"}
+{"type":"relation","from":"Rognes2016VSEARCH","to":"Dieckow2024","relationType":"preprocesses"}
+{"type":"relation","from":"Quast2013SILVA","to":"Dieckow2024","relationType":"preprocesses"}
