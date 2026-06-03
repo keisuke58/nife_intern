@@ -205,10 +205,12 @@ def simulate_nsp_pde_3d(A, b, phi_bulk, phi_ic,
                          t_out_days,
                          Nx=16, Ny=16, Nz=32,
                          D=D_DEFAULT, u=U_DEFAULT,
-                         dt=0.01, n_nsp_per_transport=5):
+                         dt=0.01, n_nsp_per_transport=5, t_end_cap=None):
     """
     Args:
-        phi_ic   : (Nx, Ny, Nz, N_SP) or (Nz, N_SP) — broadcast if 2D given
+        phi_ic    : (Nx, Ny, Nz, N_SP) or (Nz, N_SP) — broadcast if 2D given
+        t_end_cap : if set, stop integrating at this time (days) instead of the
+                    last observation day — for quick demos / coarse runs.
         phi_bulk : (N_SP,)
     Returns:
         phi_out  : (T, Nx, Ny, Nz, N_SP)
@@ -229,7 +231,7 @@ def simulate_nsp_pde_3d(A, b, phi_bulk, phi_ic,
     react = make_nsp_reaction_3d(A, b)
 
     t_curr    = 0.0
-    t_end     = t_out_days[-1]
+    t_end     = t_out_days[-1] if t_end_cap is None else min(t_out_days[-1], float(t_end_cap))
     snapshots = {}
 
     def _snap(t, st):
@@ -280,8 +282,11 @@ def plot_z_slices(phi_out, t_days, cond_tag, y_idx=None, out_path=None):
 
 
 def plot_xz_panel(phi_out, t_days, cond_tag, out_path=None):
-    """y-mean xz-plane at final timepoint, one panel per species."""
-    T = len(t_days)
+    """y-mean xz-plane at the last computed timepoint, one panel per species."""
+    # use the last snapshot that is finite (a --t-end-capped run leaves later
+    # observation days as NaN; plot the last day actually integrated)
+    finite = [t for t in range(len(t_days)) if np.isfinite(phi_out[t]).all()]
+    T = (finite[-1] + 1) if finite else len(t_days)
     phi_xz = phi_out[T-1].mean(axis=1)   # (Nx, Nz, N_SP)
     fig, axes = plt.subplots(1, N_SP, figsize=(2.6 * N_SP, 3.0))
     for s, ax in enumerate(axes):
@@ -334,6 +339,8 @@ def main():
     parser.add_argument('--n_nsp',   type=int,   default=5)
     parser.add_argument('--D_scale', type=float, default=1.0)
     parser.add_argument('--u',       type=float, default=U_DEFAULT)
+    parser.add_argument('--t-end',   type=float, default=None, dest='t_end',
+                        help='cap integration time (days) for quick demos')
     args = parser.parse_args()
 
     conds = [c for c in CONDITIONS if args.cond == 'all' or c[2] == args.cond]
@@ -353,7 +360,7 @@ def main():
             A, b, phi_bulk, phi_ic, t_out,
             Nx=args.Nx, Ny=args.Ny, Nz=args.Nz,
             D=D, u=args.u, dt=args.dt,
-            n_nsp_per_transport=args.n_nsp,
+            n_nsp_per_transport=args.n_nsp, t_end_cap=args.t_end,
         )
         print(f'  phi_out.shape={phi_out.shape}')
 
