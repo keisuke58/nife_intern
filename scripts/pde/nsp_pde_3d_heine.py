@@ -329,6 +329,24 @@ def plot_bulk_vs_obs(phi_out, phi_obs, t_days, cond_tag, out_path=None):
 
 # ── Entry point ────────────────────────────────────────────────────────────
 
+def _load_ic_3d(path, Nx, Ny, Nz):
+    """Load a phi(x,y,z,5) array (raw FISH intensity) and turn it into a compositional
+    3-D initial state on the (Nx,Ny,Nz) grid: nearest-resample, then per-voxel set
+    phi_i to fractions whose sum = a lateral 'occupancy' in [0,1] (the rest is void
+    phi_0). Species RATIOS and lateral OCCUPANCY structure are preserved."""
+    raw = np.load(path).astype(np.float64)            # (Xd,Yd,Zd,5)
+    Xd, Yd, Zd, S = raw.shape
+    ix = np.clip((np.arange(Nx) * Xd / Nx).astype(int), 0, Xd - 1)
+    iy = np.clip((np.arange(Ny) * Yd / Ny).astype(int), 0, Yd - 1)
+    iz = np.clip((np.arange(Nz) * Zd / Nz).astype(int), 0, Zd - 1)
+    r = raw[np.ix_(ix, iy, iz, np.arange(S))]         # (Nx,Ny,Nz,5)
+    ssum = r.sum(axis=-1, keepdims=True)              # per-voxel total intensity
+    ratios = r / np.clip(ssum, 1e-9, None)            # species composition per voxel
+    occ = ssum[..., 0] / max(np.percentile(ssum, 99), 1e-9)
+    occ = np.clip(occ, 0.0, 1.0)                      # lateral occupancy in [0,1]
+    return (ratios * occ[..., None]).astype(np.float64)
+
+
 def main():
     parser = argparse.ArgumentParser(description='NSP 3D PDE — Heine 2025')
     parser.add_argument('--cond',    choices=['CS','CH','DS','DH','all'], default='DH')
@@ -341,6 +359,10 @@ def main():
     parser.add_argument('--u',       type=float, default=U_DEFAULT)
     parser.add_argument('--t-end',   type=float, default=None, dest='t_end',
                         help='cap integration time (days) for quick demos')
+    parser.add_argument('--ic',      default=None,
+                        help='phi(x,y,z,5) .npy (from fish_3d_batch) used as the lateral-'
+                             'structured initial state, resampled to (Nx,Ny,Nz); '
+                             '{cond} in the path is substituted per condition')
     args = parser.parse_args()
 
     conds = [c for c in CONDITIONS if args.cond == 'all' or c[2] == args.cond]
@@ -352,7 +374,11 @@ def main():
         A, b     = load_A_b(tag)
         phi_obs  = load_obs(condition, cultivation)
         phi_bulk = jnp.array(phi_obs[0], dtype=jnp.float64)
-        phi_ic   = np.tile(phi_obs[0], (args.Nx, args.Ny, args.Nz, 1))
+        if args.ic:
+            phi_ic = _load_ic_3d(args.ic.replace('{cond}', tag), args.Nx, args.Ny, args.Nz)
+            print(f'  IC: lateral-structured from {args.ic.replace("{cond}", tag)}  sum~{phi_ic.sum(-1).mean():.3f}')
+        else:
+            phi_ic = np.tile(phi_obs[0], (args.Nx, args.Ny, args.Nz, 1))
 
         t_out = np.array(DAYS, dtype=float)
 
