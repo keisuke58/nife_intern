@@ -80,3 +80,42 @@ Szafranski_Published_Work/
 # PBS job logs
 *.fifawc.log
 *.log
+
+# LaTeX build artifacts (regenerable from .tex)
+*.aux
+*.toc
+*.nav
+*.snm
+*.vrb
+*.out
+*.blg
+*.bbl
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Compiled PDFs from paper/slide sources (regenerable; keep .tex)
+dieckow_paper/*.pdf
+docs/*_slides*.pdf
+docs/fish_pipeline_*.pdf
+# external reference PDFs dropped into the tree
+glv_pde_*.pdf
+mukherjee-et-al-2025-*.pdf
+
+# Generated PPTX (regenerable from .tex via scripts/figures/pdf_to_pptx.py)
+docs/pptx/
+docs/pptx_editable/
+
+# Large imaging data (CLSM FISH) — far too big for git, keep local only
+HOBIC FISH/
+
+# Vendored external repos / datasets (have their own VCS or are large)
+external_data/
+
+# Editor/backup files
+*.bak
+*.bak.pptx
+*~
+
+# Job error logs (machine-specific)
+logs/*.err

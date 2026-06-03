@@ -1,0 +1,417 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{space}{xeCJK}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{相互作用行列のネットワーク解析}
+\subtitle{推定した相互作用行列をグラフとして読む ---
+keystone・bridge・栄養層・リワイヤリング}
+\author{西岡佳祐 --- NIFE / SFB TRR-298}
+\date{2026-06-03}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[]{Noto Serif CJK JP}
+  \setmonofont[]{Noto Sans Mono CJK JP}
+  \ifXeTeX
+    \usepackage{xeCJK}
+    \setCJKmainfont[]{Noto Serif CJK JP}
+  \fi
+  \ifLuaTeX
+    \usepackage[]{luatexja-fontspec}
+    \setmainjfont[]{Noto Serif CJK JP}
+  \fi
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={相互作用行列のネットワーク解析},
+  pdfauthor={西岡佳祐 --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{amsmath,amssymb}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\relu}[1]{\left[#1\right]_{+}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{このデッキの位置づけ}
+\protect\hypertarget{ux3053ux306eux30c7ux30c3ux30adux306eux4f4dux7f6eux3065ux3051}{}
+本プロジェクト = 3 本柱 ＋ 空間拡張。データの流れ：
+
+raw 16S → guild \(\varphi\) → gLV/Hamilton（＋符号 prior）→ LOO 検証 →
+空間 PDE
+
+デッキ構成（◀ = 本デッキ）：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Overview}（傘）--- 全体像と3本柱
+\item
+  \textbf{AGORA} --- 代謝 → 符号 prior（生態モデルの入力）
+\item
+  \textbf{Dieckow} --- in-vivo 相互作用の推定と検証（生態モデル本体）
+\item
+  \textbf{Network} --- 相互作用行列 \(A\) の構造解析 ◀ \textbf{本デッキ}
+\item
+  \textbf{Spatial-PDE} --- FISH 深さプロファイルの反応拡散
+\item
+  \textbf{FISH pipeline} --- .lif → 5 種深さ組成
+\end{itemize}
+\end{frame}
+
+\begin{frame}{動機：\(A\) を「当てはめる」から「読む」へ}
+\protect\hypertarget{ux52d5ux6a5fa-ux3092ux5f53ux3066ux306fux3081ux308bux304bux3089ux8aadux3080ux3078}{}
+相互作用行列 \(A\) を推定するだけでなく、その\textbf{グラフ構造}を読む。
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{keystone}：少量でも群集を支配する種（高い中心性）。
+\item
+  \textbf{bridge}：栄養層をつなぐ媒介種（高い betweenness）。
+\item
+  \textbf{trophic layer}：cross-feeding の生産者 \(\to\)
+  消費者の階層性。
+\item
+  \textbf{rewiring}：健常 \(\leftrightarrow\) dysbiosis
+  でエッジ符号が反転する再配線。
+\end{itemize}
+
+\vspace{0.4em}
+
+口腔バイオフィルムの古典像は「\emph{P. gingivalis} = keystone、\emph{F.
+nucleatum} = bridge」。 本デッキは、in-vivo class
+レベルでこの像が\textbf{支持されるか}をネットワーク統計で検証する。
+\end{frame}
+
+\begin{frame}{ゲージ不変性：\(A\) ではなく \(A_{\text{eff}}\) を読む}
+\protect\hypertarget{ux30b2ux30fcux30b8ux4e0dux5909ux6027a-ux3067ux306fux306aux304f-a_texteff-ux3092ux8aadux3080}{}
+replicator 力学
+\[\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big],\qquad \sum_i\varphi_i=1\]
+は \(A\) の\textbf{列ごとの定数シフト} \(A_{ij}\to A_{ij}+c_j\)
+に対して不変（\(\sum_i\varphi_i=1\) で消える）。
+
+\(\Rightarrow\) 生の \(A_{ij}\)
+の符号・大きさは\textbf{ゲージ依存}で意味を持たない。\textbf{列中心化}した
+\[A_{\text{eff}}[i,j] = A_{ij} - \frac{1}{S}\sum_{k} A_{kj}\]
+のみがゲージ不変。\textbf{以降の全ての符号・中心性解釈は
+\(A_{\text{eff}}\) に対して行う。}
+
+有向重み付きグラフ \(G=(V,E)\) を \(w_{ij}=A_{\text{eff}}[i,j]\)
+で定義する（\(|V|=S=10\) ギルド）。
+\end{frame}
+
+\begin{frame}{中心性の定義}
+\protect\hypertarget{ux4e2dux5fc3ux6027ux306eux5b9aux7fa9}{}
+\(A_{\text{eff}}\) から複数の中心性を計算：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{固有ベクトル中心性}：\(A\,v = \lambda\,v\) の主固有ベクトル
+  \(v\)。 \(v_i\)
+  は「中心的な相手とつながる種ほど中心的」を再帰的に表す。
+\item
+  \textbf{媒介中心性 (betweenness)}：最短経路が頂点 \(i\) を通る割合
+  \[g(i)=\sum_{s\neq i\neq t}\frac{\sigma_{st}(i)}{\sigma_{st}}.\]
+\item
+  \textbf{PageRank}：定常分布
+  \(\pi = (1-d)\,\mathbf{1}/S + d\,M\pi\)（\(M\) は列正規化推移行列）。
+\item
+  \textbf{入次/出次強度}：\(\;s^{\text{in}}_i=\sum_j |A_{\text{eff}}[i,j]|,\quad s^{\text{out}}_j=\sum_i |A_{\text{eff}}[i,j]|.\)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{中心性の結果（Dieckow 10 ギルド・no-prior consensus）}
+\protect\hypertarget{ux4e2dux5fc3ux6027ux306eux7d50ux679cdieckow-10-ux30aeux30ebux30c9no-prior-consensus}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/guild_network/guild_centrality_summary.png}
+
+固有ベクトル中心性：Bacilli \textbf{0.61}、Actinobacteria
+\textbf{0.58}、Betaproteobacteria 0.44、 Negativicutes
+0.22、Bacteroidia(\(\approx\) \emph{P. gingivalis}) 0.19。 媒介：Bacilli
+\textbf{0.78}、Actinobacteria 0.22、他は 0。 平均存在量：Bacilli
+\textbf{0.547}（優占）、Actinobacteria 0.203、Bacteroidia 0.047。
+\end{frame}
+
+\begin{frame}{keystone / bridge 検定：古典像は成り立つか}
+\protect\hypertarget{keystone-bridge-ux691cux5b9aux53e4ux5178ux50cfux306fux6210ux308aux7acbux3064ux304b}{}
+中心性と存在量のランクを照合：
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{P. gingivalis}（Bacteroidia）は固有ベクトル中心性ランク
+  \(\sim\)\textbf{4}、存在量ランク \(\sim\)\textbf{5}。 \(\Rightarrow\)
+  \textbf{構造的 keystone ではない}（少量かつ低中心性）。
+\item
+  bridge（最高 betweenness）は
+  \textbf{Bacilli（\emph{Streptococcus}）}であり、\textbf{Fusobacterium
+  ではない}。
+\end{itemize}
+
+\vspace{0.3em}
+
+\(\Rightarrow\) 古典的「Pg-keystone / Fn-bridge」像は \textbf{in-vivo
+class レベルでは支持されない}。
+
+\vspace{0.3em}
+
+\textcolor{red}{注意（過大解釈を避ける）：class $\neq$ 種；密なグラフは betweenness を縮退させる；
+希少ギルドの推定はノイズが大きい。}
+\end{frame}
+
+\begin{frame}{影響力 vs 脆弱性（出次強度 vs 入次強度）}
+\protect\hypertarget{ux5f71ux97ffux529b-vs-ux8106ux5f31ux6027ux51faux6b21ux5f37ux5ea6-vs-ux5165ux6b21ux5f37ux5ea6}{}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/guild_network/influence_vulnerability.png}
+
+出次強度 \(s^{\text{out}}_j=\sum_i|A_{\text{eff}}[i,j]|\) は \(j\)
+が他者に及ぼす\textbf{影響力}、 入次強度
+\(s^{\text{in}}_i=\sum_j|A_{\text{eff}}[i,j]|\) は \(i\)
+の\textbf{脆弱性}を測る。 両者の非対称性が「駆動側／被駆動側」を分ける。
+\end{frame}
+
+\begin{frame}{栄養的コヒーレンス（有向 AGORA cross-feeding）}
+\protect\hypertarget{ux6804ux990aux7684ux30b3ux30d2ux30fcux30ecux30f3ux30b9ux6709ux5411-agora-cross-feeding}{}
+有向 cross-feeding グラフに対し、MacKay の\textbf{栄養的非コヒーレンス}
+\(F_0\) を測る （栄養レベル \(h_i\)
+を割り当て、エッジ両端のレベル差の分散）：
+\[F_0 = \frac{1}{w}\sum_{ij} W_{ij}\,(h_i - h_j - 1)^2 .\]
+
+\begin{itemize}
+\tightlist
+\item
+  実測 \(F_0 = \mathbf{0.652}\) vs ランダム \(0.646\)、\(p=0.50\)。
+\item
+  \(\Rightarrow\) \textbf{栄養的にインコヒーレント} ＝
+  階層を持たず、\textbf{相互 cross-feeding の循環}。
+\end{itemize}
+
+\vspace{0.3em}
+
+生物学的に妥当：Fusobacterium は基底生産者、Veillonella
+は高位消費者だが、
+ループ状に絡み合い、明確な一方向の食物連鎖を成さない。
+\end{frame}
+
+\begin{frame}{Concordant backbone：生態層 \(\times\) 代謝層の合意}
+\protect\hypertarget{concordant-backboneux751fux614bux5c64-times-ux4ee3ux8b1dux5c64ux306eux5408ux610f}{}
+独立な 2 層を重ねる --- 生態(Hamilton)層と AGORA 代謝層 ---
+で両者が\textbf{符号一致}するエッジを抽出：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{11 エッジ、すべて正（協調）}、\(p=4\times10^{-4}\)（AGORA
+  デッキと同一の独立検証）。
+\item
+  Negativicutes（\emph{Veillonella}）が主要な\textbf{代謝シンク}：
+  \[\{\text{Bacilli, Bacteroidia, }\beta\text{Proteo, Fusobacteria}\}\ \longrightarrow\ \text{Negativicutes}.\]
+\item
+  これは再構成された\textbf{乳酸 cross-feeding} に対応。
+\end{itemize}
+
+\vspace{0.3em}
+
+\textbf{本ネットワーク解析で最も頑健な結果。}符号レベルの backbone
+は両層から独立に支持される。
+\end{frame}
+
+\begin{frame}{ネットワークの LOO 安定性}
+\protect\hypertarget{ux30cdux30c3ux30c8ux30efux30fcux30afux306e-loo-ux5b89ux5b9aux6027}{}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/guild_network/loo_stability.png}
+
+患者を 1 人ずつ抜く leave-one-out で \(A_{\text{eff}}\)
+を再推定し、各ペアの符号一致率を測る。 \textbf{全ペアで符号一致率
+\(\geq 0.70\)} \(\Rightarrow\)
+ネットワークの符号構造は個々の患者に頑健。
+\end{frame}
+
+\begin{frame}{エッジ強度の permutation 検定（誠実に）}
+\protect\hypertarget{ux30a8ux30c3ux30b8ux5f37ux5ea6ux306e-permutation-ux691cux5b9aux8aa0ux5b9fux306b}{}
+\includegraphics[width=\textwidth,height=0.48\textheight]{results/guild_network/permutation_test.png}
+
+各 off-diagonal エッジの\textbf{大きさ}を permutation null と比較：
+\textbf{90 ペア中わずか 2 ペア}が個別に \(p<0.05\) を超えるのみ。
+
+\vspace{0.3em}
+
+\(\Rightarrow\)
+ネットワークは密で、個々のエッジ\textbf{強度は弱くしか分解されない}。
+頑健なのは前スライドの\textbf{符号レベル backbone}であって、個別
+magnitude ではない。
+\end{frame}
+
+\begin{frame}{CS \(\leftrightarrow\) DH リワイヤリング（Heine 5
+種・posterior）}
+\protect\hypertarget{cs-leftrightarrow-dh-ux30eaux30efux30a4ux30e4ux30eaux30f3ux30b0heine-5-ux7a2eposterior}{}
+5 種アトラクター（CS = commensal-static、DH = dysbiotic-HOBIC）の
+posterior を、 列中心化 \(A_{\text{eff}}\)
+で比較する。\textbf{促進確率}を
+\[P_{\text{facilitation}}(i\!\leftarrow\! j) = \Pr\big[\,A_{\text{eff}}[i,j] > 0\,\big]\]
+（posterior 上で \(A_{\text{eff}}[i,j]>0\) となる確率）と定義。
+
+\(P_{\text{fac}}\to 1\) は相互作用が\textbf{促進}、\(\to 0\)
+は\textbf{競争／抑制}を意味する。 CS と DH の間で \(P_{\text{fac}}\)
+がどう動くかが「再配線」を定量化する。
+\end{frame}
+
+\begin{frame}{リワイヤリングの結果}
+\protect\hypertarget{ux30eaux30efux30a4ux30e4ux30eaux30f3ux30b0ux306eux7d50ux679c}{}
+CS \(\to\) DH で促進確率 \(P_{\text{fac}}\) が劇的に変化：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{So \(\leftrightarrow\) Vd
+  相互扶助の崩壊}：\emph{Streptococcus}--\emph{Veillonella} 共生が
+  dysbiosis で競争へ。
+  \[P_{\text{fac}}(\text{So}\!\to\!\text{Vd}):\ 1.00 \to 0.03,\qquad
+    P_{\text{fac}}(\text{Vd}\!\to\!\text{So}):\ 0.9995 \to 0.00.\]
+\item
+  \textbf{Fusobacterium が支えられる}：An\(\to\)Fn と Vd\(\to\)Fn が競争
+  \(\to\) 促進へ反転。
+  \[P_{\text{fac}}(\text{An}\!\to\!\text{Fn}):\ 0.23 \to 0.97,\qquad
+    P_{\text{fac}}(\text{Vd}\!\to\!\text{Fn}):\ 0.09 \to 0.77.\]
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\emph{P. gingivalis} の中心化}
+\protect\hypertarget{p.-gingivalis-ux306eux4e2dux5fc3ux5316}{}
+固有ベクトル中心性：CS \textbf{0.32} \(\to\) DH \textbf{0.51}（DH
+で最高）。
+
+\begin{itemize}
+\tightlist
+\item
+  ただし DH で Pg は\textbf{正味抑制的}：出力エッジの
+  \(P_{\text{facilitation}} = 0.27\)。
+\item
+  \(\Rightarrow\) Pg は\textbf{静的 keystone ではない}が、動的な
+  dysbiotic 状態で \textbf{keystone 様}に「なる」。
+\end{itemize}
+
+\vspace{0.3em}
+
+これは FISH の知見と整合：dysbiosis で Pg は深部に沈み、近傍依存を脱して
+\textbf{自律化（中心化）}する。keystone
+は状態の関数であり、固定属性ではない。
+\end{frame}
+
+\begin{frame}{結論}
+\protect\hypertarget{ux7d50ux8ad6}{}
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{代謝 backbone は頑健}：Veillonella を主シンクとする乳酸
+  cross-feeding が、 生態層・代謝層から独立に符号支持される（11
+  エッジ・全正・\(p=4\times10^{-4}\)）。
+\item
+  \textbf{教科書的 keystone は支持されない}：in-vivo class レベルで Pg
+  は構造的 keystone でなく、 bridge は Fusobacterium でなく Bacilli。
+\item
+  \textbf{dysbiosis は abundance シフトでなく「リワイヤリング」}：
+  So--Vd 相互扶助の喪失 ＋ Pg の中心化。
+\item
+  個々のエッジ強度は弱く分解される（permutation で 2/90）---
+  頑健なのは符号構造。 class \(\neq\)
+  種・密グラフの縮退・希少ギルドのノイズは引き続き限界。
+\end{enumerate}
+\end{frame}
+
+\end{document}

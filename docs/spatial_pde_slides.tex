@@ -1,0 +1,435 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{space}{xeCJK}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{バイオフィルムの空間反応拡散モデル（Heine HOBIC）}
+\subtitle{FISH 深さプロファイルからの空間輸送パラメータ逆推定 ---
+形式的取り扱い}
+\author{西岡佳祐 --- NIFE / SFB TRR-298}
+\date{2026-06-03}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[]{Noto Serif CJK JP}
+  \setmonofont[]{Noto Sans Mono CJK JP}
+  \ifXeTeX
+    \usepackage{xeCJK}
+    \setCJKmainfont[]{Noto Serif CJK JP}
+  \fi
+  \ifLuaTeX
+    \usepackage[]{luatexja-fontspec}
+    \setmainjfont[]{Noto Serif CJK JP}
+  \fi
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={バイオフィルムの空間反応拡散モデル（Heine HOBIC）},
+  pdfauthor={西岡佳祐 --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{caption}
+% Make caption package work with longtable
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{amsmath,amssymb}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\relu}[1]{\left[#1\right]_{+}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{このデッキの位置づけ}
+\protect\hypertarget{ux3053ux306eux30c7ux30c3ux30adux306eux4f4dux7f6eux3065ux3051}{}
+本プロジェクト = 3 本柱 ＋ 空間拡張。データの流れ：
+
+raw 16S → guild \(\varphi\) → gLV/Hamilton（＋符号 prior）→ LOO 検証 →
+空間 PDE
+
+デッキ構成（◀ = 本デッキ）：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Overview}（傘）--- 全体像と3本柱
+\item
+  \textbf{AGORA} --- 代謝 → 符号 prior（生態モデルの入力）
+\item
+  \textbf{Dieckow} --- in-vivo 相互作用の推定と検証（生態モデル本体）
+\item
+  \textbf{Network} --- 相互作用行列 \(A\) の構造解析
+\item
+  \textbf{Spatial-PDE} --- FISH 深さプロファイルの反応拡散 ◀
+  \textbf{本デッキ}
+\item
+  \textbf{FISH pipeline} --- .lif → 5 種深さ組成
+\end{itemize}
+\end{frame}
+
+\begin{frame}{問い：WHO に WHERE を足す}
+\protect\hypertarget{ux554fux3044who-ux306b-where-ux3092ux8db3ux3059}{}
+bulk な ODE フィットは \textbf{誰が誰と相互作用するか（WHO）} を与える。
+FISH 深さプロファイルは \textbf{それがどこで起こるか（WHERE）}
+を加える。
+
+\begin{itemize}
+\tightlist
+\item
+  既知：bulk gLV/Hamilton の相互作用行列 \(A\)、増殖ベクトル
+  \(b\)（Dieckow フィット）。
+\item
+  未知：種ごとの基質深さ方向の\textbf{輸送}（拡散・移流）。
+\item
+  目標：反応項を bulk
+  から固定したまま、\textbf{空間輸送パラメータのみ}を 深さ分解 FISH
+  データから逆推定する。
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{主張：} dysbiosis は bulk
+組成の変化ではなく、\textbf{空間的再編成}として現れる。 特に \emph{P.
+gingivalis} が深部へ沈み、\emph{F. nucleatum} から自律化する。
+\end{frame}
+
+\begin{frame}[fragile]{データ：HOBIC フローチャンバー FISH（Heine
+2025）}
+\protect\hypertarget{ux30c7ux30fcux30bfhobic-ux30d5ux30edux30fcux30c1ux30e3ux30f3ux30d0ux30fc-fishheine-2025}{}
+\textbf{11 個の \texttt{.lif} ファイル}、2 条件 × 5 日 × チタン基板：
+
+\begin{itemize}
+\tightlist
+\item
+  条件：\textbf{CH}（commensal, HOBIC22）と \textbf{DH}（dysbiotic,
+  HOBIC24）。
+\item
+  時点：Day 1 / 6 / 10 / 15 / 21。
+\item
+  5 種：So（\emph{S.
+  oralis}）、An（\emph{Actinomyces}）、Vd/Vp（\emph{Veillonella}）、
+  Fn（\emph{F. nucleatum}）、Pg（\emph{P. gingivalis}）。
+\item
+  プールした FOV 数：CH \(=15/5/15/16/16\)、DH \(=7/3/3/2/2\)。
+\end{itemize}
+
+\vspace{0.3em}
+
+4 チャンネル FISH を 5 種にデコード（\emph{F. nucleatum} \(=\) 青
+\(\cap\) 赤の二重標識； FISH デッキ参照）。z 軸 voxel 強度 \(\to\)
+深さ方向の組成 \(\varphi_i(z,t)\)。
+\end{frame}
+
+\begin{frame}{深さプロファイル：CH vs DH}
+\protect\hypertarget{ux6df1ux3055ux30d7ux30edux30d5ux30a1ux30a4ux30ebch-vs-dh}{}
+\includegraphics[width=\textwidth,height=0.68\textheight]{results/diffusion_fit/zprofiles_all_ti_overlay.png}
+
+種ごとの \(\varphi_i(z)\) を CH（commensal）と
+DH（dysbiotic）で重ね描き。 深さ \(z\) は基質（\(z=0\)）から
+bulk（\(z=L\)）方向。
+\end{frame}
+
+\begin{frame}{深さごとの積層組成}
+\protect\hypertarget{ux6df1ux3055ux3054ux3068ux306eux7a4dux5c64ux7d44ux6210}{}
+\includegraphics[width=\textwidth,height=0.68\textheight]{results/diffusion_fit/zprofiles_all_ti_stacked.png}
+
+各深さ \(z\) における \(\{\varphi_i(z)\}_i\)
+の積層表示。\(\sum_i \varphi_i + \varphi_0 = 1\) （\(\varphi_0\)
+は空隙／非占有）を各 \(z\) で満たす。
+\end{frame}
+
+\begin{frame}{支配方程式（反応拡散 PDE）}
+\protect\hypertarget{ux652fux914dux65b9ux7a0bux5f0fux53cdux5fdcux62e1ux6563-pde}{}
+深さ \(z\in[0,L]\)、組成 \(\varphi_i(z,t)\) に対する反応 --- 移流 ---
+拡散方程式： \[\frac{\partial \varphi_i}{\partial t}
+ = D_i\,\frac{\partial^2 \varphi_i}{\partial z^2}
+ \;-\; u\,\frac{\partial \varphi_i}{\partial z}
+ \;+\; R_i(\varphi).\]
+
+\begin{itemize}
+\tightlist
+\item
+  \(R_i(\varphi)\) は replicator / Hamilton 反応項。\(A,b\) は bulk
+  フィットから \textbf{固定}。
+  \[R_i(\varphi)=\varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big]+\gamma\,\varphi_i.\]
+\item
+  \textbf{自由パラメータは拡散率 \(D_i\) と移流 \(u\) のみ}。
+\item
+  \(\gamma\) は Lagrange 項：各 \(z\) で
+  \(\sum_i \varphi_i + \varphi_0 = 1\) を強制する。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{境界条件と数値解法}
+\protect\hypertarget{ux5883ux754cux6761ux4ef6ux3068ux6570ux5024ux89e3ux6cd5}{}
+\textbf{境界条件：}
+\[\left.\frac{\partial \varphi_i}{\partial z}\right|_{z=0}=0\quad(\text{基質，no-flux}),\qquad
+\varphi_i\big|_{z=L}=\varphi_{\text{bulk},i}\quad(\text{bulk，Dirichlet}).\]
+\(\varphi_{\text{bulk},i}\) は Day 1 の中央値で固定。
+
+\textbf{数値解法（Method of Lines）：} Lie
+演算子分割で反応と輸送を交互に解く。
+\[e^{\Delta t\,\mathcal{L}} \approx e^{\Delta t\,\mathcal{R}}\,e^{\Delta t\,\mathcal{T}} + \mathcal{O}(\Delta t).\]
+
+\begin{itemize}
+\tightlist
+\item
+  反応 \(\mathcal{R}\)：各 \(z\) ノードで陰的 Euler（Newton 反復、stiff
+  対応）。
+\item
+  輸送 \(\mathcal{T}\)：陽的有限差分（中心差分 \(\partial_z^2\)、風上
+  \(\partial_z\)）。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{逆問題}
+\protect\hypertarget{ux9006ux554fux984c}{}
+観測 \(\varphi^{\text{obs}}(z,t)\)
+に対する輸送パラメータの最小二乗推定： \[\min_{D,\,u}\;\; \sum_t \sum_z
+ \big\lVert \varphi^{\text{pred}}(z,t;D,u) - \varphi^{\text{obs}}(z,t)\big\rVert^2 .\]
+
+\begin{itemize}
+\tightlist
+\item
+  最適化は \textbf{L-BFGS-B}。stiff PDE を通した数値勾配（JAX
+  前向きモデル）。
+\item
+  前向きモデルは上記 MoL ソルバ。\(A,b\) 固定なので未知は
+  \(D\in\mathbb{R}^5\) と \(u\)。
+\item
+  無次元化：\textbf{Péclet 数} \(\mathrm{Pe} = uL/D_i\) が移流 vs
+  拡散の優劣を表す。 \(\mathrm{Pe}\gg1\) で移流支配、\(\mathrm{Pe}\ll1\)
+  で拡散支配。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{予測 vs 観測：深さプロファイル}
+\protect\hypertarget{ux4e88ux6e2c-vs-ux89b3ux6e2cux6df1ux3055ux30d7ux30edux30d5ux30a1ux30a4ux30eb}{}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\includegraphics[width=\textwidth,height=0.62\textheight]{results/diffusion_fit/fit_CH.png}
+
+CH（commensal）
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\includegraphics[width=\textwidth,height=0.62\textheight]{results/diffusion_fit/fit_DH.png}
+
+DH（dysbiotic）
+\end{column}
+\end{columns}
+
+予測（実線）と観測（点）の深さプロファイル。反応項固定・輸送のみフィット。
+\end{frame}
+
+\begin{frame}{フィットされたパラメータ（暫定）}
+\protect\hypertarget{ux30d5ux30a3ux30c3ux30c8ux3055ux308cux305fux30d1ux30e9ux30e1ux30fcux30bfux66abux5b9a}{}
+\begin{longtable}[]{@{}lcc@{}}
+\toprule
+種 & \(D\)（CH） & \(D\)（DH） \\
+\midrule
+\endhead
+So & \(0.0123\) & \(0.0596\) \\
+An & \(0.0121\) & \(0.0021\) \\
+Vd/Vp & \(0.0042\) & \(2.1\times10^{-5}\) \\
+Fn & \(0.0075\) & \(0.0019\) \\
+Pg & \(0.0115\) & \(0.0083\) \\
+\textbf{\(u\)（移流）} & \(0.0038\) & \(0.0060\) \\
+\textbf{loss} & \(0.128\) & \(0.102\) \\
+\bottomrule
+\end{longtable}
+
+\vspace{0.2em}
+
+\textcolor{red}{**暫定値**：両条件とも `success=False`（optimiser 未収束）。}
+ハイパーパラメータ sweep と高速収束設定を HPC で実行中。
+\end{frame}
+
+\begin{frame}{空間生態 知見 1：Pg は dysbiosis で深く沈む}
+\protect\hypertarget{ux7a7aux9593ux751fux614b-ux77e5ux898b-1pg-ux306f-dysbiosis-ux3067ux6df1ux304fux6c88ux3080}{}
+\includegraphics[width=\textwidth,height=0.58\textheight]{results/diffusion_fit/depth_niche.png}
+
+\emph{P. gingivalis} の質量中心（center-of-mass）が、DH では Day 6 以降
+\textbf{最大 \(+30\,\mu\mathrm{m}\)
+深く}シフトする。深部嫌気ニッチへの沈降。
+\end{frame}
+
+\begin{frame}{空間生態 知見 2：Fn--Pg ブリッジは初期のみ}
+\protect\hypertarget{ux7a7aux9593ux751fux614b-ux77e5ux898b-2fnpg-ux30d6ux30eaux30c3ux30b8ux306fux521dux671fux306eux307f}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/diffusion_fit/fn_pg_coloc.png}
+
+Manders \(M_1\)（Pg のうち Fn と共局在する割合）： DH Day 1 \(=0.76\) →
+Day 6 以降 \(0.15\text{–}0.20\)。CH は \(0.33\text{–}0.49\)。
+\(\Rightarrow\) Pg は Fn から \textbf{脱共役}し、自律的に振る舞う。
+\end{frame}
+
+\begin{frame}{その他：bulk は CH ≈ DH}
+\protect\hypertarget{ux305dux306eux4ed6bulk-ux306f-ch-dh}{}
+CH--DH の \textbf{Bray--Curtis divergence} \(\approx 0.2\)、Day 1
+から\textbf{ほぼ一定}。
+
+\begin{itemize}
+\tightlist
+\item
+  差は接種（inoculum）で決まり、時間発展でほとんど拡大しない。
+\item
+  bulk 組成では CH \(\approx\) DH \(\Rightarrow\) dysbiosis は
+  \textbf{空間的・時間的}であり、 bulk 組成のシフトではない。
+\end{itemize}
+
+\vspace{0.4em}
+
+これは知見 1・2 と整合する：違いは「誰がどれだけいるか」ではなく
+「どこにいて、何と組むか」に現れる。
+\end{frame}
+
+\begin{frame}{拡散率 vs 生態的中心性}
+\protect\hypertarget{ux62e1ux6563ux7387-vs-ux751fux614bux7684ux4e2dux5fc3ux6027}{}
+\includegraphics[width=\textwidth,height=0.52\textheight]{results/diffusion_fit/d_vs_centrality.png}
+
+フィットした拡散率 \(D_i\) は gLV 相互作用強度（中心性）と
+\textbf{負相関}： CH \(r=-0.40\)、DH \(r=-0.47\)（5 種、illustrative）。
+
+\vspace{0.2em}
+
+\(\Rightarrow\)
+「中心的な種ほど動かない」。生態的ハブが空間的に固定される傾向。
+\end{frame}
+
+\begin{frame}{in-vitro ↔ in-vivo マッピング}
+\protect\hypertarget{in-vitro-in-vivo-ux30deux30c3ux30d4ux30f3ux30b0}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/diffusion_fit/hobic_vs_dieckow.png}
+
+HOBIC の 5 種を Dieckow の 5 ギルドに対応づけ、\textbf{順位が一致}：
+Spearman \(\rho = 0.70\)。
+
+\begin{itemize}
+\tightlist
+\item
+  in-vivo は \emph{S. oralis} 優占、定義済み inoculum は均等接種。
+\item
+  順位構造は保たれる \(\Rightarrow\) in-vitro モデルは in-vivo
+  の縮約として妥当。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{結論}
+\protect\hypertarget{ux7d50ux8ad6}{}
+\begin{enumerate}
+\tightlist
+\item
+  bulk ODE（WHO）に FISH 深さプロファイル（WHERE）を足し、反応項固定で
+  \textbf{輸送パラメータ \(D_i,u\) のみ}を逆推定する枠組みを構築。
+\item
+  \textbf{dysbiosis \(=\) 空間的再編成}：\emph{P. gingivalis}
+  が深部へ沈み（\(+30\,\mu\mathrm{m}\)）、 \emph{F. nucleatum}
+  から自律化（Manders \(M_1\) が初期のみ高い）。
+\item
+  bulk は CH \(\approx\) DH（Bray--Curtis \(\approx0.2\) で一定）---
+  違いは bulk でなく空間。
+\item
+  「中心的な種ほど動かない」（\(D\) と中心性が負相関）；in-vitro↔in-vivo
+  の 順位は一致（\(\rho=0.70\)）。
+\item
+  \textcolor{red}{輸送パラメータは**暫定**（未収束）}。HPC で
+  sweep・高速収束設定が収束中。
+\end{enumerate}
+\end{frame}
+
+\end{document}

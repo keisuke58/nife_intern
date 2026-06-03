@@ -1,0 +1,444 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{Project Overview: Modelling Oral-Biofilm Community Dynamics}
+\subtitle{An umbrella tying ecological ODE inference, metabolic
+simulation, and spatial extension}
+\author{Keisuke Nishioka --- NIFE / SFB TRR-298}
+\date{2026-06-03}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[Path=/home/nishioka/texlive/2025/texmf-dist/fonts/opentype/public/stix2-otf/, BoldFont=STIXTwoText-Bold.otf, ItalicFont=STIXTwoText-Italic.otf, BoldItalicFont=STIXTwoText-BoldItalic.otf]{STIXTwoText-Regular.otf}
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Project Overview: Modelling Oral-Biofilm Community Dynamics},
+  pdfauthor={Keisuke Nishioka --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{caption}
+% Make caption package work with longtable
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% EN builds use a Times-family text font (STIX Two Text) that lacks a few set /
+% relation glyphs. Route those Unicode symbols through math mode so they always
+% render (regardless of the text/mono font), keeping clean Times for the prose.
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{↑}{\ensuremath{\uparrow}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{North-star}
+\protect\hypertarget{north-star}{}
+Model the \textbf{dynamics of the oral-biofilm community} relevant to
+peri-implantitis (SIIRI / SFB TRR-298 consortium).
+
+\begin{itemize}
+\tightlist
+\item
+  Describe the commensal \(\to\) dysbiotic transition as the time
+  evolution of community composition.
+\item
+  Central idea: \textbf{metabolism (computed from genomes) constrains
+  the sign of ecological interactions.}
+\item
+  A research project, not a deployable app --- each script produces one
+  number, one fitted-parameter set, or one figure.
+\end{itemize}
+
+\vspace{0.4em}
+
+This deck is the \textbf{umbrella}: it surveys the three loosely-coupled
+modelling pillars and the shared data/model contract that connects them.
+\end{frame}
+
+\begin{frame}{Graphical abstract}
+\protect\hypertarget{graphical-abstract}{}
+\includegraphics[width=\textwidth,height=0.78\textheight]{results/figures/concept_overview_pub.png}
+
+Metabolism fixes the \textbf{sign} of interactions; dysbiosis appears as
+a \textbf{re-wiring + spatial re-organisation} (P. gingivalis
+centralises and sinks deep).
+\end{frame}
+
+\begin{frame}[fragile]{The unifying object --- the 10-guild taxonomy}
+\protect\hypertarget{the-unifying-object-the-10-guild-taxonomy}{}
+The canonical object shared by all data and all models is the
+\textbf{class-level 10-guild taxonomy} (\texttt{GUILD\_ORDER}).
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{.npy} arrays and JSON files are \textbf{positionally indexed}
+  by this ordering.
+\item
+  Each guild has one representative AGORA model (e.g.~Bacilli = \emph{S.
+  gordonii}, Negativicutes = \emph{V. parvula}, Bacteroidia = \emph{P.
+  melaninogenica}, Fusobacteriia = \emph{F. nucleatum}).
+\item
+  16S composition \(\varphi\), interaction matrix
+  \(A\in\mathbb{R}^{10\times10}\), sign prior
+  \(P\in\{-1,0,+1\}^{10\times10}\) --- all aligned on the same 10 axes.
+\end{itemize}
+
+\vspace{0.3em}
+
+This common taxonomy lets the ecological, metabolic, and preprocessing
+pillars speak one language.
+\end{frame}
+
+\begin{frame}[fragile]{Three loosely-coupled modelling pillars}
+\protect\hypertarget{three-loosely-coupled-modelling-pillars}{}
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{Ecological ODE inference (the paper)} --- infer a gLV /
+  Hamilton interaction matrix from longitudinal 16S, regularise with a
+  \textbf{metabolic sign prior}, validate by leave-one-patient-out CV
+  (LOO-CV).
+\item
+  \textbf{COMETS / dFBA} --- mechanistic genome-scale (AGORA) community
+  simulation, cross-validating the inferred interactions independently.
+\item
+  \textbf{16S / metadata preprocessing} --- raw sequencing + paper
+  supplements \(\to\) guild abundance arrays.
+\end{enumerate}
+
+\vspace{0.4em}
+
+The three run independently but are connected by the \textbf{10-guild
+taxonomy} and the \textbf{\texttt{fit\_*.json} interchange format.}
+\end{frame}
+
+\begin{frame}{Data flow (real data)}
+\protect\hypertarget{data-flow-real-data}{}
+\includegraphics[width=\textwidth,height=0.66\textheight]{results/figures/pipeline_overview_pub.png}
+
+Real Dieckow data: guild \(\varphi\) (10 patients \(\times\) 3 wk)
+\(\to\) AGORA sign prior \(\to\) gLV/Hamilton fit (\(\hat A\),
+\(r=0.95\), SA 70/70) \(\to\) LOO-CV \(\to\) the four attractors.
+\texttt{fit\_*.json} is the interchange format.
+\end{frame}
+
+\begin{frame}{Core model (concise)}
+\protect\hypertarget{core-model-concise}{}
+Generalized Lotka--Volterra for absolute abundances \(x_i\):
+\[\dot{x}_i = x_i\Big(b_i + \sum_{j=1}^{S} A_{ij}\,x_j\Big),\qquad S=10 .\]
+
+Replicator / Hamilton form on the simplex \(\sum_i\varphi_i=1\) (16S is
+compositional):
+\[\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big].\]
+
+\textbf{Sign prior:} from AGORA cross-feeding flux \(F_{ij}\) build
+\[P_{ij}=\operatorname{sgn}(F_{ij})\in\{-1,0,+1\},\] constraining only
+the \textbf{sign} of \(A\) (magnitude discarded by design).
+\end{frame}
+
+\begin{frame}{Datasets}
+\protect\hypertarget{datasets}{}
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.25}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.25}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.25}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.25}}@{}}
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedright
+Name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Accession
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Shape
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Role
+\end{minipage} \\
+\midrule
+\endhead
+Dieckow 2024 & PRJEB71108 & 10 patients \(\times\) 3 weeks & primary
+longitudinal fit / LOO \\
+Botelho 2021 & PRJNA725874 & 15 patients \(\times\) 7 timepoints &
+longer time-series validation \\
+Szafrański 2025 & mSystems 16S & 127 cross-sectional, 5 genera &
+attractor / community-type \\
+Heine 2025 & in vitro ODE & --- & the four ODE attractors \\
+\bottomrule
+\end{longtable}
+
+\vspace{0.3em}
+
+Dieckow gives the primary fit, Botelho an independent cohort, Szafrański
+the cross-sectional community types, Heine the in-vitro dynamical
+reference.
+\end{frame}
+
+\begin{frame}[fragile]{The four ODE attractors}
+\protect\hypertarget{the-four-ode-attractors}{}
+The four states of the Heine in-vitro system = commensal/dysbiotic
+\(\times\) static/HOBIC:
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule
+Code & Community & Environment \\
+\midrule
+\endhead
+\textbf{CS} & commensal & static \\
+\textbf{CH} & commensal & HOBIC \\
+\textbf{DS} & dysbiotic & static \\
+\textbf{DH} & dysbiotic & HOBIC \\
+\bottomrule
+\end{longtable}
+
+\vspace{0.2em}
+
+\textbf{HOBIC} = titanium-implant flow chamber. These codes recur
+throughout \texttt{results/} and the scripts.
+\end{frame}
+
+\begin{frame}{Pillar 1 --- interaction inference and honest validation}
+\protect\hypertarget{pillar-1-interaction-inference-and-honest-validation}{}
+\includegraphics[width=\textwidth,height=0.44\textheight]{dieckow_paper/figures/fig2_loo_comparison.png}
+
+\begin{itemize}
+\tightlist
+\item
+  Best model \textbf{LOO-RMSE \(= 0.0504\)}.
+\item
+  Cross-feeding direction independently validated:
+  \textbf{\(p=4\times10^{-4}\)}.
+\item
+  Two cohorts (Dieckow \(\times\) Botelho) agree, prior-free, on
+  strong-pair signs at \textbf{89\%} (\(p\approx0.02\)).
+\end{itemize}
+
+\textcolor{red}{The prior buys interpretability, not raw accuracy — stated honestly.}
+\end{frame}
+
+\begin{frame}{Pillar 1 --- attractor structure validation}
+\protect\hypertarget{pillar-1-attractor-structure-validation}{}
+\includegraphics[width=\textwidth,height=0.58\textheight]{dieckow_paper/figures/fig3_joshi_attractor.png}
+
+Fixed points reconstructed from the inferred \(A\) correspond to the
+observed commensal / dysbiotic community types (Joshi attractor
+analysis). The dynamics carry dynamical-systems structure, not merely a
+regression fit.
+\end{frame}
+
+\begin{frame}{Pillar 2 --- COMETS / dFBA}
+\protect\hypertarget{pillar-2-comets-dfba}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{comets/pipeline_results/sweep_crossfeeding.png}
+
+The same AGORA GEMs drive a 5-species (So/An/Vp/Fn/Pg) \textbf{dynamic
+FBA} forward. Fallback chain: Java COMETS \(\to\)
+\textbf{AGORA-calibrated Monod dFBA (primary path)} \(\to\) mock
+logistic. Structural validation of cross-feeding \textbf{sign} (not
+magnitude).
+\end{frame}
+
+\begin{frame}[fragile]{Pillar 3 --- 16S / metadata preprocessing}
+\protect\hypertarget{pillar-3-16s-metadata-preprocessing}{}
+Turn raw sequencing + paper supplements into the \textbf{guild
+\(\varphi\) arrays} the models consume:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{vsearch + SILVA} (merge \(\to\) QC \(\to\) chimera \(\to\)
+  classify).
+\item
+  \textbf{QIIME2 / DADA2}; shotgun via \textbf{MetaPhlAn}.
+\item
+  Sample metadata via a \textbf{Nextflow} pipeline
+  (\texttt{get\_biosample.py} \(\to\) \texttt{merge\_meta.py} \(\to\)
+  \texttt{extract\_supp.py}).
+\end{itemize}
+
+\vspace{0.3em}
+
+All outputs map onto the 10-guild taxonomy and are handed to Pillars 1
+and 2 as \(\varphi\;(N_{\text{pat}}\times T\times 10)\).
+\end{frame}
+
+\begin{frame}{Spatial extension (Heine HOBIC FISH)}
+\protect\hypertarget{spatial-extension-heine-hobic-fish}{}
+\includegraphics[width=\textwidth,height=0.46\textheight]{results/diffusion_fit/zprofiles_all_ti.png}
+
+Depth-resolved 5-species profiles from CLSM-FISH are fit by a
+reaction--diffusion equation. Dysbiosis is not merely a compositional
+change but a \textbf{spatial reorganisation}: \emph{P. gingivalis} sinks
+deep (anaerobic niche). The 0D gLV is extended to a PDE with a
+\(z\)-direction diffusion term.
+\end{frame}
+
+\begin{frame}[fragile]{How the sub-decks connect}
+\protect\hypertarget{how-the-sub-decks-connect}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{AGORA} (sign prior): the metabolic bridge building
+  \(\operatorname{sgn}(F_{ij})\to P_{ij}\).
+\item
+  \textbf{Dieckow (deck A):} infers \(A\) under that prior and validates
+  by LOO.
+\item
+  \textbf{Network (deck B):} analyses the structure of inferred \(A\)
+  --- centrality, concordant backbone, CS\(\leftrightarrow\)DH rewiring.
+\item
+  \textbf{Spatial PDE (deck C):} extends the temporal dynamics to
+  depth-resolved reaction--diffusion.
+\item
+  \textbf{FISH pipeline:} CLSM \texttt{.lif} \(\to\) depth profiles (the
+  PDE observable).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Status snapshot}
+\protect\hypertarget{status-snapshot}{}
+\begin{longtable}[]{@{}ll@{}}
+\toprule
+Item & State \\
+\midrule
+\endhead
+Interaction model + validation & \textbf{done} (LOO-RMSE 0.0504,
+\(p=4\times10^{-4}\)) \\
+Spatial diffusion fit & \textbf{running} on HPC \\
+GDI / Joshi clinical validation & \textbf{awaiting} metadata \\
+\bottomrule
+\end{longtable}
+
+\vspace{0.3em}
+
+Two-cohort replication and an independent mechanistic route (COMETS)
+make the interaction claim solid. What remains is PDE convergence and
+clinical-metadata integration.
+\end{frame}
+
+\begin{frame}[fragile]{Take-home}
+\protect\hypertarget{take-home}{}
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{Metabolism constrains the sign of ecological interactions}
+  (\(P_{ij}=\operatorname{sgn}(F_{ij})\); magnitude is not used).
+\item
+  Dysbiosis is a \textbf{rewiring + spatial reorganisation}, with
+  \emph{P. gingivalis} sinking into the deep anaerobic niche.
+\item
+  That claim reproduces across \textbf{two cohorts} (Dieckow \(\times\)
+  Botelho, 89\%, \(p\approx0.02\)) and an \textbf{independent
+  mechanistic route} (COMETS dFBA).
+\item
+  One \textbf{10-guild taxonomy} and the \textbf{\texttt{fit\_*.json}}
+  format tie it all together.
+\end{enumerate}
+\end{frame}
+
+\end{document}

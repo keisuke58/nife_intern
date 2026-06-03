@@ -1,0 +1,452 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{Inferring Oral-Microbiome Interactions In Vivo (Dieckow 16S)}
+\subtitle{From compositional time-series to a signed interaction matrix
+\(A\) --- fit, LOO-CV, honest validation}
+\author{Keisuke Nishioka --- NIFE / SFB TRR-298}
+\date{2026-06-03}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[Path=/home/nishioka/texlive/2025/texmf-dist/fonts/opentype/public/stix2-otf/, BoldFont=STIXTwoText-Bold.otf, ItalicFont=STIXTwoText-Italic.otf, BoldItalicFont=STIXTwoText-BoldItalic.otf]{STIXTwoText-Regular.otf}
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Inferring Oral-Microbiome Interactions In Vivo (Dieckow 16S)},
+  pdfauthor={Keisuke Nishioka --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{caption}
+% Make caption package work with longtable
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% EN builds use a Times-family text font (STIX Two Text) that lacks a few set /
+% relation glyphs. Route those Unicode symbols through math mode so they always
+% render (regardless of the text/mono font), keeping clean Times for the prose.
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{↑}{\ensuremath{\uparrow}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{Where this deck sits}
+\protect\hypertarget{where-this-deck-sits}{}
+The project = three pillars + a spatial extension. Data flow:
+
+raw 16S → guild \(\varphi\) → gLV/Hamilton (+ sign prior) → LOO
+validation → spatial PDE
+
+The decks (you-are-here in \textbf{bold marker}):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Overview} (umbrella) --- the whole picture, three pillars
+\item
+  \textbf{AGORA} --- metabolism → sign prior (input to the ecological
+  model)
+\item
+  \textbf{Dieckow} --- in-vivo interaction inference \& validation (the
+  model) --- \textbf{(you are here)}
+\item
+  \textbf{Network} --- structural analysis of the interaction matrix
+  \(A\)
+\item
+  \textbf{Spatial-PDE} --- reaction-diffusion of the FISH depth profiles
+\item
+  \textbf{FISH pipeline} --- .lif → 5-species depth composition
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Scope}
+\protect\hypertarget{scope}{}
+From \textbf{compositional 16S time-series} of an oral biofilm, infer a
+\textbf{signed interaction matrix} \(A\), and quantify how far that
+inference can be trusted.
+
+\begin{itemize}
+\tightlist
+\item
+  model: generalized Lotka--Volterra (gLV) / Hamilton replicator on the
+  simplex
+\item
+  constraint: an AGORA2-derived \textbf{metabolic sign prior} (see the
+  AGORA deck; cited here only briefly)
+\item
+  focus: the \textbf{fit}, \textbf{LOO-CV}, model comparison, and
+  \textbf{honest validation}
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{Thesis.} The prior buys sign-consistency and interpretability,
+not predictive accuracy. What is validated independently of the data is
+the \textbf{cross-feeding direction only} (below).
+\end{frame}
+
+\begin{frame}[fragile]{Data and design}
+\protect\hypertarget{data-and-design}{}
+Dieckow et al.~2024 (ENA \textbf{PRJEB71108}): a longitudinal 16S series
+of \textbf{10 patients \(\times\) 3 weeks}, aggregated to \textbf{10
+class-level guilds} (\texttt{GUILD\_ORDER} is canonical).
+
+\includegraphics[width=\textwidth,height=0.58\textheight]{dieckow_paper/figures/fig0_study_design.png}
+
+Early peri-implant colonization. Each sample is treated as a composition
+\(\varphi\in\Delta^{9}\) with \(\sum_i\varphi_i=1\).
+\end{frame}
+
+\begin{frame}{Model --- gLV and replicator}
+\protect\hypertarget{model-glv-and-replicator}{}
+Generalized Lotka--Volterra for absolute abundances \(x_i\):
+\[\dot{x}_i = x_i\Big(b_i + \sum_{j=1}^{S} A_{ij}\,x_j\Big),\qquad S=10 .\]
+
+On the simplex \(\varphi_i=x_i/\sum_k x_k\), the replicator / Hamilton
+form:
+\[\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big],
+\qquad \sum_i\varphi_i=1 .\]
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Hamilton} uses a \textbf{symmetric} \(A\) (replicator with
+  linear payoffs; Taylor \& Jonker 1978).
+\item
+  \textbf{Classic gLV} uses an \textbf{asymmetric} \(A\). \(A_{ij}>0\):
+  facilitation; \(A_{ij}<0\): suppression.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Inference is underdetermined \(\Rightarrow\) sign prior}
+\protect\hypertarget{inference-is-underdetermined-rightarrow-sign-prior}{}
+Parameters \(\mathcal{O}(S^2)\approx100\) vs \(10\times3\) observations.
+Abundance alone cannot identify the signs of \(A\) \(\Rightarrow\) a
+one-sided hinge penalises \textbf{sign violations only}:
+\[\mathcal{L}(A,b)=\frac{1}{2\sigma^{2}}\sum_{t}\big\lVert\varphi^{\text{obs}}_{t}-\varphi^{\text{pred}}_{t}\big\rVert^{2}
+\;+\; W\!\!\sum_{(i,j)\in\mathcal{M}}\!\!\left[-\,P_{ij}\,A_{ij}\right]_{+} .\]
+
+\begin{itemize}
+\tightlist
+\item
+  \(P_{ij}=\operatorname{sgn}(F_{ij})\) comes from AGORA cross-feeding
+  flux (derived in the AGORA deck).
+\item
+  \(\left[-P_{ij}A_{ij}\right]_{+}\) is \(0\) when
+  \(\operatorname{sgn}(A_{ij})=P_{ij}\) --- \textbf{magnitude is free}.
+\item
+  Posterior sampled by \textbf{TMCMC} (\(10^{4}\) particles).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Fitted interaction matrix \(A\)}
+\protect\hypertarget{fitted-interaction-matrix-a}{}
+\includegraphics[width=\textwidth,height=0.6\textheight]{dieckow_paper/figures/fig1_A_matrix.png}
+
+Diagonal shows \textbf{self-limitation} \(A_{ii}<0\) (resource
+limitation / saturation). Off-diagonal: Actinobacteria
+\(\leftrightarrow\) Bacilli \textbf{facilitation}.
+\end{frame}
+
+\begin{frame}{Trajectory fit (all 10 patients)}
+\protect\hypertarget{trajectory-fit-all-10-patients}{}
+\includegraphics[width=\textwidth,height=0.66\textheight]{dieckow_paper/figures/fig_fitting_results.png}
+
+Observations (points) and predicted trajectories (lines). Per-patient
+\(b\) vectors with a shared matrix \(A\).
+\end{frame}
+
+\begin{frame}{Sign correspondence: \(A_{ij}\) vs metabolic \(F_{ij}\)}
+\protect\hypertarget{sign-correspondence-a_ij-vs-metabolic-f_ij}{}
+\includegraphics[width=\textwidth,height=0.58\textheight]{dieckow_paper/figures/fig5b_aij_fij_scatter.png}
+
+\(x\)-axis = metabolic flow \(F_{ij}\); \(y\)-axis = fitted
+\(\hat A_{ij}\). At \(W=1.0\),
+\(\operatorname{sgn}(\hat A_{ij})=\operatorname{sgn}(F_{ij})\) holds on
+the constrained set \(\mathcal{M}\).
+\end{frame}
+
+\begin{frame}{LOO-CV definition}
+\protect\hypertarget{loo-cv-definition}{}
+Re-fit with patient \(p\) held out, evaluate on its trajectory:
+\[\mathrm{RMSE}=\sqrt{\frac{1}{NT}\sum_{t}\big\lVert\varphi^{\text{obs}}_{t}-\varphi^{\text{pred}}_{t}\big\rVert^{2}},\]
+\[\mathrm{BC}=\frac{\sum_i\lvert\varphi^{\text{obs}}_i-\varphi^{\text{pred}}_i\rvert}{\sum_i\big(\varphi^{\text{obs}}_i+\varphi^{\text{pred}}_i\big)}
+\quad(\text{Bray–Curtis dissimilarity}).\]
+
+Every one of the 10 patients is held out in turn (leave-one-patient-out)
+and averaged.
+\end{frame}
+
+\begin{frame}{LOO model comparison}
+\protect\hypertarget{loo-model-comparison}{}
+\includegraphics[width=\textwidth,height=0.44\textheight]{dieckow_paper/figures/fig2_loo_comparison.png}
+
+\includegraphics[width=\textwidth,height=0.3\textheight]{dieckow_paper/figures/fig8_all_models_rmse_bc.png}
+
+LOO-RMSE / LOO-BC across prior layers, model forms, and prior stiffness
+\(W\).
+\end{frame}
+
+\begin{frame}{Numbers (key)}
+\protect\hypertarget{numbers-key}{}
+Best model \textbf{L1+L2+AGORA, \(W=1.0\)}:
+
+\begin{longtable}[]{@{}ll@{}}
+\toprule
+Metric & Value \\
+\midrule
+\endhead
+train RMSE & \(0.0565\) \\
+Pearson \(r\) & \(0.951\) \\
+sign agreement & \(70/70\) (\(100\%\)) \\
+\textbf{LOO-RMSE} & \(\mathbf{0.0504}\) \\
+LOO-BC & \(0.1468\) \\
+\bottomrule
+\end{longtable}
+
+\begin{itemize}
+\tightlist
+\item
+  L1+L2 only: LOO-RMSE \(0.0516\).
+\item
+  \textbf{Prior-free gLV}: LOO-RMSE \(0.0455\) (lower --- more params,
+  metabolically unconstrained).
+\item
+  \textbf{MacArthur magnitude prior FAILED}: SA \(4\text{–}8/70\).
+\end{itemize}
+
+\vspace{0.2em}
+
+\(\Rightarrow\) the prior buys \textbf{sign-consistency and
+interpretability}, not raw accuracy.
+\end{frame}
+
+\begin{frame}{LOO stability of the \(A\) matrix}
+\protect\hypertarget{loo-stability-of-the-a-matrix}{}
+\includegraphics[width=\textwidth,height=0.6\textheight]{dieckow_paper/figures/fig7_loo_stability.png}
+
+Across the 10 hold-out re-fits, every pair has \textbf{sign-consistency
+\(\geq 0.70\)}. The inferred sign structure is robust to leaving out any
+single patient.
+\end{frame}
+
+\begin{frame}{Critical validation (honest)}
+\protect\hypertarget{critical-validation-honest}{}
+With the prior \textbf{OFF} (\(\alpha=0\)) the prior is
+\textbf{all-positive}, so naive sign-agreement is inflated. A
+\textbf{label permutation test} (\(n=10^{4}\)) controls for this:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.33}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.33}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.33}}@{}}
+\toprule
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+cross-feeding direction
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+competition
+\end{minipage} \\
+\midrule
+\endhead
+\textbf{Hamilton \(\alpha=0\)} & \(\mathbf{78.6\%}\) (11/14) vs random
+\(37.7\%\), \(p=4\times10^{-4}\), \(z=+3.79\) & \(\approx\) chance \\
+gLV & \(41\%\) (null) & null \\
+\bottomrule
+\end{longtable}
+
+\includegraphics[width=\textwidth,height=0.3\textheight]{results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png}
+
+\textbf{Only the cross-feeding direction is validated. Competition is
+not.}
+\end{frame}
+
+\begin{frame}{Two-cohort replication}
+\protect\hypertarget{two-cohort-replication}{}
+Botelho 2021 (\textbf{PRJNA725874}, 15 patients \(\times\) 7 timepoints)
+is fit \textbf{prior-free} and independently, then strong-pair signs are
+compared to Dieckow:
+
+\includegraphics[width=\textwidth,height=0.46\textheight]{results/botelho_validation/fig_botelho_A_comparison_noprior.png}
+
+Strong-pair directed signs agree at \textbf{\(89\%\)} (\(8/9\)
+upper-triangular, \(p\approx0.02\)). The \textbf{Actinobacteria axis} is
+consistent across cohorts.
+\end{frame}
+
+\begin{frame}{Honest interpretation}
+\protect\hypertarget{honest-interpretation}{}
+\begin{itemize}
+\tightlist
+\item
+  The \textbf{AGORA prior itself is not reproduced} by the 16S dynamics
+  \(\Rightarrow\) it is a \textbf{modelling choice}, not a
+  data-confirmed fact.
+\item
+  What is validated independently of the data:
+
+  \begin{enumerate}
+  \tightlist
+  \item
+    the \textbf{cross-feeding direction} (Hamilton,
+    \(p=4\times10^{-4}\)),
+  \item
+    \textbf{two-cohort strong-pair} signs (Dieckow \(\times\) Botelho,
+    \(89\%\)).
+  \end{enumerate}
+\item
+  Competition direction, prior magnitude, and the full matrix are not
+  validated.
+\end{itemize}
+
+\vspace{0.3em}
+
+We do not oversell: a \textbf{subset} of signs is supported; the rest
+remains hypothesis.
+\end{frame}
+
+\begin{frame}{External clinical validation (in progress)}
+\protect\hypertarget{external-clinical-validation-in-progress}{}
+Plan to compare a Guild Dysbiosis Index against the Joshi 2025 cohort
+(\textbf{PRJNA1192962}):
+
+\includegraphics[width=\textwidth,height=0.46\textheight]{dieckow_paper/figures/fig3_joshi_attractor.png}
+
+\textcolor{red}{\textbf{Preliminary}: awaiting clinical metadata. This figure is
+provisional and the matching to health/disease labels is not yet complete.}
+\end{frame}
+
+\begin{frame}{Conclusions}
+\protect\hypertarget{conclusions}{}
+\begin{enumerate}
+\tightlist
+\item
+  Compositional 16S time-series \(\to\) a signed \(A\), via gLV /
+  Hamilton replicator.
+\item
+  Under-determination is eased by the \textbf{AGORA metabolic sign
+  prior} (one-sided hinge); posterior via TMCMC.
+\item
+  Best: L1+L2+AGORA \(W=1.0\) gives \textbf{LOO-RMSE \(0.0504\)}, SA
+  \(100\%\). But prior-free gLV reaches \(0.0455\) --- the prior buys
+  \textbf{interpretability}, not accuracy.
+\item
+  \textbf{Signs are stable under LOO} (\(\geq0.70\)); the MacArthur
+  magnitude prior fails.
+\item
+  Honest validation: only the \textbf{cross-feeding direction}
+  (\(p=4\times10^{-4}\)) and \textbf{two-cohort strong pairs} (\(89\%\))
+  are independently supported. Clinical validation is in progress.
+\end{enumerate}
+\end{frame}
+
+\end{document}
