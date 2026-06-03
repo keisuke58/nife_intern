@@ -145,6 +145,16 @@ Note: both `success=False` (not converged) = preliminary; DH weakly constrained 
 
 ---
 
+## Finding: dysbiosis = a deep, autonomous Pg colony
+
+![](results/diffusion_fit/depth_niche.png){ height=52% }
+
+- **P. gingivalis sinks deep in DH from day 6** (centre-of-mass up to +30 µm, anaerobic layer)
+- **Fn–Pg bridging is early-only**: DH day1 coloc 0.76 -> from day6 CH>DH (Pg decouples from Fn, goes autonomous)
+- CH/DH divergence ~0.2 from day 1 (flat). DH late days n=2 -> wide CI
+
+---
+
 ## Deliverables & data limits
 
 | File | Role |
