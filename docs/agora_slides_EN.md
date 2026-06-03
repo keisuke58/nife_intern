@@ -156,14 +156,18 @@ $$\mathrm{SA}=\frac{1}{|\mathcal{M}|}\sum_{(i,j)\in\mathcal{M}}\mathbb{1}\!\left
 
 ## MICOM — community FBA
 
-Single-species pFBA tests only feasibility. **MICOM** (Diener 2020) solves the
-joint community by a **cooperative trade-off**:
+Single-species pFBA tests only **feasibility** ($j$ *can* secrete $X$, $i$ *can*
+eat $X$). **MICOM** (Diener 2020) instead solves the joint community and checks
+whether the flux *actually flows*, via a **cooperative trade-off**:
 $$\max\; \min_{i}\frac{\mu_i}{\mu_i^{\max}}\quad\text{s.t.}\quad
 \sum_i \mu_i \ge \tau\sum_i \mu_i^{\max},\;\; S^{\text{com}}v=0,\;\tau=0.5 .$$
 
-![](results/fig_agora_v1_v2_micom_comparison.png){ height=46% }
-
-Even among generalists, only routes carrying real community flux activate.
+- each guild is guaranteed at least a fraction $\tau$ of its maximal growth, then
+  the shared flux pattern is fixed;
+- even though oral taxa are generalists, **only routes carrying real community
+  flux activate** — the unspecific "everyone competes" artefact disappears;
+- the secretion/uptake exchange fluxes $s_{j\alpha},u_{i\alpha}$ are read off the
+  community solution and fed into $F_{ij}$ exactly as before.
 
 ---
 

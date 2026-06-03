@@ -1,0 +1,222 @@
+---
+title: "Project Overview: Modelling Oral-Biofilm Community Dynamics"
+subtitle: "An umbrella tying ecological ODE inference, metabolic simulation, and spatial extension"
+author: "Keisuke Nishioka — NIFE / SFB TRR-298"
+date: "2026-06-03"
+theme: "Madrid"
+colortheme: "whale"
+aspectratio: 169
+header-includes:
+  - \usepackage{amsmath,amssymb}
+  - \newcommand{\sgn}{\operatorname{sgn}}
+  - \newcommand{\relu}[1]{\left[#1\right]_{+}}
+---
+
+## North-star
+
+Model the **dynamics of the oral-biofilm community** relevant to
+peri-implantitis (SIIRI / SFB TRR-298 consortium).
+
+- Describe the commensal $\to$ dysbiotic transition as the time evolution of
+  community composition.
+- Central idea: **metabolism (computed from genomes) constrains the sign of
+  ecological interactions.**
+- A research project, not a deployable app — each script produces one number,
+  one fitted-parameter set, or one figure.
+
+\vspace{0.4em}
+This deck is the **umbrella**: it surveys the three loosely-coupled modelling
+pillars and the shared data/model contract that connects them.
+
+---
+
+## The unifying object — the 10-guild taxonomy
+
+The canonical object shared by all data and all models is the
+**class-level 10-guild taxonomy** (`GUILD_ORDER`).
+
+- `.npy` arrays and JSON files are **positionally indexed** by this ordering.
+- Each guild has one representative AGORA model (e.g. Bacilli = *S. gordonii*,
+  Negativicutes = *V. parvula*, Bacteroidia = *P. melaninogenica*,
+  Fusobacteriia = *F. nucleatum*).
+- 16S composition $\varphi$, interaction matrix $A\in\mathbb{R}^{10\times10}$,
+  sign prior $P\in\{-1,0,+1\}^{10\times10}$ — all aligned on the same 10 axes.
+
+\vspace{0.3em}
+This common taxonomy lets the ecological, metabolic, and preprocessing pillars
+speak one language.
+
+---
+
+## Three loosely-coupled modelling pillars
+
+1. **Ecological ODE inference (the paper)** — infer a gLV / Hamilton
+   interaction matrix from longitudinal 16S, regularise with a
+   **metabolic sign prior**, validate by leave-one-patient-out CV (LOO-CV).
+2. **COMETS / dFBA** — mechanistic genome-scale (AGORA) community simulation,
+   cross-validating the inferred interactions independently.
+3. **16S / metadata preprocessing** — raw sequencing + paper supplements
+   $\to$ guild abundance arrays.
+
+\vspace{0.4em}
+The three run independently but are connected by the **10-guild taxonomy**
+and the **`fit_*.json` interchange format.**
+
+---
+
+## Data flow
+
+![](comets/pipeline_results/pipeline_overview.png){ height=46% }
+
+$$\text{raw 16S}\xrightarrow{\text{vsearch/SILVA}}\varphi\,(N_{\text{pat}}\!\times\! T\!\times\!10)
+\xrightarrow{\text{gLV/Hamilton LOO-CV}}\texttt{fit\_*.json}\to\text{LOO}\to\text{figures}.$$
+
+\texttt{fit\_*.json} ($A$ + per-patient $b$) is the **interchange format** — reused, never recomputed.
+
+---
+
+## Core model (concise)
+
+Generalized Lotka–Volterra for absolute abundances $x_i$:
+$$\dot{x}_i = x_i\Big(b_i + \sum_{j=1}^{S} A_{ij}\,x_j\Big),\qquad S=10 .$$
+
+Replicator / Hamilton form on the simplex $\sum_i\varphi_i=1$
+(16S is compositional):
+$$\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big].$$
+
+**Sign prior:** from AGORA cross-feeding flux $F_{ij}$ build
+$$P_{ij}=\sgn(F_{ij})\in\{-1,0,+1\},$$
+constraining only the **sign** of $A$ (magnitude discarded by design).
+
+---
+
+## Datasets
+
+| Name | Accession | Shape | Role |
+|---|---|---|---|
+| Dieckow 2024 | PRJEB71108 | 10 patients $\times$ 3 weeks | primary longitudinal fit / LOO |
+| Botelho 2021 | PRJNA725874 | 15 patients $\times$ 7 timepoints | longer time-series validation |
+| Szafrański 2025 | mSystems 16S | 127 cross-sectional, 5 genera | attractor / community-type |
+| Heine 2025 | in vitro ODE | — | the four ODE attractors |
+
+\vspace{0.3em}
+Dieckow gives the primary fit, Botelho an independent cohort, Szafrański the
+cross-sectional community types, Heine the in-vitro dynamical reference.
+
+---
+
+## The four ODE attractors
+
+The four states of the Heine in-vitro system =
+commensal/dysbiotic $\times$ static/HOBIC:
+
+| Code | Community | Environment |
+|---|---|---|
+| **CS** | commensal | static |
+| **CH** | commensal | HOBIC |
+| **DS** | dysbiotic | static |
+| **DH** | dysbiotic | HOBIC |
+
+\vspace{0.2em}
+**HOBIC** = titanium-implant flow chamber. These codes recur throughout
+`results/` and the scripts.
+
+---
+
+## Pillar 1 — interaction inference and honest validation
+
+![](dieckow_paper/figures/fig2_loo_comparison.png){ height=44% }
+
+- Best model **LOO-RMSE $= 0.0504$**.
+- Cross-feeding direction independently validated: **$p=4\times10^{-4}$**.
+- Two cohorts (Dieckow $\times$ Botelho) agree, prior-free, on strong-pair signs
+  at **89%** ($p\approx0.02$).
+
+\textcolor{red}{The prior buys interpretability, not raw accuracy — stated honestly.}
+
+---
+
+## Pillar 1 — attractor structure validation
+
+![](dieckow_paper/figures/fig3_joshi_attractor.png){ height=58% }
+
+Fixed points reconstructed from the inferred $A$ correspond to the observed
+commensal / dysbiotic community types (Joshi attractor analysis). The dynamics
+carry dynamical-systems structure, not merely a regression fit.
+
+---
+
+## Pillar 2 — COMETS / dFBA
+
+![](comets/pipeline_results/sweep_crossfeeding.png){ height=50% }
+
+The same AGORA GEMs drive a 5-species (So/An/Vp/Fn/Pg) **dynamic FBA** forward.
+Fallback chain: Java COMETS $\to$ **AGORA-calibrated Monod dFBA (primary path)**
+$\to$ mock logistic. Structural validation of cross-feeding **sign**
+(not magnitude).
+
+---
+
+## Pillar 3 — 16S / metadata preprocessing
+
+Turn raw sequencing + paper supplements into the **guild $\varphi$ arrays**
+the models consume:
+
+- **vsearch + SILVA** (merge $\to$ QC $\to$ chimera $\to$ classify).
+- **QIIME2 / DADA2**; shotgun via **MetaPhlAn**.
+- Sample metadata via a **Nextflow** pipeline
+  (`get_biosample.py` $\to$ `merge_meta.py` $\to$ `extract_supp.py`).
+
+\vspace{0.3em}
+All outputs map onto the 10-guild taxonomy and are handed to Pillars 1 and 2 as
+$\varphi\;(N_{\text{pat}}\times T\times 10)$.
+
+---
+
+## Spatial extension (Heine HOBIC FISH)
+
+![](results/diffusion_fit/zprofiles_all_ti.png){ height=46% }
+
+Depth-resolved 5-species profiles from CLSM-FISH are fit by a
+reaction–diffusion equation. Dysbiosis is not merely a compositional change but
+a **spatial reorganisation**: *P. gingivalis* sinks deep (anaerobic niche). The
+0D gLV is extended to a PDE with a $z$-direction diffusion term.
+
+---
+
+## How the sub-decks connect
+
+- **AGORA** (sign prior): the metabolic bridge building $\sgn(F_{ij})\to P_{ij}$.
+- **Dieckow (deck A):** infers $A$ under that prior and validates by LOO.
+- **Network (deck B):** analyses the structure of inferred $A$ — centrality,
+  concordant backbone, CS$\leftrightarrow$DH rewiring.
+- **Spatial PDE (deck C):** extends the temporal dynamics to depth-resolved
+  reaction–diffusion.
+- **FISH pipeline:** CLSM `.lif` $\to$ depth profiles (the PDE observable).
+
+---
+
+## Status snapshot
+
+| Item | State |
+|---|---|
+| Interaction model + validation | **done** (LOO-RMSE 0.0504, $p=4\times10^{-4}$) |
+| Spatial diffusion fit | **running** on HPC |
+| GDI / Joshi clinical validation | **awaiting** metadata |
+
+\vspace{0.3em}
+Two-cohort replication and an independent mechanistic route (COMETS) make the
+interaction claim solid. What remains is PDE convergence and clinical-metadata
+integration.
+
+---
+
+## Take-home
+
+1. **Metabolism constrains the sign of ecological interactions**
+   ($P_{ij}=\sgn(F_{ij})$; magnitude is not used).
+2. Dysbiosis is a **rewiring + spatial reorganisation**, with
+   *P. gingivalis* sinking into the deep anaerobic niche.
+3. That claim reproduces across **two cohorts** (Dieckow $\times$ Botelho, 89%,
+   $p\approx0.02$) and an **independent mechanistic route** (COMETS dFBA).
+4. One **10-guild taxonomy** and the **`fit_*.json`** format tie it all together.
