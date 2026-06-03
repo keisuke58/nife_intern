@@ -132,6 +132,23 @@ CH/DH × Day 1/6/10/15/21 → `zprofiles_all_ti.csv`（400行）。
 
 ---
 
+## CH vs DH を重ねて読む（深部 Pg）
+
+![](results/diffusion_fit/zprofiles_all_ti_overlay.png){ height=58% }
+
+**実線=CH / 破線=DH**、色=種、縦軸=µm「表層→深部」。
+Day6以降、**Pg（赤）破線が実線より深部へ** = dysbiosis で Pg が沈む。
+
+---
+
+## 各深さの組成（積み上げ面）
+
+![](results/diffusion_fit/zprofiles_all_ti_stacked.png){ height=62% }
+
+各深さで5種比率を積み上げ（合計=1）。**DH下段の深部で赤(Pg)が張り出す**のが一目瞭然。
+
+---
+
 ## この後：拡散フィットとは
 
 組成を決める2つの力を分けて考える反応拡散 PDE：

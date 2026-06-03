@@ -128,6 +128,23 @@ Both thicken with depth-wise composition shifts. DH late days: few Ti FOVs (Glas
 
 ---
 
+## Read CH vs DH overlaid (deep Pg)
+
+![](results/diffusion_fit/zprofiles_all_ti_overlay.png){ height=58% }
+
+**solid = CH / dashed = DH**, colour = species, y = µm (surface -> deep).
+From day 6 the **Pg (red) dashed line runs deeper than the solid** -> Pg sinks in dysbiosis.
+
+---
+
+## Per-depth composition (stacked area)
+
+![](results/diffusion_fit/zprofiles_all_ti_stacked.png){ height=62% }
+
+Each depth's 5-species fractions stacked (sum = 1). In the **DH bottom row the red (Pg) band bulges in the deep layers**.
+
+---
+
 ## Next: what the diffusion fit does
 
 A reaction–diffusion PDE separates two forces that set the composition:
