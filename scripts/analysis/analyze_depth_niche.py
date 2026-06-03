@@ -61,7 +61,7 @@ def main():
 
     # ---- (1) depth niche: CoM depth vs day, per species, CH vs DH ----
     rows = []
-    fig1, ax = plt.subplots(figsize=(7.2, 5.0))
+    fig1, ax = plt.subplots(figsize=(8.8, 5.4))
     for cond, ls, mk in [("CH", "-", "o"), ("DH", "--", "s")]:
         for sp in SP:
             ys = []
@@ -69,17 +69,23 @@ def main():
                 sub = df[(df.condition == cond) & (df.day == d)]
                 cz = com_depth(sub)[sp] if len(sub) else np.nan
                 ys.append(cz); rows.append({"cond": cond, "day": d, "species": sp, "com_depth_um": cz})
-            ax.plot(days, ys, ls, marker=mk, color=COL[sp], lw=2, ms=5,
+            ax.plot(days, ys, ls, marker=mk, color=COL[sp], lw=2.6, ms=7.5,
+                    markeredgecolor="white", markeredgewidth=0.8,
                     label=(sp if cond == "CH" else None))
     ax.invert_yaxis()
-    ax.set_xlabel("day", fontsize=12); ax.set_ylabel("centre-of-mass depth (µm)", fontsize=12)
-    ax.set_title("Depth niche over time — CH (solid) vs DH (dashed)", fontsize=13)
+    ax.tick_params(labelsize=12)
+    ax.grid(True, axis="both", ls=":", lw=0.6, color="#cccccc", alpha=0.7)
+    ax.set_xlabel("day", fontsize=14)
+    ax.set_ylabel("centre-of-mass depth (µm)\nsurface → deep", fontsize=14)
+    ax.set_title("Depth niche over time — CH (solid) vs DH (dashed)",
+                 fontsize=15, pad=10)
     from matplotlib.lines import Line2D
-    h = [Line2D([0], [0], color=COL[s], lw=2, label=s) for s in SP]
-    h += [Line2D([0], [0], color="k", lw=2, ls="-", marker="o", label="CH"),
-          Line2D([0], [0], color="k", lw=2, ls="--", marker="s", label="DH")]
-    ax.legend(handles=h, fontsize=8, ncol=2, loc="best")
-    fig1.tight_layout(); fig1.savefig(FITDIR / "depth_niche.png", dpi=140, bbox_inches="tight")
+    h = [Line2D([0], [0], color=COL[s], lw=2.8, label=s) for s in SP]
+    h += [Line2D([0], [0], color="k", lw=2.4, ls="-", marker="o", label="CH (commensal)"),
+          Line2D([0], [0], color="k", lw=2.4, ls="--", marker="s", label="DH (dysbiotic)")]
+    ax.legend(handles=h, fontsize=11, ncol=1, loc="upper left",
+              bbox_to_anchor=(1.02, 1.0), frameon=False, handlelength=2.4)
+    fig1.tight_layout(); fig1.savefig(FITDIR / "depth_niche.png", dpi=200, bbox_inches="tight")
     pd.DataFrame(rows).to_csv(FITDIR / "depth_niche.csv", index=False)
 
     # ---- (2) CH-vs-DH Bray-Curtis divergence per normalised depth × day ----

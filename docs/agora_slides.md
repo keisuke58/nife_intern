@@ -148,14 +148,16 @@ $$\mathrm{SA}=\frac{1}{|\mathcal{M}|}\sum_{(i,j)\in\mathcal{M}}\mathbb{1}\!\left
 
 ## MICOM — 群集 FBA
 
-単種 pFBA は実行可能性のみ。**MICOM**（Diener 2020）は群集を **cooperative
-trade-off** で同時に解く：
+単種 pFBA は**実行可能性**のみ（$j$ が $X$ を出せる・$i$ が $X$ を食べられる）。
+**MICOM**（Diener 2020）は群集を同時に解き、実際にフラックスが**流れるか**を、
+**cooperative trade-off** で判定する：
 $$\max\; \min_{i}\frac{\mu_i}{\mu_i^{\max}}\quad\text{s.t.}\quad
 \sum_i \mu_i \ge \tau\sum_i \mu_i^{\max},\;\; S^{\text{com}}v=0,\;\tau=0.5 .$$
 
-![](results/fig_agora_v1_v2_micom_comparison.png){ height=46% }
-
-generalist 同士でも、実際に群集フラックスを運ぶ経路のみが活性化する。
+- 各菌に最大成長の $\tau$ 倍以上を保証した上で、共有フラックス配分を確定。
+- generalist でも**実際に群集フラックスを運ぶ経路のみ**が活性化 → 「全員競合」の
+  非特異アーティファクトが消える。
+- 群集解の交換フラックス $s_{j\alpha},u_{i\alpha}$ をそのまま $F_{ij}$ に渡す。
 
 ---
 
