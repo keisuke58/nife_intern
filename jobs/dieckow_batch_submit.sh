@@ -8,7 +8,7 @@
 set -euo pipefail
 
 MANIFEST="/home/nishioka/IKM_Hiwi/nife/dieckow_manifest.tsv"
-SCRIPT="/home/nishioka/IKM_Hiwi/nife/dieckow_pbs_job.sh"
+SCRIPT="/home/nishioka/IKM_Hiwi/nife/jobs/dieckow_pbs_job.sh"
 OUT_DIR="/home/nishioka/IKM_Hiwi/nife/results/dieckow_taxonomy"
 DRY_RUN=0
 SKIP_DONE=0
