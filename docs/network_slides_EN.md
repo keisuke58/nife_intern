@@ -166,8 +166,9 @@ What is robust is the **sign-level backbone** of the previous slide, not the ind
 
 ## CS $\leftrightarrow$ DH rewiring (Heine 5-species, posterior)
 
-Compare the posterior of the 5-species attractors (CS = commensal-static, DH = dysbiotic-HOBIC)
-in the column-centered $A_{\text{eff}}$. Define the **facilitation probability**
+Compare the four-attractor posterior of the **(1) Heine 5-species GPU-Bayesian TMCMC**
+(CS = commensal-static, DH = dysbiotic-HOBIC, `ultimate_10000p`) in the
+column-centered $A_{\text{eff}}$. Define the **facilitation probability**
 $$P_{\text{facilitation}}(i\!\leftarrow\! j) = \Pr\big[\,A_{\text{eff}}[i,j] > 0\,\big]$$
 (the posterior probability that $A_{\text{eff}}[i,j]>0$).
 

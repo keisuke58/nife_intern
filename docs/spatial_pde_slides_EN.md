@@ -35,15 +35,30 @@ The bulk ODE fit gives **who interacts with whom (WHO)**; the FISH depth
 profiles add **where that interaction happens (WHERE)**.
 
 - Known: bulk gLV/Hamilton interaction matrix $A$ and growth vector $b$
-  (Dieckow fit).
+  (**(1) Heine 5-species TMCMC posterior**).
 - Unknown: per-species **transport** along the substratum depth axis.
-- Goal: with the reaction term fixed from the bulk fit, infer **only the
-  spatial transport parameters** from the depth-resolved FISH data.
+- Goal: keep the reaction term fixed from (1), and infer **only the spatial
+  transport parameters $D_i,u$** from the depth-resolved FISH data.
 
 \vspace{0.4em}
 **Thesis.** Dysbiosis manifests not as a change in bulk composition but as a
 **spatial reorganisation** — in particular *P. gingivalis* sinks deep and
 decouples from *F. nucleatum*.
+
+---
+
+## Foundation: (1) the Heine 5-species GPU-Bayesian model
+
+This deck is the **spatial extension of the Heine 2025 5-species in-vitro work (1)**.
+
+![](results/heine2025/glv_heine_fit_paper.png){ height=40% }
+
+- In (1), a **GPU-accelerated TMCMC** ($N_p=10{,}000$) infers the posterior of the
+  symmetric $A$, reproducing the four attractors CS/CH/DS/DH (`ultimate_10000p`).
+- We **keep that $A,b$ (the reaction term) fixed** and extend the *same* Heine
+  system to its **HOBIC FISH depth data**, adding the spatial transport $D_i,u$.
+- i.e. (1) = **temporal dynamics** (WHO); this deck = **spatial structure** (WHERE).
+  Heine's system is the consistent protagonist.
 
 ---
 
@@ -91,10 +106,12 @@ $$\frac{\partial \varphi_i}{\partial t}
  \;-\; u\,\frac{\partial \varphi_i}{\partial z}
  \;+\; R_i(\varphi).$$
 
-- $R_i(\varphi)$ is the replicator / Hamilton reaction; $A,b$ are **fixed** from
-  the bulk fit,
+- $R_i(\varphi)$ is the replicator / Hamilton reaction; $A,b$ are **fixed** from the
+  **(1) Heine 5-species TMCMC posterior** ($N_p=10{,}000$, `ultimate_10000p`) — this
+  deck is its spatial extension,
   $$R_i(\varphi)=\varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big]+\gamma\,\varphi_i.$$
-- The **only free parameters are the diffusivities $D_i$ and the advection $u$**.
+- The **only free parameters are the diffusivities $D_i$ and the advection $u$**
+  (the reaction is settled in (1): Heine's $A$ + the spatial $D_i,u$).
 - $\gamma$ is a Lagrange term enforcing $\sum_i \varphi_i + \varphi_0 = 1$ at each $z$.
 
 ---
