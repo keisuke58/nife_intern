@@ -122,3 +122,6 @@ logs/*.err
 
 # Reference papers (external PDFs, large)
 docs/refs/
+
+# Claude Code personal per-project settings (not shared)
+.claude/settings.local.json
