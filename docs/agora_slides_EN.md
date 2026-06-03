@@ -1,261 +1,239 @@
 ---
 title: "Integrating Metabolism and Ecology through AGORA"
-subtitle: "From genome-scale metabolic models to interaction signs — basics to critique"
+subtitle: "From genome-scale metabolic models to interaction signs — formal treatment"
 author: "Keisuke Nishioka — NIFE / SFB TRR-298"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"
 aspectratio: 169
+header-includes:
+  - \usepackage{amsmath,amssymb}
+  - \newcommand{\sgn}{\operatorname{sgn}}
+  - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
-## What this deck is for
+## Scope and claim
 
-Back the **ecological model** of the oral biofilm (who helps / harms whom)
-with **metabolism computed from genomes (AGORA)** — and examine, step by step
-and critically, how that works and how far it is actually validated.
+Constrain an **ecological interaction matrix** with **metabolism computed from
+genomes (AGORA2)**, and quantify how far that constraint is empirically supported.
 
-- **What AGORA is** / FBA basics
-- Metabolism (secretion, uptake) -> **the sign of the interaction matrix A**
-- Single-species pFBA -> **MICOM (community FBA)**
-- **How far is it validated** (the real point)
-- Cross-check against mechanistic simulation (COMETS dFBA)
+- the ecological model: generalized Lotka–Volterra (gLV) / replicator
+- the metabolic engine: flux-balance analysis (FBA, pFBA, MICOM)
+- the bridge: a **sign prior** $P_{ij}=\sgn(F_{ij})$ derived from cross-feeding flux
+- the validation: permutation test on the prior-free fit, two-cohort replication
 
-\vspace{0.5em}
-Bottom line up front: **the sign is usable, the magnitude is not. Only the
-cross-feeding direction is independently validated.**
-
----
-
-## Why a metabolic model at all — the problem
-
-We want the **gLV interaction matrix A** (10 guilds x 10) from 16S abundance
-time-series.
-
-- ~100 parameters vs data = 10 patients x 3 weeks -> **underdetermined**
-- A naive fit has many equivalent solutions; even the signs are not pinned down
-
-\vspace{0.5em}
-**Idea:** use metabolic knowledge as a **sign prior** on A.
-
-```
-guild j secretes a metabolite that guild i consumes  ->  j helps i  ->  A[i,j] > 0
-guild j secretes a toxin (H2O2, H2S) that i takes up ->  j harms i  ->  A[i,j] < 0
-```
-
--> constrain **only the sign**, never the magnitude. This is the central idea.
+\vspace{0.4em}
+**Thesis.** The metabolic signal constrains the **sign** of cooperative
+interactions (not the magnitude, not competition), with $p=4\times10^{-4}$.
 
 ---
 
-## What AGORA2 is
+## The ecological model
 
-**AGORA2** = a large database of **per-microbe metabolic models (GEMs)** built
-from genome sequence.
+Generalized Lotka–Volterra for absolute abundances $x_i$:
+$$\dot{x}_i = x_i\Big(b_i + \sum_{j=1}^{S} A_{ij}\,x_j\Big),\qquad i=1,\dots,S=10 .$$
 
-- Heinken et al. **2023, Nature Biotechnology** 41:1320-1331
-- **7,302 strains** of genome-scale reconstructions; extended from the gut-only
-  v1 to **multiple body sites including the oral cavity**
-- each microbe = an **SBML (XML)** file listing all its reactions (hundreds to
-  thousands)
-- here, one **representative strain** per guild (10 files, `data/homd_db/agora_gems/`)
+On the simplex $\varphi_i = x_i/\sum_k x_k$ (compositional 16S data), the
+replicator / Hamilton form is
+$$\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big],
+\qquad \sum_i \varphi_i = 1 .$$
 
-\vspace{0.5em}
-"What does this microbe eat and secrete" — predicted from the genome, no culture.
-
----
-
-## FBA (Flux Balance Analysis) — the basics
-
-**A cook analogy:**
-
-| Element | Maps to |
-|---|---|
-| Food in the fridge (medium) | saliva composition (Dawes 2008: sugars, amino acids, vitamins) |
-| The cook's (microbe's) goal | grow as fast as possible (maximise growth rate mu) |
-| What FBA solves | the **flux allocation** achieving that goal, by linear programming |
-| Byproducts revealed | secretions (e.g. Streptococcus -> lactate) |
-
-- **pFBA** (parsimonious FBA) = minimal-flux solution -> closer to reality
-- assumes steady state and optimal growth. **The sign is trustworthy, the
-  magnitude is not** (see later)
+- $A_{ij}>0$: $j$ **promotes** $i$;  $A_{ij}<0$: $j$ **suppresses** $i$.
+- Inference is **underdetermined**: $\mathcal{O}(S^2)=100$ parameters vs
+  $10$ patients $\times\,3$ weeks. The signs of $A$ are not identifiable from
+  abundance alone $\Rightarrow$ we add a **metabolic sign prior**.
 
 ---
 
-## From metabolism to the sign of A
+## Flux-balance analysis (FBA) as a linear program
 
-Solve each guild's representative strain by pFBA in oral-fluid medium ->
-get the **secretion profile** and **uptake capacity**.
+A genome-scale model gives a stoichiometric matrix $S\in\mathbb{R}^{m\times n}$
+(metabolites $\times$ reactions). Steady-state growth is the LP
+$$\max_{v}\; c^{\!\top} v \quad\text{s.t.}\quad S v = 0,\;\; v^{-}\le v \le v^{+},$$
+with $c$ selecting the biomass reaction ($\mu = c^{\!\top}v$). **Parsimonious FBA**
+removes flux loops by a second stage,
+$$\min_{v}\; \sum_{j}\lvert v_j\rvert \quad\text{s.t.}\quad c^{\!\top}v=\mu^{\star},\; Sv=0,\; v^{-}\le v\le v^{+}.$$
 
-```
-j secretion flux > +0.05        ->  j secretes metabolite X
-i uptake flux    < -0.05        ->  i consumes metabolite X
+Exchange fluxes give per-guild **secretion** $s_{j\alpha}=\relu{v^{\text{ex}}_{j\alpha}}$
+and **uptake** $u_{i\alpha}=\relu{-v^{\text{ex}}_{i\alpha}}$ over metabolites $\alpha$.
 
-j secretes X and i eats X       ->  cross-feeding
-   is X a toxin (H2O2 / H2S)?
-     yes -> neg[i,j] += w   (j harms i -> A[i,j] < 0)
-     no  -> pos[i,j] += w   (j helps i -> A[i,j] > 0)
+---
 
-net_flow = pos - sum(neg)  ->  sign(net_flow) = +1 / -1 / 0
-```
+## What AGORA2 supplies
 
-10 guilds x 9 partners = 90 directed pairs, exhaustively -> signed pairs.
+**AGORA2** (Heinken et al., *Nat. Biotechnol.* 2023, 41:1320): **7,302**
+genome-scale reconstructions, extended from gut to **oral** taxa; one
+representative SBML model per guild.
+
+- representatives: Bacilli = *S. gordonii*, Negativicutes = *V. parvula*,
+  Bacteroidia = *P. melaninogenica*, Fusobacteriia = *F. nucleatum*, …
+- oral-fluid medium (Dawes 2008): sugars, 20 amino acids, B-vitamins, trace
+  metals, cell-wall precursors $\Rightarrow$ positive growth for all 10 guilds
+  ($\mu = 0.11\text{–}1.66\,\mathrm{h^{-1}}$).
+
+\vspace{0.3em}
+Medium design is a genuine sensitivity: a too-poor medium drives $\mu\to0$ and
+collapses the cross-feeding signal.
+
+---
+
+## Cross-feeding score $\to$ sign prior
+
+Let $\mathcal{T}=\{\text{H}_2\text{O}_2,\text{H}_2\text{S}\}$ be toxins. Define a
+directed **net metabolic flow** from $j$ to $i$,
+$$F_{ij} \;=\; \underbrace{\sum_{\alpha\notin\mathcal{T}} w_\alpha\, s_{j\alpha}\,u_{i\alpha}}_{\text{cross-feeding }(+)}
+\;-\; \underbrace{\sum_{\alpha\in\mathcal{T}} w_\alpha\, s_{j\alpha}\,u_{i\alpha}}_{\text{toxin }(-)} .$$
+
+The **sign prior** keeps only the direction:
+$$P_{ij} = \sgn(F_{ij}) \in \{-1,\,0,\,+1\}.$$
+
+Magnitude is discarded by design — FBA flux units $\neq$ ecological units.
+Across $10\times 9=90$ directed pairs this yields the constrained set
+$\mathcal{M}=\{(i,j): P_{ij}\neq 0\}$.
 
 ---
 
 ## The pipeline at a glance
 
-![](results/fig2_agora_pipeline.png){ height=66% }
+![](results/fig2_agora_pipeline.png){ height=64% }
 
-(A) the 5-step procedure (B) adding layers grows the constrained pairs
-**10 -> 22 -> 58** (+36 from AGORA) (C) the resulting sign-prior matrix sgn(F[i,j]).
+(A) procedure; (B) $|\mathcal{M}|$ grows $10\to22\to58$ across layers (+36 from
+AGORA L3); (C) the resulting sign-prior matrix $P=\sgn(F)$.
 
 ---
 
-## The three-layer prior (stacking evidence)
+## Bayesian integration: the sign-prior penalty
 
-| Layer | Source | Weight | Basis |
+The fit minimises trajectory error plus a one-sided hinge that penalises only
+**sign violations** (never magnitude):
+$$\mathcal{L}(A,b) = \frac{1}{2\sigma^{2}}\sum_{t}\big\lVert \varphi^{\text{obs}}_{t}-\varphi^{\text{pred}}_{t}(A,b)\big\rVert^{2}
+\;+\; W\!\!\sum_{(i,j)\in\mathcal{M}}\!\! \relu{-\,P_{ij}\,A_{ij}} .$$
+
+- $\relu{-P_{ij}A_{ij}}=\max(0,-P_{ij}A_{ij})$ is $0$ when $\sgn(A_{ij})=P_{ij}$.
+- $W$ = prior stiffness; $\sigma$ = observation scale.
+- Posterior sampled by **TMCMC** ($10^4$ particles) for the 5-species attractors;
+  guild-level fits by L-BFGS-B / TMCMC.
+
+---
+
+## The three evidence layers
+
+| Layer | Source | $w_\alpha$ | Basis |
 |---|---|---|---|
-| **L1** | Szafrański Suppl. (experimental + KEGG/HMDB) | 2.0 | direct observation |
-| **L1** | Szafrański Suppl. (experimental, unannotated) | 1.5 | direct observation |
-| **L2** | Szafrański Suppl. (computational prediction) | 1.0 | prediction |
-| **L3** | **AGORA2 FBA cross-feeding** | 1.0 | genome-scale metabolism |
+| **L1** | Szafrański Suppl. (experimental + KEGG/HMDB) | 2.0 | direct |
+| **L1** | Szafrański Suppl. (experimental, unannotated) | 1.5 | direct |
+| **L2** | Szafrański Suppl. (predicted) | 1.0 | prediction |
+| **L3** | **AGORA2 pFBA cross-feeding** | 1.0 | genome-scale |
 
-- input: Szafrański's 351 microbe-metabolite rows (PRODUCES / USES / IS\_INHIBITED\_BY ...)
-- for each metabolite, add weight to all (producer x consumer) pairs
-- e.g. **lactate** -> produced by Bacilli (Strep), consumed by Negativicutes
-  (Veillonella) / Actinobacteria
+$w_\alpha=\max$ over rows of metabolite $\alpha$. Canonical example — **lactate**:
+$$\text{Bacilli (Strep)} \xrightarrow{\ \text{lactate}\ } \text{Negativicutes (Veillonella), Actinobacteria}.$$
 
 ---
 
-## Guild representatives and medium
+## Why magnitude priors fail — the MacArthur view
 
-**Representative strains (AGORA2):** Actino = *A. naeslundii* / Bacilli =
-*S. gordonii* / Negat. = *V. parvula* / Bacteroidia = *P. melaninogenica* /
-Fusob. = *F. nucleatum* / beta-Prot. = *E. corrodens* ... (10 guilds)
+Consumer–resource theory (MacArthur 1970; Marsland 2019) derives
+$$A_{ij} = \underbrace{\sum_{\alpha} s_{j\alpha}\,c_{i\alpha}}_{\text{cross-feeding}\,(+)}
+\;-\; \underbrace{\frac{c_i\!\cdot\! c_j}{\lVert c_i\rVert\,\lVert c_j\rVert}}_{\text{niche overlap}\,(-)} .$$
 
-**Oral-fluid medium (Dawes 2008):** sugars, 20 amino acids, B-vitamins, trace
-metals (Fe / Mg / Ca / Zn / **Cu**), cell-wall precursors (meso-DAP), quinones,
-glutathione.
+- **Niche-overlap (cosine) term saturates**: oral taxa are generalists, so
+  $\cos(c_i,c_j)\approx1$ for nearly all pairs $\Rightarrow$ everything reads as
+  competition (empirically $6$ positive / $84$ negative pairs — useless).
+- Growth-rate-suppression priors fail identically in poor media.
 
-\vspace{0.4em}
--> **positive growth for all 10 guilds** (mu = 0.11-1.66 /h, Fusobacteriia
-highest). A too-poor medium drives mu to ~0, so medium design itself drives the
-result — a key sensitivity.
+$\Rightarrow$ keep $\sgn(A_{ij})$, discard the magnitude.
 
 ---
 
-## Why only the sign — magnitude priors failed
+## Empirical sign agreement (the naive estimate)
 
-Every attempt to use the flux **magnitude** as a prior on A broke down.
+![](results/fig3_agora_sign_validation.png){ height=55% }
 
-| Method | Why it failed |
-|---|---|
-| **MacArthur cosine** (niche overlap) | oral microbes are all generalists; everyone uses sugars/amino acids so cos ~ 1 -> **every pair flagged as competition** |
-| **Growth-rate suppression** | in a poor medium microbes barely survive; any depletion by j zeroes i's mu -> **non-specific, all pairs competitive** |
-
-\vspace{0.4em}
-**Lesson:** FBA flux units != ecological interaction units.
-**The magnitude prior fails; only the sign constraint works** (a deliberate finding).
+$$\mathrm{SA}=\frac{1}{|\mathcal{M}|}\sum_{(i,j)\in\mathcal{M}}\mathbb{1}\!\left[\sgn(\hat A_{ij})=P_{ij}\right]=\frac{66}{72}=92\%.$$
+\textcolor{red}{This overstates support — the prior is sign-degenerate (next slide).}
 
 ---
 
-## Single-species pFBA validation (the naive number)
+## MICOM — community FBA
 
-![](results/fig3_agora_sign_validation.png){ height=58% }
+Single-species pFBA tests only feasibility. **MICOM** (Diener 2020) solves the
+joint community by a **cooperative trade-off**:
+$$\max\; \min_{i}\frac{\mu_i}{\mu_i^{\max}}\quad\text{s.t.}\quad
+\sum_i \mu_i \ge \tau\sum_i \mu_i^{\max},\;\; S^{\text{com}}v=0,\;\tau=0.5 .$$
 
-FBA-predicted signs vs data-fitted A signs agree at **66/72 = 92%** (91-92% by
-layer).
-\textcolor{red}{But: this is the *naive* figure and overstates the case — re-examined critically next.}
+![](results/fig_agora_v1_v2_micom_comparison.png){ height=46% }
 
----
-
-## MICOM — moving to community FBA
-
-Single-species pFBA only checks the **possibility** ("j can secrete, i can eat").
-**MICOM** (Diener 2020, mSystems) solves all 10 microbes **together** and checks
-whether the flux actually flows.
-
-![](results/fig_agora_v1_v2_micom_comparison.png){ height=52% }
-
-- **cooperative tradeoff** (tau = 0.5): allocate resources so each microbe reaches
-  at least tau x its max growth
-- even among generalists, **only specific cross-feeding routes** activate
+Even among generalists, only routes carrying real community flux activate.
 
 ---
 
-## MICOM results
+## MICOM — results
 
-| Method | Sign agreement | Constrained pairs |
+| Method | Sign agreement | $|\mathcal{M}|$ |
 |---|:---:|:---:|
-| Literature L1+L2 only | 45% (5/11) | 11/45 |
-| Single-species pFBA v1 | 88% (29/33) | 33/45 |
+| Literature L1+L2 | 45% (5/11) | 11/45 |
+| single-species pFBA v1 | 88% (29/33) | 33/45 |
 | **MICOM (community)** | **100% (36/36)** | **36/45** |
 
-**Lactate cross-feeding shown directly (actual community flux):**
-```
-Bacilli(Strep) -> Negativicutes(Veillonella)   via EX_lac_L(e)
-   secretion +97.7  /  uptake -97.9  mmol/gDW/h
-```
-FBA reconstructs the classic Streptococcus -> Veillonella route.
-(Caveat: the fitted A was estimated under the v1 prior, so 100% may reflect
-containment — confirm a real gain via RMSE.)
+Directly resolved lactate exchange (community flux):
+$$\text{Bacilli}\xrightarrow[\;-97.9\;]{\;+97.7\;\text{mmol gDW}^{-1}\text{h}^{-1}}\text{Negativicutes}\quad(\mathrm{EX\_lac\_L}).$$
+Caveat: $\hat A$ was fit under the v1 prior, so $100\%$ may reflect containment.
 
 ---
 
-## Sensitivity to the prior weight W
+## Prior stiffness $W$ — a phase transition
 
-![](results/fig_agora_weight_sensitivity.png){ height=56% }
+![](results/fig_agora_weight_sensitivity.png){ height=55% }
 
-**A phase transition at W=1.0** — sign agreement 100%, minimal LOO-RMSE (~0.050).
-But prior-free gLV (0.0455) is even lower, so **the prior's value is not predictive
-accuracy but interpretability / sign-consistency** — stated honestly.
+At $W=1.0$: $\mathrm{SA}\to100\%$, $\mathrm{LOO\text{-}RMSE}\approx0.050$. The
+prior-free gLV reaches $0.0455$, so the prior buys **interpretability and
+sign-consistency**, not raw predictive accuracy — stated honestly.
 
 ---
 
-## Critical check: is it independently supported?
+## Critical validation: is the prior independent of the data?
 
-"92% agreement" overstates, because the **prior is all-positive** (at alpha=0 it is
-cross-feeding only). The right control is the positive-rate of **off-prior** cells
-(permutation test).
+At $\alpha=0$ the prior is **all-positive** (cross-feeding only), so $\mathrm{SA}$
+is inflated. The correct control compares **off-prior** cells via a label
+permutation, with statistic
+$$z=\frac{\mathrm{SA}-\mathbb{E}_\pi[\mathrm{SA}]}{\sqrt{\operatorname{Var}_\pi[\mathrm{SA}]}},\qquad n_\pi=10^4 .$$
 
-| Model | cross-feeding direction | competition direction |
+| Model | cross-feeding direction | competition |
 |---|---|---|
-| **Hamilton (symmetric) alpha=0** | **78.6% (11/14) vs random 37.7%, p=0.0004, z=+3.79** | not validated (~chance) |
+| **Hamilton (symmetric), $\alpha=0$** | $\mathbf{78.6\%}$ (11/14) vs $\mathbb{E}_\pi=37.7\%$, $\;p=4\!\times\!10^{-4},\,z=+3.79$ | $\approx$ chance |
 | gLV (asymmetric) | 41% (null) | null |
 
-\vspace{0.3em}
-- **Only the cross-feeding direction is validated**; competition is not supported.
-- **The AGORA prior itself is independent of the 16S dynamics** (data do not
-  reproduce the prior -> the prior is a modelling choice).
-- **Two independent cohorts** (Dieckow x Botelho), fit prior-free, agree on the
-  **strong-interaction signs at 89% (p ~ 0.02)** -> the ecological signal is real.
+- **Only the cross-feeding direction is validated**; competition is not.
+- The AGORA prior is **not reproduced** by the 16S dynamics $\Rightarrow$ it is a
+  modelling choice, not a data-confirmed fact.
+- **Two cohorts** (Dieckow $\times$ Botelho), prior-free, agree on strong-pair
+  signs at $\mathbf{89\%}$ ($p\approx0.02$).
 
 ---
 
-## Mechanistic cross-check (COMETS dFBA)
+## Mechanistic cross-check (COMETS dynamic FBA)
 
-Beyond sign priors, AGORA GEMs also drive a **5-species dynamic FBA (dFBA)**.
+The same AGORA GEMs drive a 5-species **dFBA** forward simulation (Monod-coupled
+exchange), independent of the prior:
 
-![](comets/pipeline_results/sweep_crossfeeding.png){ height=52% }
+![](comets/pipeline_results/sweep_crossfeeding.png){ height=50% }
 
-Healthy: So/An dominate, lactate cross-feeding -> **DI = 0.15**.
-Diseased: Pg/Fn expand -> **DI = 0.70**. The same AGORA metabolism reproduces the
-commensal<->dysbiotic split in a **forward** simulation — agreement from an
-independent route.
+Healthy: So/An dominant, lactate cross-feeding, $\mathrm{DI}=0.15$. Diseased:
+Pg/Fn expansion, $\mathrm{DI}=0.70$. The commensal$\leftrightarrow$dysbiotic split
+emerges forward, corroborating the inferred interactions.
 
 ---
 
 ## Limitations and conclusions
 
-**Limitations**
-- guild = class level (representative strain != whole guild); species-level MAGs would help
-- 20/22 IS\_INHIBITED\_BY rows are oxygen (no producer) -> effectively dead; only the H2O2 (2 pairs) toxin signal fires
-- per-metabolite max weight -> prediction rows get promoted to high confidence
-- magnitude is discarded (sign only)
+**Limitations.** guild $=$ class (representative $\neq$ guild); $20/22$
+inhibition rows are oxygen (no producer) $\Rightarrow$ only the H$_2$O$_2$ toxin
+fires; $w_\alpha$ is a per-metabolite max; magnitude is discarded.
 
-**Conclusions (systematic)**
-1. AGORA -> cross-feeding -> **sign prior** is the novelty of this work
-2. **Sign usable, magnitude not** (avoiding the MacArthur-type failure)
-3. single-species pFBA (92%) -> **MICOM (100%)** captures community context
-4. honest validation: **cross-feeding direction only, p=0.0004; two cohorts 89%**;
-   the prior itself is a modelling choice
-5. COMETS dFBA reproduces commensal<->dysbiotic in the forward direction too
+**Conclusions.**
+1. $\text{AGORA pFBA}\to F_{ij}\to P_{ij}=\sgn(F_{ij})$ is the methodological novelty.
+2. **Sign usable, magnitude not** (MacArthur cosine saturation avoided).
+3. single-species ($92\%$) $\to$ **MICOM ($100\%$)** captures community context.
+4. Honest validation: **cross-feeding only**, $p=4\times10^{-4}$; two cohorts $89\%$;
+   the prior is a modelling choice.
+5. COMETS dFBA reproduces the dysbiotic split forward.

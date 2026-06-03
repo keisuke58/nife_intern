@@ -1,242 +1,228 @@
 ---
 title: "AGORA を軸とした代謝—生態の統合"
-subtitle: "ゲノムスケール代謝モデルから相互作用符号へ — 基礎から考察まで"
+subtitle: "ゲノムスケール代謝モデルから相互作用符号へ — 形式的取り扱い"
 author: "西岡佳祐 — NIFE / SFB TRR-298"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"
 aspectratio: 169
+header-includes:
+  - \usepackage{amsmath,amssymb}
+  - \newcommand{\sgn}{\operatorname{sgn}}
+  - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
-## このスライドの狙い
+## 狙いと主張
 
-口腔バイオフィルムの **生態モデル（誰が誰を助ける／抑える）** を、
-**ゲノムから計算した代謝（AGORA）** で裏づける——その仕組みと妥当性を
-基礎から順に、批判的に整理する。
+**生態学的相互作用行列**を、**ゲノムから計算した代謝（AGORA2）**で制約し、
+その制約がどこまで経験的に支持されるかを定量する。
 
-- **AGORA とは何か** / FBA の基礎
-- 代謝（分泌・取り込み）→ **相互作用行列 A の符号** への変換
-- 単種 pFBA → **MICOM（群集 FBA）** への発展
-- **どこまで検証されたか**（ここが本題）
-- 機械論的シミュレーション（COMETS dFBA）との突き合わせ
+- 生態モデル：一般化 Lotka–Volterra (gLV) / replicator
+- 代謝エンジン：flux-balance analysis (FBA, pFBA, MICOM)
+- 橋渡し：cross-feeding フラックスから導く **符号 prior** $P_{ij}=\sgn(F_{ij})$
+- 検証：prior 抜きフィットの permutation test、2 コホート再現
 
-\vspace{0.5em}
-結論を先に：**「符号」は使える・「量」は使えない。検証されるのは協調(cross-feeding)方向のみ。**
-
----
-
-## なぜ代謝モデルが要るのか — 問題設定
-
-16S の存在量時系列から **gLV 相互作用行列 A**（10ギルド × 10）を推定したい。
-
-- パラメータ 100 個 vs データは 10 患者 × 3 週 → **劣決定（underdetermined）**
-- 素朴なフィットは多数の等価解を持ち、符号すら定まらない
-
-\vspace{0.5em}
-**アイデア:** 代謝の知識で **A の符号に事前分布（sign prior）** を置く。
-
-```
-guild j が出す代謝物を guild i が食べる   →  j は i を助ける  →  A[i,j] > 0
-guild j が毒素(H2O2,H2S)を出し i が受ける  →  j は i を害する  →  A[i,j] < 0
-```
-
-→ 大きさ(magnitude)ではなく **符号のみ** を制約する。これが本研究の中心思想。
+\vspace{0.4em}
+**主張：** 代謝シグナルが制約するのは協調的相互作用の**符号**（大きさでも競争でもない）。
+$p=4\times10^{-4}$ で支持。
 
 ---
 
-## AGORA2 とは
+## 生態モデル
 
-**AGORA2** = ゲノム情報から作った **菌ごとの代謝モデル(GEM)** の大規模データベース。
+絶対量 $x_i$ の一般化 Lotka–Volterra：
+$$\dot{x}_i = x_i\Big(b_i + \sum_{j=1}^{S} A_{ij}\,x_j\Big),\qquad i=1,\dots,S=10 .$$
 
-- Heinken et al. **2023, Nature Biotechnology** 41:1320–1331
-- **7,302 株**のゲノムスケール代謝再構成。腸内中心の v1 から **口腔菌を含む多部位**へ拡張
-- 各菌 = **SBML(XML)** ファイル：その菌が持つ代謝反応（数百〜数千本）を全列挙
-- 本研究では 10 ギルドの **代表株**を 1 ファイルずつ収録（`data/homd_db/agora_gems/`）
+単体上の組成 $\varphi_i = x_i/\sum_k x_k$（16S は組成データ）に対する
+replicator / Hamilton 形：
+$$\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big],
+\qquad \sum_i \varphi_i = 1 .$$
 
-\vspace{0.5em}
-「この菌は何を食べて何を出すか」を、培養せずゲノムから予測できる。
-
----
-
-## FBA（Flux Balance Analysis）の基礎
-
-**料理人の比喩:**
-
-| 要素 | 対応 |
-|---|---|
-| 冷蔵庫の食材（培地） | 唾液の栄養組成（Dawes 2008：糖・アミノ酸・ビタミン…） |
-| 料理人（菌）の目標 | 最速で増殖する（成長率 mu を最大化） |
-| FBA が解くこと | その目標を満たす**反応フラックス配分**を線形計画で求める |
-| 得られる副産物 | 分泌物（例：Streptococcus → 乳酸） |
-
-- **pFBA**（parsimonious FBA）= 最小フラックス解 → 現実寄り
-- 定常状態・最適増殖を仮定。**「符号」は信頼でき「量」は当てにならない**（後述）
+- $A_{ij}>0$：$j$ が $i$ を**促進**、$A_{ij}<0$：**抑制**。
+- 推定は**劣決定**：$\mathcal{O}(S^2)=100$ パラメータ vs $10$ 患者 $\times\,3$ 週。
+  存在量だけでは $A$ の符号は識別不能 $\Rightarrow$ **代謝符号 prior** を加える。
 
 ---
 
-## 代謝 → 相互作用 A の符号への変換
+## FBA（Flux Balance Analysis）= 線形計画
 
-各ギルド代表株を口腔液培地で pFBA → **分泌プロファイル**と**取り込み能**を取得。
+ゲノムスケールモデルは化学量論行列 $S\in\mathbb{R}^{m\times n}$
+（代謝物 $\times$ 反応）を与える。定常成長は LP：
+$$\max_{v}\; c^{\!\top} v \quad\text{s.t.}\quad S v = 0,\;\; v^{-}\le v \le v^{+},$$
+$c$ がバイオマス反応を選ぶ（$\mu = c^{\!\top}v$）。**pFBA** はフラックスループを
+第2段で除去：
+$$\min_{v}\; \sum_{j}\lvert v_j\rvert \quad\text{s.t.}\quad c^{\!\top}v=\mu^{\star},\; Sv=0,\; v^{-}\le v\le v^{+}.$$
 
-```
-j の分泌フラックス > +0.05         →  j は代謝物 X を分泌
-i の取り込みフラックス < −0.05      →  i は代謝物 X を消費
+交換フラックスから、ギルドごとの **分泌** $s_{j\alpha}=\relu{v^{\text{ex}}_{j\alpha}}$、
+**取り込み** $u_{i\alpha}=\relu{-v^{\text{ex}}_{i\alpha}}$（代謝物 $\alpha$）を得る。
 
-j が出す X を i が食べる            →  cross-feeding 成立
-   X が H2O2 / H2S（毒素）か？
-     はい → neg[i,j] += w   （j が i を害する → A[i,j] < 0）
-     いいえ → pos[i,j] += w  （j が i を助ける → A[i,j] > 0）
+---
 
-net_flow = pos − sum(neg)  →  sign(net_flow) = +1 / −1 / 0
-```
+## AGORA2 が与えるもの
 
-10 ギルド × 9 相手 = 90 方向ペアを総当たり → 符号付きペアに集約。
+**AGORA2**（Heinken et al., *Nat. Biotechnol.* 2023, 41:1320）：**7,302** 株の
+ゲノムスケール再構成。腸内から**口腔**菌へ拡張。ギルドごとに代表 SBML を 1 つ。
+
+- 代表株：Bacilli = *S. gordonii*、Negativicutes = *V. parvula*、
+  Bacteroidia = *P. melaninogenica*、Fusobacteriia = *F. nucleatum* …
+- 口腔液培地（Dawes 2008）：糖・20アミノ酸・B群ビタミン・微量元素・細胞壁前駆体
+  $\Rightarrow$ 全 10 ギルドで正の増殖（$\mu = 0.11\text{–}1.66\,\mathrm{h^{-1}}$）。
+
+\vspace{0.3em}
+培地設計は本質的な感度：貧弱だと $\mu\to0$ で cross-feeding 信号が消える。
+
+---
+
+## cross-feeding スコア $\to$ 符号 prior
+
+毒素を $\mathcal{T}=\{\text{H}_2\text{O}_2,\text{H}_2\text{S}\}$ とし、$j\to i$ の
+**正味代謝フロー**を定義：
+$$F_{ij} \;=\; \underbrace{\sum_{\alpha\notin\mathcal{T}} w_\alpha\, s_{j\alpha}\,u_{i\alpha}}_{\text{cross-feeding }(+)}
+\;-\; \underbrace{\sum_{\alpha\in\mathcal{T}} w_\alpha\, s_{j\alpha}\,u_{i\alpha}}_{\text{toxin }(-)} .$$
+
+**符号 prior** は方向のみを残す：
+$$P_{ij} = \sgn(F_{ij}) \in \{-1,\,0,\,+1\}.$$
+
+大きさは設計上捨てる — FBA フラックス単位 $\neq$ 生態的単位。
+$10\times 9=90$ 方向ペアから制約集合 $\mathcal{M}=\{(i,j): P_{ij}\neq 0\}$ を得る。
 
 ---
 
 ## パイプライン全体像
 
-![](results/fig2_agora_pipeline.png){ height=66% }
+![](results/fig2_agora_pipeline.png){ height=64% }
 
-(A) 5 ステップ手順 (B) 層を足すと制約ペアが **10 → 22 → 58**（AGORA で +36）
-(C) 出来上がる符号 prior 行列 sgn(F[i,j])。
+(A) 手順；(B) 層追加で $|\mathcal{M}|$ が $10\to22\to58$（AGORA L3 で +36）；
+(C) 出来上がる符号 prior 行列 $P=\sgn(F)$。
 
 ---
 
-## 3 層の事前分布（証拠の重ね合わせ）
+## ベイズ統合：符号 prior の罰則
 
-| 層 | ソース | 重み | 根拠 |
+フィットは軌道誤差に、**符号違反のみ**（大きさは不問）を罰する片側ヒンジを加える：
+$$\mathcal{L}(A,b) = \frac{1}{2\sigma^{2}}\sum_{t}\big\lVert \varphi^{\text{obs}}_{t}-\varphi^{\text{pred}}_{t}(A,b)\big\rVert^{2}
+\;+\; W\!\!\sum_{(i,j)\in\mathcal{M}}\!\! \relu{-\,P_{ij}\,A_{ij}} .$$
+
+- $\relu{-P_{ij}A_{ij}}=\max(0,-P_{ij}A_{ij})$ は $\sgn(A_{ij})=P_{ij}$ のとき $0$。
+- $W$ = prior の硬さ、$\sigma$ = 観測スケール。
+- 5 種アトラクターの posterior は **TMCMC**（$10^4$ 粒子）、ギルドは L-BFGS-B / TMCMC。
+
+---
+
+## 3 つの証拠層
+
+| 層 | ソース | $w_\alpha$ | 根拠 |
 |---|---|---|---|
-| **L1** | Szafrański Suppl.（実験 + KEGG/HMDB 注釈） | 2.0 | 直接観測 |
+| **L1** | Szafrański Suppl.（実験 + KEGG/HMDB） | 2.0 | 直接観測 |
 | **L1** | Szafrański Suppl.（実験・注釈なし） | 1.5 | 直接観測 |
-| **L2** | Szafrański Suppl.（計算予測） | 1.0 | 予測 |
-| **L3** | **AGORA2 FBA cross-feeding** | 1.0 | ゲノムスケール代謝 |
+| **L2** | Szafrański Suppl.（予測） | 1.0 | 予測 |
+| **L3** | **AGORA2 pFBA cross-feeding** | 1.0 | ゲノムスケール |
 
-- 入力は Szafrański の微生物–代謝物関係 351 行（PRODUCES / USES / IS\_INHIBITED\_BY …）
-- 各代謝物で「生産者 × 消費者」の全ペアに重みを加算
-- 例：**乳酸** → Bacilli(Strep) が生産、Negativicutes(Veillonella)/Actinobacteria が消費
-
----
-
-## ギルド代表株と培地
-
-**代表株（AGORA2）:** Actino=*A. naeslundii* / Bacilli=*S. gordonii* /
-Negat.=*V. parvula* / Bacteroidia=*P. melaninogenica* / Fusob.=*F. nucleatum* /
-beta-Prot.=*E. corrodens* …（10 ギルド）
-
-**口腔液培地（Dawes 2008 ベース）:** 糖・20アミノ酸・B 群ビタミン・微量元素
-(Fe/Mg/Ca/Zn/**Cu**)・細胞壁前駆体(meso-DAP)・キノン類・グルタチオン
-
-\vspace{0.4em}
-→ **全 10 ギルドで正の増殖率**を確認（mu = 0.11–1.66 /h、Fusobacteriia 最高）。
-培地が貧弱だと mu≈0 になるため、培地設計自体が結果を左右する重要点。
+$w_\alpha=$ 代謝物 $\alpha$ の行ごと重みの max。代表例 — **乳酸**：
+$$\text{Bacilli (Strep)} \xrightarrow{\ \text{lactate}\ } \text{Negativicutes (Veillonella), Actinobacteria}.$$
 
 ---
 
-## なぜ「符号」だけなのか — 量(prior)の失敗
+## なぜ量 prior は失敗するか — MacArthur の視点
 
-代謝フラックスの**大きさ**を A の prior に使う試みは、ことごとく破綻した。
+消費者–資源理論（MacArthur 1970；Marsland 2019）は次を導く：
+$$A_{ij} = \underbrace{\sum_{\alpha} s_{j\alpha}\,c_{i\alpha}}_{\text{cross-feeding}\,(+)}
+\;-\; \underbrace{\frac{c_i\!\cdot\! c_j}{\lVert c_i\rVert\,\lVert c_j\rVert}}_{\text{niche overlap}\,(-)} .$$
 
-| 手法 | 失敗理由 |
-|---|---|
-| **MacArthur コサイン**（ニッチ重複） | 口腔菌は全員 generalist。糖・アミノ酸を皆が使い cos≈1 → **全ペア競合と誤判定** |
-| **Growth Rate Suppression** | 貧栄養培地で菌は生存ギリギリ → j の取り込みで何か枯渇すると mu が 0 に → **非特異的に全ペア競合** |
+- **ニッチ重複（cosine）項が飽和**：口腔菌は generalist で $\cos(c_i,c_j)\approx1$
+  → ほぼ全ペアが競争と誤判定（実測 正 $6$ / 負 $84$ ペア＝使えない）。
+- Growth-rate-suppression も貧栄養培地で同様に破綻。
 
-\vspace{0.4em}
-**教訓:** FBA フラックスの単位 ≠ 生態的相互作用の単位。
-**magnitude prior は失敗し、sign constraint だけが機能する。**（意図的な発見）
-
----
-
-## 単種 pFBA の検証（naive な一致率）
-
-![](results/fig3_agora_sign_validation.png){ height=58% }
-
-FBA 予測符号 vs データ推定 A の符号は **66/72 = 92%** 一致（層別でも 91–92%）。
-\textcolor{red}{ただし後述：これは「素朴な」数字で過大評価——次々スライドで批判的に再検証する。}
+$\Rightarrow$ $\sgn(A_{ij})$ を残し、大きさは捨てる。
 
 ---
 
-## MICOM — 群集 FBA への発展
+## 経験的 sign agreement（naive 推定）
 
-単種 pFBA は「j が出せる・i が食べられる」という**可能性**を見るだけ。
-**MICOM**（Diener 2020, mSystems）は 10 菌を**同時に**解き、実際に流れているかを見る。
+![](results/fig3_agora_sign_validation.png){ height=55% }
 
-![](results/fig_agora_v1_v2_micom_comparison.png){ height=52% }
-
-- **cooperative tradeoff**（tau=0.5）：各菌が「最大成長の tau 倍」を確保するよう資源を公平分配
-- generalist 同士でも**特定の cross-feeding 経路のみ**が選択的に活性化
+$$\mathrm{SA}=\frac{1}{|\mathcal{M}|}\sum_{(i,j)\in\mathcal{M}}\mathbb{1}\!\left[\sgn(\hat A_{ij})=P_{ij}\right]=\frac{66}{72}=92\%.$$
+\textcolor{red}{これは過大評価——prior は符号縮退している（次スライド）。}
 
 ---
 
-## MICOM の結果
+## MICOM — 群集 FBA
 
-| 手法 | Sign Agreement | 制約ペア数 |
+単種 pFBA は実行可能性のみ。**MICOM**（Diener 2020）は群集を **cooperative
+trade-off** で同時に解く：
+$$\max\; \min_{i}\frac{\mu_i}{\mu_i^{\max}}\quad\text{s.t.}\quad
+\sum_i \mu_i \ge \tau\sum_i \mu_i^{\max},\;\; S^{\text{com}}v=0,\;\tau=0.5 .$$
+
+![](results/fig_agora_v1_v2_micom_comparison.png){ height=46% }
+
+generalist 同士でも、実際に群集フラックスを運ぶ経路のみが活性化する。
+
+---
+
+## MICOM — 結果
+
+| 手法 | Sign Agreement | $|\mathcal{M}|$ |
 |---|:---:|:---:|
-| 文献 L1+L2 のみ | 45% (5/11) | 11/45 |
+| 文献 L1+L2 | 45% (5/11) | 11/45 |
 | 単種 pFBA v1 | 88% (29/33) | 33/45 |
 | **MICOM（群集）** | **100% (36/36)** | **36/45** |
 
-**直接実証された乳酸 cross-feeding（群集内の実フラックス）:**
-```
-Bacilli(Strep) → Negativicutes(Veillonella)   via EX_lac_L(e)
-   分泌 +97.7   /   取り込み −97.9  mmol/gDW/h
-```
-有名な Streptococcus → Veillonella を **FBA が再構成**。
-（注意：fitted A は v1 prior 由来 → 100% は包含による可能性。RMSE で実質改善を要確認。）
+群集内で直接解けた乳酸交換：
+$$\text{Bacilli}\xrightarrow[\;-97.9\;]{\;+97.7\;\text{mmol gDW}^{-1}\text{h}^{-1}}\text{Negativicutes}\quad(\mathrm{EX\_lac\_L}).$$
+注意：$\hat A$ は v1 prior 下で推定 → $100\%$ は包含による可能性。
 
 ---
 
-## 事前分布の重み W の感度
+## prior の硬さ $W$ — 相転移
 
-![](results/fig_agora_weight_sensitivity.png){ height=56% }
+![](results/fig_agora_weight_sensitivity.png){ height=55% }
 
-**W=1.0 で相転移** — sign agreement 100%、LOO-RMSE 最小(≈0.050)。
-ただし prior-free gLV(0.0455)はさらに低く、**prior の価値は予測精度でなく
-「解釈可能性・符号整合性」**にある——と誠実に位置づける。
+$W=1.0$ で $\mathrm{SA}\to100\%$、$\mathrm{LOO\text{-}RMSE}\approx0.050$。
+prior-free gLV は $0.0455$ とさらに低い → prior の価値は予測精度でなく
+**解釈可能性・符号整合性**にある（誠実な位置づけ）。
 
 ---
 
-## 批判的検証：本当に独立に裏づくのか
+## 批判的検証：prior はデータから独立に裏づくか
 
-「92% 一致」は **prior が全て正**（α=0 では cross-feeding のみ）なので過大評価。
-正しい対照は **prior 外セルの正割合**との比較（permutation test）。
+$\alpha=0$ で prior は**全正**（cross-feeding のみ）→ $\mathrm{SA}$ は過大。
+正しい対照は **prior 外**セルとのラベル permutation 比較、統計量：
+$$z=\frac{\mathrm{SA}-\mathbb{E}_\pi[\mathrm{SA}]}{\sqrt{\operatorname{Var}_\pi[\mathrm{SA}]}},\qquad n_\pi=10^4 .$$
 
 | モデル | cross-feeding 方向 | 競争方向 |
 |---|---|---|
-| **Hamilton（対称）α=0** | **78.6%(11/14) vs ランダム 37.7%, p=0.0004, z=+3.79** | 検証されず（≈chance） |
+| **Hamilton（対称）, $\alpha=0$** | $\mathbf{78.6\%}$ (11/14) vs $\mathbb{E}_\pi=37.7\%$, $\;p=4\!\times\!10^{-4},\,z=+3.79$ | $\approx$ chance |
 | gLV（非対称） | 41%（null） | null |
 
-\vspace{0.3em}
 - **検証されるのは協調(cross-feeding)方向のみ**。競争方向は支持されない。
-- **AGORA prior 自体は 16S 力学から独立**（データは prior を再現しない＝prior はモデリング選択）。
-- **2 独立コホート**(Dieckow×Botelho)を prior 抜きで比べると、**強い相互作用の符号が 89% 一致(p≈0.02)** → 生態シグナルは本物。
+- AGORA prior は 16S 力学で**再現されない** $\Rightarrow$ モデリング選択（データ確認済みではない）。
+- **2 コホート**（Dieckow $\times$ Botelho）を prior 抜きで比べ、強ペア符号が
+  $\mathbf{89\%}$ 一致（$p\approx0.02$）。
 
 ---
 
-## 機械論的クロスバリデーション（COMETS dFBA）
+## 機械論的クロスチェック（COMETS 動的 FBA）
 
-AGORA GEM は符号 prior 以外に、**5 種群集の動的 FBA(dFBA)** にも使える。
+同じ AGORA GEM が 5 種 **dFBA** 前向きシミュレーション（Monod 連成交換）を駆動、
+prior とは独立：
 
-![](comets/pipeline_results/sweep_crossfeeding.png){ height=52% }
+![](comets/pipeline_results/sweep_crossfeeding.png){ height=50% }
 
-健常：So/An 優占・乳酸 cross-feeding → **DI=0.15**。
-疾患：Pg/Fn 増殖 → **DI=0.70**。同じ AGORA 代謝が**前向きシミュレーション**でも
-commensal↔dysbiotic の分岐を再現（独立路線での整合）。
+健常：So/An 優占・乳酸 cross-feeding・$\mathrm{DI}=0.15$。
+疾患：Pg/Fn 増殖・$\mathrm{DI}=0.70$。commensal$\leftrightarrow$dysbiotic の分岐が
+前向きにも出現し、推定した相互作用を裏づける。
 
 ---
 
 ## 限界と結論
 
-**限界**
-- ギルド = class レベル（代表株 ≠ ギルド全体）。種レベル MAG で改善余地
-- IS\_INHIBITED\_BY の 20/22 行は酸素（生産者不在）で**実質失効**、毒素信号は H2O2 の 2 ペアのみ
-- 重みは代謝物ごとの max → 予測行が高 confidence に引き上げられる
-- magnitude は捨てている（sign のみ）
+**限界：** ギルド $=$ class（代表株 $\neq$ ギルド全体）；阻害行の $20/22$ は酸素
+（生産者不在）$\Rightarrow$ 毒素は H$_2$O$_2$ のみ発火；$w_\alpha$ は代謝物ごと max；
+大きさは捨てている。
 
-**結論（体系）**
-1. AGORA → cross-feeding → **符号 prior** という変換が本研究の新規性
-2. **符号は使え、量は使えない**（MacArthur 型失敗の回避）
-3. 単種 pFBA(92%) → **MICOM(100%)** で群集文脈を捕捉
-4. 誠実な検証：**協調方向のみ p=0.0004 で独立裏づけ、2 コホート 89%**。prior 自体はモデリング選択
-5. COMETS dFBA が前向きにも commensal↔dysbiotic を再現
+**結論：**
+1. $\text{AGORA pFBA}\to F_{ij}\to P_{ij}=\sgn(F_{ij})$ という変換が方法論的新規性。
+2. **符号は使え、量は使えない**（MacArthur cosine 飽和を回避）。
+3. 単種（$92\%$）$\to$ **MICOM（$100\%$）** が群集文脈を捕捉。
+4. 誠実な検証：**協調方向のみ** $p=4\times10^{-4}$；2 コホート $89\%$；prior はモデリング選択。
+5. COMETS dFBA が dysbiotic 分岐を前向きにも再現。
