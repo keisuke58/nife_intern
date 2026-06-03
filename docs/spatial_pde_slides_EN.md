@@ -169,21 +169,23 @@ transport only fitted.
 
 ---
 
-## Fitted parameters (preliminary)
+## Fitted parameters (converged, weakly identified)
 
 | Species | $D$ (CH) | $D$ (DH) |
 |---|:---:|:---:|
-| So | $0.0123$ | $0.0596$ |
-| An | $0.0121$ | $0.0021$ |
-| Vd/Vp | $0.0042$ | $2.1\times10^{-5}$ |
-| Fn | $0.0075$ | $0.0019$ |
-| Pg | $0.0115$ | $0.0083$ |
-| **$u$ (advection)** | $0.0038$ | $0.0060$ |
-| **loss** | $0.128$ | $0.102$ |
+| So | $10^{-5}\,^\dagger$ | $0.0100$ |
+| An | $10^{-5}\,^\dagger$ | $0.0003$ |
+| Vd/Vp | $0.0015$ | $10^{-5}\,^\dagger$ |
+| Fn | $0.0106$ | $0.0020$ |
+| Pg | $10^{-5}\,^\dagger$ | $0.0013$ |
+| **$u$ (advection)** | $0.0$ | $0.0070$ |
+| **loss** | $\mathbf{0.030}$ | $\mathbf{0.091}$ |
 
 \vspace{0.2em}
-\textcolor{red}{**Preliminary**: both conditions report `success=False` (optimiser not converged).}
-A hyperparameter sweep with faster-converging settings is running on the HPC.
+The best sweep fits **converge** (`success=True`), but $^\dagger$ **several $D_i$ hit the
+lower bound $10^{-5}$** (CH: So/An/Pg; DH: Vd/Vp).
+\textcolor{red}{$\Rightarrow$ the depth profiles do not uniquely determine the 5 diffusivities (**limited identifiability**).}
+Treat $D_i$ as illustrative — the 3-D PINN reaches the same conclusion (the identifiability limit is itself a finding).
 
 ---
 
