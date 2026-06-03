@@ -178,6 +178,17 @@ $\Rightarrow$ Pg は Fn から **脱共役**し、自律的に振る舞う。
 
 ---
 
+## 空間生態 知見 3：cross-feeding は空間的に階層化
+
+![](results/diffusion_fit/spatial_crossfeeding.png){ height=48% }
+
+AGORA の乳酸バックボーン（**S.oralis 生産者 → Veillonella 消費者**）が深さに現れるか検定。
+Veillonella の重心は **10/10 サンプルで一貫して S.oralis より浅い**（平均 $-2.8\,\mu$m, Wilcoxon $p=0.002$）。
+$\Rightarrow$ 生産者が基底層・消費者がその上＝**上方への乳酸拡散**と整合。代謝バックボーンの**空間的検証**。
+（A.naeslundii は非有意 $p=0.28$。）
+
+---
+
 ## その他：bulk は CH ≈ DH
 
 CH–DH の **Bray–Curtis divergence** $\approx 0.2$、Day 1 から**ほぼ一定**。
