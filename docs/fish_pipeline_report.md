@@ -117,6 +117,20 @@ python scripts/pde/lif_to_zprofiles.py "HOBIC FISH"/*.lif --substrate ti \
 → `results/diffusion_fit/zprofiles_all_ti.csv`（400行 = 2条件 × 5日 × 40深さ格子）。
 commensal/dysbiotic とも Day1→21 で厚化し、組成が深さ方向にシフト。DH は後期の FOV 数が少ない（Glass 除外のため）。
 
+#### CH と DH の直接重ね描き
+
+![CH vs DH overlay](../results/diffusion_fit/zprofiles_all_ti_overlay.png)
+
+同じ日を 1 パネルに重ねる（**実線=CH / 破線=DH**、色=種、縦軸=µm 深さ「表層→深部」）。Day6 以降、**P.gingivalis（赤）の破線が実線より深部に伸びる** = dysbiosis で Pg が深く沈むことが直読できる。
+
+#### 各深さの組成（積み上げ面）
+
+![depth composition stacked](../results/diffusion_fit/zprofiles_all_ti_stacked.png)
+
+各深さで 5 種の比率を積み上げ（合計=1）。DH 下段の深部で **赤（Pg）が大きく張り出す**のが一目瞭然で、CH 上段との対比が最も分かりやすい。
+
+（3図とも `scripts/analysis/plot_depth_profiles.py` で `zprofiles_all_ti.csv` から再生成可能。）
+
 ---
 
 ## 4. この後：拡散フィット（`fit_diffusion_clsm.py`）

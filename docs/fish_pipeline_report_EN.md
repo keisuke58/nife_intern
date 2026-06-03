@@ -117,6 +117,20 @@ python scripts/pde/lif_to_zprofiles.py "HOBIC FISH"/*.lif --substrate ti \
 -> `results/diffusion_fit/zprofiles_all_ti.csv` (400 rows = 2 conditions × 5 days × 40 depth nodes).
 Both commensal and dysbiotic thicken from Day 1 to 21 with depth-wise composition shifts. DH has few FOVs at late days (Glass excluded).
 
+#### CH vs DH overlaid directly
+
+![CH vs DH overlay](../results/diffusion_fit/zprofiles_all_ti_overlay.png)
+
+Each day on one panel (**solid = CH / dashed = DH**, colour = species, y = µm depth, surface -> deep). From day 6 on, the **P. gingivalis (red) dashed line runs deeper than the solid line** — Pg sinking in dysbiosis is read off directly.
+
+#### Per-depth composition (stacked area)
+
+![depth composition stacked](../results/diffusion_fit/zprofiles_all_ti_stacked.png)
+
+Each depth's 5-species fractions stacked (sum = 1). In the DH bottom row the **red (Pg) band bulges in the deep layers**, the clearest contrast against the CH top row.
+
+(All three regenerate from `zprofiles_all_ti.csv` via `scripts/analysis/plot_depth_profiles.py`.)
+
 ---
 
 ## 4. Next: the diffusion fit (`fit_diffusion_clsm.py`)
