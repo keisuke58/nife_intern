@@ -119,3 +119,6 @@ external_data/
 
 # Job error logs (machine-specific)
 logs/*.err
+
+# Reference papers (external PDFs, large)
+docs/refs/
