@@ -189,6 +189,18 @@ $\Rightarrow$ Pg **decouples** from Fn and goes autonomous.
 
 ---
 
+## Spatial-ecology finding 3: cross-feeding is spatially stratified
+
+![](results/diffusion_fit/spatial_crossfeeding.png){ height=48% }
+
+Does the AGORA lactate backbone (**S. oralis producer → Veillonella consumer**) appear in depth?
+Veillonella's centre-of-mass is **consistently shallower than S. oralis in 10/10 samples**
+(mean $-2.8\,\mu$m, Wilcoxon $p=0.002$).
+$\Rightarrow$ producer basal, consumer above — consistent with **upward lactate diffusion**;
+a spatial validation of the metabolic backbone. (*A. naeslundii* not significant, $p=0.28$.)
+
+---
+
 ## Other: bulk CH ≈ DH
 
 The CH–DH **Bray–Curtis divergence** is $\approx 0.2$ and **flat from Day 1**.
