@@ -1,0 +1,242 @@
+{"type":"entity","name":"Masterarbeit","entityType":"thesis","observations":["Bayesian Inference and Metabolic-Prior Replicator Dynamics for Multi-Species Oral Biofilm Modelling","Betreuer Prof. Junker, IKM/LUH","Deadline 2026-12-19, presentation ~Nov","repo LUHsummer26/30_Masterarbeit (LUH_summer_2026)"]}
+{"type":"entity","name":"Stage1_Heine_5species","entityType":"research_stage","observations":["The ORIGINAL work (修士前半)","in-vitro 5-species GPU-Bayesian ODE inference","4 attractors CS/CH/DS/DH","slides_nishioka_heine2025.pptx (Tmcmc202601)"]}
+{"type":"entity","name":"Stage2_extension","entityType":"research_stage","observations":["The extension (修士後半)","AGORA metabolic prior + in-vivo Dieckow + spatial PDE + FISH","lives mainly in nife (nife_intern)"]}
+{"type":"entity","name":"ch1_introduction","entityType":"thesis_chapter","observations":["peri-implantitis, dysbiosis, the modelling question","TODO Sep 2026"]}
+{"type":"entity","name":"ch2_theory","entityType":"thesis_chapter","observations":["gLV/replicator, TMCMC, FBA, PDE","write first (Sep 2026)"]}
+{"type":"entity","name":"ch3_heine","entityType":"thesis_chapter","observations":["Stage1: 5-species Bayesian inference","source nishioka_heine_paper.tex"]}
+{"type":"entity","name":"ch4_dieckow","entityType":"thesis_chapter","observations":["AGORA prior + in-vivo Dieckow + network","source dieckow_analysis.tex"]}
+{"type":"entity","name":"ch5_integration","entityType":"thesis_chapter","observations":["spatial PDE + FISH + integration of stage 1 and 2"]}
+{"type":"entity","name":"ch6_conclusion","entityType":"thesis_chapter","observations":["summary + outlook, write last"]}
+{"type":"entity","name":"Dieckow2024","entityType":"dataset","observations":["ENA PRJEB71108","10 patients x 3 weeks x 10 guilds","primary in-vivo longitudinal fit/LOO"]}
+{"type":"entity","name":"Botelho2021","entityType":"dataset","observations":["PRJNA725874","15 patients x 7 timepoints","independent cohort for cross-validation"]}
+{"type":"entity","name":"Szafranski2025","entityType":"dataset","observations":["mSystems 16S, 127 cross-sectional, 5 genera","source of the L1/L2 metabolic sign priors"]}
+{"type":"entity","name":"Heine2025_HOBIC_FISH","entityType":"dataset","observations":["in-vitro flow-chamber FISH .lif, 5 species","11 files, CH/DH, days 1/6/10/15/21, Ti","4-channel FISH, Fn = blue∩red dual label"]}
+{"type":"entity","name":"Joshi2025","entityType":"dataset","observations":["PRJNA1192962","clinical GDI validation cohort","awaiting metadata"]}
+{"type":"entity","name":"gLV_replicator","entityType":"method","observations":["generalized Lotka-Volterra / replicator on the simplex","asymmetric A (gLV), symmetric A (Hamilton)"]}
+{"type":"entity","name":"TMCMC","entityType":"method","observations":["10000-particle posterior of A","canonical run results/ultimate_10000p","GPU-accelerated"]}
+{"type":"entity","name":"AGORA_sign_prior","entityType":"method","observations":["P_ij = sgn(F_ij) from genome-scale FBA cross-feeding","constrains the SIGN of A, not magnitude","3 layers L1/L2 Szafranski + L3 AGORA2"]}
+{"type":"entity","name":"MICOM","entityType":"method","observations":["community FBA, cooperative tradeoff tau=0.5","100% sign agreement","Strep->Veillonella lactate flux 97.7"]}
+{"type":"entity","name":"spatial_PDE","entityType":"method","observations":["reaction-diffusion: D_i d2phi/dz2 - u dphi/dz + R(phi)","A,b fixed from Stage1 Heine TMCMC; fit D_i,u","nsp_pde_1d/2d/3d_heine.py"]}
+{"type":"entity","name":"cross_diffusion","entityType":"method","observations":["volume-filling J_i=-D_i[(1-rho)grad phi_i + phi_i grad rho]","--crossdiff in nsp_pde_3d; simplex-preserving","reaction dominates -> no Turing patterns"]}
+{"type":"entity","name":"PINN_3D","entityType":"method","observations":["phi_theta(x,y,z,t)->5sp, data + PDE-residual loss","infers D_i,u via autodiff; pinn_3d_inverse.py","run on vancouver01 GPU"]}
+{"type":"entity","name":"COMETS_dFBA","entityType":"method","observations":["5-species dynamic FBA, AGORA GEMs","forward simulation, DI 0.15 (healthy) vs 0.70 (diseased)"]}
+{"type":"entity","name":"F_crossfeeding_validated","entityType":"finding","observations":["no-prior Hamilton cross-feeding direction validated","78.6% vs random 37.7%, permutation p=4e-4, z=+3.79","competition direction NOT validated; gLV null"]}
+{"type":"entity","name":"F_botelho_2cohort","entityType":"finding","observations":["Dieckow x Botelho prior-free strong-pair signs agree 89%","p~0.02; Actinobacteria axis consistent"]}
+{"type":"entity","name":"F_veillonella_sink","entityType":"finding","observations":["concordant backbone 11 edges all positive p=4e-4","Negativicutes/Veillonella = main lactate sink","strongest network result"]}
+{"type":"entity","name":"F_pg_centralises","entityType":"finding","observations":["Pg eigen-centrality CS 0.32 -> DH 0.51","keystone-like only in dynamic dysbiotic state","So-Veillonella mutualism flips to competition"]}
+{"type":"entity","name":"F_pg_sinks_deep","entityType":"finding","observations":["P. gingivalis centre-of-mass +30um deeper in DH from day6","sedimentation into deep anaerobic niche"]}
+{"type":"entity","name":"F_fnpg_depth_separation","entityType":"finding","observations":["Fn-Pg lateral coloc ~1.0 but 3D coloc 0.22-0.33 from day6","same x,y footprint but separated in DEPTH; Pg below Fn","3D confirmation of Pg sinking; 84 FOVs"]}
+{"type":"entity","name":"F_dh_lateral_homogenisation","entityType":"finding","observations":["DH laterally uniform (xy-CV ~0.33 confluent mat)","CH patchy (CV 0.4-0.9 microcolonies)"]}
+{"type":"entity","name":"F_spatial_crossfeeding","entityType":"finding","observations":["So(producer)->Veillonella(consumer) spatially stratified","Veillonella shallower 10/10 samples, Wilcoxon p=0.002","consistent with upward lactate diffusion"]}
+{"type":"entity","name":"F_ph_prediction","entityType":"finding","observations":["pH from 10000p Hamilton posterior, independent R2=0.78","RMSE 0.13, LOO R2=0.92; pH not used in calibration"]}
+{"type":"entity","name":"F_limited_identifiability","entityType":"finding","observations":["diffusion fit converges (CH loss 0.030, DH 0.091) but several D_i hit lower bound 1e-5","depth profiles underdetermine the 5 diffusivities","3D PINN agrees; D illustrative"]}
+{"type":"entity","name":"F_no_turing_patterns","entityType":"finding","observations":["cross-diffusion does NOT form lateral Turing patterns","strong replicator reaction dominates -> homogenises","matches DH lateral uniformity; CH patchiness is outside the model"]}
+{"type":"entity","name":"deck_overview","entityType":"deck","observations":["umbrella deck, JA+EN, NIFE_slides/","has Heine (1) starting-point slide + graphical abstract + real-data pipeline figure"]}
+{"type":"entity","name":"deck_spatial_pde","entityType":"deck","observations":["Heine HOBIC spatial extension, JA+EN, 21 pages","findings 1-5 + converged/weakly-identified params"]}
+{"type":"entity","name":"deck_defense","entityType":"deck","observations":["~18-slide condensed Nov defense deck, JA+EN"]}
+{"type":"entity","name":"S.oralis","entityType":"species","observations":["So; pioneer/base colonizer","lactate PRODUCER","FISH: blue channel (minus Fn)","maps to guild Bacilli"]}
+{"type":"entity","name":"A.naeslundii","entityType":"species","observations":["An; Actinomyces","lactate consumer (weak spatial stratification)","FISH: green channel","maps to guild Actinobacteria"]}
+{"type":"entity","name":"V.dispar_parvula","entityType":"species","observations":["Vd/Vp; Veillonella","lactate CONSUMER, main metabolic sink","FISH: yellow channel","maps to guild Negativicutes"]}
+{"type":"entity","name":"F.nucleatum","entityType":"species","observations":["Fn; classic 'bridge' organism","FISH: DUAL-labelled = blue ∩ red","shares x,y with Pg but separated in depth","maps to guild Fusobacteriia"]}
+{"type":"entity","name":"P.gingivalis","entityType":"species","observations":["Pg; keystone pathogen (peri-implantitis)","anaerobe, sinks to deep layers in dysbiosis","FISH: red channel (minus Fn)","maps to guild Bacteroidia"]}
+{"type":"entity","name":"Bacilli","entityType":"guild","observations":["Streptococcus etc.; dominant in-vivo (mean 0.547)","highest betweenness 0.78 = structural bridge (not Fn)","representative S. gordonii"]}
+{"type":"entity","name":"Negativicutes","entityType":"guild","observations":["Veillonella; the lactate SINK of the concordant backbone","representative V. parvula"]}
+{"type":"entity","name":"Bacteroidia","entityType":"guild","observations":["P. gingivalis; eigen-centrality rank ~4 = NOT a static keystone","representative P. melaninogenica"]}
+{"type":"entity","name":"Fusobacteriia","entityType":"guild","observations":["Fusobacterium; basal producer in trophic terms","representative F. nucleatum"]}
+{"type":"entity","name":"Actinobacteria","entityType":"guild","observations":["Actinomyces/Rothia; most central by eigen-centrality 0.58","representative A. naeslundii"]}
+{"type":"entity","name":"lactate","entityType":"metabolite","observations":["central cross-feeding currency","produced by Strep(So), consumed by Veillonella/Actinobacteria","the concordant backbone is lactate cross-feeding"]}
+{"type":"entity","name":"succinate","entityType":"metabolite","observations":["fermentation product seen in COMETS dFBA","metabolite panel of sweep_crossfeeding"]}
+{"type":"entity","name":"H2O2","entityType":"metabolite","observations":["toxin; Streptococcus produces, Bacteroidia/Actinobacteria inhibited","the only inhibition signal that fires in the sign prior (2 pairs)"]}
+{"type":"entity","name":"CS_state","entityType":"condition","observations":["commensal x static attractor"]}
+{"type":"entity","name":"CH_state","entityType":"condition","observations":["commensal x HOBIC (Ti flow chamber)","diffusion fit CH nz32_eps1e-3 loss 0.030 (D mostly at bound)","laterally patchy (CV 0.4-0.9)"]}
+{"type":"entity","name":"DS_state","entityType":"condition","observations":["dysbiotic x static attractor"]}
+{"type":"entity","name":"DH_state","entityType":"condition","observations":["dysbiotic x HOBIC; the main dysbiosis case","Pg sinks deep, laterally homogeneous (CV~0.33)","diffusion fit DH fast_nz24 loss 0.091"]}
+{"type":"entity","name":"nsp_pde_3d_heine.py","entityType":"script","observations":["3D reaction-diffusion solver, operator-split","--ic (FISH lateral IC), --crossdiff, --t-end","depends on Tmcmc202601 NSP core (hamilton_ode_jax_nsp)"]}
+{"type":"entity","name":"pinn_3d_inverse.py","entityType":"script","observations":["3D PINN phi(x,y,z,t), diagonal + --crossdiff","infers D_i,u; runs on GPU"]}
+{"type":"entity","name":"fish_3d_batch.py","entityType":"script","observations":["batch per-voxel decode of all 84 FOVs","lateral heterogeneity + Fn-Pg lateral/3D coloc","saves phi(x,y,z,5) IC per (cond,day); HEAVY"]}
+{"type":"entity","name":"build_net_flow_expanded.py","entityType":"script","observations":["builds the 10x10 signed net_flow / sign prior","L1+L2 Szafranski + L3 AGORA2 FBA"]}
+{"type":"entity","name":"aggregate_diffusion_sweep.py","entityType":"script","observations":["scans D_fit_*.json, picks best per condition","writes sweep_summary.csv"]}
+{"type":"entity","name":"paper_data.py","entityType":"script","observations":["single source of truth for the canonical 5sp posterior","PAPER_5SP_DIR = results/ultimate_10000p"]}
+{"type":"entity","name":"nife_intern","entityType":"infra","observations":["GitHub keisuke58/nife_intern; the main analysis repo","checked out at IKM_Hiwi/nife"]}
+{"type":"entity","name":"Tmcmc202601","entityType":"infra","observations":["GitHub keisuke58/Tmcmc202601; 5-species Bayesian + NSP core + paper","holds slides_nishioka_heine2025 + pH validation"]}
+{"type":"entity","name":"fifawc","entityType":"infra","observations":["PBS cluster (CPU, JAX-CPU .venv_jax)","SHARED — diffusion-fit sweep jobs run here"]}
+{"type":"entity","name":"vancouver01","entityType":"infra","observations":["GPU host, 4x CUDA, jax 0.6.2, conda klempt_fem","SHARED — non-destructive scratch clone /home/nishioka/nife_gpurun"]}
+{"type":"entity","name":"ultimate_10000p","entityType":"infra","observations":["results/ultimate_10000p = canonical 5sp 10000-particle posterior","DH = dh_baseline"]}
+{"type":"entity","name":"Junker","entityType":"person","observations":["Prof. Philipp Junker, IKM/LUH; thesis supervisor (Betreuer)","Hamilton/Extended-Hamilton principle"]}
+{"type":"entity","name":"Klempt","entityType":"person","observations":["Felix Klempt, IKM; Hamilton ODE / NSP","conda env klempt_fem named after"]}
+{"type":"entity","name":"Szafranski","entityType":"person","observations":["Szymon P. Szafranski, Hannover Medical School / NIFE","FISH data lab + metabolic interaction supplement (L1/L2 prior)"]}
+{"type":"entity","name":"Heine","entityType":"person","observations":["Nils Heine; HOBIC flow-chamber FISH experiments"]}
+{"type":"entity","name":"Stiesch","entityType":"person","observations":["Meike Stiesch, MHH; peri-implantitis / clinical context"]}
+{"type":"entity","name":"gauge_invariance","entityType":"concept","observations":["replicator A invariant under column-wise constant shifts","only column-centered A_eff is meaningful for sign/centrality"]}
+{"type":"entity","name":"Turing_instability","entityType":"concept","observations":["differential-diffusion-driven pattern formation","NOT triggered here: reaction dominates -> homogenisation"]}
+{"type":"entity","name":"identifiability","entityType":"concept","observations":["depth profiles underdetermine the 5 diffusivities","several D_i hit lower bound; absolute scale set by sparse 5 timepoints"]}
+{"type":"entity","name":"simplex_constraint","entityType":"concept","observations":["sum_i phi_i + phi_0 = 1 at each node","volume-filling cross-diffusion preserves it by construction"]}
+{"type":"entity","name":"sign_prior_penalty","entityType":"concept","observations":["one-sided hinge W*[-P_ij A_ij]_+","penalises sign violations only, never magnitude"]}
+{"type":"entity","name":"LOO_CV","entityType":"validation","observations":["leave-one-patient-out cross-validation","best model LOO-RMSE 0.0504 (AGORA W=1.0)"]}
+{"type":"entity","name":"permutation_test","entityType":"validation","observations":["label-shuffle null for sign agreement","cross-feeding 78.6% vs 37.7%, p=4e-4"]}
+{"type":"entity","name":"Manders_M1","entityType":"validation","observations":["fraction of Pg signal co-localised with Fn","lateral (xy) vs 3D (voxel) split reveals depth separation"]}
+{"type":"entity","name":"Q_GDI_Joshi","entityType":"open_question","observations":["Guild Dysbiosis Index vs Joshi 2025 clinical cohort","awaiting metadata from Szafranski; ch4/clinical impact"]}
+{"type":"entity","name":"Q_FNO_surrogate","entityType":"open_question","observations":["Fourier Neural Operator forward surrogate of the 3D PDE","needs SYNTHETIC training data; DeepONet spatial analog"]}
+{"type":"entity","name":"Q_CH_patchiness_mechanism","entityType":"open_question","observations":["CH lateral patchiness is NOT reproduced by the reaction-diffusion model","suggests stochastic colonisation / microcolony seeding outside the model"]}
+{"type":"entity","name":"Q_full_3D_fit","entityType":"open_question","observations":["full-resolution 3D inverse fit of D_i,u on real lateral data","currently illustrative; needs regularisation for identifiability"]}
+{"type":"entity","name":"NSP_Hamilton_model","entityType":"method","observations":["multi-species biofilm model, Extended Hamilton Principle (Junker-Balzani)","NSP state per node g=[phi_1..5, phi_0, psi_1..5, gamma] (dim 12)","0D limit = replicator with linear payoffs; symmetric A = 15 free params","implemented in Tmcmc202601/data_5species/main/hamilton_ode_jax_nsp.py"]}
+{"type":"entity","name":"psi_internal_variable","entityType":"concept","observations":["NSP/Hamilton dual (internal) variable, one per species","drives dissipative relaxation; NOT a spatial axis","free-psi in Phase 2 = full joint posterior"]}
+{"type":"entity","name":"NUTS_HMC","entityType":"method","observations":["JAX NUTS / HMC samplers for the 5-species posterior","compared against RW-TMCMC (HUTS vs HMC vs RW)","run_jax_ode_nuts.sh"]}
+{"type":"entity","name":"TMCMC_sampler","entityType":"method","observations":["Transitional MCMC, GPU-accelerated","N_p=10000 particles; phase-selection / tempering strategy","the canonical Phase-2 posterior sampler"]}
+{"type":"entity","name":"DeepONet_surrogate","entityType":"method","observations":["operator-learning surrogate of the 5-species ODE","~100x speedup; results/deeponet_* runs","the 0D analog of a future spatial FNO (Q_FNO_surrogate)"]}
+{"type":"entity","name":"multiGPU_4gpu","entityType":"method","observations":["4-GPU parallel TMCMC (vancouver01 / Stuttgart)","run_jax_ode_4gpu.sh, run_jax_ode_4parallel_stuttgart.sh"]}
+{"type":"entity","name":"Bayes_factor_comparison","entityType":"validation","observations":["model comparison via Bayes factors (3-model comparison)","selects the NSP/Hamilton model class"]}
+{"type":"entity","name":"cross_condition_transfer","entityType":"validation","observations":["fit on one condition, predict another (transfer RMSE)","independent validation; topological reorganisation rho(DH-CS)=-0.49"]}
+{"type":"entity","name":"phase2_freepsi_posterior","entityType":"method","observations":["Phase 2 = N_p=10000, free-psi, full joint posterior","the PAPER-grade 5-species posterior = ultimate_10000p","nishioka_heine_paper.tex Phase 2"]}
+{"type":"entity","name":"sign_probability_heatmap","entityType":"finding","observations":["per-cell sign probability of A from the 10000p posterior","feeds the network rewiring P_facilitation analysis"]}
+{"type":"entity","name":"slides_nishioka_heine2025","entityType":"deck","observations":["37-panel poster-style deck (Tmcmc202601), the ORIGINAL research","GPU-Accelerated Bayesian Inference of Multi-Species Biofilm via TMCMC","now includes the updated pH-prediction (10000p) frame"]}
+{"type":"entity","name":"nishioka_heine_paper","entityType":"paper","observations":["Tmcmc202601/docs(or nife/heine_paper)/nishioka_heine_paper.tex","authors: Nishioka, Klempt, Geisler, Soleimani, Mukherjee, Szafranski, Stiesch, Junker","the Stage-1 manuscript; source for thesis ch3"]}
+{"type":"entity","name":"FEM_Pg_model","entityType":"method","observations":["FEM model of a P. gingivalis biofilm (multiscale extension)","comets/fem_pg_model.py; roughness/coverage fits"]}
+{"type":"entity","name":"oral_fluid_medium","entityType":"concept","observations":["Dawes 2008 saliva-based FBA medium (v1 blood-plasma scale, v2 realistic)","medium design drives whether cross-feeding signal appears (mu->0 if too poor)"]}
+{"type":"relation","from":"Masterarbeit","to":"ch1_introduction","relationType":"has_chapter"}
+{"type":"relation","from":"Masterarbeit","to":"ch2_theory","relationType":"has_chapter"}
+{"type":"relation","from":"Masterarbeit","to":"ch3_heine","relationType":"has_chapter"}
+{"type":"relation","from":"Masterarbeit","to":"ch4_dieckow","relationType":"has_chapter"}
+{"type":"relation","from":"Masterarbeit","to":"ch5_integration","relationType":"has_chapter"}
+{"type":"relation","from":"Masterarbeit","to":"ch6_conclusion","relationType":"has_chapter"}
+{"type":"relation","from":"Stage2_extension","to":"Stage1_Heine_5species","relationType":"extends"}
+{"type":"relation","from":"ch3_heine","to":"Stage1_Heine_5species","relationType":"covers"}
+{"type":"relation","from":"ch4_dieckow","to":"AGORA_sign_prior","relationType":"covers"}
+{"type":"relation","from":"ch4_dieckow","to":"Dieckow2024","relationType":"covers"}
+{"type":"relation","from":"ch5_integration","to":"spatial_PDE","relationType":"covers"}
+{"type":"relation","from":"ch5_integration","to":"Heine2025_HOBIC_FISH","relationType":"covers"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"TMCMC","relationType":"uses"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"gLV_replicator","relationType":"uses"}
+{"type":"relation","from":"TMCMC","to":"gLV_replicator","relationType":"infers_posterior_of"}
+{"type":"relation","from":"AGORA_sign_prior","to":"Szafranski2025","relationType":"derived_from"}
+{"type":"relation","from":"AGORA_sign_prior","to":"MICOM","relationType":"uses"}
+{"type":"relation","from":"AGORA_sign_prior","to":"gLV_replicator","relationType":"constrains_sign_of"}
+{"type":"relation","from":"gLV_replicator","to":"Dieckow2024","relationType":"fitted_to"}
+{"type":"relation","from":"spatial_PDE","to":"Heine2025_HOBIC_FISH","relationType":"fitted_to"}
+{"type":"relation","from":"spatial_PDE","to":"TMCMC","relationType":"fixes_reaction_from"}
+{"type":"relation","from":"cross_diffusion","to":"spatial_PDE","relationType":"variant_of"}
+{"type":"relation","from":"PINN_3D","to":"spatial_PDE","relationType":"neural_surrogate_inverse_of"}
+{"type":"relation","from":"PINN_3D","to":"Heine2025_HOBIC_FISH","relationType":"trained_on"}
+{"type":"relation","from":"COMETS_dFBA","to":"MICOM","relationType":"uses_same_GEMs_as"}
+{"type":"relation","from":"F_crossfeeding_validated","to":"AGORA_sign_prior","relationType":"validates"}
+{"type":"relation","from":"F_crossfeeding_validated","to":"Dieckow2024","relationType":"supported_by"}
+{"type":"relation","from":"F_botelho_2cohort","to":"Botelho2021","relationType":"supported_by"}
+{"type":"relation","from":"F_botelho_2cohort","to":"Dieckow2024","relationType":"supported_by"}
+{"type":"relation","from":"F_veillonella_sink","to":"AGORA_sign_prior","relationType":"supported_by"}
+{"type":"relation","from":"F_pg_centralises","to":"TMCMC","relationType":"supported_by"}
+{"type":"relation","from":"F_pg_sinks_deep","to":"Heine2025_HOBIC_FISH","relationType":"supported_by"}
+{"type":"relation","from":"F_fnpg_depth_separation","to":"Heine2025_HOBIC_FISH","relationType":"supported_by"}
+{"type":"relation","from":"F_dh_lateral_homogenisation","to":"Heine2025_HOBIC_FISH","relationType":"supported_by"}
+{"type":"relation","from":"F_spatial_crossfeeding","to":"Heine2025_HOBIC_FISH","relationType":"supported_by"}
+{"type":"relation","from":"F_spatial_crossfeeding","to":"AGORA_sign_prior","relationType":"spatially_validates"}
+{"type":"relation","from":"F_ph_prediction","to":"TMCMC","relationType":"supported_by"}
+{"type":"relation","from":"F_limited_identifiability","to":"spatial_PDE","relationType":"limits"}
+{"type":"relation","from":"F_limited_identifiability","to":"PINN_3D","relationType":"confirmed_by"}
+{"type":"relation","from":"F_no_turing_patterns","to":"cross_diffusion","relationType":"found_in"}
+{"type":"relation","from":"F_no_turing_patterns","to":"F_dh_lateral_homogenisation","relationType":"consistent_with"}
+{"type":"relation","from":"ch3_heine","to":"F_ph_prediction","relationType":"presents"}
+{"type":"relation","from":"ch4_dieckow","to":"F_crossfeeding_validated","relationType":"presents"}
+{"type":"relation","from":"ch4_dieckow","to":"F_botelho_2cohort","relationType":"presents"}
+{"type":"relation","from":"ch4_dieckow","to":"F_veillonella_sink","relationType":"presents"}
+{"type":"relation","from":"ch4_dieckow","to":"F_pg_centralises","relationType":"presents"}
+{"type":"relation","from":"ch5_integration","to":"F_pg_sinks_deep","relationType":"presents"}
+{"type":"relation","from":"ch5_integration","to":"F_fnpg_depth_separation","relationType":"presents"}
+{"type":"relation","from":"ch5_integration","to":"F_dh_lateral_homogenisation","relationType":"presents"}
+{"type":"relation","from":"ch5_integration","to":"F_spatial_crossfeeding","relationType":"presents"}
+{"type":"relation","from":"ch5_integration","to":"F_limited_identifiability","relationType":"presents"}
+{"type":"relation","from":"deck_overview","to":"Stage1_Heine_5species","relationType":"summarises"}
+{"type":"relation","from":"deck_spatial_pde","to":"F_fnpg_depth_separation","relationType":"presents"}
+{"type":"relation","from":"deck_defense","to":"Masterarbeit","relationType":"defends"}
+{"type":"relation","from":"S.oralis","to":"Bacilli","relationType":"maps_to_guild"}
+{"type":"relation","from":"A.naeslundii","to":"Actinobacteria","relationType":"maps_to_guild"}
+{"type":"relation","from":"V.dispar_parvula","to":"Negativicutes","relationType":"maps_to_guild"}
+{"type":"relation","from":"F.nucleatum","to":"Fusobacteriia","relationType":"maps_to_guild"}
+{"type":"relation","from":"P.gingivalis","to":"Bacteroidia","relationType":"maps_to_guild"}
+{"type":"relation","from":"S.oralis","to":"lactate","relationType":"produces"}
+{"type":"relation","from":"V.dispar_parvula","to":"lactate","relationType":"consumes"}
+{"type":"relation","from":"A.naeslundii","to":"lactate","relationType":"consumes"}
+{"type":"relation","from":"Bacilli","to":"H2O2","relationType":"produces"}
+{"type":"relation","from":"lactate","to":"F_veillonella_sink","relationType":"underlies"}
+{"type":"relation","from":"lactate","to":"F_spatial_crossfeeding","relationType":"underlies"}
+{"type":"relation","from":"F.nucleatum","to":"F_fnpg_depth_separation","relationType":"subject_of"}
+{"type":"relation","from":"P.gingivalis","to":"F_pg_sinks_deep","relationType":"subject_of"}
+{"type":"relation","from":"P.gingivalis","to":"F_pg_centralises","relationType":"subject_of"}
+{"type":"relation","from":"Heine2025_HOBIC_FISH","to":"S.oralis","relationType":"contains_species"}
+{"type":"relation","from":"Heine2025_HOBIC_FISH","to":"P.gingivalis","relationType":"contains_species"}
+{"type":"relation","from":"CH_state","to":"CH_state","relationType":"is_commensal_HOBIC"}
+{"type":"relation","from":"DH_state","to":"F_pg_sinks_deep","relationType":"exhibits"}
+{"type":"relation","from":"DH_state","to":"F_dh_lateral_homogenisation","relationType":"exhibits"}
+{"type":"relation","from":"CH_state","to":"Q_CH_patchiness_mechanism","relationType":"raises"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"CS_state","relationType":"models"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"CH_state","relationType":"models"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"DS_state","relationType":"models"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"DH_state","relationType":"models"}
+{"type":"relation","from":"nsp_pde_3d_heine.py","to":"spatial_PDE","relationType":"implements"}
+{"type":"relation","from":"nsp_pde_3d_heine.py","to":"cross_diffusion","relationType":"implements"}
+{"type":"relation","from":"pinn_3d_inverse.py","to":"PINN_3D","relationType":"implements"}
+{"type":"relation","from":"fish_3d_batch.py","to":"F_fnpg_depth_separation","relationType":"produces"}
+{"type":"relation","from":"fish_3d_batch.py","to":"F_dh_lateral_homogenisation","relationType":"produces"}
+{"type":"relation","from":"build_net_flow_expanded.py","to":"AGORA_sign_prior","relationType":"implements"}
+{"type":"relation","from":"aggregate_diffusion_sweep.py","to":"spatial_PDE","relationType":"aggregates_fits_of"}
+{"type":"relation","from":"paper_data.py","to":"ultimate_10000p","relationType":"points_to"}
+{"type":"relation","from":"TMCMC","to":"ultimate_10000p","relationType":"stored_in"}
+{"type":"relation","from":"nsp_pde_3d_heine.py","to":"vancouver01","relationType":"runs_on"}
+{"type":"relation","from":"pinn_3d_inverse.py","to":"vancouver01","relationType":"runs_on"}
+{"type":"relation","from":"spatial_PDE","to":"fifawc","relationType":"fitted_on"}
+{"type":"relation","from":"nsp_pde_3d_heine.py","to":"Tmcmc202601","relationType":"depends_on_NSP_core_in"}
+{"type":"relation","from":"Heine","to":"Heine2025_HOBIC_FISH","relationType":"produced"}
+{"type":"relation","from":"Szafranski","to":"Szafranski2025","relationType":"produced"}
+{"type":"relation","from":"Szafranski","to":"AGORA_sign_prior","relationType":"provided_priors_for"}
+{"type":"relation","from":"Junker","to":"Masterarbeit","relationType":"supervises"}
+{"type":"relation","from":"Klempt","to":"gLV_replicator","relationType":"developed_Hamilton_form"}
+{"type":"relation","from":"Stiesch","to":"Joshi2025","relationType":"clinical_context_for"}
+{"type":"relation","from":"gauge_invariance","to":"F_pg_centralises","relationType":"applies_to"}
+{"type":"relation","from":"Turing_instability","to":"F_no_turing_patterns","relationType":"tested_in"}
+{"type":"relation","from":"identifiability","to":"F_limited_identifiability","relationType":"underlies"}
+{"type":"relation","from":"simplex_constraint","to":"cross_diffusion","relationType":"preserved_by"}
+{"type":"relation","from":"sign_prior_penalty","to":"AGORA_sign_prior","relationType":"mechanism_of"}
+{"type":"relation","from":"LOO_CV","to":"F_crossfeeding_validated","relationType":"used_by"}
+{"type":"relation","from":"permutation_test","to":"F_crossfeeding_validated","relationType":"establishes"}
+{"type":"relation","from":"Manders_M1","to":"F_fnpg_depth_separation","relationType":"quantifies"}
+{"type":"relation","from":"Q_GDI_Joshi","to":"ch4_dieckow","relationType":"feeds"}
+{"type":"relation","from":"Q_GDI_Joshi","to":"Joshi2025","relationType":"needs_data_from"}
+{"type":"relation","from":"Q_FNO_surrogate","to":"spatial_PDE","relationType":"would_accelerate"}
+{"type":"relation","from":"Q_FNO_surrogate","to":"ch6_conclusion","relationType":"outlook_for"}
+{"type":"relation","from":"Q_full_3D_fit","to":"PINN_3D","relationType":"extends"}
+{"type":"relation","from":"Q_CH_patchiness_mechanism","to":"F_no_turing_patterns","relationType":"motivated_by"}
+{"type":"relation","from":"nife_intern","to":"Stage2_extension","relationType":"hosts"}
+{"type":"relation","from":"Tmcmc202601","to":"Stage1_Heine_5species","relationType":"hosts"}
+{"type":"relation","from":"deck_overview","to":"Stage2_extension","relationType":"summarises"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"NSP_Hamilton_model","relationType":"uses"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"TMCMC_sampler","relationType":"uses"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"NUTS_HMC","relationType":"uses"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"DeepONet_surrogate","relationType":"uses"}
+{"type":"relation","from":"Stage1_Heine_5species","to":"multiGPU_4gpu","relationType":"uses"}
+{"type":"relation","from":"NSP_Hamilton_model","to":"psi_internal_variable","relationType":"has_state"}
+{"type":"relation","from":"NSP_Hamilton_model","to":"gLV_replicator","relationType":"reduces_to_in_0D"}
+{"type":"relation","from":"NSP_Hamilton_model","to":"psi_internal_variable","relationType":"introduces"}
+{"type":"relation","from":"TMCMC_sampler","to":"phase2_freepsi_posterior","relationType":"produces"}
+{"type":"relation","from":"phase2_freepsi_posterior","to":"ultimate_10000p","relationType":"stored_in"}
+{"type":"relation","from":"phase2_freepsi_posterior","to":"NSP_Hamilton_model","relationType":"posterior_over"}
+{"type":"relation","from":"TMCMC","to":"TMCMC_sampler","relationType":"same_as"}
+{"type":"relation","from":"DeepONet_surrogate","to":"NSP_Hamilton_model","relationType":"surrogate_of"}
+{"type":"relation","from":"DeepONet_surrogate","to":"Q_FNO_surrogate","relationType":"spatial_analog_is"}
+{"type":"relation","from":"multiGPU_4gpu","to":"vancouver01","relationType":"runs_on"}
+{"type":"relation","from":"Bayes_factor_comparison","to":"NSP_Hamilton_model","relationType":"selects"}
+{"type":"relation","from":"cross_condition_transfer","to":"Stage1_Heine_5species","relationType":"validates"}
+{"type":"relation","from":"sign_probability_heatmap","to":"phase2_freepsi_posterior","relationType":"computed_from"}
+{"type":"relation","from":"sign_probability_heatmap","to":"F_pg_centralises","relationType":"feeds"}
+{"type":"relation","from":"slides_nishioka_heine2025","to":"Stage1_Heine_5species","relationType":"presents"}
+{"type":"relation","from":"slides_nishioka_heine2025","to":"Tmcmc202601","relationType":"hosted_in"}
+{"type":"relation","from":"slides_nishioka_heine2025","to":"F_ph_prediction","relationType":"presents"}
+{"type":"relation","from":"nishioka_heine_paper","to":"Stage1_Heine_5species","relationType":"documents"}
+{"type":"relation","from":"nishioka_heine_paper","to":"ch3_heine","relationType":"source_for"}
+{"type":"relation","from":"nishioka_heine_paper","to":"Junker","relationType":"authored_with"}
+{"type":"relation","from":"nishioka_heine_paper","to":"Klempt","relationType":"authored_with"}
+{"type":"relation","from":"nishioka_heine_paper","to":"Szafranski","relationType":"authored_with"}
+{"type":"relation","from":"NSP_Hamilton_model","to":"Tmcmc202601","relationType":"implemented_in"}
+{"type":"relation","from":"FEM_Pg_model","to":"P.gingivalis","relationType":"models"}
+{"type":"relation","from":"FEM_Pg_model","to":"Stage2_extension","relationType":"part_of"}
+{"type":"relation","from":"oral_fluid_medium","to":"AGORA_sign_prior","relationType":"used_by"}
+{"type":"relation","from":"oral_fluid_medium","to":"MICOM","relationType":"used_by"}
+{"type":"relation","from":"Junker","to":"NSP_Hamilton_model","relationType":"originated_principle"}
