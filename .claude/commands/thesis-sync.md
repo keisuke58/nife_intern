@@ -97,18 +97,54 @@ deck hitting a CJK/symbol char that should be handled via `docs/_en_symbols.tex`
 the bottom. Report counts; only flag as needing attention if `! LaTeX Error > 0`
 or the PDF page count is 0 / clearly wrong.
 
-## (d) Commit & push (only the regenerated artefacts)
+## (d) Snapshot the knowledge graph (memory-MCP → git-tracked file)
 
-Stage just what this run regenerated, commit, and push the current branch. Do NOT
-`git stash` or `git pull` (shared checkout). Stage the changed deck sources and the
-regenerated figure / sweep artefacts:
+The thesis knowledge graph lives in the **memory-MCP** local store, which is
+**outside git** (`…/@modelcontextprotocol/server-memory/dist/memory.jsonl`). Copy
+the live store into the repo so the graph is version-controlled and pushed. This is
+a plain `cp` of a small JSONL — cheap, no compute. (If the memory MCP was registered
+with `MEMORY_FILE_PATH` pointing into the repo, the store IS `docs/knowledge_graph.jsonl`
+already and this copy is a harmless no-op.)
 
 ```bash
-git add docs/*_slides*.md docs/*_slides*.tex \
+MEM=/home/nishioka/.nvm/versions/node/v22.22.0/lib/node_modules/@modelcontextprotocol/server-memory/dist/memory.jsonl
+[ -f "$MEM" ] && cp "$MEM" docs/knowledge_graph.jsonl && \
+  echo "graph: $(grep -c '"type":"entity"' docs/knowledge_graph.jsonl) entities, $(grep -c '"type":"relation"' docs/knowledge_graph.jsonl) relations"
+```
+
+If `$MEM` does not exist (different node version / path), find it once with
+`find ~/.nvm -name memory.jsonl` and copy that instead; report if not found rather
+than failing the whole sync.
+
+Also mirror the **writing guide** from its canonical location in this repo into the
+thesis repo (`30_Masterarbeit/notes/`), so both repos carry an identical copy. Plain
+`cp` — no compute. Then commit it in the thesis repo (a separate, non-shared repo;
+NO `stash`/`pull`):
+
+```bash
+GUIDE=docs/THESIS_WRITING_GUIDE.md
+THESIS=/home/nishioka/LUHsummer26/30_Masterarbeit
+if [ -f "$GUIDE" ] && [ -d "$THESIS/notes" ]; then
+  cp "$GUIDE" "$THESIS/notes/writing_guide.md"
+  git -C "$THESIS" add notes/writing_guide.md
+  git -C "$THESIS" diff --cached --quiet notes/writing_guide.md || \
+    { git -C "$THESIS" commit -q -m "notes: sync writing_guide from nife/docs/THESIS_WRITING_GUIDE.md"; \
+      git -C "$THESIS" push 2>&1 | tail -1; }
+fi
+```
+
+## (e) Commit & push (only the regenerated artefacts)
+
+Stage just what this run regenerated, commit, and push the current branch. Do NOT
+`git stash` or `git pull` (shared checkout). Stage the changed deck sources, the
+regenerated figure / sweep artefacts, and the graph snapshot:
+
+```bash
+git add docs/*_slides*.md docs/*_slides*.tex docs/knowledge_graph.jsonl \
         results/figures/*.png \
         results/diffusion_fit/{depth_niche.png,ch_dh_divergence.png,spatial_crossfeeding.png,zprofiles_all_ti_*.png,sweep_summary.csv}
 git status        # eyeball before committing
-git commit -m "docs: thesis-sync — regen light figures + rebuild decks (JA+EN)"
+git commit -m "docs: thesis-sync — regen light figures + rebuild decks (JA+EN) + graph snapshot"
 git push
 ```
 
@@ -116,7 +152,7 @@ Note: compiled deck **PDFs** and LaTeX junk (`*.aux/.log/.nav/.snm/.toc/.vrb/.ou
 are gitignored — do not force-add them. If `git status` shows unexpected large or
 unrelated files, STOP and report rather than committing them.
 
-## (e) Upload the deck PDFs to Drive
+## (f) Upload the deck PDFs to Drive
 
 For each stem actually built, copy the PDF(s) to the Drive folder:
 
