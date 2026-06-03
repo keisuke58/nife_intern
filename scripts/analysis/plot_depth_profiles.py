@@ -130,7 +130,9 @@ def fig_overlay(data, days, out):
 def fig_stacked(data, conds, days, out):
     """Per-depth stacked-area composition (fractions sum to 1 at each depth)."""
     nr, nc = len(conds), len(days)
-    fig, axes = plt.subplots(nr, nc, figsize=(2.9 * nc, 3.4 * nr), squeeze=False)
+    # keep a low height:width aspect so the float fits even at a page bottom
+    # (pandoc article: a tall figure overflows the bottom margin and gets clipped)
+    fig, axes = plt.subplots(nr, nc, figsize=(3.2 * nc, 2.5 * nr), squeeze=False)
     for ri, cond in enumerate(conds):
         for ci, day in enumerate(days):
             ax = axes[ri][ci]
