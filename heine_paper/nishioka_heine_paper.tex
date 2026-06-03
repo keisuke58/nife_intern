@@ -769,11 +769,9 @@ Effective dimensionality analysis confirms that all 15 parameters are data-infor
 
 \paragraph{Future work.}
 \begin{itemize}[nosep,leftmargin=*]
-    \item State-dependent interaction matrices $A_{ij}(\mathrm{pH}, c^*)$ to capture the full terminal pathogen surge.
-    \item Integration with continuum PDE models for spatially resolved inference~\cite{Klempt2025ContinuumBiofilm}.
-    \item Surrogate-accelerated TMCMC with Bayesian neural operators~\cite{AlphaVIDeepONet2025} for larger particle ensembles.
-    \item Virtual element discretisation~\cite{Klempt2024ContinuumGrowth} for conformal biofilm--implant interface meshing.
-    \item External validation against independent in-vivo datasets (e.g., Dieckow et al.).
+    \item \textbf{Direct experimental test of the predicted gating edge:} a leave-one-species-out co-culture omitting \textit{F.\ nucleatum}, to verify that the dysbiotic-HOBIC \textit{Pg} surge collapses as the inferred network predicts.
+    \item \textbf{Spatially resolved inference:} coupling the framework to the continuum PDE biofilm model~\cite{Klempt2025ContinuumBiofilm} to exploit depth-resolved FISH/CLSM imaging.
+    \item \textbf{External validation:} testing the inferred interactions against independent in-vivo datasets (e.g., Dieckow et al.).
 \end{itemize}
 
 \section*{Data and Code Availability}
@@ -782,22 +780,32 @@ are available at \url{https://github.com/keisuke58/Tmcmc202601}.
 The experimental time-course data (Heine et al.\ 2025, four conditions) are available
 from the corresponding author (S.P.\ Szafra\'{n}ski) on reasonable request.
 
-\section*{Author Contributions}
-K.N.\ and P.J.\ conceived the study.
-K.N.\ developed the inference framework, implemented the GPU/JAX forward model and the TMCMC sampler, performed the analyses, and drafted the manuscript.
-F.K.\ and H.G.\ contributed the continuum biofilm model and its numerical formulation; M.So.\ contributed to the variational formulation and numerical methods.
-N.H.\ designed and performed the in-vitro biofilm experiments and curated the time-course data.
-K.D.-N.\ provided imaging resources and data and contributed to data interpretation.
-R.M.\ and S.P.S.\ contributed experimental data and biological interpretation.
-M.St.\ provided clinical context and resources.
-P.J.\ supervised the study and acquired funding.
-All authors critically reviewed and approved the final manuscript.
+% Author Contributions — journal-dependent: many journals (e.g. Frontiers, PLoS)
+% want this statement in the manuscript; others collect CRediT roles in the
+% submission portal. Roles below are a DRAFT — confirm with all co-authors.
+% Uncomment if the target journal requires it in-text.
+% \section*{Author Contributions}
+% K.N.\ and P.J.\ conceived the study.
+% K.N.\ developed the inference framework, implemented the GPU/JAX forward model and the TMCMC sampler, performed the analyses, and drafted the manuscript.
+% F.K.\ and H.G.\ contributed the continuum biofilm model and its numerical formulation; M.So.\ contributed to the variational formulation and numerical methods.
+% N.H.\ designed and performed the in-vitro biofilm experiments and curated the time-course data.
+% K.D.-N.\ provided imaging resources and data and contributed to data interpretation.
+% R.M.\ and S.P.S.\ contributed experimental data and biological interpretation.
+% M.St.\ provided clinical context and resources.
+% P.J.\ supervised the study and acquired funding.
+% All authors critically reviewed and approved the final manuscript.
 
-\section*{Funding}
-This work was supported by the Deutsche Forschungsgemeinschaft (DFG) through the
-Collaborative Research Centre SFB/TRR~298 SIIRI (``Safety Integrated and Infection
-Reactive Implants''; project number~[\,XXXXXXXXX\,]).
-% TODO: confirm the exact DFG project/grant number with M.\ Stiesch / P.\ Junker.
+% TODO (Funding) — confirm with M.\ Stiesch / P.\ Junker BEFORE submission.
+% Do NOT assert SFB/TRR-298 SIIRI support unless the grant actually covers this work.
+% If funded, uncomment and fill the project number:
+% \section*{Funding}
+% This work was supported by the Deutsche Forschungsgemeinschaft (DFG) through the
+% Collaborative Research Centre SFB/TRR~298 SIIRI (``Safety Integrated and Infection
+% Reactive Implants''; project number~[\,XXXXXXXXX\,]).
+% Otherwise use the journal's no-grant wording, e.g.:
+% \section*{Funding}
+% This research received no specific grant from any funding agency in the public,
+% commercial, or not-for-profit sectors.
 
 \section*{Conflict of Interest}
 The authors declare that the research was conducted in the absence of any commercial
