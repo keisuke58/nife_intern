@@ -125,6 +125,20 @@ Heine in vitro 系の 4 状態 = commensal/dysbiotic $\times$ static/HOBIC：
 
 ---
 
+## ① 出発点：5 菌種 GPU-Bayesian 推定（Heine in-vitro）
+
+本研究の**原型**。Heine 2025 の in-vitro 5 菌種（So/An/Vd-Vp/Fn/Pg）時系列に、
+**GPU 加速 TMCMC**（$N_p=10{,}000$ 粒子）で対称相互作用行列 $A$ の full joint posterior を推定し、
+4 アトラクター（CS/CH/DS/DH）を再現。
+
+![](results/heine2025/glv_heine_fit_paper.png){ height=40% }
+
+- replicator/Hamilton ODE（$A$ 対称、ψ 自由度込み）。正典 = `results/ultimate_10000p`。
+- **独立検証**：pH 予測 independent $R^2=0.78$（校正未使用）、Gingipain–Pg $r=0.90$。
+- この①を ②（AGORA prior・in-vivo Dieckow・空間 PDE/FISH）へ拡張するのが本研究。
+
+---
+
 ## 柱 1 — 相互作用推定と誠実な検証
 
 ![](dieckow_paper/figures/fig2_loo_comparison.png){ height=44% }
