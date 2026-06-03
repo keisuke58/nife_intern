@@ -156,7 +156,36 @@ python scripts/pde/fit_diffusion_clsm.py --cond DH --data results/diffusion_fit/
 
 ---
 
-## 5. 成果物まとめ
+## 5. 空間生態の発見（fit不要・FISH深さ/voxel解析）
+
+フィットを待たずに、深さプロファイルと voxel デコードから論文に効く空間動態が得られた。一貫して **dysbiosis = P.gingivalis の深部・自律コロニー化** を指す。
+
+### P.gingivalis の深部沈降（dysbiosis）
+
+![depth niche](../results/diffusion_fit/depth_niche.png)
+
+P.gingivalis の重心深さは **DH で Day6 以降 CH より深い（最大 +30 µm）**。嫌気性病原体が dysbiosis で深部の嫌気層にコロニーを作ることと整合（`analyze_depth_niche.py`）。
+
+### F.nucleatum–P.gingivalis 橋渡しは「初期限定」
+
+![Fn-Pg coloc](../results/diffusion_fit/fn_pg_coloc.png)
+
+Fn–Pg 共局在（Manders M1 = Pg信号のうちFnと共在する割合）は **DH 初日に高い（0.76、初期定着の橋渡し）が、Day6以降は CH の方が高く DH では低下（0.15–0.20 vs CH 0.33–0.49）**。→ dysbiosis では Pg が時間とともに Fn から離れ、深部へ**自律化**（`analyze_fish_voxel.py`）。古典的な「Fn橋渡し」は初期定着フェーズの現象。
+
+### その他
+
+- **CH vs DH ダイバージェンス**（Bray-Curtis）は**接種時から ~0.2 で時間的にほぼ一定** — 群集差は初期組成が支配（`ch_dh_divergence.png`）。
+- **不確実性**: DH 後期は Ti FOV 2枚で **bootstrap 90% CI が広く**、点推定の弱さを明示（`bootstrap_ci_pg.png`）。
+- 総バイオマス(FISH相対)は CH が Day6 ピーク、DH が Day15 まで増加（`biomass_growth.png`）。
+
+### より広い文脈（探索的）
+
+- **拡散 D ↔ 生態的中心性**: 5種の拡散係数 D は gLV の A行列での相互作用強度と**負相関**（CH r=−0.40, DH r=−0.47）→「中心的な種ほど動かない」傾向（5種なので示唆的、`d_vs_centrality.png`）。
+- **HOBIC ↔ Dieckow(in-vivo)**: 5種→5ギルドで比較。**ランク一致 ρ=0.70**だが in-vivo は S.oralis 優占(0.63)、HOBIC は等量接種で均等。**CH/DH のバルク存在量はほぼ同一**＝dysbiosis の差は空間/時間（`hobic_vs_dieckow.png`）。
+
+---
+
+## 6. 成果物まとめ
 
 | ファイル | 役割 |
 |---|---|

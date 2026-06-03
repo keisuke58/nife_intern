@@ -155,7 +155,52 @@ With the full dataset in hand (CH/DH × Days 1/6/10/15/21, Ti), the **production
 
 ---
 
-## 5. Deliverables
+## 5. Spatial-ecology findings (fit-free, from the FISH depth / voxels)
+
+Without waiting for the fit, the depth profiles and voxel decode already give
+paper-relevant spatial dynamics — all pointing to **dysbiosis = a deep, autonomous
+P. gingivalis colony**.
+
+### P. gingivalis sinks deep in dysbiosis
+
+![depth niche](../results/diffusion_fit/depth_niche.png)
+
+P. gingivalis' centre-of-mass depth is **deeper in DH than CH from day 6 on (up to
++30 µm)** — the anaerobic pathogen colonises the deep anaerobic layers as dysbiosis
+develops (`analyze_depth_niche.py`).
+
+### F. nucleatum–P. gingivalis bridging is an early-only effect
+
+![Fn-Pg coloc](../results/diffusion_fit/fn_pg_coloc.png)
+
+Fn–Pg co-localisation (Manders M1 = fraction of Pg signal sitting with Fn) is **high
+in DH at day 1 (0.76, early co-colonisation) but LOWER than CH from day 6 on
+(0.15–0.20 vs CH 0.33–0.49)**. In dysbiosis P. gingivalis **decouples** from
+F. nucleatum over time and goes deep (`analyze_fish_voxel.py`). The classic
+"Fn bridge" is an early-colonisation phenomenon.
+
+### Also
+
+- **CH-vs-DH divergence** (Bray-Curtis) is **~0.2 from day 1 and roughly flat** — the
+  difference is set by the inoculum (`ch_dh_divergence.png`).
+- **Uncertainty**: DH late days (2 Ti FOVs) give **wide bootstrap 90% CIs**, making the
+  weak point-estimate explicit (`bootstrap_ci_pg.png`).
+- Relative FISH biomass peaks at day 6 (CH) vs day 15 (DH) (`biomass_growth.png`).
+
+### Broader context (exploratory)
+
+- **Diffusivity D ↔ ecological centrality**: the 5 species' fitted D correlate
+  **negatively** with their gLV interaction strength (CH r=−0.40, DH r=−0.47) —
+  "central species move less" (5 species → illustrative, `d_vs_centrality.png`).
+- **HOBIC ↔ Dieckow (in-vivo)**: mapping the 5 species to 5 guilds, the rank order
+  agrees (**Spearman ρ=0.70**) but in-vivo is S.oralis-dominated (0.63) whereas the
+  defined in-vitro inoculum is even. CH and DH bulk abundances are nearly identical
+  — so the dysbiosis signal is spatial/temporal, not bulk composition
+  (`hobic_vs_dieckow.png`).
+
+---
+
+## 6. Deliverables
 
 | File | Role |
 |---|---|

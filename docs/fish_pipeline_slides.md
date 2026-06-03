@@ -149,6 +149,16 @@ D_i, u を仮定 → PDE を解く → 予測 vs 実測(MSE)
 
 ---
 
+## 発見：dysbiosis = Pg の深部・自律化
+
+![](results/diffusion_fit/depth_niche.png){ height=52% }
+
+- **P.gingivalis は DH で Day6以降 深部へ沈降**（重心 +最大30µm、嫌気層）
+- **Fn–Pg 橋渡しは初期限定**：DH Day1 で coloc 0.76 → Day6以降は CH>DH（Pgが Fn から離れ自律化）
+- CH/DH 群集差は接種時から ~0.2 で一定。DH後期は n=2 で CI 広い
+
+---
+
 ## 成果物＆データの限界
 
 | ファイル | 役割 |
