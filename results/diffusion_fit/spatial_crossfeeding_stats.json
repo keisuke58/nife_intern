@@ -1,0 +1,18 @@
+{
+  "Vd/Vp": {
+    "mean_delta_um": -2.810996596319054,
+    "median_delta_um": -2.500212531991764,
+    "frac_consumer_deeper": 0.0,
+    "consumer_is": "shallower",
+    "p_two_sided": 0.001953125,
+    "n": 10
+  },
+  "A.naeslundii": {
+    "mean_delta_um": -1.157457668930736,
+    "median_delta_um": -1.3731853422824685,
+    "frac_consumer_deeper": 0.4,
+    "consumer_is": "shallower",
+    "p_two_sided": 0.275390625,
+    "n": 10
+  }
+}
