@@ -205,6 +205,30 @@ $\Rightarrow$ 生産者が基底層・消費者がその上＝**上方への乳�
 
 ---
 
+## 空間生態 知見 4：Fn–Pg 脱共役は「深さ」の分離
+
+![](results/fish_3d/fish_3d_fnpg_coloc.png){ height=50% }
+
+84 FOV の**全 voxel 3-D デコード**で Manders $M_1$ を次元別に分解：
+
+- **横（xy 投影）** $M_1 \approx 1.0$（DH, Day 6 から飽和）— Fn と Pg は同じ $x,y$ フットプリント。
+- **3-D（voxel）** $M_1$ は Day 6 から **$0.22\text{–}0.33$ へ低下**（CH は $0.4\text{–}0.7$ を維持）。
+- $\Rightarrow$ 横では重なるが**深さ $z$ で分離**：dysbiotic な Fn–Pg 脱共役は**垂直分離**で、Pg が Fn の**下**に位置。「Pg が深部へ沈む」の **3-D 確証**。
+
+---
+
+## 空間生態 知見 5：DH は横方向に均一化（confluent mat）
+
+![](results/fish_3d/fish_3d_lateral_heterogeneity.png){ height=50% }
+
+横方向（xy）の不均一性を時間で追跡（平均 xy-CV）：
+
+- **DH** は Day 6 以降 **CV $\approx 0.33$** へ均一化 — 連続した**コンフルエントなマット**。
+- **CH** は **CV $0.4\text{–}0.9$** のまま**パッチ状**（マイクロコロニー構造を保持）。
+- $\Rightarrow$ dysbiosis は横方向では**平滑化**、commensal は**微小構造を保つ**。知見 4 の垂直分離と相補的。
+
+---
+
 ## その他：bulk は CH ≈ DH
 
 CH–DH の **Bray–Curtis divergence** $\approx 0.2$、Day 1 から**ほぼ一定**。

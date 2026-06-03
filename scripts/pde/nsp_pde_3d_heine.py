@@ -176,6 +176,89 @@ def transport_step_3d(phi, D, u, dx, dy, dz, dt, phi_bulk):
 transport_3d_jit = jax.jit(transport_step_3d, static_argnames=['dx', 'dy', 'dz', 'dt'])
 
 
+# ── Transport step: volume-filling CROSS-DIFFUSION (3D, conservative FV) ─────
+
+def transport_step_3d_xdiff(phi, D, u, dx, dy, dz, dt, phi_bulk):
+    """
+    One explicit conservative finite-volume step of 3-D volume-filling
+    (size-exclusion) cross-diffusion + z-upwind advection.
+
+    Generalises the 1-D face-flux scheme in nsp_pde_1d_heine_xdiff.py to 3 axes:
+
+        J_i = -D_i [ (1 - ρ) ∇φ_i + φ_i ∇ρ ],   ρ = Σ_j φ_j
+        ∂φ_i/∂t = -div(J_i) - u ∂_z φ_i + reaction
+
+    Face values are arithmetic means of the two adjacent nodes; the divergence on
+    each axis is (F_right - F_left)/d. Because the flux degenerates as ρ→1 and as
+    φ_i→0, the simplex 0 ≤ φ_i, ρ ≤ 1 is preserved (the clip is numerical safety).
+
+    phi      : (Nx, Ny, Nz, N_SP)
+    D        : (N_SP,)
+    phi_bulk : (N_SP,)
+    BCs: x,y walls no-flux (zero face flux at the boundary);
+         z=0 no-flux; z=Lz Dirichlet φ_i = φ_bulk.
+    """
+    rho = jnp.sum(phi, axis=-1)                              # (Nx,Ny,Nz)
+    Db  = D[None, None, None, :]
+    dp  = jnp.zeros_like(phi)
+
+    def _axis_flux(ax, d):
+        """Face flux F between node k and k+1 along axis `ax` (length N_ax-1)."""
+        sl_lo = [slice(None)] * 4
+        sl_hi = [slice(None)] * 4
+        sl_lo[ax] = slice(None, -1)
+        sl_hi[ax] = slice(1, None)
+        sl_lo, sl_hi = tuple(sl_lo), tuple(sl_hi)
+        # rho slices (3D, no species axis)
+        rl = [slice(None)] * 3
+        rh = [slice(None)] * 3
+        rl[ax] = slice(None, -1)
+        rh[ax] = slice(1, None)
+        rl, rh = tuple(rl), tuple(rh)
+
+        phi_face = 0.5 * (phi[sl_hi] + phi[sl_lo])           # (..., N_SP)
+        rho_face = 0.5 * (rho[rh] + rho[rl])                 # (...,)
+        dphi     = (phi[sl_hi] - phi[sl_lo]) / d             # (..., N_SP)
+        drho     = (rho[rh]    - rho[rl])    / d             # (...,)
+        # J = -D [ (1-ρ) ∂φ + φ ∂ρ ]
+        F = -Db * ((1.0 - rho_face)[..., None] * dphi
+                   + phi_face * drho[..., None])             # (..., N_SP)
+        return F, sl_lo, sl_hi
+
+    # x-axis (no-flux walls): divergence -(F_right - F_left)/dx on interior nodes,
+    # boundary faces carry zero flux so end nodes only see their single inner face.
+    if phi.shape[0] > 1:
+        Fx, _, _ = _axis_flux(0, dx)                         # (Nx-1, Ny, Nz, N_SP)
+        dp = dp.at[1:-1, :, :, :].add(-(Fx[1:, :, :, :] - Fx[:-1, :, :, :]) / dx)
+        dp = dp.at[0,     :, :, :].add(-(Fx[0,  :, :, :]) / dx)
+        dp = dp.at[-1,    :, :, :].add(-(-Fx[-1, :, :, :]) / dx)
+
+    # y-axis (no-flux walls)
+    if phi.shape[1] > 1:
+        Fy, _, _ = _axis_flux(1, dy)                         # (Nx, Ny-1, Nz, N_SP)
+        dp = dp.at[:, 1:-1, :, :].add(-(Fy[:, 1:, :, :] - Fy[:, :-1, :, :]) / dy)
+        dp = dp.at[:, 0,    :, :].add(-(Fy[:, 0,  :, :]) / dy)
+        dp = dp.at[:, -1,   :, :].add(-(-Fy[:, -1, :, :]) / dy)
+
+    # z-axis (z=0 no-flux, z=Lz Dirichlet handled by overwrite below)
+    Fz, _, _ = _axis_flux(2, dz)                             # (Nx, Ny, Nz-1, N_SP)
+    dp = dp.at[:, :, 1:-1, :].add(-(Fz[:, :, 1:, :] - Fz[:, :, :-1, :]) / dz)
+    dp = dp.at[:, :, 0,    :].add(-(Fz[:, :, 0,  :]) / dz)   # no-flux at z=0
+    # node Nz-1 is Dirichlet → overwritten; no divergence needed there.
+
+    # z-advection upwind (u ≥ 0 → backward diff) on interior nodes
+    adv = u * (phi[:, :, 1:-1, :] - phi[:, :, :-2, :]) / dz
+    dp  = dp.at[:, :, 1:-1, :].add(-adv)
+
+    phi_new = jnp.clip(phi + dt * dp, 0.0, 1.0)              # numerical safety only
+    phi_new = phi_new.at[:, :, -1, :].set(phi_bulk[None, None, :])  # Dirichlet z=Lz
+    return phi_new
+
+
+transport_3d_xdiff_jit = jax.jit(transport_step_3d_xdiff,
+                                 static_argnames=['dx', 'dy', 'dz', 'dt'])
+
+
 # ── State helpers ──────────────────────────────────────────────────────────
 
 def state_from_phi_3d(phi_3d):
@@ -205,13 +288,16 @@ def simulate_nsp_pde_3d(A, b, phi_bulk, phi_ic,
                          t_out_days,
                          Nx=16, Ny=16, Nz=32,
                          D=D_DEFAULT, u=U_DEFAULT,
-                         dt=0.01, n_nsp_per_transport=5, t_end_cap=None):
+                         dt=0.01, n_nsp_per_transport=5, t_end_cap=None,
+                         crossdiff=False):
     """
     Args:
         phi_ic    : (Nx, Ny, Nz, N_SP) or (Nz, N_SP) — broadcast if 2D given
         t_end_cap : if set, stop integrating at this time (days) instead of the
                     last observation day — for quick demos / coarse runs.
-        phi_bulk : (N_SP,)
+        phi_bulk  : (N_SP,)
+        crossdiff : if True, use the volume-filling (size-exclusion) cross-diffusion
+                    transport (lateral-pattern capable) instead of diagonal diffusion.
     Returns:
         phi_out  : (T, Nx, Ny, Nz, N_SP)
     """
@@ -222,10 +308,16 @@ def simulate_nsp_pde_3d(A, b, phi_bulk, phi_ic,
     dy = 1.0 / (Ny - 1) if Ny > 1 else 1.0
     dz = 1.0 / (Nz - 1)
 
+    # CFL: cross-diffusion mobility is D_i*(1-ρ) ≤ D_i, so the diagonal-diffusion
+    # explicit limit is a safe upper bound for the cross-diffusion step too.
     cfl_limit = 0.5 / (float(D.max()) * (1.0/dx**2 + 1.0/dy**2 + 1.0/dz**2))
     if dt > cfl_limit:
         print(f'  [warn] dt={dt:.4f} > CFL limit {cfl_limit:.5f}; clipping')
         dt = 0.9 * cfl_limit
+
+    transport = transport_3d_xdiff_jit if crossdiff else transport_3d_jit
+    if crossdiff:
+        print('  transport: volume-filling CROSS-DIFFUSION (size-exclusion)')
 
     state = state_from_phi_3d(jnp.array(phi_ic, dtype=jnp.float64))
     react = make_nsp_reaction_3d(A, b)
@@ -245,7 +337,7 @@ def simulate_nsp_pde_3d(A, b, phi_bulk, phi_ic,
         for _ in range(n_nsp_per_transport):
             state = react(state)
         phi = extract_phi_3d(state)
-        phi = transport_3d_jit(phi, D, u, dx, dy, dz, dt, phi_bulk)
+        phi = transport(phi, D, u, dx, dy, dz, dt, phi_bulk)
         state = inject_phi_3d(state, phi)
         t_curr += dt
         _snap(t_curr, state)
@@ -363,6 +455,10 @@ def main():
                         help='phi(x,y,z,5) .npy (from fish_3d_batch) used as the lateral-'
                              'structured initial state, resampled to (Nx,Ny,Nz); '
                              '{cond} in the path is substituted per condition')
+    parser.add_argument('--crossdiff', action='store_true',
+                        help='use volume-filling (size-exclusion) cross-diffusion transport '
+                             'instead of diagonal diffusion — lateral-pattern capable; '
+                             'outputs gain an "_xdiff" tag')
     args = parser.parse_args()
 
     conds = [c for c in CONDITIONS if args.cond == 'all' or c[2] == args.cond]
@@ -387,10 +483,12 @@ def main():
             Nx=args.Nx, Ny=args.Ny, Nz=args.Nz,
             D=D, u=args.u, dt=args.dt,
             n_nsp_per_transport=args.n_nsp, t_end_cap=args.t_end,
+            crossdiff=args.crossdiff,
         )
         print(f'  phi_out.shape={phi_out.shape}')
 
-        stem = f'{tag}_Nx{args.Nx}_Ny{args.Ny}_Nz{args.Nz}_dt{args.dt}'
+        xdiff_tag = '_xdiff' if args.crossdiff else ''
+        stem = f'{tag}_Nx{args.Nx}_Ny{args.Ny}_Nz{args.Nz}_dt{args.dt}{xdiff_tag}'
         plot_z_slices(phi_out, t_out, tag,
                       out_path=OUT_DIR / f'z_profiles_{stem}.png')
         plot_xz_panel(phi_out, t_out, tag,
