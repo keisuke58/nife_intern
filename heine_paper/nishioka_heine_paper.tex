@@ -1,6 +1,7 @@
 \documentclass[11pt,a4paper]{article}
 
-\usepackage[utf8]{inputenc}
+% inputenc not needed on UTF-8 engines (XeLaTeX/LuaLaTeX, modern pdfLaTeX); drop to silence warning
+% \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -18,12 +19,14 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{caption}
+\captionsetup{hypcap=false}  % \captionof inside minipage can't anchor hypcap; silence the warning
 \usepackage{subcaption}
 \usepackage{multirow}
 
 % Compact spacing
 \usepackage{setspace}
 \setstretch{1.08}
+\setlength{\emergencystretch}{3em}  % absorb occasional overfull \hbox without \sloppy
 
 \newcommand{\btheta}{\boldsymbol{\theta}}
 \newcommand{\bphi}{\boldsymbol{\phi}}
@@ -499,7 +502,7 @@ So shows negative $R^2$ across all conditions in Phase~2, reflecting a trade-off
 Phase~1 (fix-$\psi$) achieves substantially better So fits, confirming that the $R^2<0$ arises from the $\psi$--$\phi$ coupling rather than from a fundamental model limitation.
 So also exhibits the highest replicate variability ($\sigma_{\mathrm{So}}\approx0.19$), which inflates $\mathrm{SS}_{\mathrm{tot}}$ and further depresses $R^2$.
 
-\begin{table}[h!]
+\begin{table}[htbp]
 \centering\small
 \begin{tabular}{@{}l ccccc ccccc@{}}
 \toprule
@@ -558,7 +561,7 @@ In DH, strong positive entries emerge in the \textit{Vei}--\textit{Pg} and \text
 The MAP values for the key pathogen-supporting parameters are: $\hat{a}_{55}^{\mathrm{DH}}(\text{Pg self})=3.43$, $\hat{a}_{45}^{\mathrm{DH}}(\text{Fn}\to\text{Pg})=5.63$, and $\hat{a}_{44}^{\mathrm{DH}}(\text{Fn self})=4.45$.
 In DS, these coefficients are weaker ($\hat{a}_{55}=0.30$, $\hat{a}_{45}=2.20$, $\hat{a}_{44}=1.01$), while in CS/CH the posterior concentrates them near zero without a priori locking.
 
-\begin{figure}[h!]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/heatmap_A_4cond.png}
 \caption{MAP interaction matrices $\mathbf{A}$ (Phase~2, free $\psi$, $N_p=10{,}000$). Red: cooperative ($A_{ij}>0$); blue: competitive ($A_{ij}<0$). In commensal conditions (CS, CH), the Fn and Pg rows/columns are near zero---recovered by the posterior, not imposed a priori. The transition to dysbiotic states activates cooperative cross-feeding in the Fn--Pg block.}
@@ -670,7 +673,7 @@ the MAP \textit{An}$\to$\textit{Vei} coefficient ($A_{12}=+0.76$) is consistent 
 
 \paragraph{Cross-condition transferability.}
 To test whether the inferred matrices capture genuine condition-specific structure, we evaluate each MAP on every other condition's data (Table~\ref{tab:cross_prediction}).
-Within-state commensal transfer achieves CS$\to$CH\,$=$\,0.098---\emph{below} CH self-prediction (0.104)---indicating a shared commensal interaction backbone that generalises across cultivation modes.
+Within-state commensal transfer (CS$\to$CH) achieves an RMSE of 0.098, \emph{below} the CH self-prediction of 0.104, indicating a shared commensal interaction backbone that generalises across cultivation modes.
 Cross-state transfers (DS$\to$CS: 0.384, CS$\to$DH: 0.198) degrade sharply, confirming that commensal and dysbiotic matrices are structurally distinct.
 
 \begin{table}[htbp]
