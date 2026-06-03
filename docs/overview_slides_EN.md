@@ -131,6 +131,20 @@ commensal/dysbiotic $\times$ static/HOBIC:
 
 ---
 
+## (1) Starting point: 5-species GPU-Bayesian inference (Heine in-vitro)
+
+The **original** work. A **GPU-accelerated TMCMC** ($N_p=10{,}000$) infers the full
+posterior of the symmetric $A$ on the Heine 2025 in-vitro 5-species
+(So/An/Vd-Vp/Fn/Pg) time-series, reproducing the four attractors CS/CH/DS/DH.
+
+![](results/heine2025/glv_heine_fit_paper.png){ height=37% }
+
+- replicator/Hamilton ODE ($A$ symmetric, free $\psi$); canonical = `results/ultimate_10000p`.
+- **Independent validation**: pH independent $R^2=0.78$ (not used in calibration); gingipain–Pg $r=0.90$.
+- Stage (2) — AGORA prior, in-vivo Dieckow, spatial PDE/FISH — extends this.
+
+---
+
 ## Pillar 1 — interaction inference and honest validation
 
 ![](dieckow_paper/figures/fig2_loo_comparison.png){ height=44% }
