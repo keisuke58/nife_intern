@@ -123,6 +123,10 @@ Both commensal and dysbiotic thicken from Day 1 to 21 with depth-wise compositio
 
 Each day on one panel (**solid = CH / dashed = DH**, colour = species, y = µm depth, surface -> deep). From day 6 on, the **P. gingivalis (red) dashed line runs deeper than the solid line** — Pg sinking in dysbiosis is read off directly.
 
+```{=latex}
+\clearpage
+```
+
 #### Per-depth composition (stacked area)
 
 ![depth composition stacked](../results/diffusion_fit/zprofiles_all_ti_stacked.png)
