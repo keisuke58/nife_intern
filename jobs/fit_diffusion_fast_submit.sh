@@ -22,7 +22,7 @@ for cond in CH DH; do
     set -- $c
     NZ=$1; DT=$2; RESTARTS=$3; MAXITER=$4; FDEPS=$5; FTOL=$6; TAG=$7
     qsub -v COND=$cond,NZ=$NZ,DT=$DT,RESTARTS=$RESTARTS,MAXITER=$MAXITER,FDEPS=$FDEPS,FTOL=$FTOL,TAG=$TAG \
-         fit_diffusion_sweep_job.sh
+         jobs/fit_diffusion_sweep_job.sh
     echo "submitted: $cond Nz=$NZ dt=$DT restarts=$RESTARTS maxiter=$MAXITER fd_eps=$FDEPS ftol=$FTOL tag=$TAG"
   done
 done

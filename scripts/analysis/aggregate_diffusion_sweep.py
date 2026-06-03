@@ -5,7 +5,7 @@ aggregate_diffusion_sweep.py — collect the diffusion-fit sweep results.
 Scans results/diffusion_fit/D_fit_*.json (the canonical untagged CH/DH plus the
 tagged sweep runs), tabulates convergence / loss / fitted D, u and the
 hyper-parameters, and writes a summary CSV. Used to pick the best setting after
-the PBS sweep (fit_diffusion_sweep_submit.sh) finishes.
+the PBS sweep (jobs/fit_diffusion_sweep_submit.sh) finishes.
 
 Run from the repo root:
     python scripts/analysis/aggregate_diffusion_sweep.py
