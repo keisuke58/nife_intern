@@ -26,6 +26,7 @@ echo "Starting diffusion fit COND=${COND} on $(hostname) at $(date)"
 /home/nishioka/IKM_Hiwi/.venv_jax/bin/python scripts/pde/fit_diffusion_clsm.py \
     --cond ${COND} \
     --data results/diffusion_fit/zprofiles_all_ti.csv \
-    --Nz 40 --dt 0.05 --restarts 3
+    --Nz 40 --dt 0.05 --restarts 8 \
+    --maxiter 300 --ftol 1e-9 --gtol 1e-6 --fd-eps 1e-3
 
 echo "Finished COND=${COND} at $(date)"
