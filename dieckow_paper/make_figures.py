@@ -28,6 +28,10 @@ from matplotlib.gridspec import GridSpec
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
+import sys as _sys
+_sys.path.insert(0, '/home/nishioka/IKM_Hiwi/nife')   # for thesis_style
+from thesis_style import use as thesis_style, TEXTWIDTH_IN
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
 CR   = Path('/home/nishioka/IKM_Hiwi/nife/results/dieckow_cr')
 OTU  = Path('/home/nishioka/IKM_Hiwi/nife/results/dieckow_otu')
@@ -42,31 +46,19 @@ GREEN = '#4dac26'
 GREY  = '#888888'
 LGREY = '#dddddd'
 
+# Unified thesis style (usetex / lmodern, 9 pt, body-matched). Aesthetic extras
+# (spines off, tick widths) are layered on top without touching the font settings.
+thesis_style()
 plt.rcParams.update({
-    'font.family':        'serif',
-    'font.serif':         ['Times New Roman', 'Times', 'DejaVu Serif'],
-    'mathtext.fontset':   'stix',
-    'font.size':          10,
-    'axes.titlesize':     11,
     'axes.titleweight':   'bold',
-    'axes.labelsize':     10,
-    'xtick.labelsize':    9,
-    'ytick.labelsize':    9,
-    'legend.fontsize':    9,
     'legend.framealpha':  0.9,
     'legend.edgecolor':   LGREY,
-    'figure.dpi':         150,          # preview; saved at 300
-    'savefig.dpi':        300,
-    'savefig.bbox':       'tight',
+    'figure.dpi':         150,
     'savefig.pad_inches': 0.05,
     'axes.spines.top':    False,
     'axes.spines.right':  False,
-    'axes.linewidth':     0.8,
-    'xtick.major.width':  0.8,
-    'ytick.major.width':  0.8,
     'xtick.major.size':   3.5,
     'ytick.major.size':   3.5,
-    'lines.linewidth':    1.2,
 })
 
 # ── Data loading ──────────────────────────────────────────────────────────────
@@ -226,7 +218,7 @@ ax.set_ylim(0, max(max(l12_v), max(ag_v)) * 1.18)
 ax.legend(loc='upper left', fontsize=8)
 ax.set_title(f'(A)  Per-patient LOO-RMSE\n'
              f'L1+L2 mean = {mean_l12:.4f}  |  AGORA mean = {mean_ag:.4f}  '
-             f'(−{(mean_l12-mean_ag)/mean_l12*100:.1f}%)',
+             f'(−{(mean_l12-mean_ag)/mean_l12*100:.1f}\%)',
              fontsize=10)
 
 # significance brackets for improved patients
@@ -287,7 +279,7 @@ fig, ax = plt.subplots(figsize=(5.0, 5.0))
 
 positions = [0, 1, 2]
 for pos, diag in zip(positions, diag_order):
-    subset = joshi[joshi['diagnosis'] == diag]['gdi_neutral'].values
+    subset = joshi[joshi['diagnosis'] == diag]['gdi_raw_log_ratio'].values
     col = diag_col[diag]
 
     # violin
@@ -320,11 +312,11 @@ ax.axhline(0, color='black', lw=0.8, ls='--', alpha=0.5,
 
 # stats annotations
 H_pi_pval = stats.mannwhitneyu(
-    joshi[joshi['diagnosis']=='Health']['gdi_neutral'],
-    joshi[joshi['diagnosis']=='Peri-implantitis']['gdi_neutral'],
+    joshi[joshi['diagnosis']=='Health']['gdi_raw_log_ratio'],
+    joshi[joshi['diagnosis']=='Peri-implantitis']['gdi_raw_log_ratio'],
     alternative='less').pvalue
 kw_stat, kw_p = stats.kruskal(
-    *[joshi[joshi['diagnosis']==d]['gdi_neutral'].values for d in diag_order])
+    *[joshi[joshi['diagnosis']==d]['gdi_raw_log_ratio'].values for d in diag_order])
 
 ax.text(0.97, 0.97,
         f'Kruskal–Wallis $p$ < 0.001\n'
@@ -394,8 +386,8 @@ handles = [
 ]
 ax.legend(handles=handles, fontsize=9, loc='upper right')
 
-ax.set_xlabel(f'PC1  ({ev[0]*100:.1f}% explained variance)', fontsize=10)
-ax.set_ylabel(f'PC2  ({ev[1]*100:.1f}% explained variance)', fontsize=10)
+ax.set_xlabel(f'PC1  ({ev[0]*100:.1f}\% explained variance)', fontsize=10)
+ax.set_ylabel(f'PC2  ({ev[1]*100:.1f}\% explained variance)', fontsize=10)
 ax.set_title('PCA of patient-specific growth vectors $\\hat{b}^{(p)}$\n'
              '(CT1/CT2 separation without label supervision)',
              fontsize=10)
@@ -551,8 +543,8 @@ sweep_bar(axes[0], rmse_sw, 'Training RMSE', 'Training RMSE', 'A',
           fmt='{:.4f}', ylim=(0.050, 0.082))
 sweep_bar(axes[1], r_sw,    'Pearson $r$',   'Pearson $r$',   'B',
           fmt='{:.3f}', ylim=(0.88, 0.97))
-sweep_bar(axes[2], sa_sw,   'Sign agreement (%)', 'Sign agreement', 'C',
-          fmt='{:.0f}%', ylim=(0, 115))
+sweep_bar(axes[2], sa_sw,   'Sign agreement (\%)', 'Sign agreement', 'C',
+          fmt='{:.0f}\%', ylim=(0, 115))
 
 # MacArthur grey patch legend
 handles_sw = [
