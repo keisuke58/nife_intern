@@ -22,6 +22,53 @@ import matplotlib as mpl
 TEXTWIDTH_PT = 455.24411
 TEXTWIDTH_IN = TEXTWIDTH_PT / 72.27          # = 6.299 in
 
+# usetex preamble. newunicodechar maps the unicode glyphs that pepper the figure
+# scripts (β, γ, Δ, →, ✓, − …) onto LaTeX so individual strings need no manual
+# sanitising; only a literal '%' still has to be escaped per call.
+_PREAMBLE = "".join([
+    r"\usepackage[T1]{fontenc}",
+    r"\usepackage[utf8]{inputenc}",
+    r"\usepackage{lmodern}",
+    r"\usepackage{amsmath}",
+    r"\usepackage{amssymb}",
+    r"\usepackage{textcomp}",
+    r"\usepackage{newunicodechar}",
+    r"\newunicodechar{−}{-}",
+    r"\newunicodechar{–}{--}",
+    r"\newunicodechar{—}{---}",
+    r"\newunicodechar{α}{\ensuremath{\alpha}}",
+    r"\newunicodechar{β}{\ensuremath{\beta}}",
+    r"\newunicodechar{γ}{\ensuremath{\gamma}}",
+    r"\newunicodechar{Δ}{\ensuremath{\Delta}}",
+    r"\newunicodechar{μ}{\ensuremath{\mu}}",
+    r"\newunicodechar{ρ}{\ensuremath{\rho}}",
+    r"\newunicodechar{σ}{\ensuremath{\sigma}}",
+    r"\newunicodechar{τ}{\ensuremath{\tau}}",
+    r"\newunicodechar{φ}{\ensuremath{\phi}}",
+    r"\newunicodechar{ψ}{\ensuremath{\psi}}",
+    r"\newunicodechar{χ}{\ensuremath{\chi}}",
+    r"\newunicodechar{×}{\ensuremath{\times}}",
+    r"\newunicodechar{±}{\ensuremath{\pm}}",
+    r"\newunicodechar{≥}{\ensuremath{\geq}}",
+    r"\newunicodechar{≤}{\ensuremath{\leq}}",
+    r"\newunicodechar{°}{\ensuremath{^\circ}}",
+    r"\newunicodechar{→}{\ensuremath{\rightarrow}}",
+    r"\newunicodechar{←}{\ensuremath{\leftarrow}}",
+    r"\newunicodechar{↓}{\ensuremath{\downarrow}}",
+    r"\newunicodechar{↑}{\ensuremath{\uparrow}}",
+    r"\newunicodechar{✓}{\ensuremath{\checkmark}}",
+    r"\newunicodechar{✗}{\ensuremath{\times}}",
+    r"\newunicodechar{★}{\ensuremath{\bigstar}}",
+    r"\newunicodechar{☆}{\ensuremath{\star}}",
+    r"\newunicodechar{●}{\ensuremath{\bullet}}",
+    r"\newunicodechar{○}{\ensuremath{\circ}}",
+    r"\newunicodechar{≈}{\ensuremath{\approx}}",
+    r"\newunicodechar{≠}{\ensuremath{\neq}}",
+    r"\newunicodechar{∞}{\ensuremath{\infty}}",
+    r"\newunicodechar{∑}{\ensuremath{\sum}}",
+    r"\newunicodechar{√}{\ensuremath{\surd}}",
+])
+
 
 def use(width_frac=1.0, aspect=0.62):
     """Apply the thesis rcParams and return a figsize (w, h) in inches.
@@ -34,7 +81,7 @@ def use(width_frac=1.0, aspect=0.62):
         "text.usetex": True,
         "font.family": "serif",
         "font.serif": [],                                  # LaTeX (lmodern) chooses
-        "text.latex.preamble": r"\usepackage{lmodern}\usepackage{amsmath}",
+        "text.latex.preamble": _PREAMBLE,
         "font.size": 9,
         "axes.titlesize": 9,
         "axes.labelsize": 9,
