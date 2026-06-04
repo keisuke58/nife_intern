@@ -1,7 +1,7 @@
 ---
 title: "Reading the Interaction Matrix as a Network"
 subtitle: "Beyond fitting A — keystones, bridges, trophic layers, and rewiring"
-author: "Keisuke Nishioka — NIFE / SFB TRR-298"
+author: "Keisuke Nishioka — NIFE"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"

@@ -1,7 +1,7 @@
 ---
 title: "相互作用行列のネットワーク解析"
 subtitle: "推定した相互作用行列をグラフとして読む — keystone・bridge・栄養層・リワイヤリング"
-author: "西岡佳祐 — NIFE / SFB TRR-298"
+author: "西岡佳祐 — NIFE"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"
@@ -12,7 +12,7 @@ header-includes:
   - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
-## このデッキの位置づけ
+## 本デッキの位置づけ
 
 本プロジェクト = 3 本柱 ＋ 空間拡張。データの流れ：
 
@@ -29,18 +29,18 @@ raw 16S → guild $\varphi$ → gLV/Hamilton（＋符号 prior）→ LOO 検証 
 
 ---
 
-## 動機：$A$ を「当てはめる」から「読む」へ
+## 動機：相互作用行列のグラフ構造解析
 
-相互作用行列 $A$ を推定するだけでなく、その**グラフ構造**を読む。
+相互作用行列 $A$ の推定にとどまらず、その**グラフ構造**を定量的に解析する。
 
-- **keystone**：少量でも群集を支配する種（高い中心性）。
-- **bridge**：栄養層をつなぐ媒介種（高い betweenness）。
+- **keystone**：低存在量でも群集を支配する菌種（高い中心性）。
+- **bridge**：栄養層を結ぶ媒介種（高い betweenness）。
 - **trophic layer**：cross-feeding の生産者 $\to$ 消費者の階層性。
-- **rewiring**：健常 $\leftrightarrow$ dysbiosis でエッジ符号が反転する再配線。
+- **rewiring**：健常 $\leftrightarrow$ dysbiosis 間でエッジ符号が反転する再配線。
 
 \vspace{0.4em}
-口腔バイオフィルムの古典像は「*P. gingivalis* = keystone、*F. nucleatum* = bridge」。
-本デッキは、in-vivo class レベルでこの像が**支持されるか**をネットワーク統計で検証する。
+口腔バイオフィルムの古典的描像は、*P. gingivalis* を keystone、*F. nucleatum* を bridge とする。
+本デッキは、in-vivo class レベルでこの描像が**支持されるか**をネットワーク統計で検証する。
 
 ---
 
@@ -194,8 +194,9 @@ CS $\to$ DH で促進確率 $P_{\text{fac}}$ が劇的に変化：
   **keystone 様**に「なる」。
 
 \vspace{0.3em}
-これは FISH の知見と整合：dysbiosis で Pg は深部に沈み、近傍依存を脱して
-**自律化（中心化）**する。keystone は状態の関数であり、固定属性ではない。
+この結果は FISH の知見と整合する：dysbiosis において Pg は深部へ移行し、
+周囲の菌種への依存を低下させながら中心化する。keystone 性は固定した属性ではなく、
+群集の状態に依存する性質である。
 
 ---
 

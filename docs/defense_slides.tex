@@ -9,7 +9,7 @@
 ]{beamer}
 \title{代謝が制約する口腔バイオフィルムの群集動態}
 \subtitle{生態 ODE 推定・代謝符号 prior・空間拡張 --- 修士論文公聴会}
-\author{西岡佳祐 --- NIFE / SFB TRR-298}
+\author{西岡佳祐 --- NIFE}
 \date{2026-11}
 
 \usepackage{pgfpages}
@@ -96,7 +96,7 @@
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \hypersetup{
   pdftitle={代謝が制約する口腔バイオフィルムの群集動態},
-  pdfauthor={西岡佳祐 --- NIFE / SFB TRR-298},
+  pdfauthor={西岡佳祐 --- NIFE},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
@@ -128,10 +128,10 @@
 \begin{document}
 \frame{\titlepage}
 
-\begin{frame}{North-star（目標）}
-\protect\hypertarget{north-starux76eeux6a19}{}
+\begin{frame}{研究の目的と概要}
+\protect\hypertarget{ux7814ux7a76ux306eux76eeux7684ux3068ux6982ux8981}{}
 ペリインプラント炎に関わる\textbf{口腔バイオフィルム群集の
-dysbiosis}を、 群集組成の時間発展としてモデル化する（SIIRI / SFB TRR-298
+dysbiosis}を、 群集組成の時間発展としてモデル化する（SIIRI
 コンソーシアム）。
 
 \begin{itemize}
@@ -140,21 +140,21 @@ dysbiosis}を、 群集組成の時間発展としてモデル化する（SIIRI 
   臨床問題：チタンインプラント周囲で健常（commensal）から疾患（dysbiotic）へ
   遷移する微生物群集。
 \item
-  モデリングの問い：\textbf{何がこの遷移を駆動するのか} --- そして
-  ゲノムから計算した代謝は、生態的相互作用について何を教えてくれるか。
+  研究の問い：\textbf{何がこの遷移を駆動するのか} ---
+  ゲノムから計算した代謝は 生態的相互作用について何を示すか。
 \item
-  中心的アイデア：\textbf{代謝が生態的相互作用の符号を制約する}。
+  中心的命題：\textbf{代謝が生態的相互作用の符号を制約する}。
 \end{itemize}
 
 \vspace{0.4em}
 
-本公聴会は、生態 ODE 推定・代謝符号 prior・空間拡張を 1
-本の物語として束ねる。
+本公聴会は、生態 ODE 推定・代謝符号
+prior・空間拡張を一貫した研究の弧として提示する。
 \end{frame}
 
 \begin{frame}{概念図（全体像）}
 \protect\hypertarget{ux6982ux5ff5ux56f3ux5168ux4f53ux50cf}{}
-\includegraphics[width=\textwidth,height=0.66\textheight]{results/figures/concept_overview_pub.png}
+\includegraphics[width=\textwidth,height=0.78\textheight]{results/figures/concept_overview_pub.png}
 
 代謝が相互作用の\textbf{符号}を決め、dysbiosis
 は\textbf{リワイヤリング＋空間再編} （Pg
@@ -275,20 +275,6 @@ dysbiosis
 は単なる組成変化でなく、相互作用ネットワークの\textbf{リワイヤリング}。
 \end{frame}
 
-\begin{frame}{CLSM-FISH 生データ --- 5 種バイオフィルムの実像}
-\includegraphics[width=\textwidth,height=0.72\textheight]{figures/lif_slides/220518_HOBIC22_5Spezies_FISH_Tag1__slide_gallery.png}
-
-\small HOBIC-22 Day 1 --- 5 種蛍光複合画像（最大強度投影）。
-青 = \emph{S.~oralis}，緑 = \emph{A.~naeslundii}，黄 = \emph{Vd/Vp}，
-紫 = \emph{F.~nucleatum}，赤 = \emph{P.~gingivalis}。
-\end{frame}
-
-\begin{frame}{FISH 断面構造 --- xy 俯瞰 vs xz 深さ断面}
-\includegraphics[width=\textwidth,height=0.70\textheight]{figures/lif_slides/220518_HOBIC22_5Spezies_FISH_Tag1__slide_feature.png}
-
-\small 左：\textbf{上面（xy）最大投影}。右：\textbf{深さ断面（xz）} --- 表面から基底まで 5 種の垂直分布が可視化される。
-\end{frame}
-
 \begin{frame}{空間拡張 --- FISH 深さプロファイル（CH vs DH）}
 \protect\hypertarget{ux7a7aux9593ux62e1ux5f35-fish-ux6df1ux3055ux30d7ux30edux30d5ux30a1ux30a4ux30ebch-vs-dh}{}
 \includegraphics[width=\textwidth,height=0.5\textheight]{results/diffusion_fit/zprofiles_all_ti_overlay.png}
@@ -378,7 +364,7 @@ Veillonella（消費者）}が空間的に層状化： Veillonella
 \vspace{0.4em}
 
 代謝が符号を制約し、dysbiosis がリワイヤリング＋空間再編であるという
-描像を、空間検証と臨床指標で固めていく。
+描像を、空間検証と臨床指標によってさらに検証する。
 \end{frame}
 
 \begin{frame}[fragile]{まとめ（Take-home）}

@@ -1,7 +1,7 @@
 ---
 title: "Project Overview: Modelling Oral-Biofilm Community Dynamics"
 subtitle: "An umbrella tying ecological ODE inference, metabolic simulation, and spatial extension"
-author: "Keisuke Nishioka — NIFE / SFB TRR-298"
+author: "Keisuke Nishioka — NIFE"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"
@@ -12,27 +12,25 @@ header-includes:
   - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
-## North-star
+## Research objectives and overview
 
-Model the **dynamics of the oral-biofilm community** relevant to
-peri-implantitis (SIIRI / SFB TRR-298 consortium).
+We model the **dynamics of the oral-biofilm community** relevant to
+peri-implantitis (SIIRI consortium).
 
-- Describe the commensal $\to$ dysbiotic transition as the time evolution of
+- The commensal $\to$ dysbiotic transition is described as the time evolution of
   community composition.
-- Central idea: **metabolism (computed from genomes) constrains the sign of
+- Central thesis: **metabolism (computed from genomes) constrains the sign of
   ecological interactions.**
-- A research project, not a deployable app — each script produces one number,
-  one fitted-parameter set, or one figure.
 
 \vspace{0.4em}
-This deck is the **umbrella**: it surveys the three loosely-coupled modelling
-pillars and the shared data/model contract that connects them.
+This deck surveys the three loosely-coupled modelling pillars and the shared
+data/model contract that connects them.
 
 ---
 
 ## Graphical abstract
 
-![](results/figures/concept_overview_pub.png){ height=78% }
+![](results/figures/concept_overview_pub.png){ height=66% }
 
 Metabolism fixes the **sign** of interactions; dysbiosis appears as a **re-wiring
 + spatial re-organisation** (P. gingivalis centralises and sinks deep).
@@ -131,17 +129,17 @@ commensal/dysbiotic $\times$ static/HOBIC:
 
 ---
 
-## (1) Starting point: 5-species GPU-Bayesian inference (Heine in-vitro)
+## (1) Starting point: 5-species Bayesian ODE fitting (Heine in-vitro)
 
-The **original** work. A **GPU-accelerated TMCMC** ($N_p=10{,}000$) infers the full
-posterior of the symmetric $A$ on the Heine 2025 in-vitro 5-species
-(So/An/Vd-Vp/Fn/Pg) time-series, reproducing the four attractors CS/CH/DS/DH.
+ODE fitting of the Heine 2025 in-vitro 5-species (So/An/Vd-Vp/Fn/Pg) time-series.
+Two models compared: **gLV** (asymmetric $A$, RMSE 0.012–0.032) and **Hamilton NUTS**
+(symmetric $A$, RMSE 0.033–0.119); all four attractors CS/CH/DS/DH reproduced.
 
-![](results/heine2025/glv_heine_fit_paper.png){ height=37% }
+![](results/heine2025/glv_heine_fit_thesis.pdf){ height=37% }
 
-- replicator/Hamilton ODE ($A$ symmetric, free $\psi$); canonical = `results/ultimate_10000p`.
-- **Independent validation**: pH independent $R^2=0.78$ (not used in calibration); gingipain–Pg $r=0.90$.
-- Stage (2) — AGORA prior, in-vivo Dieckow, spatial PDE/FISH — extends this.
+- Figure: gLV MAP trajectories + experimental IQR box plots (RMSE per column).
+- Hamilton NUTS uses GPU-TMCMC $N_p=10{,}000$; **independent validation**: pH $R^2=0.78$, gingipain–Pg $r=0.90$.
+- Stage (2) extends (1) to AGORA sign prior, in-vivo Dieckow, and spatial PDE/FISH.
 
 ---
 

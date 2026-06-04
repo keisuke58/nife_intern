@@ -10,7 +10,7 @@
 \title{相互作用行列のネットワーク解析}
 \subtitle{推定した相互作用行列をグラフとして読む ---
 keystone・bridge・栄養層・リワイヤリング}
-\author{西岡佳祐 --- NIFE / SFB TRR-298}
+\author{西岡佳祐 --- NIFE}
 \date{2026-06-03}
 
 \usepackage{pgfpages}
@@ -97,7 +97,7 @@ keystone・bridge・栄養層・リワイヤリング}
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \hypersetup{
   pdftitle={相互作用行列のネットワーク解析},
-  pdfauthor={西岡佳祐 --- NIFE / SFB TRR-298},
+  pdfauthor={西岡佳祐 --- NIFE},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
@@ -129,8 +129,8 @@ keystone・bridge・栄養層・リワイヤリング}
 \begin{document}
 \frame{\titlepage}
 
-\begin{frame}{このデッキの位置づけ}
-\protect\hypertarget{ux3053ux306eux30c7ux30c3ux30adux306eux4f4dux7f6eux3065ux3051}{}
+\begin{frame}{本デッキの位置づけ}
+\protect\hypertarget{ux672cux30c7ux30c3ux30adux306eux4f4dux7f6eux3065ux3051}{}
 本プロジェクト = 3 本柱 ＋ 空間拡張。データの流れ：
 
 raw 16S → guild \(\varphi\) → gLV/Hamilton（＋符号 prior）→ LOO 検証 →
@@ -155,29 +155,31 @@ raw 16S → guild \(\varphi\) → gLV/Hamilton（＋符号 prior）→ LOO 検�
 \end{itemize}
 \end{frame}
 
-\begin{frame}{動機：\(A\) を「当てはめる」から「読む」へ}
-\protect\hypertarget{ux52d5ux6a5fa-ux3092ux5f53ux3066ux306fux3081ux308bux304bux3089ux8aadux3080ux3078}{}
-相互作用行列 \(A\) を推定するだけでなく、その\textbf{グラフ構造}を読む。
+\begin{frame}{動機：相互作用行列のグラフ構造解析}
+\protect\hypertarget{ux52d5ux6a5fux76f8ux4e92ux4f5cux7528ux884cux5217ux306eux30b0ux30e9ux30d5ux69cbux9020ux89e3ux6790}{}
+相互作用行列 \(A\)
+の推定にとどまらず、その\textbf{グラフ構造}を定量的に解析する。
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{keystone}：少量でも群集を支配する種（高い中心性）。
+  \textbf{keystone}：低存在量でも群集を支配する菌種（高い中心性）。
 \item
-  \textbf{bridge}：栄養層をつなぐ媒介種（高い betweenness）。
+  \textbf{bridge}：栄養層を結ぶ媒介種（高い betweenness）。
 \item
   \textbf{trophic layer}：cross-feeding の生産者 \(\to\)
   消費者の階層性。
 \item
   \textbf{rewiring}：健常 \(\leftrightarrow\) dysbiosis
-  でエッジ符号が反転する再配線。
+  間でエッジ符号が反転する再配線。
 \end{itemize}
 
 \vspace{0.4em}
 
-口腔バイオフィルムの古典像は「\emph{P. gingivalis} = keystone、\emph{F.
-nucleatum} = bridge」。 本デッキは、in-vivo class
-レベルでこの像が\textbf{支持されるか}をネットワーク統計で検証する。
+口腔バイオフィルムの古典的描像は、\emph{P. gingivalis} を
+keystone、\emph{F. nucleatum} を bridge とする。 本デッキは、in-vivo
+class
+レベルでこの描像が\textbf{支持されるか}をネットワーク統計で検証する。
 \end{frame}
 
 \begin{frame}{ゲージ不変性：\(A\) ではなく \(A_{\text{eff}}\) を読む}
@@ -389,9 +391,9 @@ CS \(\to\) DH で促進確率 \(P_{\text{fac}}\) が劇的に変化：
 
 \vspace{0.3em}
 
-これは FISH の知見と整合：dysbiosis で Pg は深部に沈み、近傍依存を脱して
-\textbf{自律化（中心化）}する。keystone
-は状態の関数であり、固定属性ではない。
+この結果は FISH の知見と整合する：dysbiosis において Pg は深部へ移行し、
+周囲の菌種への依存を低下させながら中心化する。keystone
+性は固定した属性ではなく、 群集の状態に依存する性質である。
 \end{frame}
 
 \begin{frame}{結論}
