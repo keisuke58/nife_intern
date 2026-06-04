@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(*build.sh*)",
+            "command": "cd /home/nishioka/LUHsummer26/30_Masterarbeit && STAMP=$(date +%Y%m%d) && rclone copyto main.pdf \"gdrive:LUH_summer_2026/Masterarbeit_Nishioka_latest.pdf\" && rclone copyto main.pdf \"gdrive:LUH_summer_2026/Masterarbeit_Nishioka_draft_${STAMP}.pdf\" && cd /home/nishioka/LUHsummer26 && zip -qr \"Masterarbeit_Nishioka_${STAMP}.zip\" 30_Masterarbeit/ -x '*/.*' -x '*/__pycache__/*' -x '*.aux' -x '*.log' -x '*.fls' -x '*.fdb_latexmk' -x '*.synctex.gz' && rclone copyto \"Masterarbeit_Nishioka_${STAMP}.zip\" \"gdrive:LUH_summer_2026/Masterarbeit_Nishioka_${STAMP}.zip\" && echo \"==> Drive: PDF (latest+draft) + ZIP (${STAMP})\"",
+            "timeout": 60,
+            "statusMessage": "Uploading thesis PDF to Google Drive..."
+          }
+        ]
+      }
+    ]
+  }
+}

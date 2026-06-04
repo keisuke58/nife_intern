@@ -122,13 +122,16 @@ def make_fig3():
 
     layers = ['L1+L2\n(Szafrański)', 'L3\n(AGORA)', 'All']
     sets   = [l1l2_pairs, l3_pairs, pairs]
-    sas    = [sum(p['agree'] for p in s) / len(s) * 100 for s in sets]
+    sas    = [sum(p['agree'] for p in s) / len(s) * 100 if len(s) else float('nan') for s in sets]
     ns     = [len(s) for s in sets]
     bar_colors = ['#4dac26', '#7b3294', '#1f77b4']
 
     bars = ax2.bar(layers, sas, color=bar_colors, alpha=0.85,
                    edgecolor='white', linewidth=0.5, width=0.55)
+    import math
     for bar, sa, n in zip(bars, sas, ns):
+        if math.isnan(sa):
+            continue
         ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.8,
                  f'{sa:.0f}%\n({int(sa/100*n)}/{n})',
                  ha='center', va='bottom', fontsize=8.5)
@@ -142,7 +145,7 @@ def make_fig3():
     fig.tight_layout(pad=1.5)
     for fmt in ('pdf', 'png'):
         p = OUT_DIR / f'fig3_agora_sign_validation.{fmt}'
-        fig.savefig(p, dpi=200, bbox_inches='tight')
+        fig.savefig(p, dpi=300, bbox_inches='tight')
         print(f'Saved: {p}')
     plt.close(fig)
 
@@ -227,7 +230,7 @@ def make_fig4():
     fig.tight_layout(pad=1.5)
     for fmt in ('pdf', 'png'):
         p = OUT_DIR / f'fig4_w_sweep.{fmt}'
-        fig.savefig(p, dpi=200, bbox_inches='tight')
+        fig.savefig(p, dpi=300, bbox_inches='tight')
         print(f'Saved: {p}')
     plt.close(fig)
 
@@ -302,7 +305,7 @@ def make_fig5():
     fig.tight_layout(pad=1.5)
     for fmt in ('pdf', 'png'):
         p = OUT_DIR / f'fig5_loo_comparison.{fmt}'
-        fig.savefig(p, dpi=200, bbox_inches='tight')
+        fig.savefig(p, dpi=300, bbox_inches='tight')
         print(f'Saved: {p}')
     plt.close(fig)
 
@@ -405,7 +408,7 @@ def make_fig6():
     fig.tight_layout(pad=1.5)
     for fmt in ('pdf', 'png'):
         p = OUT_DIR / f'fig6_A_regimes.{fmt}'
-        fig.savefig(p, dpi=200, bbox_inches='tight')
+        fig.savefig(p, dpi=300, bbox_inches='tight')
         print(f'Saved: {p}')
     plt.close(fig)
 

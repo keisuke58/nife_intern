@@ -126,7 +126,7 @@ def fig_lat_hetero(df, out: Path):
     ax.set_ylabel('Mean lateral CV (across species)')
     ax.set_title('Lateral spatial heterogeneity: CH vs DH')
     ax.set_xticks([1, 6, 10, 15, 21])
-    ax.legend(fontsize=7, frameon=False, loc='upper right')
+    ax.legend(fontsize=7, frameon=False, loc='lower right')
     for s in ('top', 'right'):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
