@@ -1,0 +1,414 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{Metabolism Constrains Oral-Biofilm Community Dynamics}
+\subtitle{Ecological ODE inference, a metabolic sign prior, and a
+spatial extension --- Master's defense}
+\author{Keisuke Nishioka --- NIFE / SFB TRR-298}
+\date{2026-11}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[Path=/home/nishioka/texlive/2025/texmf-dist/fonts/opentype/public/stix2-otf/, BoldFont=STIXTwoText-Bold.otf, ItalicFont=STIXTwoText-Italic.otf, BoldItalicFont=STIXTwoText-BoldItalic.otf]{STIXTwoText-Regular.otf}
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Metabolism Constrains Oral-Biofilm Community Dynamics},
+  pdfauthor={Keisuke Nishioka --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% EN builds use a Times-family text font (STIX Two Text) that lacks a few set /
+% relation glyphs. Route those Unicode symbols through math mode so they always
+% render (regardless of the text/mono font), keeping clean Times for the prose.
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{↑}{\ensuremath{\uparrow}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{North-star}
+\protect\hypertarget{north-star}{}
+Model the \textbf{dysbiosis of the oral-biofilm community} relevant to
+peri-implantitis as the time evolution of community composition (SIIRI /
+SFB TRR-298 consortium).
+
+\begin{itemize}
+\tightlist
+\item
+  Clinical problem: a microbial community that transitions from
+  commensal to dysbiotic around titanium implants.
+\item
+  Modelling question: \textbf{what drives this transition} --- and what
+  does metabolism, computed from genomes, tell us about ecological
+  interactions?
+\item
+  Central idea: \textbf{metabolism constrains the sign of ecological
+  interactions.}
+\end{itemize}
+
+\vspace{0.4em}
+
+This defense ties ecological ODE inference, a metabolic sign prior, and
+a spatial extension into one narrative.
+\end{frame}
+
+\begin{frame}{Graphical abstract}
+\protect\hypertarget{graphical-abstract}{}
+\includegraphics[width=\textwidth,height=0.66\textheight]{results/figures/concept_overview_pub.png}
+
+Metabolism fixes the \textbf{sign} of interactions; dysbiosis appears as
+a \textbf{re-wiring + spatial re-organisation} (P. gingivalis
+centralises and sinks deep).
+\end{frame}
+
+\begin{frame}{The research arc}
+\protect\hypertarget{the-research-arc}{}
+The work has two stages:
+
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{Original (first half)} --- a 5-species in-vitro system,
+  inferred by \textbf{GPU Bayesian ODE inference}. TMCMC (\(10^4\)
+  particles) recovered the posterior for four attractors \textbf{CS / CH
+  / DS / DH} (commensal/dysbiotic × static/HOBIC).
+\item
+  \textbf{Extension (second half)} --- carry the framework to real data:
+  a \textbf{metabolic AGORA sign prior} + \textbf{in-vivo longitudinal
+  16S} + a \textbf{spatial PDE} + \textbf{FISH}.
+\end{enumerate}
+
+\vspace{0.4em}
+
+The first half establishes the dynamical-systems skeleton (attractors,
+pH prediction); the second grounds it in real data via metabolic
+constraints and spatial structure.
+\end{frame}
+
+\begin{frame}{Core model (concise)}
+\protect\hypertarget{core-model-concise}{}
+Generalized Lotka--Volterra for absolute abundances \(x_i\):
+\[\dot{x}_i = x_i\Big(b_i + \sum_{j=1}^{S} A_{ij}\,x_j\Big),\qquad S=10 .\]
+
+Replicator / Hamilton form on the simplex \(\sum_i\varphi_i=1\) (16S is
+compositional):
+\[\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big].\]
+
+\textbf{Sign prior:} from AGORA cross-feeding flux \(F_{ij}\) build
+\[P_{ij}=\operatorname{sgn}(F_{ij})\in\{-1,0,+1\},\] constraining only
+the \textbf{sign} of \(A\) (magnitude discarded by design).
+\end{frame}
+
+\begin{frame}{Data flow (real data)}
+\protect\hypertarget{data-flow-real-data}{}
+\includegraphics[width=\textwidth,height=0.66\textheight]{results/figures/pipeline_overview_pub.png}
+
+Real Dieckow data: guild \(\varphi\) (10 patients × 3 wk) → AGORA sign
+prior → gLV/Hamilton fit → LOO-CV → the four attractors.
+\texttt{fit\_*.json} is the interchange format.
+\end{frame}
+
+\begin{frame}{AGORA sign-prior pipeline}
+\protect\hypertarget{agora-sign-prior-pipeline}{}
+\includegraphics[width=\textwidth,height=0.64\textheight]{results/fig2_agora_pipeline.png}
+
+\begin{enumerate}
+[(A)]
+\tightlist
+\item
+  the procedure; (B) adding layers grows the constraint set
+  \(|\mathcal{M}|\) from \(10\to22\to58\) (+36 from AGORA L3); (C) the
+  resulting sign-prior matrix \(P=\operatorname{sgn}(F)\).
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Empirical sign agreement (naive estimate)}
+\protect\hypertarget{empirical-sign-agreement-naive-estimate}{}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/fig3_agora_sign_validation.png}
+
+\[\mathrm{SA}=\frac{1}{|\mathcal{M}|}\sum_{(i,j)\in\mathcal{M}}\mathbb{1}\!\left[\operatorname{sgn}(\hat A_{ij})=P_{ij}\right]=92\%.\]
+\textcolor{red}{This overstates it — the prior is sign-degenerate (honest test next).}
+\end{frame}
+
+\begin{frame}{Honest validation}
+\protect\hypertarget{honest-validation}{}
+The naive 92\% is inflated by sign degeneracy. The correct control is a
+permutation test:
+
+\begin{itemize}
+\tightlist
+\item
+  Only the \textbf{cross-feeding direction} is independently validated:
+  \[p=4\times10^{-4}\quad(z=+3.79,\ n_\pi=10^4).\]
+\item
+  The \textbf{competition direction is NOT validated} (chance level).
+\item
+  Across \textbf{two cohorts} (Dieckow × Botelho), prior-free,
+  strong-pair signs agree at \textbf{89\%} (\(p\approx0.02\)).
+\end{itemize}
+
+\vspace{0.3em}
+
+\textcolor{red}{The AGORA prior is not reproduced by the 16S dynamics — it is a
+modelling choice, not a data-confirmed fact.}
+\end{frame}
+
+\begin{frame}{Network view}
+\protect\hypertarget{network-view}{}
+Structural analysis of the inferred \(A\) (class level):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Veillonella (Negativicutes) is the metabolic sink} --- the
+  receiver that aggregates lactate and other products.
+\item
+  The classic \textbf{Pg-keystone / Fn-bridge picture is NOT supported
+  at class level.}
+\item
+  In dysbiosis \textbf{Pg centralises} (eigenvector centrality
+  \(0.32\to0.51\)).
+\item
+  At the same time the \textbf{S. oralis--Veillonella mutualism breaks.}
+\end{itemize}
+
+\vspace{0.4em}
+
+Dysbiosis is not a mere compositional change but a \textbf{rewiring} of
+the interaction network.
+\end{frame}
+
+\begin{frame}{CLSM-FISH raw data --- the 5-species biofilm in colour}
+\includegraphics[width=\textwidth,height=0.72\textheight]{figures/lif_slides/220518_HOBIC22_5Spezies_FISH_Tag1__slide_gallery.png}
+
+\small HOBIC-22 Day~1 --- 5-species fluorescence composite (max-intensity projection).
+Blue = \emph{S.~oralis}, green = \emph{A.~naeslundii}, yellow = \emph{Vd/Vp},
+purple = \emph{F.~nucleatum}, red = \emph{P.~gingivalis}.
+\end{frame}
+
+\begin{frame}{FISH cross-sections --- top-down xy vs depth xz}
+\includegraphics[width=\textwidth,height=0.70\textheight]{figures/lif_slides/220518_HOBIC22_5Spezies_FISH_Tag1__slide_feature.png}
+
+\small Left: \textbf{top-down (xy) max projection}. Right: \textbf{depth cross-section (xz)} ---
+the vertical distribution of all 5 species from surface to substrate.
+\end{frame}
+
+\begin{frame}{Spatial extension --- FISH depth profiles (CH vs DH)}
+\protect\hypertarget{spatial-extension-fish-depth-profiles-ch-vs-dh}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/diffusion_fit/zprofiles_all_ti_overlay.png}
+
+Depth-resolved 5-species profiles from CLSM-FISH. The depth structure
+differs between commensal-HOBIC (CH) and dysbiotic-HOBIC (DH).
+\end{frame}
+
+\begin{frame}{Dysbiosis = spatial reorganisation}
+\protect\hypertarget{dysbiosis-spatial-reorganisation}{}
+\includegraphics[width=\textwidth,height=0.52\textheight]{results/diffusion_fit/depth_niche.png}
+
+Dysbiosis is more than a compositional shift --- it is a \textbf{spatial
+reorganisation}: \emph{P. gingivalis} sinks deep (\textbf{+30 µm} from
+day 6, the anaerobic niche).
+\end{frame}
+
+\begin{frame}{NEW: a spatial cross-feeding test}
+\protect\hypertarget{new-a-spatial-cross-feeding-test}{}
+\includegraphics[width=\textwidth,height=0.48\textheight]{results/diffusion_fit/spatial_crossfeeding.png}
+
+The lactate pair \textbf{S. oralis (producer) → Veillonella (consumer)}
+is spatially stratified: Veillonella is \textbf{shallower} (10/10
+samples, Wilcoxon \(p=0.002\)). Producer basal, consumer above ---
+consistent with \textbf{upward lactate diffusion}.
+\end{frame}
+
+\begin{frame}{Reaction--diffusion PDE}
+\protect\hypertarget{reactiondiffusion-pde}{}
+Extend the 0D gLV to depth-resolved reaction--diffusion along \(z\):
+\[\partial_t\varphi_i = D_i\,\partial_z^2\varphi_i - u\,\partial_z\varphi_i + R_i(\varphi),\]
+\(R_i\) the replicator reaction term (with \(A,b\) fixed from the
+temporal fit); only \(D_i\) (diffusion) and \(u\) (advection) are
+inferred from the depth profiles.
+
+\vspace{0.4em}
+
+\textcolor{red}{This is preliminary — the HPC parameter sweep is converging.}
+The spatial fit grounds the model on an observable (FISH depth)
+independent of the temporal dynamics.
+\end{frame}
+
+\begin{frame}{pH prediction (original 5-species work, independent
+validation)}
+\protect\hypertarget{ph-prediction-original-5-species-work-independent-validation}{}
+\includegraphics[width=\textwidth,height=0.52\textheight]{results/figures/fig_ph_validation.png}
+
+Predict pH forward from the 5-species attractor posterior: independent
+\(R^2=0.78\), RMSE \(0.13\), LOO \(R^2=0.92\). \textbf{pH is not used in
+calibration} --- a genuinely independent validation.
+\end{frame}
+
+\begin{frame}{Conclusions}
+\protect\hypertarget{conclusions}{}
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{Metabolism constrains the sign of ecological interactions}
+  (\(P_{ij}=\operatorname{sgn}(F_{ij})\); magnitude is not used).
+\item
+  Dysbiosis is a \textbf{rewiring + spatial reorganisation}, with
+  \emph{P. gingivalis} sinking deep (+30 µm).
+\item
+  That claim reproduces across \textbf{two cohorts} (Dieckow × Botelho,
+  89\%, \(p\approx0.02\)) and an \textbf{independent mechanistic route}
+  (COMETS dFBA).
+\item
+  The original 5-species ODE predicts pH independently (\(R^2=0.78\),
+  LOO \(R^2=0.92\)).
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Outlook}
+\protect\hypertarget{outlook}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Spatial out-of-sample validation} --- predict depth profiles
+  on held-out samples.
+\item
+  \textbf{2D / 3D PDE} --- beyond \(z\) to in-plane and volumetric
+  structure.
+\item
+  \textbf{PINN inverse problem} --- infer \(D_i,u\) directly with
+  physics-informed neural networks.
+\item
+  \textbf{GDI / Joshi clinical validation} --- integrate clinical
+  metadata (dysbiosis index).
+\end{itemize}
+
+\vspace{0.4em}
+
+Solidify the picture --- metabolism fixes the sign, dysbiosis is
+rewiring + spatial reorganisation --- with spatial validation and
+clinical indices.
+\end{frame}
+
+\begin{frame}[fragile]{Take-home}
+\protect\hypertarget{take-home}{}
+\begin{center}
+\large
+Metabolism constrains the \textbf{sign} of ecological interactions.\\[0.3em]
+Dysbiosis is a \textbf{rewiring + spatial reorganisation}.\\[0.3em]
+Reproduced across \textbf{two cohorts}, an \textbf{independent dFBA},
+and a \textbf{held-out pH prediction}.
+\end{center}
+
+\vspace{0.6em}
+
+One \textbf{10-guild taxonomy} and the \textbf{\texttt{fit\_*.json}}
+format tie it all together.
+\end{frame}
+
+\end{document}

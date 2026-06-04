@@ -177,13 +177,13 @@ depth profiles add \textbf{where that interaction happens (WHERE)}.
 \tightlist
 \item
   Known: bulk gLV/Hamilton interaction matrix \(A\) and growth vector
-  \(b\) (Dieckow fit).
+  \(b\) (\textbf{(1) Heine 5-species TMCMC posterior}).
 \item
   Unknown: per-species \textbf{transport} along the substratum depth
   axis.
 \item
-  Goal: with the reaction term fixed from the bulk fit, infer
-  \textbf{only the spatial transport parameters} from the depth-resolved
+  Goal: keep the reaction term fixed from (1), and infer \textbf{only
+  the spatial transport parameters \(D_i,u\)} from the depth-resolved
   FISH data.
 \end{itemize}
 
@@ -192,6 +192,31 @@ depth profiles add \textbf{where that interaction happens (WHERE)}.
 \textbf{Thesis.} Dysbiosis manifests not as a change in bulk composition
 but as a \textbf{spatial reorganisation} --- in particular \emph{P.
 gingivalis} sinks deep and decouples from \emph{F. nucleatum}.
+\end{frame}
+
+\begin{frame}[fragile]{Foundation: (1) the Heine 5-species GPU-Bayesian
+model}
+\protect\hypertarget{foundation-1-the-heine-5-species-gpu-bayesian-model}{}
+This deck is the \textbf{spatial extension of the Heine 2025 5-species
+in-vitro work (1)}.
+
+\includegraphics[width=\textwidth,height=0.4\textheight]{results/heine2025/glv_heine_fit_paper.png}
+
+\begin{itemize}
+\tightlist
+\item
+  In (1), a \textbf{GPU-accelerated TMCMC} (\(N_p=10{,}000\)) infers the
+  posterior of the symmetric \(A\), reproducing the four attractors
+  CS/CH/DS/DH (\texttt{ultimate\_10000p}).
+\item
+  We \textbf{keep that \(A,b\) (the reaction term) fixed} and extend the
+  \emph{same} Heine system to its \textbf{HOBIC FISH depth data}, adding
+  the spatial transport \(D_i,u\).
+\item
+  i.e.~(1) = \textbf{temporal dynamics} (WHO); this deck =
+  \textbf{spatial structure} (WHERE). Heine's system is the consistent
+  protagonist.
+\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Data: HOBIC flow-chamber FISH (Heine 2025)}
@@ -239,7 +264,7 @@ constraint \(\sum_i \varphi_i + \varphi_0 = 1\) holds (\(\varphi_0\) =
 void / unoccupied).
 \end{frame}
 
-\begin{frame}{Governing equation (reaction--diffusion PDE)}
+\begin{frame}[fragile]{Governing equation (reaction--diffusion PDE)}
 \protect\hypertarget{governing-equation-reactiondiffusion-pde}{}
 For depth \(z\in[0,L]\) and composition \(\varphi_i(z,t)\), the
 reaction--advection--diffusion equation is
@@ -252,11 +277,14 @@ reaction--advection--diffusion equation is
 \tightlist
 \item
   \(R_i(\varphi)\) is the replicator / Hamilton reaction; \(A,b\) are
-  \textbf{fixed} from the bulk fit,
+  \textbf{fixed} from the \textbf{(1) Heine 5-species TMCMC posterior}
+  (\(N_p=10{,}000\), \texttt{ultimate\_10000p}) --- this deck is its
+  spatial extension,
   \[R_i(\varphi)=\varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big]+\gamma\,\varphi_i.\]
 \item
   The \textbf{only free parameters are the diffusivities \(D_i\) and the
-  advection \(u\)}.
+  advection \(u\)} (the reaction is settled in (1): Heine's \(A\) + the
+  spatial \(D_i,u\)).
 \item
   \(\gamma\) is a Lagrange term enforcing
   \(\sum_i \varphi_i + \varphi_0 = 1\) at each \(z\).
@@ -328,28 +356,74 @@ Predicted (solid) vs observed (points) depth profiles. Reaction term
 fixed, transport only fitted.
 \end{frame}
 
-\begin{frame}{Fitted parameters (preliminary)}
-\protect\hypertarget{fitted-parameters-preliminary}{}
+\begin{frame}[fragile]{Fitted parameters (converged, weakly identified)}
+\protect\hypertarget{fitted-parameters-converged-weakly-identified}{}
 \begin{longtable}[]{@{}lcc@{}}
 \toprule
 Species & \(D\) (CH) & \(D\) (DH) \\
 \midrule
 \endhead
-So & \(0.0123\) & \(0.0596\) \\
-An & \(0.0121\) & \(0.0021\) \\
-Vd/Vp & \(0.0042\) & \(2.1\times10^{-5}\) \\
-Fn & \(0.0075\) & \(0.0019\) \\
-Pg & \(0.0115\) & \(0.0083\) \\
-\textbf{\(u\) (advection)} & \(0.0038\) & \(0.0060\) \\
-\textbf{loss} & \(0.128\) & \(0.102\) \\
+So & \(10^{-5}\,^\dagger\) & \(0.0100\) \\
+An & \(10^{-5}\,^\dagger\) & \(0.0003\) \\
+Vd/Vp & \(0.0015\) & \(10^{-5}\,^\dagger\) \\
+Fn & \(0.0106\) & \(0.0020\) \\
+Pg & \(10^{-5}\,^\dagger\) & \(0.0013\) \\
+\textbf{\(u\) (advection)} & \(0.0\) & \(0.0070\) \\
+\textbf{loss} & \(\mathbf{0.030}\) & \(\mathbf{0.091}\) \\
 \bottomrule
 \end{longtable}
 
 \vspace{0.2em}
 
-\textcolor{red}{**Preliminary**: both conditions report `success=False` (optimiser not converged).}
-A hyperparameter sweep with faster-converging settings is running on the
-HPC.
+The best sweep fits \textbf{converge} (\texttt{success=True}), but
+\(^\dagger\) \textbf{several \(D_i\) hit the lower bound \(10^{-5}\)}
+(CH: So/An/Pg; DH: Vd/Vp).
+\textcolor{red}{$\Rightarrow$ the depth profiles do not uniquely determine the 5 diffusivities (**limited identifiability**).}
+Treat \(D_i\) as illustrative --- the 3-D PINN reaches the same
+conclusion (the identifiability limit is itself a finding).
+\end{frame}
+
+\begin{frame}[fragile]{Diffusion sweep: cross-diffusion halves CH loss}
+\protect\hypertarget{sweep-ch-cross-diffusion}{}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/diffusion_fit/fit_CH_xdiff_nz32_eps3e-4.png}
+
+CH best (\texttt{xdiff\_nz32\_eps3e-4}, loss \(=0.0145\))
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/diffusion_fit/fit_DH_xdiff_nz32_eps1e-3.png}
+
+DH best xdiff (\texttt{xdiff\_nz32\_eps1e-3}, loss \(=0.1032\))
+\end{column}
+\end{columns}
+
+Adding a cross-diffusion term to CH reduces loss from baseline \(0.030\) to \(0.0145\) --- a \textbf{52\% improvement}.
+Cross-diffusion does not improve DH (\(0.103\) vs non-xdiff best \(0.091\)).
+\end{frame}
+
+\begin{frame}{Best-fit parameters (updated)}
+\protect\hypertarget{best-fit-parameters-updated}{}
+\begin{longtable}[]{@{}lcc@{}}
+\toprule
+Species & \(D\) (CH best) & \(D\) (DH best) \\
+\midrule
+\endhead
+So & \(3.75\times10^{-3}\) & \(0.0100\) \\
+An & \(0.500\,^{\dagger\dagger}\) & \(0.0003\) \\
+Vd/Vp & \(10^{-5}\,^\dagger\) & \(10^{-5}\,^\dagger\) \\
+Fn & \(2.32\times10^{-4}\) & \(0.0020\) \\
+Pg & \(10^{-5}\,^\dagger\) & \(0.0013\) \\
+\textbf{\(u\) (advection)} & \(\approx0\) (\(1.8\times10^{-4}\)) & \(0.0070\) \\
+\textbf{loss} & \(\mathbf{0.0145}\) & \(\mathbf{0.0908}\) \\
+\textbf{converged} & $\checkmark$ & $\checkmark$ \\
+\textbf{config} & xdiff/Nz32 & fast/Nz24 \\
+\bottomrule
+\end{longtable}
+\(^\dagger\) lower bound \(10^{-5}\) active (not identifiable).
+\(^{\dagger\dagger}\) An hits upper bound 0.500 (search box narrow; not yet in mm\(^2\)/h).
+\textcolor{red}{DH loss $\approx 7\times$ CH: reaction-dominated, diffusion not the spatial organiser.}
 \end{frame}
 
 \begin{frame}{Spatial-ecology finding 1: Pg sinks deep in dysbiosis}
@@ -369,6 +443,65 @@ Manders \(M_1\) (fraction of Pg co-localised with Fn): DH Day 1
 \(=0.76\), then \(0.15\text{–}0.20\) from Day 6; CH stays
 \(0.33\text{–}0.49\). \(\Rightarrow\) Pg \textbf{decouples} from Fn and
 goes autonomous.
+\end{frame}
+
+\begin{frame}{Spatial-ecology finding 3: cross-feeding is spatially
+stratified}
+\protect\hypertarget{spatial-ecology-finding-3-cross-feeding-is-spatially-stratified}{}
+\includegraphics[width=\textwidth,height=0.48\textheight]{results/diffusion_fit/spatial_crossfeeding.png}
+
+Does the AGORA lactate backbone (\textbf{S. oralis producer →
+Veillonella consumer}) appear in depth? Veillonella's centre-of-mass is
+\textbf{consistently shallower than S. oralis in 10/10 samples} (mean
+\(-2.8\,\mu\)m, Wilcoxon \(p=0.002\)). \(\Rightarrow\) producer basal,
+consumer above --- consistent with \textbf{upward lactate diffusion}; a
+spatial validation of the metabolic backbone. (\emph{A. naeslundii} not
+significant, \(p=0.28\).)
+\end{frame}
+
+\begin{frame}{Spatial-ecology finding 4: Fn--Pg decoupling is a
+\emph{depth} separation}
+\protect\hypertarget{spatial-ecology-finding-4-fnpg-decoupling-is-a-depth-separation}{}
+\includegraphics[width=\textwidth,height=0.48\textheight]{results/fish_3d/fish_3d_fnpg_coloc.png}
+
+A full per-voxel 3-D decode of all 84 FOVs splits Manders \(M_1\) by
+dimension:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Lateral (xy-projection)} \(M_1 \approx 1.0\) in DH (saturates
+  from Day 6) --- same \(x,y\) footprint.
+\item
+  \textbf{3-D (voxel)} \(M_1\) \textbf{drops to \(0.22\text{–}0.33\)}
+  from Day 6 (CH stays \(0.4\text{–}0.7\)).
+\item
+  \(\Rightarrow\) same footprint but \textbf{separated in depth \(z\)}:
+  the dysbiotic Fn--Pg decoupling is a \textbf{vertical separation}, Pg
+  \textbf{below} Fn. A 3-D confirmation that \emph{Pg sinks deep}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Spatial-ecology finding 5: DH homogenises laterally
+(confluent mat)}
+\protect\hypertarget{spatial-ecology-finding-5-dh-homogenises-laterally-confluent-mat}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/fish_3d/fish_3d_lateral_heterogeneity.png}
+
+Lateral (xy) heterogeneity tracked over time (mean xy-CV):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{DH} becomes laterally \textbf{uniform}, CV \(\approx 0.33\)
+  from Day 6 --- a continuous \textbf{confluent mat}.
+\item
+  \textbf{CH} stays \textbf{patchy}, CV \(0.4\text{–}0.9\) ---
+  microcolony structure is retained.
+\item
+  \(\Rightarrow\) dysbiosis \textbf{smooths} laterally while the
+  commensal \textbf{keeps micro-structure}; complementary to the
+  vertical separation in finding 4.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Other: bulk CH ≈ DH}

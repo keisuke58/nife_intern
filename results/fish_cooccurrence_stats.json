@@ -1,0 +1,206 @@
+{
+  "CH": [
+    {
+      "pair": "So-An",
+      "i": 0,
+      "j": 1,
+      "A_sym": -0.9508851395137293,
+      "pred_sign": -1,
+      "mean_r": 0.035058394540461855,
+      "n_observations": 137,
+      "sign_agree": false
+    },
+    {
+      "pair": "So-Vd/Vp",
+      "i": 0,
+      "j": 2,
+      "A_sym": 0.8639232181964016,
+      "pred_sign": 1,
+      "mean_r": 0.15030720716168464,
+      "n_observations": 137,
+      "sign_agree": true
+    },
+    {
+      "pair": "So-Fn",
+      "i": 0,
+      "j": 3,
+      "A_sym": -1.3619987810123073,
+      "pred_sign": -1,
+      "mean_r": 0.0036131455264241255,
+      "n_observations": 137,
+      "sign_agree": false
+    },
+    {
+      "pair": "So-Pg",
+      "i": 0,
+      "j": 4,
+      "A_sym": -0.3318226782477027,
+      "pred_sign": -1,
+      "mean_r": -0.19960663363593922,
+      "n_observations": 137,
+      "sign_agree": true
+    },
+    {
+      "pair": "An-Vd/Vp",
+      "i": 1,
+      "j": 2,
+      "A_sym": 0.8535397398793427,
+      "pred_sign": 1,
+      "mean_r": -0.015440263356202652,
+      "n_observations": 137,
+      "sign_agree": false
+    },
+    {
+      "pair": "An-Fn",
+      "i": 1,
+      "j": 3,
+      "A_sym": -0.3614478737855603,
+      "pred_sign": -1,
+      "mean_r": -0.001472353687050159,
+      "n_observations": 137,
+      "sign_agree": true
+    },
+    {
+      "pair": "An-Pg",
+      "i": 1,
+      "j": 4,
+      "A_sym": -0.585010189864314,
+      "pred_sign": -1,
+      "mean_r": -0.1328212561112407,
+      "n_observations": 137,
+      "sign_agree": true
+    },
+    {
+      "pair": "Vd/Vp-Fn",
+      "i": 2,
+      "j": 3,
+      "A_sym": -0.8453850307224707,
+      "pred_sign": -1,
+      "mean_r": 0.1253447092873257,
+      "n_observations": 137,
+      "sign_agree": false
+    },
+    {
+      "pair": "Vd/Vp-Pg",
+      "i": 2,
+      "j": 4,
+      "A_sym": -0.12181334234301594,
+      "pred_sign": -1,
+      "mean_r": -0.05195302619023843,
+      "n_observations": 137,
+      "sign_agree": true
+    },
+    {
+      "pair": "Fn-Pg",
+      "i": 3,
+      "j": 4,
+      "A_sym": 1.3794317471610145,
+      "pred_sign": 1,
+      "mean_r": -0.04556226872415817,
+      "n_observations": 137,
+      "sign_agree": false
+    }
+  ],
+  "DH": [
+    {
+      "pair": "So-An",
+      "i": 0,
+      "j": 1,
+      "A_sym": 1.8289376522890322,
+      "pred_sign": 1,
+      "mean_r": 0.007701608045163929,
+      "n_observations": 157,
+      "sign_agree": true
+    },
+    {
+      "pair": "So-Vd/Vp",
+      "i": 0,
+      "j": 2,
+      "A_sym": -4.504847639580663,
+      "pred_sign": -1,
+      "mean_r": 0.10040547956716465,
+      "n_observations": 157,
+      "sign_agree": false
+    },
+    {
+      "pair": "So-Fn",
+      "i": 0,
+      "j": 3,
+      "A_sym": 0.14014496951741612,
+      "pred_sign": 1,
+      "mean_r": 0.0069322963774589175,
+      "n_observations": 157,
+      "sign_agree": true
+    },
+    {
+      "pair": "So-Pg",
+      "i": 0,
+      "j": 4,
+      "A_sym": 0.8459996720138896,
+      "pred_sign": 1,
+      "mean_r": -0.27455993684851354,
+      "n_observations": 157,
+      "sign_agree": false
+    },
+    {
+      "pair": "An-Vd/Vp",
+      "i": 1,
+      "j": 2,
+      "A_sym": 0.9259940034005183,
+      "pred_sign": 1,
+      "mean_r": -0.032548790847566574,
+      "n_observations": 157,
+      "sign_agree": false
+    },
+    {
+      "pair": "An-Fn",
+      "i": 1,
+      "j": 3,
+      "A_sym": 0.9274980468879629,
+      "pred_sign": 1,
+      "mean_r": 0.018845775251886777,
+      "n_observations": 157,
+      "sign_agree": true
+    },
+    {
+      "pair": "An-Pg",
+      "i": 1,
+      "j": 4,
+      "A_sym": -0.4895784901252759,
+      "pred_sign": -1,
+      "mean_r": -0.13104339835736978,
+      "n_observations": 157,
+      "sign_agree": true
+    },
+    {
+      "pair": "Vd/Vp-Fn",
+      "i": 2,
+      "j": 3,
+      "A_sym": -1.1744608815748314,
+      "pred_sign": -1,
+      "mean_r": 0.07391273174825923,
+      "n_observations": 157,
+      "sign_agree": false
+    },
+    {
+      "pair": "Vd/Vp-Pg",
+      "i": 2,
+      "j": 4,
+      "A_sym": -0.6309189703991382,
+      "pred_sign": -1,
+      "mean_r": -0.12619633240398648,
+      "n_observations": 157,
+      "sign_agree": true
+    },
+    {
+      "pair": "Fn-Pg",
+      "i": 3,
+      "j": 4,
+      "A_sym": 9.729024602173789,
+      "pred_sign": 1,
+      "mean_r": -0.12596527030866075,
+      "n_observations": 157,
+      "sign_agree": false
+    }
+  ]
+}

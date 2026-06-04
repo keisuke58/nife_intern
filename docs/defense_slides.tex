@@ -1,0 +1,399 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{space}{xeCJK}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{代謝が制約する口腔バイオフィルムの群集動態}
+\subtitle{生態 ODE 推定・代謝符号 prior・空間拡張 --- 修士論文公聴会}
+\author{西岡佳祐 --- NIFE / SFB TRR-298}
+\date{2026-11}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[]{Noto Serif CJK JP}
+  \setmonofont[]{Noto Sans Mono CJK JP}
+  \ifXeTeX
+    \usepackage{xeCJK}
+    \setCJKmainfont[]{Noto Serif CJK JP}
+  \fi
+  \ifLuaTeX
+    \usepackage[]{luatexja-fontspec}
+    \setmainjfont[]{Noto Serif CJK JP}
+  \fi
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={代謝が制約する口腔バイオフィルムの群集動態},
+  pdfauthor={西岡佳祐 --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{amsmath,amssymb}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\relu}[1]{\left[#1\right]_{+}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{North-star（目標）}
+\protect\hypertarget{north-starux76eeux6a19}{}
+ペリインプラント炎に関わる\textbf{口腔バイオフィルム群集の
+dysbiosis}を、 群集組成の時間発展としてモデル化する（SIIRI / SFB TRR-298
+コンソーシアム）。
+
+\begin{itemize}
+\tightlist
+\item
+  臨床問題：チタンインプラント周囲で健常（commensal）から疾患（dysbiotic）へ
+  遷移する微生物群集。
+\item
+  モデリングの問い：\textbf{何がこの遷移を駆動するのか} --- そして
+  ゲノムから計算した代謝は、生態的相互作用について何を教えてくれるか。
+\item
+  中心的アイデア：\textbf{代謝が生態的相互作用の符号を制約する}。
+\end{itemize}
+
+\vspace{0.4em}
+
+本公聴会は、生態 ODE 推定・代謝符号 prior・空間拡張を 1
+本の物語として束ねる。
+\end{frame}
+
+\begin{frame}{概念図（全体像）}
+\protect\hypertarget{ux6982ux5ff5ux56f3ux5168ux4f53ux50cf}{}
+\includegraphics[width=\textwidth,height=0.66\textheight]{results/figures/concept_overview_pub.png}
+
+代謝が相互作用の\textbf{符号}を決め、dysbiosis
+は\textbf{リワイヤリング＋空間再編} （Pg
+の中心化・深部沈降）として現れる。
+\end{frame}
+
+\begin{frame}{研究の弧（narrative）}
+\protect\hypertarget{ux7814ux7a76ux306eux5f27narrative}{}
+本研究は 2 段で構成される：
+
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{オリジナル（修士前半）} --- 5 種 in-vitro 系の \textbf{GPU
+  ベイズ ODE 推定}。 TMCMC（\(10^4\) 粒子）で 4 アトラクター \textbf{CS
+  / CH / DS / DH} （commensal/dysbiotic \(\times\) static/HOBIC）の
+  posterior を得た。
+\item
+  \textbf{拡張（修士後半）} --- その枠組みを実データへ： \textbf{代謝
+  AGORA 符号 prior} + \textbf{in-vivo 縦断 16S} + \textbf{空間 PDE} +
+  \textbf{FISH}。
+\end{enumerate}
+
+\vspace{0.4em}
+
+前半が力学系の骨格（アトラクター・pH 予測）を確立し、後半が
+代謝の制約と空間構造でそれを実データに接地する。
+\end{frame}
+
+\begin{frame}{コアモデル（簡潔版）}
+\protect\hypertarget{ux30b3ux30a2ux30e2ux30c7ux30ebux7c21ux6f54ux7248}{}
+絶対量 \(x_i\) の一般化 Lotka--Volterra：
+\[\dot{x}_i = x_i\Big(b_i + \sum_{j=1}^{S} A_{ij}\,x_j\Big),\qquad S=10 .\]
+
+単体 \(\sum_i\varphi_i=1\) 上の replicator / Hamilton 形（16S
+は組成データ）：
+\[\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big].\]
+
+\textbf{符号 prior}：AGORA cross-feeding フラックス \(F_{ij}\) から
+\[P_{ij}=\operatorname{sgn}(F_{ij})\in\{-1,0,+1\}\] を作り、\(A\)
+の\textbf{符号のみ}を制約（大きさは設計上捨てる）。
+\end{frame}
+
+\begin{frame}[fragile]{データフロー（実データ）}
+\protect\hypertarget{ux30c7ux30fcux30bfux30d5ux30edux30fcux5b9fux30c7ux30fcux30bf}{}
+\includegraphics[width=\textwidth,height=0.66\textheight]{results/figures/pipeline_overview_pub.png}
+
+実 Dieckow データ：guild \(\varphi\)（10 患者 \(\times\) 3 週）→ AGORA
+符号 prior → gLV/Hamilton フィット → LOO-CV 検証 → 4 アトラクター。
+\texttt{fit\_*.json} が交換フォーマット。
+\end{frame}
+
+\begin{frame}{AGORA 符号 prior パイプライン}
+\protect\hypertarget{agora-ux7b26ux53f7-prior-ux30d1ux30a4ux30d7ux30e9ux30a4ux30f3}{}
+\includegraphics[width=\textwidth,height=0.64\textheight]{results/fig2_agora_pipeline.png}
+
+\begin{enumerate}
+[(A)]
+\tightlist
+\item
+  手順；(B) 層追加で制約集合 \(|\mathcal{M}|\) が \(10\to22\to58\)
+  （AGORA L3 で +36）；(C) 出来上がる符号 prior 行列
+  \(P=\operatorname{sgn}(F)\)。
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{経験的 sign agreement（naive 推定）}
+\protect\hypertarget{ux7d4cux9a13ux7684-sign-agreementnaive-ux63a8ux5b9a}{}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/fig3_agora_sign_validation.png}
+
+\[\mathrm{SA}=\frac{1}{|\mathcal{M}|}\sum_{(i,j)\in\mathcal{M}}\mathbb{1}\!\left[\operatorname{sgn}(\hat A_{ij})=P_{ij}\right]=92\%.\]
+\textcolor{red}{これは過大評価 — prior は符号縮退している（次スライドで誠実に検証）。}
+\end{frame}
+
+\begin{frame}{誠実な検証}
+\protect\hypertarget{ux8aa0ux5b9fux306aux691cux8a3c}{}
+naive 92\% は prior の符号縮退による過大評価。正しい対照は permutation：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{cross-feeding 方向のみ}が独立に検証される：
+  \[p=4\times10^{-4}\quad(z=+3.79,\ n_\pi=10^4).\]
+\item
+  \textbf{競争方向は検証されない}（chance レベル）。
+\item
+  \textbf{2 コホート}（Dieckow \(\times\) Botelho）を prior 抜きで比べ、
+  強ペア符号が \textbf{89\%} 一致（\(p\approx0.02\)）。
+\end{itemize}
+
+\vspace{0.3em}
+
+\textcolor{red}{AGORA prior は 16S 力学で再現されない $\Rightarrow$ モデリング選択であり、
+データで確認済みではない。}
+\end{frame}
+
+\begin{frame}{ネットワークの視点}
+\protect\hypertarget{ux30cdux30c3ux30c8ux30efux30fcux30afux306eux8996ux70b9}{}
+推定 \(A\) の構造解析（class レベル）：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Veillonella（Negativicutes）が代謝のシンク} ---
+  乳酸などを集約する受け手。
+\item
+  古典的な \textbf{Pg-keystone / Fn-bridge は class
+  レベルでは支持されない}。
+\item
+  dysbiosis で \textbf{Pg が中心化}する（固有中心性 \(0.32\to0.51\)）。
+\item
+  同時に \textbf{S. oralis--Veillonella の相利共生が崩れる}。
+\end{itemize}
+
+\vspace{0.4em}
+
+dysbiosis
+は単なる組成変化でなく、相互作用ネットワークの\textbf{リワイヤリング}。
+\end{frame}
+
+\begin{frame}{CLSM-FISH 生データ --- 5 種バイオフィルムの実像}
+\includegraphics[width=\textwidth,height=0.72\textheight]{figures/lif_slides/220518_HOBIC22_5Spezies_FISH_Tag1__slide_gallery.png}
+
+\small HOBIC-22 Day 1 --- 5 種蛍光複合画像（最大強度投影）。
+青 = \emph{S.~oralis}，緑 = \emph{A.~naeslundii}，黄 = \emph{Vd/Vp}，
+紫 = \emph{F.~nucleatum}，赤 = \emph{P.~gingivalis}。
+\end{frame}
+
+\begin{frame}{FISH 断面構造 --- xy 俯瞰 vs xz 深さ断面}
+\includegraphics[width=\textwidth,height=0.70\textheight]{figures/lif_slides/220518_HOBIC22_5Spezies_FISH_Tag1__slide_feature.png}
+
+\small 左：\textbf{上面（xy）最大投影}。右：\textbf{深さ断面（xz）} --- 表面から基底まで 5 種の垂直分布が可視化される。
+\end{frame}
+
+\begin{frame}{空間拡張 --- FISH 深さプロファイル（CH vs DH）}
+\protect\hypertarget{ux7a7aux9593ux62e1ux5f35-fish-ux6df1ux3055ux30d7ux30edux30d5ux30a1ux30a4ux30ebch-vs-dh}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/diffusion_fit/zprofiles_all_ti_overlay.png}
+
+CLSM-FISH から得た\textbf{深さ分解 5
+種プロファイル}。commensal-HOBIC（CH）と
+dysbiotic-HOBIC（DH）で深さ方向の構造が異なる。
+\end{frame}
+
+\begin{frame}{dysbiosis = 空間的再編成}
+\protect\hypertarget{dysbiosis-ux7a7aux9593ux7684ux518dux7de8ux6210}{}
+\includegraphics[width=\textwidth,height=0.52\textheight]{results/diffusion_fit/depth_niche.png}
+
+dysbiosis は組成変化に留まらず\textbf{空間的再編成}： \emph{P.
+gingivalis} が深部へ沈む（6 日目から \textbf{+30 µm}、嫌気ニッチ）。
+\end{frame}
+
+\begin{frame}{新規：空間的 cross-feeding テスト}
+\protect\hypertarget{ux65b0ux898fux7a7aux9593ux7684-cross-feeding-ux30c6ux30b9ux30c8}{}
+\includegraphics[width=\textwidth,height=0.48\textheight]{results/diffusion_fit/spatial_crossfeeding.png}
+
+乳酸ペア \textbf{S. oralis（生産者）\(\to\)
+Veillonella（消費者）}が空間的に層状化： Veillonella
+が\textbf{より浅い}（10/10 サンプル、Wilcoxon \(p=0.002\)）。
+生産者が基底、消費者がその上 --- \textbf{上向きの乳酸拡散}と整合。
+\end{frame}
+
+\begin{frame}{反応拡散 PDE}
+\protect\hypertarget{ux53cdux5fdcux62e1ux6563-pde}{}
+0D gLV を深さ \(z\) 方向の反応拡散へ拡張：
+\[\partial_t\varphi_i = D_i\,\partial_z^2\varphi_i - u\,\partial_z\varphi_i + R_i(\varphi),\]
+\(R_i\) は replicator 反応項（\(A,b\) は時間 fit から固定）、
+\(D_i\)（拡散）と \(u\)（移流）のみを深さプロファイルから推定。
+
+\vspace{0.4em}
+
+\textcolor{red}{現状は preliminary — HPC でのパラメータ sweep が収束中。}
+空間 fit は時間動態と独立な観測量（FISH 深さ）でモデルを接地する。
+\end{frame}
+
+\begin{frame}{pH 予測（オリジナル 5 種研究・独立検証）}
+\protect\hypertarget{ph-ux4e88ux6e2cux30aaux30eaux30b8ux30caux30eb-5-ux7a2eux7814ux7a76ux72ecux7acbux691cux8a3c}{}
+\includegraphics[width=\textwidth,height=0.52\textheight]{results/figures/fig_ph_validation.png}
+
+5 種アトラクター posterior から pH を前向きに予測： 独立
+\(R^2=0.78\)、RMSE \(0.13\)、LOO \(R^2=0.92\)。 \textbf{pH
+はキャリブレーションに使っていない} --- 真に独立な検証。
+\end{frame}
+
+\begin{frame}{結論}
+\protect\hypertarget{ux7d50ux8ad6}{}
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{代謝が生態的相互作用の符号を制約する}
+  （\(P_{ij}=\operatorname{sgn}(F_{ij})\)；大きさは使わない）。
+\item
+  dysbiosis は\textbf{リワイヤリング + 空間的再編成}であり、 \emph{P.
+  gingivalis} の深部沈降（+30 µm）を伴う。
+\item
+  その主張は \textbf{2 コホート}（Dieckow \(\times\) Botelho, 89\%,
+  \(p\approx0.02\)）と \textbf{独立な機械論経路}（COMETS
+  dFBA）で再現される。
+\item
+  オリジナルの 5 種 ODE は pH を独立に予測（\(R^2=0.78\), LOO
+  \(R^2=0.92\)）。
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{今後（Outlook）}
+\protect\hypertarget{ux4ecaux5f8coutlook}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{空間的 out-of-sample 検証} ---
+  別サンプルで深さプロファイルを予測。
+\item
+  \textbf{2D / 3D PDE} --- \(z\) 方向だけでなく面内・立体構造へ。
+\item
+  \textbf{PINN 逆問題} --- 物理情報ニューラルネットで \(D_i,u\)
+  を直接推定。
+\item
+  \textbf{GDI / Joshi 臨床検証} --- 臨床メタデータ統合（dysbiosis
+  index）。
+\end{itemize}
+
+\vspace{0.4em}
+
+代謝が符号を制約し、dysbiosis がリワイヤリング＋空間再編であるという
+描像を、空間検証と臨床指標で固めていく。
+\end{frame}
+
+\begin{frame}[fragile]{まとめ（Take-home）}
+\protect\hypertarget{ux307eux3068ux3081take-home}{}
+\begin{center}
+\large
+代謝は生態的相互作用の\textbf{符号}を制約する。\\[0.3em]
+dysbiosis は\textbf{リワイヤリング＋空間再編}である。\\[0.3em]
+\textbf{2 コホート}＋\textbf{機械論的 dFBA}＋\textbf{独立な pH 予測}で再現。
+\end{center}
+
+\vspace{0.6em}
+
+すべてを 1 つの \textbf{10 ギルド分類}と \textbf{\texttt{fit\_*.json}}
+が束ねる。
+\end{frame}
+
+\end{document}
