@@ -23,12 +23,8 @@ import json
 from pathlib import Path
 
 import matplotlib
-matplotlib.rcParams.update({
-    'font.family': 'serif',
-    'font.serif': ['Times New Roman', 'Times', 'DejaVu Serif'],
-    'mathtext.fontset': 'stix',
-    'font.size': 10,
-})
+from thesis_style import use as _thesis_style   # unified usetex/lmodern style
+_thesis_style()
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
@@ -105,8 +101,8 @@ def plot_influence_vulnerability(influence, vulnerability, net_effect, short, co
         ax.scatter(inf, vul, color=colors[i], s=80, zorder=3)
         ax.annotate(short[i], (inf, vul), fontsize=7,
                     xytext=(4, 2), textcoords='offset points')
-    ax.set_xlabel('Influence  Σ|A_ji|  (drives others)', fontsize=9)
-    ax.set_ylabel('Vulnerability  Σ|A_ij|  (affected by others)', fontsize=9)
+    ax.set_xlabel('Influence  $\\Sigma|A_{ji}|$  (drives others)', fontsize=9)
+    ax.set_ylabel('Vulnerability  $\\Sigma|A_{ij}|$  (affected by others)', fontsize=9)
     ax.set_title('Influence vs Vulnerability', fontsize=9)
     ax.axline((0, 0), slope=1, color='grey', lw=0.8, ls='--', label='equal')
     ax.legend(fontsize=7)
@@ -130,7 +126,7 @@ def plot_influence_vulnerability(influence, vulnerability, net_effect, short, co
     ax.set_xticks(range(len(short)))
     ax.set_xticklabels(short, rotation=45, fontsize=8)
     ax.axhline(0, color='k', lw=0.8)
-    ax.set_ylabel('Net effect  Σ A_ij  (excl. self)', fontsize=9)
+    ax.set_ylabel('Net effect  $\\Sigma A_{ij}$  (excl. self)', fontsize=9)
     ax.set_title('Net community effect\n(blue=mutualist, red=competitor)', fontsize=9)
     for bar, val in zip(bars, net_effect):
         ax.text(bar.get_x() + bar.get_width()/2,
@@ -242,7 +238,7 @@ def plot_loo_stability(A_full, A_folds, short, colors, out_path=None):
     ax.set_xticks(range(n_g)); ax.set_xticklabels(short, rotation=45, fontsize=7)
     ax.set_yticks(range(n_g)); ax.set_yticklabels(short, fontsize=7)
     fig.colorbar(im, ax=ax, fraction=0.046)
-    ax.set_title('LOO mean A_ij', fontsize=9)
+    ax.set_title('LOO mean $A_{ij}$', fontsize=9)
 
     # Heatmap: std A
     ax = axes[1]
@@ -255,7 +251,7 @@ def plot_loo_stability(A_full, A_folds, short, colors, out_path=None):
                 ax.text(j, i, f'{std[i,j]:.2f}', ha='center', va='center',
                         fontsize=5, color='white' if std[i,j] > 0.5*std.max() else 'black')
     fig.colorbar(im2, ax=ax, fraction=0.046)
-    ax.set_title('LOO std of A_ij\n(low = stable)', fontsize=9)
+    ax.set_title('LOO std of $A_{ij}$\n(low = stable)', fontsize=9)
 
     # Heatmap: sign consistency
     ax = axes[2]
@@ -394,8 +390,8 @@ def plot_permutation_results(A_full, null_A, pval, short, out_path=None):
     ax.scatter(x[~sig], y[~sig], color='grey',  alpha=0.5, s=30, label='p≥0.05')
     ax.scatter(x[sig],  y[sig],  color='#d6604d', alpha=0.8, s=50, label='p<0.05')
     ax.axline((0, 0), slope=1, color='k', lw=0.8, ls='--', label='y=x')
-    ax.set_xlabel('Mean |A_ij| under permutation (null)', fontsize=9)
-    ax.set_ylabel('|A_ij| real data', fontsize=9)
+    ax.set_xlabel('Mean $|A_{ij}|$ under permutation (null)', fontsize=9)
+    ax.set_ylabel('$|A_{ij}|$ real data', fontsize=9)
     ax.set_title('Real vs permutation A magnitude', fontsize=9)
     ax.legend(fontsize=8)
 
