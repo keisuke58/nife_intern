@@ -182,9 +182,10 @@ raw 16S → guild \(\varphi\) → gLV/Hamilton（＋符号 prior）→ LOO 検�
 
 \vspace{0.4em}
 
-\textbf{主張：}
+\begin{block}{主張}
 代謝シグナルが制約するのは協調的相互作用の\textbf{符号}（大きさでも競争でもない）。
-\(p=4\times10^{-4}\) で支持。
+\alert{$p=4\times10^{-4}$} で支持。
+\end{block}
 \end{frame}
 
 \begin{frame}{生態モデル}
@@ -232,6 +233,7 @@ replicator / Hamilton 形：
 ゲノムスケール再構成。腸内から\textbf{口腔}菌へ拡張。ギルドごとに代表
 SBML を 1 つ。
 
+\vspace{0.5em}
 \begin{itemize}
 \tightlist
 \item
@@ -245,7 +247,7 @@ SBML を 1 つ。
   ギルドで正の増殖（\(\mu = 0.11\text{–}1.66\,\mathrm{h^{-1}}\)）。
 \end{itemize}
 
-\vspace{0.3em}
+\vspace{0.5em}
 
 培地組成は重要な感度因子であり、栄養が乏しい場合は \(\mu\to0\) となり
 cross-feeding シグナルが消失する。
@@ -268,7 +270,7 @@ cross-feeding シグナルが消失する。
 
 \begin{frame}{パイプライン全体像}
 \protect\hypertarget{ux30d1ux30a4ux30d7ux30e9ux30a4ux30f3ux5168ux4f53ux50cf}{}
-\includegraphics[width=\textwidth,height=0.64\textheight]{results/fig2_agora_pipeline.png}
+\includegraphics[width=\textwidth,height=0.64\textheight]{results/fig2_agora_pipeline_slide.png}
 
 \begin{enumerate}
 [(A)]
@@ -276,7 +278,7 @@ cross-feeding シグナルが消失する。
 \item
   手順；(B) 層追加で \(|\mathcal{M}|\) が \(10\to22\to58\)（AGORA L3 で
   +36）；
-\item
+\item[(C)]
   出来上がる符号 prior 行列 \(P=\operatorname{sgn}(F)\)。
 \end{enumerate}
 \end{frame}
@@ -326,6 +328,7 @@ cross-feeding シグナルが消失する。
 \[A_{ij} = \underbrace{\sum_{\alpha} s_{j\alpha}\,c_{i\alpha}}_{\text{cross-feeding}\,(+)}
 \;-\; \underbrace{\frac{c_i\!\cdot\! c_j}{\lVert c_i\rVert\,\lVert c_j\rVert}}_{\text{niche overlap}\,(-)} .\]
 
+\vspace{0.5em}
 \begin{itemize}
 \tightlist
 \item
@@ -336,6 +339,7 @@ cross-feeding シグナルが消失する。
   Growth-rate-suppression も貧栄養培地で同様に破綻。
 \end{itemize}
 
+\vspace{0.5em}
 \(\Rightarrow\) \(\operatorname{sgn}(A_{ij})\) を残し、大きさは捨てる。
 \end{frame}
 
@@ -356,6 +360,7 @@ cross-feeding シグナルが消失する。
 \[\max\; \min_{i}\frac{\mu_i}{\mu_i^{\max}}\quad\text{s.t.}\quad
 \sum_i \mu_i \ge \tau\sum_i \mu_i^{\max},\;\; S^{\text{com}}v=0,\;\tau=0.5 .\]
 
+\vspace{0.5em}
 \begin{itemize}
 \tightlist
 \item
@@ -390,7 +395,7 @@ cross-feeding シグナルが消失する。
 
 \begin{frame}{prior の硬さ \(W\) --- 相転移}
 \protect\hypertarget{prior-ux306eux786cux3055-w-ux76f8ux8ee2ux79fb}{}
-\includegraphics[width=\textwidth,height=0.55\textheight]{results/fig_agora_weight_sensitivity.png}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/fig_agora_weight_sensitivity_slide.png}
 
 \(W=1.0\) で
 \(\mathrm{SA}\to100\%\)、\(\mathrm{LOO\text{-}RMSE}\approx0.050\)。
@@ -398,7 +403,7 @@ prior-free gLV は \(0.0455\) とさらに低い → prior の価値は予測精
 \textbf{解釈可能性・符号整合性}にある（誠実な位置づけ）。
 \end{frame}
 
-\begin{frame}{批判的検証：prior はデータから独立に裏づくか}
+\begin{frame}[shrink=5]{批判的検証：prior はデータから独立に裏づくか}
 \protect\hypertarget{ux6279ux5224ux7684ux691cux8a3cprior-ux306fux30c7ux30fcux30bfux304bux3089ux72ecux7acbux306bux88cfux3065ux304fux304b}{}
 \(\alpha=0\) で prior は\textbf{全正}（cross-feeding のみ）→
 \(\mathrm{SA}\) は過大。 正しい対照は \textbf{prior 外}セルとのラベル
@@ -425,6 +430,10 @@ cross-feeding 方向
 gLV（非対称） & 41\%（null） & null \\
 \bottomrule
 \end{longtable}
+
+\begin{center}
+\alert{Hamilton cross-feeding: $p=4\times10^{-4}$, $z=+3.79$ (permutation $n=10^4$)}
+\end{center}
 
 \begin{itemize}
 \tightlist
@@ -453,19 +462,18 @@ gLV（非対称） & 41\%（null） & null \\
 
 \begin{frame}{限界と結論}
 \protect\hypertarget{ux9650ux754cux3068ux7d50ux8ad6}{}
-\textbf{限界：} ギルド \(=\) class（代表株 \(\neq\)
-ギルド全体）；阻害行の \(20/22\) は酸素 （生産者不在）\(\Rightarrow\)
-毒素は H\(_2\)O\(_2\) のみ発火；\(w_\alpha\) は代謝物ごと max；
-大きさは捨てている。
+\textit{ギルド $=$ class（代表株 $\neq$ ギルド全体）；阻害行の $20/22$ は酸素（生産者不在）$\Rightarrow$ 毒素は H$_2$O$_2$ のみ発火；$w_\alpha$ は代謝物ごと max；大きさは捨てている。}
 
-\textbf{結論：} 1.
-\(\text{AGORA pFBA}\to F_{ij}\to P_{ij}=\operatorname{sgn}(F_{ij})\)
-という変換が方法論的新規性。 2.
-\textbf{符号は使え、量は使えない}（MacArthur cosine 飽和を回避）。 3.
-単種（\(92\%\)）\(\to\) \textbf{MICOM（\(100\%\)）} が群集文脈を捕捉。
-4. 誠実な検証：\textbf{協調方向のみ} \(p=4\times10^{-4}\)；2 コホート
-\(89\%\)；prior はモデリング選択。 5. COMETS dFBA が dysbiotic
-分岐を前向きにも再現。
+\vspace{0.4em}
+\textbf{結論：}
+\begin{enumerate}
+\tightlist
+\item \(\text{AGORA pFBA}\to F_{ij}\to P_{ij}=\operatorname{sgn}(F_{ij})\) という変換が方法論的新規性。
+\item \textbf{符号は使え、量は使えない}（MacArthur cosine 飽和を回避）。
+\item 単種（\(92\%\)）\(\to\) \textbf{MICOM（\(100\%\)）} が群集文脈を捕捉。
+\item 誠実な検証：\textbf{協調方向のみ} \(p=4\times10^{-4}\)；2 コホート \(89\%\)；prior はモデリング選択。
+\item COMETS dFBA が dysbiotic 分岐を前向きにも再現。
+\end{enumerate}
 \end{frame}
 
 \end{document}

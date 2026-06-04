@@ -456,7 +456,8 @@ def plot_crossfeeding():
     )
     fig.tight_layout()
     out = OUTDIR / "sweep_crossfeeding.png"
-    fig.savefig(out, dpi=150, bbox_inches="tight")
+    fig.savefig(out, dpi=300, bbox_inches="tight")
+    fig.savefig(out.with_suffix(".pdf"), bbox_inches="tight")
     print(f"  Saved: {out}")
     plt.close(fig)
 
