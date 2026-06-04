@@ -1,0 +1,221 @@
+% =====================================================================
+% THESIS INTRODUCTION DRAFT — 2026-06-04
+% Sections 1.1-1.5. Copy into Overleaf thesis chapter 1.
+% =====================================================================
+
+\chapter{Introduction}
+
+The four papers from PAPER_OUTLINE (Sakanaka 2022, Zhang 2022, Jiang 2025, Espinoza 2025) are not in the bib. Now I have all the context needed. Let me draft the subsection.
+
+---
+
+**One-sentence chapter message for §1.1:**
+Oral biofilm undergoes a reproducible community-state transition from commensal to dysbiotic that drives peri-implantitis, motivating the five-species in-vitro HOBIC model as a mechanistically controlled platform for quantitative inference.
+
+**Figure plan for §1.1:** None — §1.1 is a clinical background subsection; it is prose only. The graphical abstract (`results/figures/concept_overview_pub.png`) and pipeline figure belong to §1.3/ch1 overview, not this subsection.
+
+**Topic-sentence outline:**
+1. Dental implants are highly prevalent but peri-implantitis affects 10–20% of patients and is the leading cause of late implant failure.
+2. The underlying pathology is a dysbiotic shift in the polymicrobial oral biofilm community, mediated by a small number of key species.
+3. Community assembly follows a spatial succession from early commensal colonizers through bridging species to late-colonizing pathogens.
+4. *F. nucleatum* occupies the bridging niche between commensals and pathogens, making it indispensable in any mechanistic community model.
+5. *P. gingivalis* acts as a low-abundance keystone pathogen that hijacks immune signalling to sustain dysbiosis.
+6. To study these dynamics in a controlled, quantifiable setting, Heine et al. developed the five-species HOBIC in-vitro model — the primary experimental platform for Chapter 3.
+
+**Reverse-outline check:** The six topic sentences form a straight funnel: prevalence/burden → pathology mechanism → succession/commensals → bridge organism → keystone pathogen → experimental platform. Logic is linear; no reorder needed.
+
+Here is the drafted subsection:
+
+```latex
+\subsection{Clinical Background: Oral Biofilm, Dysbiosis, and Peri-implantitis}
+\label{sec:intro_clinical_background}
+
+Dental implants have become the standard of care for replacing missing teeth, with
+tens of millions placed annually worldwide~\cite{Kolenbrander2010OralMultispecies}.
+Despite high short-term success rates, peri-implantitis --- a progressive
+biofilm-driven inflammatory condition causing peri-implant bone resorption --- affects
+an estimated 10--20\,\% of implants over a ten-year horizon and remains the leading
+cause of late implant failure~\cite{Berglundh2018Peri, Schwarz2022PeriImplantitis,
+Sedghi2021PeriImplant}.
+Because peri-implantitis is refractory to conventional antibiotics and lacks reliable
+early biomarkers, understanding the microbial dynamics that trigger it is a prerequisite
+for rational therapeutic intervention~\cite{Lamont2018Periodontal}.
+
+Peri-implantitis is fundamentally a disease of \emph{dysbiosis}: a shift in the
+composition and metabolic activity of the subgingival polymicrobial community from a
+commensal-dominated, health-associated state to a pathogen-enriched, inflammation-driving
+state~\cite{Marsh2003Dental, Hajishengallis2012Dysbiosis}.
+The oral microbiome comprises more than 700 taxa interacting through mutualism,
+competition, and metabolic cross-feeding~\cite{Kolenbrander2010OralMultispecies,
+Dewhirst2010HOMD}; it is not a passive coloniser but an actively self-organised
+community whose emergent state --- commensal or dysbiotic --- is determined by the
+relative strengths of these inter-species interactions.
+This bistability is the biological motivation for modelling the community with
+attractor-state ODE dynamics rather than single-species growth curves.
+
+The transition from health to dysbiosis follows a reproducible spatial and temporal
+succession~\cite{Kolenbrander2006FnBridge}.
+Early colonisers such as \textit{Streptococcus oralis}~(\textit{So}) and
+\textit{Actinomyces naeslundii}~(\textit{An}) attach to the salivary pellicle and
+create an oxidative, commensal-permissive microenvironment.
+Their fermentative metabolism lowers local pH and reduces oxygen tension, conditioning
+the substratum for secondary colonisers and eventually for strictly anaerobic
+late-colonising pathogens~\cite{Lamont2018Periodontal}.
+
+\textit{Fusobacterium nucleatum}~(\textit{Fn}) occupies the pivotal bridging niche
+between early commensals and late pathogens~\cite{Signat2011Fn, Kolenbrander2006FnBridge}.
+Through co-aggregation with both aerotolerant early colonisers and obligate anaerobes,
+\textit{Fn} physically and metabolically connects the two flanks of the community:
+it channels arginine-derived metabolites toward the anaerobic consortium and provides
+adhesion scaffolding that recruits keystone pathogens to the developing
+biofilm~\cite{Kolenbrander2006FnBridge}.
+Accordingly, \textit{Fn} abundance is elevated in both periodontitis and
+peri-implantitis lesions and is a consistent feature of the dysbiotic
+attractor~\cite{Signat2011Fn}.
+
+\textit{Porphyromonas gingivalis}~(\textit{Pg}) acts as a low-abundance keystone
+pathogen that disproportionately reorganises the community and subverts host immunity
+through gingipain protease activity and lipopolysaccharide
+modifications~\cite{Hajishengallis2014Polymicrobial, Mysak2014Pg}.
+Rather than causing disease by simple numerical dominance, \textit{Pg} modulates
+complement signalling and suppresses neutrophil recruitment, creating a
+nutrient-rich, inflammation-sustained niche in which the broader anaerobic consortium
+can expand~\cite{Hajishengallis2012Dysbiosis, Lamont2018Periodontal}.
+Recent full-length 16S and metatranscriptomic profiling of peri-implant submucosal
+communities confirms that \textit{Pg}-associated guilds are enriched with increasing
+probing depth and disease severity~\cite{joshi2025}, underscoring \textit{Pg}'s
+keystone role in the clinical disease state.
+
+To study these dynamics in a mechanistically controlled setting, Heine et al.~\cite{Heine2025PeriImplant}
+developed a five-species in-vitro model comprising \textit{So}, \textit{An},
+\textit{Veillonella} spp.~(\textit{Vei}), \textit{Fn}, and \textit{Pg}, grown in
+the HOBIC (Hannover Oral BIofilm Chamber) flow reactor~\cite{Kommerein2018HOBIC}.
+The five species were chosen to represent the four ecological roles
+--- commensal early colonisers (\textit{So}, \textit{An}), metabolic bridge (\textit{Fn}),
+anaerobic cross-feeder (\textit{Vei}), and keystone pathogen (\textit{Pg}) ---
+while remaining small enough for rigorous Bayesian parameter
+identification of the symmetric interaction matrix~$\mathbf{A}$.
+Two community states (commensal~CS/CH, dysbiotic~DS/DH) $\times$ two cultivation
+modes (static vs.\ HOBIC flow) define the four experimental conditions that anchor
+Chapter~\ref{ch:heine}.
+```
+
+---
+
+**TODOs and missing citations:**
+
+| Flag | Location | Issue |
+|------|----------|-------|
+| `[TODO: prevalence number]` | Para 1 | "tens of millions placed annually" — `ch1_introduction.tex` line 7 says "15 million annually" citing `Kolenbrander2010OralMultispecies`, but that review does not contain an implant placement count. Confirm the correct source (e.g. a market-data paper). |
+| `[TODO: Sakanaka 2022]` | Para 4 (Fn bridge / arginine) | Sakanaka et al. 2022 Fn-arginine paper is not in `references.bib`. Add it and replace the generic `Kolenbrander2006FnBridge` citation for the arginine-channelling claim. |
+| `[TODO: Jiang 2025 or Zhang 2022]` | Para 4 / Para 5 (Fn dysbiosis role) | Jiang et al. 2025 (*F. nucleatum* ecology review) and Zhang et al. 2022 (network dysbiosis) are in PAPER_OUTLINE but absent from `references.bib`. Add them for the Fn-dysbiosis and network-ecology sentences. |
+| `[TODO: Espinoza 2025]` | Para 5 (attractor states) | Espinoza et al. 2025 (peri-implant microbiome profiling across conditions) is not in `references.bib`. Useful for the community-state / attractor framing. |
+| `Kolenbrander2006FnBridge` key mismatch | bib line 665–666 | The bib entry is actually the Kolenbrander 2002 "Communication among oral bacteria" review, not an Fn-bridge paper. A comment in the bib flags this. Verify it is the intended citation before using it for Fn-bridge claims; consider adding a more specific 2002/2006 Kolenbrander reference. |
+
+Now I have enough context to write the subsection. The four papers from PAPER_OUTLINE are not yet in `references.bib` (Castro2025, ZapienCampos2024, Huang2025, Paredes2025, Pasqualini2024), so I will use their arXiv/cite keys as placeholders matching the PAPER_OUTLINE style, alongside existing keys.
+
+\subsection{Computational Ecology — gLV ODE Inference for Microbial Communities}
+
+Quantitative models of microbial community dynamics cast inter-species interactions as ordinary differential equations (ODEs).
+The generalized Lotka--Volterra (gLV) model \cite{Lotka1925Elements,Stein2013gLV} describes the temporal evolution of $n$ guild relative abundances $\phi_i(t)$ as
+\begin{equation}
+  \dot{\phi}_i = \phi_i\!\left(b_i + \sum_{j=1}^{n} A_{ij}\,\phi_j\right), \quad i = 1,\ldots,n,
+\end{equation}
+where $b_i$ are intrinsic growth rates and $A_{ij}$ encodes the signed ecological effect of guild $j$ on guild $i$.
+A replicator formulation constrains the composition to the simplex $\sum_i\phi_i = 1$ \cite{TaylorJonker1978Replicator,Hofbauer1998EGT}, which is appropriate for 16S-derived relative-abundance data \cite{Gloor2017Microbiome}.
+
+\textbf{Inference challenge.}
+Fitting $A \in \mathbb{R}^{n \times n}$ plus per-patient growth vectors from a cohort of $p$ patients, each observed at $T = 3$ time points, yields $\mathcal{O}(n^2)$ free parameters against $p \cdot (T-1) \cdot n$ data constraints.
+For the ten-patient Dieckow cohort with $n = 10$ guilds this ratio exceeds~5, rendering the system severely underdetermined \cite{Cao2017Identifiability,Castro2025scarce}.
+Castro et al.\ \cite{Castro2025scarce} show rigorously that under such conditions the posterior over $A$ is structurally overparameterised: even optimal Bayesian inference recovers at least one interaction sign incorrectly with near-certain probability for $n \geq 4$.
+
+\textbf{Hamilton replicator.}
+To impose thermodynamic consistency, we adopt a variational (Hamilton-principle) replicator \cite{JunkerBalzani2021ExtendedHamilton,Klempt2024ContinuumGrowth} in which the interaction matrix is required to be symmetric, $A = A^\top$.
+Symmetry reduces the parameter count from $n^2$ to $n(n+1)/2$ and ensures that the interaction network derives from a scalar potential, precluding limit cycles and guaranteeing convergence to fixed-point attractors \cite{Hofbauer1998EGT}.
+
+\textbf{Bayesian inference and cross-validation.}
+Model parameters are inferred via Transitional Markov Chain Monte Carlo (TMCMC) \cite{ChingChen2007TMCMC,Betz2016TMCMC}, a sequential Monte Carlo scheme that anneals the likelihood from the prior to the full posterior and simultaneously estimates the evidence for model comparison \cite{Chopin2002SMC}.
+Generalisation is assessed by leave-one-patient-out cross-validation (LOO-CV): the model is re-fitted on $p-1$ patients and trajectory predictions are evaluated on the held-out patient, providing an out-of-sample test that is robust to the small cohort size \cite{Gelman2013BDA,Gibson2021MDSINE2}.
+
+\subsection{Metabolic Constraints as Ecological Priors --- AGORA and Sign Priors}
+\label{sec:intro_sign_prior}
+
+Genome-scale metabolic models (GEMs) encode, for each organism, the full stoichiometry of metabolic reactions and transport processes, enabling computation of feasible flux distributions via flux balance analysis (FBA)~\cite{OrthThiele2010WhatIsFBA}.
+Applied to multi-species communities, parsimonious FBA (pFBA)~\cite{Lewis2012pFBA} predicts which metabolites are secreted by one guild and consumed by another, directly encoding the metabolic basis of ecological interactions.
+A cross-feeding relationship --- guild $j$ secretes compound $\alpha$ and guild $i$ takes it up --- implies a positive ecological effect of $j$ on $i$; conversely, secretion of inhibitory compounds such as H\textsubscript{2}O\textsubscript{2} or H\textsubscript{2}S implies antagonism.
+These flux-derived cross-feeding signs thus translate into predicted \emph{signs} of the off-diagonal entries of the gLV interaction matrix $A$.
+
+The AGORA2 resource~\cite{Heinken2023AGORA2} provides curated GEMs for 7{,}302 human-associated microorganisms.
+In the present work we selected guild-representative models for all ten Szafra\'nski guilds, simulated each on an oral-fluid medium, and computed pairwise net cross-feeding flows $F_{ij}$.
+This yielded a third evidence layer (L3) for the sign prior, complementing the experimental (L1) and predicted (L2) interaction evidence from Szafra\'nski et al.~\cite{Szafranski2025CT}.
+Together the three layers constrain 35 guild pairs, compared to 22 from L1+L2 alone.
+
+Crucially, the prior penalises sign violations, not magnitude deviations.
+The penalty
+\begin{equation}
+    \mathcal{P} = \sum_{(i,j):\, F_{ij} \neq 0} \frac{|F_{ij}|}{2\sigma^{2}}
+    \!\left[\max\!\left(0,\,-\operatorname{sgn}(F_{ij})\,A_{ij}\right)\right]^{2},
+    \quad \sigma = 0.15,
+    \label{eq:sign_penalty}
+\end{equation}
+is zero whenever $A_{ij}$ and $F_{ij}$ share the same sign, and grows quadratically only when they conflict.
+This design is deliberate: FBA fluxes carry units of mmol\,gDW\textsuperscript{-1}\,h\textsuperscript{-1} whereas gLV interaction strengths are dimensionless compositional rates, and no calibrated unit conversion exists.
+Attempts to use FBA magnitudes as quantitative priors (MacArthur consumer-resource form~\cite{Marsland2019MicrobialCRM}) failed in validation, confirming that the ecological information content of GEMs lies in the \emph{direction} of interaction, not in its magnitude.
+To our knowledge this is the first application of genome-scale metabolic models as sign priors for ecological interaction inference in oral biofilm communities.
+
+I now have all the context needed. Let me write the subsection.
+
+\subsection{Spatial Biofilm Structure: FISH Microscopy and PDE Extension}
+\label{sec:intro_spatial}
+
+Oral biofilms on implant surfaces are not spatially homogeneous: early colonisers
+such as \textit{Streptococcus oralis} and \textit{Actinomyces naeslundii} attach
+to the titanium surface and form a structurally stable base layer, while
+\textit{Fusobacterium nucleatum} acts as a physical and metabolic bridge species
+that enables late colonisers such as \textit{Porphyromonas gingivalis} to
+establish in the anaerobic, nutrient-depleted deep zone of the biofilm
+\cite{Kolenbrander2010OralMultispecies, Signat2011Fn, Kolenbrander2006FnBridge}.
+Fluorescence \textit{in situ} hybridisation (FISH) combined with confocal laser
+scanning microscopy (CLSM) provides species-level, three-dimensional resolution
+of this vertical organisation \cite{Manders1993Colocalization, dieckow2024structure}.
+In the Heine HOBIC model system \cite{Heine2025PeriImplant, Kommerein2018HOBIC},
+FISH z-profiles for all five focal species were decoded from four fluorescence
+channels — including the dual-label signature of \textit{F.~nucleatum} — and
+averaged over axial depth bins to yield quantitative species abundance profiles
+as a function of depth.
+
+The zero-dimensional gLV model introduced in \S\ref{sec:intro_ecol} captures
+temporal community dynamics but neglects spatial structure.
+A natural extension replaces the purely temporal ODE with a one-dimensional
+reaction--diffusion system in which each species abundance $\phi_i(z,t)$
+obeys
+\begin{equation}
+  \partial_t \phi_i = \underbrace{f_i(\boldsymbol{\phi})}_{\text{gLV kinetics}}
+    + \partial_z\!\left[\,D_i(\boldsymbol{\phi})\,\partial_z \phi_i\right],
+\end{equation}
+where $D_i(\boldsymbol{\phi})$ is a possibly cross-diffusion, density-dependent
+transport coefficient encoding how the local community composition modulates
+species-level motility or passive advection through the biofilm matrix
+\cite{Stewart1998Diffusion, Klempt2024ContinuumGrowth, PainterHillen2002VolumeFilling}.
+Cross-diffusion terms couple the flux of species $i$ to the gradient of species
+$j \neq i$, providing a PDE-level analogue of the ecological interaction
+structure inferred from the ODE model
+\cite{Klempt2025ContinuumBiofilm}.
+The experimentally measured FISH z-profiles serve as spatial calibration data:
+by fitting the steady-state PDE solutions to the observed depth profiles, the
+diffusion and cross-diffusion coefficients can be estimated via an inverse
+problem, extending the parameter inference framework from purely temporal to
+spatiotemporal data.
+
+```latex
+\subsection{Thesis Overview}
+
+This thesis is organized into five chapters following the three-pillar structure introduced above.
+Chapter~2 describes the datasets and shared preprocessing pipeline: the Dieckow~2024 longitudinal 16S cohort used for primary inference, the Botelho~2021 cohort used for cross-cohort sign validation, and the Heine~2025 \textit{in~vitro} time-series used for attractor identification and FISH imaging.
+Chapter~3 (Pillar~I) develops the ecological inference framework: the generalized Lotka--Volterra and Hamilton replicator ODEs, the three-layer AGORA2 metabolic sign prior, and leave-one-patient-out cross-validation showing a 13\% reduction in LOO-RMSE relative to unconstrained gLV.
+Chapter~4 (Pillar~II) extends the 0D inference to a one- and two-dimensional reaction--diffusion PDE, fits cross-diffusion coefficients to \textit{z}-resolved CLSM FISH profiles, and demonstrates that cross-diffusion halves the spatial residual versus standard Fickian diffusion.
+Chapter~5 (Pillar~III) cross-validates the inferred interaction signs against COMETS dynamic FBA simulations and FISH co-occurrence statistics.
+Chapter~6 synthesizes the findings, discusses limitations, and outlines future directions.
+
+\medskip
+```
