@@ -189,9 +189,11 @@ that constraint is empirically supported.
 
 \vspace{0.4em}
 
-\textbf{Thesis.} The metabolic signal constrains the \textbf{sign} of
-cooperative interactions (not the magnitude, not competition), with
-\(p=4\times10^{-4}\).
+\begin{block}{Claim}
+The metabolic signal constrains the \textbf{sign} of cooperative
+interactions (not the magnitude, not competition), supported at
+\alert{$p=4\times10^{-4}$}.
+\end{block}
 \end{frame}
 
 \begin{frame}{The ecological model}
@@ -240,6 +242,7 @@ metabolites \(\alpha\).
 \textbf{7,302} genome-scale reconstructions, extended from gut to
 \textbf{oral} taxa; one representative SBML model per guild.
 
+\vspace{0.5em}
 \begin{itemize}
 \tightlist
 \item
@@ -252,7 +255,7 @@ metabolites \(\alpha\).
   all 10 guilds (\(\mu = 0.11\text{–}1.66\,\mathrm{h^{-1}}\)).
 \end{itemize}
 
-\vspace{0.3em}
+\vspace{0.5em}
 
 Medium design is a genuine sensitivity: a too-poor medium drives
 \(\mu\to0\) and collapses the cross-feeding signal.
@@ -276,15 +279,15 @@ constrained set \(\mathcal{M}=\{(i,j): P_{ij}\neq 0\}\).
 
 \begin{frame}{The pipeline at a glance}
 \protect\hypertarget{the-pipeline-at-a-glance}{}
-\includegraphics[width=\textwidth,height=0.64\textheight]{results/fig2_agora_pipeline.png}
+\includegraphics[width=\textwidth,height=0.64\textheight]{results/fig2_agora_pipeline_slide.png}
 
 \begin{enumerate}
 [(A)]
 \tightlist
 \item
   procedure; (B) \(|\mathcal{M}|\) grows \(10\to22\to58\) across layers
-  (+36 from AGORA L3); (C) the resulting sign-prior matrix
-  \(P=\operatorname{sgn}(F)\).
+  (+36 from AGORA L3);
+\item[(C)] the resulting sign-prior matrix \(P=\operatorname{sgn}(F)\).
 \end{enumerate}
 \end{frame}
 
@@ -335,6 +338,7 @@ Consumer--resource theory (MacArthur 1970; Marsland 2019) derives
 \[A_{ij} = \underbrace{\sum_{\alpha} s_{j\alpha}\,c_{i\alpha}}_{\text{cross-feeding}\,(+)}
 \;-\; \underbrace{\frac{c_i\!\cdot\! c_j}{\lVert c_i\rVert\,\lVert c_j\rVert}}_{\text{niche overlap}\,(-)} .\]
 
+\vspace{0.5em}
 \begin{itemize}
 \tightlist
 \item
@@ -346,6 +350,7 @@ Consumer--resource theory (MacArthur 1970; Marsland 2019) derives
   Growth-rate-suppression priors fail identically in poor media.
 \end{itemize}
 
+\vspace{0.5em}
 \(\Rightarrow\) keep \(\operatorname{sgn}(A_{ij})\), discard the
 magnitude.
 \end{frame}
@@ -367,6 +372,7 @@ instead solves the joint community and checks whether the flux
 \[\max\; \min_{i}\frac{\mu_i}{\mu_i^{\max}}\quad\text{s.t.}\quad
 \sum_i \mu_i \ge \tau\sum_i \mu_i^{\max},\;\; S^{\text{com}}v=0,\;\tau=0.5 .\]
 
+\vspace{0.5em}
 \begin{itemize}
 \tightlist
 \item
@@ -404,7 +410,7 @@ containment.
 
 \begin{frame}{Prior stiffness \(W\) --- a phase transition}
 \protect\hypertarget{prior-stiffness-w-a-phase-transition}{}
-\includegraphics[width=\textwidth,height=0.55\textheight]{results/fig_agora_weight_sensitivity.png}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/fig_agora_weight_sensitivity_slide.png}
 
 At \(W=1.0\): \(\mathrm{SA}\to100\%\),
 \(\mathrm{LOO\text{-}RMSE}\approx0.050\). The prior-free gLV reaches
@@ -412,7 +418,7 @@ At \(W=1.0\): \(\mathrm{SA}\to100\%\),
 sign-consistency}, not raw predictive accuracy --- stated honestly.
 \end{frame}
 
-\begin{frame}{Critical validation: is the prior independent of the
+\begin{frame}[shrink=5]{Critical validation: is the prior independent of the
 data?}
 \protect\hypertarget{critical-validation-is-the-prior-independent-of-the-data}{}
 At \(\alpha=0\) the prior is \textbf{all-positive} (cross-feeding only),
@@ -440,6 +446,11 @@ competition
 gLV (asymmetric) & 41\% (null) & null \\
 \bottomrule
 \end{longtable}
+
+\vspace{0.3em}
+\begin{center}
+\alert{Hamilton cross-feeding: $p=4\times10^{-4}$, $z=+3.79$ (permutation $n=10^4$)}
+\end{center}
 
 \begin{itemize}
 \tightlist
@@ -470,19 +481,18 @@ corroborating the inferred interactions.
 
 \begin{frame}{Limitations and conclusions}
 \protect\hypertarget{limitations-and-conclusions}{}
-\textbf{Limitations.} guild \(=\) class (representative \(\neq\) guild);
-\(20/22\) inhibition rows are oxygen (no producer) \(\Rightarrow\) only
-the H\(_2\)O\(_2\) toxin fires; \(w_\alpha\) is a per-metabolite max;
-magnitude is discarded.
+\textit{Guild $=$ class (representative $\neq$ guild); $20/22$ inhibition rows are oxygen (no producer) $\Rightarrow$ only the H$_2$O$_2$ toxin fires; $w_\alpha$ is a per-metabolite max; magnitude is discarded.}
 
-\textbf{Conclusions.} 1.
-\(\text{AGORA pFBA}\to F_{ij}\to P_{ij}=\operatorname{sgn}(F_{ij})\) is
-the methodological novelty. 2. \textbf{Sign usable, magnitude not}
-(MacArthur cosine saturation avoided). 3. single-species (\(92\%\))
-\(\to\) \textbf{MICOM (\(100\%\))} captures community context. 4. Honest
-validation: \textbf{cross-feeding only}, \(p=4\times10^{-4}\); two
-cohorts \(89\%\); the prior is a modelling choice. 5. COMETS dFBA
-reproduces the dysbiotic split forward.
+\vspace{0.4em}
+\textbf{Conclusions:}
+\begin{enumerate}
+\tightlist
+\item \(\text{AGORA pFBA}\to F_{ij}\to P_{ij}=\operatorname{sgn}(F_{ij})\) is the methodological novelty.
+\item \textbf{Sign usable, magnitude not} (MacArthur cosine saturation avoided).
+\item Single-species (\(92\%\)) \(\to\) \textbf{MICOM (\(100\%\))} captures community context.
+\item Honest validation: \textbf{cross-feeding only}, \(p=4\times10^{-4}\); two cohorts \(89\%\); the prior is a modelling choice.
+\item COMETS dFBA reproduces the dysbiotic split forward.
+\end{enumerate}
 \end{frame}
 
 \end{document}
