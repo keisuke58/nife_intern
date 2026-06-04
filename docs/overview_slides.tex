@@ -9,7 +9,7 @@
 ]{beamer}
 \title{プロジェクト全体像：口腔バイオフィルムの群集動態モデリング}
 \subtitle{生態 ODE 推定・代謝シミュレーション・空間拡張を束ねる傘}
-\author{西岡佳祐 --- NIFE / SFB TRR-298}
+\author{西岡佳祐 --- NIFE}
 \date{2026-06-03}
 
 \usepackage{pgfpages}
@@ -96,7 +96,7 @@
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \hypersetup{
   pdftitle={プロジェクト全体像：口腔バイオフィルムの群集動態モデリング},
-  pdfauthor={西岡佳祐 --- NIFE / SFB TRR-298},
+  pdfauthor={西岡佳祐 --- NIFE},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
@@ -135,26 +135,23 @@
 \begin{document}
 \frame{\titlepage}
 
-\begin{frame}{North-star（目標）}
-\protect\hypertarget{north-starux76eeux6a19}{}
+\begin{frame}{研究の目的と概要}
+\protect\hypertarget{ux7814ux7a76ux306eux76eeux7684ux3068ux6982ux8981}{}
 ペリインプラント炎に関わる\textbf{口腔バイオフィルム群集の動態}をモデル化する
-（SIIRI / SFB TRR-298 コンソーシアム）。
+（SIIRI コンソーシアム）。
 
 \begin{itemize}
 \tightlist
 \item
   健常（commensal）から疾患（dysbiotic）への遷移を、群集組成の時間発展として記述する。
 \item
-  中心的アイデア：\textbf{代謝（ゲノムから計算）が生態的相互作用の符号を制約する}。
-\item
-  研究プロジェクトであり、配備アプリではない --- 各スクリプトは 「1
-  つの数値・推定パラメータ・図」を出す道具。
+  中心的命題：\textbf{ゲノムから計算した代謝が、生態的相互作用の符号を制約する}。
 \end{itemize}
 
 \vspace{0.4em}
 
-本デッキは 3 つの緩く結合したモデリングの柱と、それらを繋ぐ
-データ・モデルの共通契約を俯瞰する\textbf{傘}である。
+本デッキは 3 つの緩結合したモデリングの柱と、それらを結ぶ
+データ・モデルの共通契約を俯瞰する。
 \end{frame}
 
 \begin{frame}{概念図（全体像）}
@@ -283,27 +280,25 @@ static/HOBIC：
 これらのコードは \texttt{results/} とスクリプト全体で繰り返し現れる。
 \end{frame}
 
-\begin{frame}[fragile]{① 出発点：5 菌種 GPU-Bayesian 推定（Heine
-in-vitro）}
-\protect\hypertarget{ux51faux767aux70b95-ux83ccux7a2e-gpu-bayesian-ux63a8ux5b9aheine-in-vitro}{}
-本研究の\textbf{原型}。Heine 2025 の in-vitro 5
-菌種（So/An/Vd-Vp/Fn/Pg）時系列に、 \textbf{GPU 加速
-TMCMC}（\(N_p=10{,}000\) 粒子）で対称相互作用行列 \(A\) の full joint
-posterior を推定し、 4 アトラクター（CS/CH/DS/DH）を再現。
+\begin{frame}{① 出発点：5 菌種 Bayesian ODE フィット（Heine in-vitro）}
+\protect\hypertarget{ux51faux767aux70b95-ux83ccux7a2e-bayesian-ode-ux30d5ux30a3ux30c3ux30c8heine-in-vitro}{}
+Heine 2025 の in-vitro 5 菌種（So/An/Vd-Vp/Fn/Pg）時系列に対し ODE
+フィットを実施。 \textbf{gLV}（非対称 \(A\)、RMSE 0.012--0.032）と
+\textbf{Hamilton NUTS}（対称 \(A\)、RMSE 0.033--0.119） の 2
+モデルを比較；4 アトラクター（CS/CH/DS/DH）を再現。
 
-\includegraphics[width=\textwidth,height=0.4\textheight]{results/heine2025/glv_heine_fit_paper.png}
+\includegraphics[width=\textwidth,height=0.4\textheight]{results/heine2025/glv_heine_fit_thesis.pdf}
 
 \begin{itemize}
 \tightlist
 \item
-  replicator/Hamilton ODE（\(A\) 対称、ψ 自由度込み）。正典 =
-  \texttt{results/ultimate\_10000p}。
+  図：gLV MAP 軌道 + 実験 IQR 箱ひげ図（RMSE は列タイトル）。
 \item
-  \textbf{独立検証}：pH 予測 independent
-  \(R^2=0.78\)（校正未使用）、Gingipain--Pg \(r=0.90\)。
+  Hamilton NUTS は GPU-TMCMC \(N_p=10{,}000\)；\textbf{独立検証}：pH
+  \(R^2=0.78\)、Gingipain--Pg \(r=0.90\)。
 \item
-  この①を ②（AGORA prior・in-vivo Dieckow・空間
-  PDE/FISH）へ拡張するのが本研究。
+  本研究では①を AGORA prior・in-vivo Dieckow・空間
+  PDE/FISH（②）へ拡張する。
 \end{itemize}
 \end{frame}
 
@@ -400,8 +395,8 @@ gingivalis} が深部へ沈む（嫌気ニッチ）。0D の gLV を \(z\)
 \end{itemize}
 \end{frame}
 
-\begin{frame}{ステータス}
-\protect\hypertarget{ux30b9ux30c6ux30fcux30bfux30b9}{}
+\begin{frame}{現状}
+\protect\hypertarget{ux73feux72b6}{}
 \begin{longtable}[]{@{}ll@{}}
 \toprule
 項目 & 状態 \\
@@ -409,7 +404,7 @@ gingivalis} が深部へ沈む（嫌気ニッチ）。0D の gLV を \(z\)
 \endhead
 相互作用モデル + 検証 & \textbf{完了}（LOO-RMSE 0.0504,
 \(p=4\times10^{-4}\)） \\
-空間拡散 fit & HPC で\textbf{実行中} \\
+空間拡散フィット & HPC で\textbf{実行中} \\
 GDI / Joshi 臨床検証 & メタデータ\textbf{待ち} \\
 \bottomrule
 \end{longtable}
@@ -417,8 +412,8 @@ GDI / Joshi 臨床検証 & メタデータ\textbf{待ち} \\
 \vspace{0.3em}
 
 2
-コホート再現と独立な機械論経路（COMETS）で、相互作用の主張は固まりつつある。
-残るは空間 PDE の収束と臨床メタデータの統合。
+コホート再現と独立な機械論経路（COMETS）により、相互作用の主張は堅固になりつつある。
+残る課題は空間 PDE の収束と臨床メタデータの統合である。
 \end{frame}
 
 \begin{frame}[fragile]{Take-home}

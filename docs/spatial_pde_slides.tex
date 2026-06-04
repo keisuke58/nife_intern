@@ -10,7 +10,7 @@
 \title{バイオフィルムの空間反応拡散モデル（Heine HOBIC）}
 \subtitle{FISH 深さプロファイルからの空間輸送パラメータ逆推定 ---
 形式的取り扱い}
-\author{西岡佳祐 --- NIFE / SFB TRR-298}
+\author{西岡佳祐 --- NIFE}
 \date{2026-06-03}
 
 \usepackage{pgfpages}
@@ -97,7 +97,7 @@
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \hypersetup{
   pdftitle={バイオフィルムの空間反応拡散モデル（Heine HOBIC）},
-  pdfauthor={西岡佳祐 --- NIFE / SFB TRR-298},
+  pdfauthor={西岡佳祐 --- NIFE},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
@@ -136,8 +136,8 @@
 \begin{document}
 \frame{\titlepage}
 
-\begin{frame}{このデッキの位置づけ}
-\protect\hypertarget{ux3053ux306eux30c7ux30c3ux30adux306eux4f4dux7f6eux3065ux3051}{}
+\begin{frame}{本デッキの位置づけ}
+\protect\hypertarget{ux672cux30c7ux30c3ux30adux306eux4f4dux7f6eux3065ux3051}{}
 本プロジェクト = 3 本柱 ＋ 空間拡張。データの流れ：
 
 raw 16S → guild \(\varphi\) → gLV/Hamilton（＋符号 prior）→ LOO 検証 →
@@ -163,50 +163,55 @@ raw 16S → guild \(\varphi\) → gLV/Hamilton（＋符号 prior）→ LOO 検�
 \end{itemize}
 \end{frame}
 
-\begin{frame}{問い：WHO に WHERE を足す}
-\protect\hypertarget{ux554fux3044who-ux306b-where-ux3092ux8db3ux3059}{}
-bulk な ODE フィットは \textbf{誰が誰と相互作用するか（WHO）} を与える。
-FISH 深さプロファイルは \textbf{それがどこで起こるか（WHERE）}
-を加える。
+\begin{frame}{動機：時間動態から空間構造へ}
+\protect\hypertarget{ux52d5ux6a5fux6642ux9593ux52d5ux614bux304bux3089ux7a7aux9593ux69cbux9020ux3078}{}
+ODE
+フィットは\textbf{菌種間の相互作用関係}（誰が誰に作用するか）を与える。
+FISH
+深さプロファイルはその\textbf{空間的文脈}（バイオフィルム内での位置）を加える。
 
 \begin{itemize}
 \tightlist
 \item
-  既知：bulk gLV/Hamilton の相互作用行列 \(A\)、増殖ベクトル \(b\)
+  既知：gLV/Hamilton の相互作用行列 \(A\) と増殖ベクトル \(b\)
   （\textbf{① Heine 5 菌種 TMCMC posterior}）。
 \item
-  未知：種ごとの基質深さ方向の\textbf{輸送}（拡散・移流）。
+  未知：菌種ごとの深さ方向の\textbf{空間輸送}（拡散係数
+  \(D_i\)・移流速度 \(u\)）。
 \item
-  目標：反応項を①から固定したまま、\textbf{空間輸送パラメータのみ}を
-  深さ分解 FISH データから逆推定する。
+  目標：反応項を①から固定し、\textbf{空間輸送パラメータのみ}を 深さ分解
+  FISH データから逆推定する。
 \end{itemize}
 
 \vspace{0.4em}
 
 \textbf{主張：} dysbiosis は bulk
-組成の変化ではなく、\textbf{空間的再編成}として現れる。 特に \emph{P.
-gingivalis} が深部へ沈み、\emph{F. nucleatum} から自律化する。
+組成のシフトではなく、\textbf{空間的再編成}として現れる。 とりわけ
+\emph{P. gingivalis} が深部へ移行し、\emph{F. nucleatum}
+との共局在が失われる。
 \end{frame}
 
-\begin{frame}[fragile]{土台：① Heine 5 菌種 GPU-Bayesian モデル}
-\protect\hypertarget{ux571fux53f0ux2460-heine-5-ux83ccux7a2e-gpu-bayesian-ux30e2ux30c7ux30eb}{}
+\begin{frame}{土台：① Heine 5 菌種 Bayesian ODE フィット}
+\protect\hypertarget{ux571fux53f0ux2460-heine-5-ux83ccux7a2e-bayesian-ode-ux30d5ux30a3ux30c3ux30c8}{}
 本デッキは \textbf{Heine 2025 の 5 菌種 in-vitro
 研究（①）の空間拡張}である。
 
-\includegraphics[width=\textwidth,height=0.4\textheight]{results/heine2025/glv_heine_fit_paper.png}
+\includegraphics[width=\textwidth,height=0.36\textheight]{results/heine2025/glv_heine_fit_thesis.pdf}
 
 \begin{itemize}
 \tightlist
 \item
-  ① で \textbf{GPU 加速 TMCMC}（\(N_p=10{,}000\)）により対称 \(A\) の
-  posterior を推定し、 4 アトラクター CS/CH/DS/DH
-  を再現（\texttt{ultimate\_10000p}）。
+  図：gLV MAP 軌道（非対称 \(A\)、RMSE 0.012--0.032）+ 実験 IQR
+  箱ひげ図。
+\item
+  Hamilton NUTS（対称 \(A\), GPU-TMCMC \(N_p=10{,}000\)）も実施；4
+  アトラクター CS/CH/DS/DH 再現。
 \item
   その \textbf{\(A,b\)（反応項）を固定}し、同じ Heine 系の \textbf{HOBIC
   FISH 深さデータ}へ拡張 → 空間輸送 \(D_i,u\) を加える。
 \item
-  すなわち①＝\textbf{時間動態}（WHO）、本デッキ＝\textbf{空間構造}（WHERE）。Heine
-  系が一貫した主役。
+  すなわち①は\textbf{時間動態}（相互作用）、本デッキは\textbf{空間構造}（輸送）を扱う。Heine
+  系が一貫した研究対象。
 \end{itemize}
 \end{frame}
 
@@ -368,51 +373,6 @@ sweep の最良は\textbf{収束}（\texttt{success=True}）。しかし
 \(D_i\) は illustrative。3D PINN も同結論（同定性の限界自体が知見）。
 \end{frame}
 
-\begin{frame}[fragile]{拡散スイープ：CH 交差拡散で損失が半減}
-\protect\hypertarget{ux30b9ux30a4ux30fcux30d7ch-cross-diffusion}{}
-\begin{columns}[T]
-\begin{column}{0.48\textwidth}
-\includegraphics[width=\textwidth,height=0.55\textheight]{results/diffusion_fit/fit_CH_xdiff_nz32_eps3e-4.png}
-
-CH best (\texttt{xdiff\_nz32\_eps3e-4}, loss \(=0.0145\))
-\end{column}
-
-\begin{column}{0.48\textwidth}
-\includegraphics[width=\textwidth,height=0.55\textheight]{results/diffusion_fit/fit_DH_xdiff_nz32_eps1e-3.png}
-
-DH best xdiff (\texttt{xdiff\_nz32\_eps1e-3}, loss \(=0.1032\))
-\end{column}
-\end{columns}
-
-CH に交差拡散項を加えると損失が baseline \(0.030\) から \(0.0145\) へ \textbf{52\% 減少}。
-DH は交差拡散でも改善せず（\(0.103\) vs 非xdiff best \(0.091\)）。
-\end{frame}
-
-\begin{frame}{最良フィットパラメータ（更新版）}
-\protect\hypertarget{ux6700ux826fux30d5ux30a3ux30c3ux30c8ux30d1ux30e9ux30e1ux30fcux30bfux66f4ux65b0}{}
-\begin{longtable}[]{@{}lcc@{}}
-\toprule
-種 & \(D\)（CH best） & \(D\)（DH best） \\
-\midrule
-\endhead
-So & \(3.75\times10^{-3}\) & \(0.0100\) \\
-An & \(0.500\,^{\dagger\dagger}\) & \(0.0003\) \\
-Vd/Vp & \(10^{-5}\,^\dagger\) & \(10^{-5}\,^\dagger\) \\
-Fn & \(2.32\times10^{-4}\) & \(0.0020\) \\
-Pg & \(10^{-5}\,^\dagger\) & \(0.0013\) \\
-\textbf{\(u\)（移流）} & \(\approx0\) (\(1.8\times10^{-4}\)) & \(0.0070\) \\
-\textbf{loss} & \(\mathbf{0.0145}\) & \(\mathbf{0.0908}\) \\
-\textbf{収束} & $\checkmark$ & $\checkmark$ \\
-\textbf{設定} & xdiff/Nz32 & fast/Nz24 \\
-\bottomrule
-\end{longtable}
-
-\vspace{0.2em}
-\(^\dagger\) 下限 \(10^{-5}\) に張り付き（同定不能）。
-\(^{\dagger\dagger}\) An は \textbf{上限 0.5 に到達}（探索域が狭すぎる可能性――物理的な mm\(^2\)/h への換算前）。
-\textcolor{red}{DH は反応支配（loss \(\approx 7\times\) CH）：拡散が空間の主役でない。}
-\end{frame}
-
 \begin{frame}{空間生態 知見 1：Pg は dysbiosis で深く沈む}
 \protect\hypertarget{ux7a7aux9593ux751fux614b-ux77e5ux898b-1pg-ux306f-dysbiosis-ux3067ux6df1ux304fux6c88ux3080}{}
 \includegraphics[width=\textwidth,height=0.58\textheight]{results/diffusion_fit/depth_niche.png}
@@ -486,24 +446,25 @@ AGORA の乳酸バックボーン（\textbf{S.oralis 生産者 → Veillonella
 \end{itemize}
 \end{frame}
 
-\begin{frame}{その他：bulk は CH ≈ DH}
-\protect\hypertarget{ux305dux306eux4ed6bulk-ux306f-ch-dh}{}
-CH--DH の \textbf{Bray--Curtis divergence} \(\approx 0.2\)、Day 1
+\begin{frame}{バルク組成：CH ≈ DH}
+\protect\hypertarget{ux30d0ux30ebux30afux7d44ux6210ch-dh}{}
+CH--DH の \textbf{Bray--Curtis 非類似度} \(\approx 0.2\)、Day 1
 から\textbf{ほぼ一定}。
 
 \begin{itemize}
 \tightlist
 \item
-  差は接種（inoculum）で決まり、時間発展でほとんど拡大しない。
+  群集組成の差は接種（inoculum）時点で決まり、その後ほとんど拡大しない。
 \item
-  bulk 組成では CH \(\approx\) DH \(\Rightarrow\) dysbiosis は
-  \textbf{空間的・時間的}であり、 bulk 組成のシフトではない。
+  バルク組成において CH \(\approx\) DH であることから、dysbiosis
+  の差異は
+  \textbf{空間的・時間的構造}にあり、バルク組成のシフトではない。
 \end{itemize}
 
 \vspace{0.4em}
 
-これは知見 1・2 と整合する：違いは「誰がどれだけいるか」ではなく
-「どこにいて、何と組むか」に現れる。
+この結果は知見 1・2 と整合する：差異は種の存在量ではなく、
+その\textbf{空間的分布と相互作用の再配線}に現れる。
 \end{frame}
 
 \begin{frame}{拡散率 vs 生態的中心性}
@@ -515,8 +476,7 @@ CH--DH の \textbf{Bray--Curtis divergence} \(\approx 0.2\)、Day 1
 
 \vspace{0.2em}
 
-\(\Rightarrow\)
-「中心的な種ほど動かない」。生態的ハブが空間的に固定される傾向。
+中心性の高い菌種ほど拡散係数が小さい傾向が示され、生態的ハブは空間的に固定される傾向がある。
 \end{frame}
 
 \begin{frame}{in-vitro ↔ in-vivo マッピング}

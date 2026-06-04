@@ -9,7 +9,7 @@
 \title{Spatial Reaction--Diffusion of the Biofilm (Heine HOBIC)}
 \subtitle{Inverse estimation of spatial transport from FISH depth
 profiles --- formal treatment}
-\author{Keisuke Nishioka --- NIFE / SFB TRR-298}
+\author{Keisuke Nishioka --- NIFE}
 \date{2026-06-03}
 
 \usepackage{pgfpages}
@@ -88,7 +88,7 @@ profiles --- formal treatment}
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \hypersetup{
   pdftitle={Spatial Reaction--Diffusion of the Biofilm (Heine HOBIC)},
-  pdfauthor={Keisuke Nishioka --- NIFE / SFB TRR-298},
+  pdfauthor={Keisuke Nishioka --- NIFE},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
@@ -168,54 +168,55 @@ The decks (you-are-here in \textbf{bold marker}):
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Question: adding WHERE to WHO}
-\protect\hypertarget{question-adding-where-to-who}{}
-The bulk ODE fit gives \textbf{who interacts with whom (WHO)}; the FISH
-depth profiles add \textbf{where that interaction happens (WHERE)}.
+\begin{frame}{Motivation: from temporal dynamics to spatial structure}
+\protect\hypertarget{motivation-from-temporal-dynamics-to-spatial-structure}{}
+The ODE fit characterises \textbf{species interaction relationships};
+the FISH depth profiles add the \textbf{spatial context} --- where those
+interactions occur within the biofilm.
 
 \begin{itemize}
 \tightlist
 \item
-  Known: bulk gLV/Hamilton interaction matrix \(A\) and growth vector
-  \(b\) (\textbf{(1) Heine 5-species TMCMC posterior}).
+  Known: gLV/Hamilton interaction matrix \(A\) and growth vector \(b\)
+  (\textbf{(1) Heine 5-species TMCMC posterior}).
 \item
-  Unknown: per-species \textbf{transport} along the substratum depth
-  axis.
+  Unknown: per-species \textbf{spatial transport} along the depth axis
+  (\(D_i\), \(u\)).
 \item
-  Goal: keep the reaction term fixed from (1), and infer \textbf{only
-  the spatial transport parameters \(D_i,u\)} from the depth-resolved
-  FISH data.
+  Goal: with the reaction term fixed from (1), infer \textbf{only the
+  transport parameters \(D_i,u\)} from the depth-resolved FISH data.
 \end{itemize}
 
 \vspace{0.4em}
 
-\textbf{Thesis.} Dysbiosis manifests not as a change in bulk composition
+\textbf{Thesis.} Dysbiosis manifests not as a shift in bulk composition
 but as a \textbf{spatial reorganisation} --- in particular \emph{P.
-gingivalis} sinks deep and decouples from \emph{F. nucleatum}.
+gingivalis} migrates deep and loses co-localisation with \emph{F.
+nucleatum}.
 \end{frame}
 
-\begin{frame}[fragile]{Foundation: (1) the Heine 5-species GPU-Bayesian
-model}
-\protect\hypertarget{foundation-1-the-heine-5-species-gpu-bayesian-model}{}
+\begin{frame}{Foundation: (1) the Heine 5-species Bayesian ODE fitting}
+\protect\hypertarget{foundation-1-the-heine-5-species-bayesian-ode-fitting}{}
 This deck is the \textbf{spatial extension of the Heine 2025 5-species
 in-vitro work (1)}.
 
-\includegraphics[width=\textwidth,height=0.4\textheight]{results/heine2025/glv_heine_fit_paper.png}
+\includegraphics[width=\textwidth,height=0.36\textheight]{results/heine2025/glv_heine_fit_thesis.pdf}
 
 \begin{itemize}
-\tightlist
 \item
-  In (1), a \textbf{GPU-accelerated TMCMC} (\(N_p=10{,}000\)) infers the
-  posterior of the symmetric \(A\), reproducing the four attractors
-  CS/CH/DS/DH (\texttt{ultimate\_10000p}).
+  Figure: gLV MAP trajectories (asymmetric \(A\), RMSE 0.012--0.032);
+  Hamilton NUTS (symmetric \(A\)) also fit.
 \item
-  We \textbf{keep that \(A,b\) (the reaction term) fixed} and extend the
-  \emph{same} Heine system to its \textbf{HOBIC FISH depth data}, adding
-  the spatial transport \(D_i,u\).
+  \(A,b\) \textbf{fixed} from (1); only spatial transport \(D_i,u\) is
+  inferred from FISH depth data.
 \item
-  i.e.~(1) = \textbf{temporal dynamics} (WHO); this deck =
-  \textbf{spatial structure} (WHERE). Heine's system is the consistent
-  protagonist.
+  \begin{enumerate}
+  [(1)]
+  \tightlist
+  \item
+    = \textbf{temporal dynamics} (WHO); this deck = \textbf{spatial
+    structure} (WHERE).
+  \end{enumerate}
 \end{itemize}
 \end{frame}
 
@@ -383,49 +384,6 @@ Treat \(D_i\) as illustrative --- the 3-D PINN reaches the same
 conclusion (the identifiability limit is itself a finding).
 \end{frame}
 
-\begin{frame}[fragile]{Diffusion sweep: cross-diffusion halves CH loss}
-\protect\hypertarget{sweep-ch-cross-diffusion}{}
-\begin{columns}[T]
-\begin{column}{0.48\textwidth}
-\includegraphics[width=\textwidth,height=0.55\textheight]{results/diffusion_fit/fit_CH_xdiff_nz32_eps3e-4.png}
-
-CH best (\texttt{xdiff\_nz32\_eps3e-4}, loss \(=0.0145\))
-\end{column}
-
-\begin{column}{0.48\textwidth}
-\includegraphics[width=\textwidth,height=0.55\textheight]{results/diffusion_fit/fit_DH_xdiff_nz32_eps1e-3.png}
-
-DH best xdiff (\texttt{xdiff\_nz32\_eps1e-3}, loss \(=0.1032\))
-\end{column}
-\end{columns}
-
-Adding a cross-diffusion term to CH reduces loss from baseline \(0.030\) to \(0.0145\) --- a \textbf{52\% improvement}.
-Cross-diffusion does not improve DH (\(0.103\) vs non-xdiff best \(0.091\)).
-\end{frame}
-
-\begin{frame}{Best-fit parameters (updated)}
-\protect\hypertarget{best-fit-parameters-updated}{}
-\begin{longtable}[]{@{}lcc@{}}
-\toprule
-Species & \(D\) (CH best) & \(D\) (DH best) \\
-\midrule
-\endhead
-So & \(3.75\times10^{-3}\) & \(0.0100\) \\
-An & \(0.500\,^{\dagger\dagger}\) & \(0.0003\) \\
-Vd/Vp & \(10^{-5}\,^\dagger\) & \(10^{-5}\,^\dagger\) \\
-Fn & \(2.32\times10^{-4}\) & \(0.0020\) \\
-Pg & \(10^{-5}\,^\dagger\) & \(0.0013\) \\
-\textbf{\(u\) (advection)} & \(\approx0\) (\(1.8\times10^{-4}\)) & \(0.0070\) \\
-\textbf{loss} & \(\mathbf{0.0145}\) & \(\mathbf{0.0908}\) \\
-\textbf{converged} & $\checkmark$ & $\checkmark$ \\
-\textbf{config} & xdiff/Nz32 & fast/Nz24 \\
-\bottomrule
-\end{longtable}
-\(^\dagger\) lower bound \(10^{-5}\) active (not identifiable).
-\(^{\dagger\dagger}\) An hits upper bound 0.500 (search box narrow; not yet in mm\(^2\)/h).
-\textcolor{red}{DH loss $\approx 7\times$ CH: reaction-dominated, diffusion not the spatial organiser.}
-\end{frame}
-
 \begin{frame}{Spatial-ecology finding 1: Pg sinks deep in dysbiosis}
 \protect\hypertarget{spatial-ecology-finding-1-pg-sinks-deep-in-dysbiosis}{}
 \includegraphics[width=\textwidth,height=0.58\textheight]{results/diffusion_fit/depth_niche.png}
@@ -504,8 +462,8 @@ Lateral (xy) heterogeneity tracked over time (mean xy-CV):
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Other: bulk CH ≈ DH}
-\protect\hypertarget{other-bulk-ch-dh}{}
+\begin{frame}{Bulk composition: CH ≈ DH}
+\protect\hypertarget{bulk-composition-ch-dh}{}
 The CH--DH \textbf{Bray--Curtis divergence} is \(\approx 0.2\) and
 \textbf{flat from Day 1}.
 
@@ -534,8 +492,8 @@ species, illustrative).
 
 \vspace{0.2em}
 
-\(\Rightarrow\) ``central species move less'': ecological hubs tend to
-be spatially pinned.
+Species with higher centrality tend to have lower fitted diffusivity,
+suggesting that ecological hubs are spatially anchored.
 \end{frame}
 
 \begin{frame}{In-vitro ↔ in-vivo mapping}

@@ -1,7 +1,7 @@
 ---
 title: "Dieckow 縦断16Sからの生態相互作用推定と検証"
 subtitle: "組成時系列から符号付き相互作用行列 $A$ へ — フィット・LOO-CV・誠実な検証"
-author: "西岡佳祐 — NIFE / SFB TRR-298"
+author: "西岡佳祐 — NIFE"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"
@@ -12,7 +12,7 @@ header-includes:
   - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
-## このデッキの位置づけ
+## 本デッキの位置づけ
 
 本プロジェクト = 3 本柱 ＋ 空間拡張。データの流れ：
 
@@ -130,7 +130,7 @@ prior 層・モデル形・$W$ を変えて LOO-RMSE / LOO-BC を比較。
 
 ---
 
-## 数値（要点）
+## 主要な性能指標
 
 ベストモデル **L1+L2+AGORA, $W=1.0$**：
 

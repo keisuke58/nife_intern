@@ -1,8 +1,8 @@
 ---
 title: "HOBIC FISH データ処理"
-subtitle: "4チャンネル → 5菌種 の解読と深さプロファイル抽出"
-author: "Nishioka — NIFE / SFB TRR-298"
-date: "2026-06-03"
+subtitle: "4チャンネル蛍光画像からの5菌種深さプロファイル抽出"
+author: "Nishioka — NIFE"
+date: "2026-06-04"
 mainfont: "Noto Sans CJK JP"
 monofont: "Noto Sans Mono CJK JP"
 CJKmainfont: "Noto Sans CJK JP"
@@ -12,110 +12,110 @@ colortheme: "whale"
 aspectratio: 169
 ---
 
-## このプロジェクトで何をしたか（1枚要約）
+## 概要
 
-顕微鏡で撮ったバイオフィルムの3D画像を
-**「深さごとに5菌種がどんな割合でいるか」** の数表に変換した。
+Heine 2025（HOBIC フローチャンバー）の共焦点 FISH 画像を処理し、
+反応拡散 PDE フィットの入力となる**深さ分解 5 菌種組成プロファイル**を構築した。
 
-- 入力：Leica 共焦点 **FISH `.lif`**（フローチャンバー HOBIC, Heine 2025）
-- 難所：画像は **4色しかないのに菌は5種**
-  → 論文の標識設計を読み解いて正しく分離
-- 出力：**深さ × 5菌種 の組成プロファイル**（PDE 拡散フィットの入力）
+- 入力：Leica 共焦点 **FISH `.lif`**（CH / DH 条件，Ti 基質）
+- 課題：検出チャンネルは **4** チャンネルのみ，対象菌種は **5 種**
+- 対処：原著の標識設計を読み解き，colocalization デコードで分離
+- 出力：**深さ × 5 菌種 の組成プロファイル**，PDE フィット結果（$D_i$, $u$）
 
-\vspace{0.5em}
-新規 `fish_decode.py` / `lif_quicklook.py`、修正 `lif_to_zprofiles.py`
+\vspace{0.4em}
+新規実装：`fish_decode.py`，`lif_quicklook.py`；更新：`lif_to_zprofiles.py`
 
 ---
 
-## 入力データ：HOBIC FISH `.lif`
+## 入力データ：HOBIC FISH `.lif`（全 11 ファイル）
 
-全11本。**commensal (HOBIC22→CH) と dysbiotic (HOBIC24→DH) が揃った**。
-
-| 実験 | 条件 | Day | 基質 |
+| 実験バッチ | 条件 | Day | 基質 |
 |---|---|---|---|
-| 220518/601/720, 220817, 240416 | CH | 1,6,10,15,21 | Ti |
+| 220518/601/720, 220817, 240416 | CH | 1, 6, 10, 15, 21 | Ti |
 | 241203 (Tag1) | DH | 1 | Ti |
-| 241018 | DH | 6,10,15,21 | **Ti＋Glass混在** |
+| 241018 | DH | 6, 10, 15, 21 | Ti + Glass |
 
-- 1画素 0.18 µm、z 間隔 2 µm。**基質はTi採用**（HOBIC=チタンインプラント、CHも無印=Ti）。Glass 9 FOV は除外・別解析用に温存。
-- **ヘッドレス環境** → Fiji/napari 不可。`readlif`→**PNG**（Times＋µmスケールバー）
+- 画素サイズ 0.18 µm，z ステップ 2 µm。Ti 基質のみを解析に使用
+  （HOBIC はチタンインプラントモデル；Glass は 9 FOV を除外・別途保存）。
+- ヘッドレス環境のため GUI ツール（Fiji / napari）は利用不可。
+  `readlif` で読み込み，Times フォント＋µm スケールバー付き PNG を出力。
 
 ---
 
-## 生の4チャンネル（撮ったまま）
+## 生 4 チャンネル画像
 
 ![](figures/lif_quicklook/220518_HOBIC22_5Spezies_FISH_Tag1__overview.png){ height=72% }
 
-行＝視野、列＝Blue / Yellow / Green / Red ＋合成
+行 = 視野（FOV），列 = Blue / Yellow / Green / Red ＋合成
 
 ---
 
-## 問題：4チャンネル ↔ 5菌種（1対1ではない）
+## チャンネル数と菌種数の不一致
 
-検出器は **4チャンネル**、群集は **5菌種**。単純な「色＝菌」ではない。
+4 チャンネル検出器に対して解析対象は 5 菌種であり，単純な色対菌種の対応は成立しない。
 
-原著 **Heine 2025, Front. Oral Health, Table S5 + Methods §2.6**：
+原著（Heine 2025, *Front. Oral Health*, Table S5 + Methods §2.6）には次の記述がある：
 
 > *F. nucleatum was targeted by two probes ... labeled with different dyes
 > – resulting in co-localized blue and red fluorescence.*
 
-→ **F. nucleatum だけ二重標識**（Alexa405=青 ＆ Alexa647=赤）。
-青と赤の **両方に光る**。
+すなわち *F. nucleatum* のみが二重標識（Alexa405 = 青，Alexa647 = 赤）であり，
+両チャンネルに蛍光シグナルが現れる。
 
 ---
 
-## 解読ルール（colocalization）
+## デコードルール（共局在解析）
 
-| LUT / レーザ | 寄与する菌種 |
+| 検出チャンネル | 対応菌種 |
 |---|---|
-| **Blue** 405 nm | S. oralis ＋ **F. nucleatum** |
-| **Green** 488 nm | A. naeslundii |
-| **Yellow** 552 nm | V. dispar/parvula |
-| **Red** 638 nm | P. gingivalis ＋ **F. nucleatum** |
+| **Blue** 405 nm | *S. oralis* ＋ *F. nucleatum* |
+| **Green** 488 nm | *A. naeslundii* |
+| **Yellow** 552 nm | *V. dispar/parvula* |
+| **Red** 638 nm | *P. gingivalis* ＋ *F. nucleatum* |
 
-```
-F. nucleatum  = Blue ∩ Red
-S. oralis     = Blue − (Blue ∩ Red)
-P. gingivalis = Red  − (Blue ∩ Red)
-```
+$$
+F_n = B \cap R,\quad S_o = B - F_n,\quad P_g = R - F_n
+$$
 
-※ ボクセル単位で計算（xy平均の前に）。`min` の平均 ≠ 平均の `min`
+共局在の計算はボクセル単位で行い，その後 xy 平均を取る
+（$\mathrm{mean}(\min) \neq \min(\mathrm{mean})$）。
 
 ---
 
-## 解読後の5菌種
+## デコード後の 5 菌種
 
 ![](figures/lif_quicklook/220518_HOBIC22_5Spezies_FISH_Tag1__species.png){ height=72% }
 
-F. nucleatum（紫）が S.oralis / P.gingivalis と分離できている
+*F. nucleatum*（紫）が *S. oralis* / *P. gingivalis* と適切に分離されている。
 
 ---
 
-## 直したバグ（重要）
+## 旧コードのデコード誤りと修正
 
-旧コードは「青=S.oralis純 / 赤=P.gingivalis純 / 紫=F.nucleatum」を仮定。
-**実ファイルに紫チャンネルは無い** → そのままだと：
+旧コードは「青 = *S. oralis* 純チャンネル / 赤 = *P. gingivalis* 純チャンネル /
+紫 = *F. nucleatum*」を前提としていた。しかし実ファイルに紫チャンネルは存在しないため，
+修正前のコードでは以下の誤りが生じる：
 
-- **F. nucleatum を丸ごと取りこぼし**
-- **S.oralis・P.gingivalis を過大計上**（Fn が混入）
+- *F. nucleatum* のシグナルを完全に取りこぼす
+- *S. oralis* と *P. gingivalis* の計上値に *F. nucleatum* 由来の混入が生じる
 
-→ PDE 入力が **3菌種ぶん間違う**ところだった。
-`fish_decode.py`（両ツール共有の正典デコーダ）で修正。
+この誤りは PDE の空間入力 5 菌種のうち 3 種に影響する。
+正典デコーダ `fish_decode.py` を新規実装し，両ツールで共有する形で修正した。
 
 ---
 
-## 抽出・統合・メール規約
+## プロファイル抽出・統合・実験命名規則
 
-**z プロファイル**：各視野の3Dを「深さ毎の xy 平均強度」に潰す。
+**z プロファイル**：各 FOV の 3D 画像を深さごとの xy 平均強度に集約する。
 
-**レプリケート統合**：複数 `.lif` を `(condition, day)` でプール
-（Day1 は別実験日3本 → 15視野を1回だけ平均）。
+**レプリケート統合**：同一 `(condition, day)` の複数 `.lif` をプール
+（Day 1 は異なる実験日 3 本，計 15 FOV を一括平均）。
 
-**Heine メール規約（2026-05-26）をツールに実装**：
+**実験命名規則**（Heine, 2026-05-26 メールより）をスクリプトに実装：
 
-- HOBIC22 = commensal → **CH** / HOBIC24 = dysbiotic → **DH**（自動）
-- 日付 = ファイル名末尾 `TagN`（HOBIC24 のみ series 名先頭で複数日分割）
-- **基質フィルタ** `--substrate ti`（Ti/Glass混在からTi採用）
+- HOBIC22 = commensal → **CH**，HOBIC24 = dysbiotic → **DH**（自動判定）
+- Day 番号：ファイル名末尾の `TagN`（HOBIC24 のみ series 名先頭の整数で分割）
+- **基質フィルタ** `--substrate ti`：Ti/Glass 混在データから Ti のみを選択
 
 ```bash
 python scripts/pde/lif_to_zprofiles.py "HOBIC FISH"/*.lif --substrate ti
@@ -127,63 +127,99 @@ python scripts/pde/lif_to_zprofiles.py "HOBIC FISH"/*.lif --substrate ti
 
 ![](results/diffusion_fit/zprofiles_all_ti.png){ height=62% }
 
-CH/DH × Day 1/6/10/15/21 → `zprofiles_all_ti.csv`（400行）。
-両条件とも厚化＋深さ方向の組成シフト。DH後期はTi FOV少（Glass除外）。
+CH / DH × Day 1/6/10/15/21 のプロファイルを `zprofiles_all_ti.csv` に出力（400 行）。
+いずれの条件においても日数の経過とともにバイオフィルムが厚化し，深さ方向の組成シフトが観察される。
 
 ---
 
-## CH vs DH を重ねて読む（深部 Pg）
+## CH / DH の比較（深部 *P. gingivalis*）
 
 ![](results/diffusion_fit/zprofiles_all_ti_overlay.png){ height=58% }
 
-**実線=CH / 破線=DH**、色=種、縦軸=µm「表層→深部」。
-Day6以降、**Pg（赤）破線が実線より深部へ** = dysbiosis で Pg が沈む。
+**実線 = CH，破線 = DH**；色は菌種，縦軸は µm（表層 → 深部）。
+Day 6 以降，*P. gingivalis*（赤）の重心が DH 条件で CH より深部へ移行している。
 
 ---
 
-## 各深さの組成（積み上げ面）
+## 各深さの組成（積み上げ面グラフ）
 
 ![](results/diffusion_fit/zprofiles_all_ti_stacked.png){ height=62% }
 
-各深さで5種比率を積み上げ（合計=1）。**DH下段の深部で赤(Pg)が張り出す**のが一目瞭然。
+各深さにおける 5 菌種の比率を積み上げ（合計 = 1）。
+DH 条件の深部層において *P. gingivalis*（赤）の割合が増大することが確認される。
 
 ---
 
-## この後：拡散フィットとは
+## 反応拡散 PDE フィット
 
-組成を決める2つの力を分けて考える反応拡散 PDE：
+バイオフィルム内の組成変化を，生態的相互作用と空間的輸送に分離してモデル化する：
 
-1. **反応項 (A, b)** = 種間相互作用。**既知**（gLV / TMCMC）
-2. **拡散 (D_i) ＋ 移流 (u)** = 空間的な動き。**未知＝フィット対象**
+1. **反応項** $(A,\,b)$：菌種間相互作用行列。**既定値**（gLV / TMCMC 推定済み）
+2. **拡散** $D_i$ **＋ 移流** $u$：深さ方向の空間的輸送。**フィット対象**
 
-```
-D_i, u を仮定 → PDE を解く → 予測 vs 実測(MSE)
-            ↑___ ズレ最小の D_i, u を探索 (L-BFGS) ___|
-```
+$$
+\partial_t \varphi_i = D_i\,\partial_{zz}\varphi_i - u\,\partial_z\varphi_i
++ \varphi_i\!\left[(A\varphi+b)_i - \varphi^\top(A\varphi+b)\right]
+$$
 
-**HPC(PBS)で本番フィット実行**（CH/DH, Ti）。暫定結果 u: CH 0.0038 / DH 0.0060。
-※ 両者 `success=False`（未収束）＝暫定。DH 後期は Ti FOV 少で弱拘束 → 要 restart 増。
+$D_i$ と $u$ を初期値から繰り返し更新し，MSE を最小化（L-BFGS）。
+HPC（PBS）にて CH / DH 各条件で実行（Ti, $N_z=48$, 8 restarts）。
 
 ---
 
-## 発見：dysbiosis = Pg の深部・自律化
+## フィット結果：拡散係数 $D_i$ と移流速度 $u$
+
+| 菌種 | $D^\text{CH}$ | $D^\text{DH}$ |
+|---|---|---|
+| *S. oralis* | 0.029 | 0.015 |
+| *A. naeslundii* | 0.006 | 0.006 |
+| *Vd/Vp* | 0.005 | 0.009 |
+| *F. nucleatum* | 0.006 | 0.015 |
+| *P. gingivalis* | 0.006 | 0.006 |
+
+移流速度：$u^\text{CH} = 0.0069$，$u^\text{DH} = 0.0059$（推定単位：µm/s 相当）
+
+DH 条件：`success=True`（収束）；CH 条件：`success=False`（未収束，暫定値）。
+`D_fit_*_nz48_eps3e-4.json` に保存。
+
+---
+
+## フィット結果：CH 条件
+
+![](results/diffusion_fit/fit_CH_nz48_eps3e-4.png){ height=72% }
+
+観測プロファイル（点）と PDE 予測（線）の比較（CH, $N_z=48$, loss = 0.125）。
+
+---
+
+## フィット結果：DH 条件
+
+![](results/diffusion_fit/fit_DH_nz48_eps3e-4.png){ height=72% }
+
+観測プロファイル（点）と PDE 予測（線）の比較（DH, $N_z=48$, loss = 0.154，収束済み）。
+
+---
+
+## 所見：dysbiosis における *P. gingivalis* の深部集積
 
 ![](results/diffusion_fit/depth_niche.png){ height=52% }
 
-- **P.gingivalis は DH で Day6以降 深部へ沈降**（重心 +最大30µm、嫌気層）
-- **Fn–Pg 橋渡しは初期限定**：DH Day1 で coloc 0.76 → Day6以降は CH>DH（Pgが Fn から離れ自律化）
-- CH/DH 群集差は接種時から ~0.2 で一定。DH後期は n=2 で CI 広い
+- *P. gingivalis* は DH 条件で Day 6 以降に深部へ移行（重心差 最大 +30 µm，嫌気域）
+- *F. nucleatum*–*P. gingivalis* 共局在は DH 初期（Day 1，coloc = 0.76）に限定；
+  Day 6 以降は CH > DH となり，*P. gingivalis* が *F. nucleatum* から独立して深部に集積する
+- CH / DH の群集組成差は Day 1 からすでに ~0.2 で，以降ほぼ一定
 
 ---
 
-## 成果物＆データの限界
+## 成果物とデータの制約
 
 | ファイル | 役割 |
 |---|---|
-| `fish_decode.py` | 新規・正典デコーダ (Fn=blue∩red) |
-| `scripts/pde/lif_quicklook.py` | 新規・可視化 (Times＋µmバー) |
-| `scripts/pde/lif_to_zprofiles.py` | 修正・解読＋統合＋規約＋基質 |
-| `zprofiles_all_ti.csv` / `D_fit_*.json` | PDE入力＋フィット結果 |
+| `fish_decode.py` | 新規・正典デコーダ（$F_n = B \cap R$） |
+| `scripts/pde/lif_quicklook.py` | 新規・画像可視化（Times フォント，µm バー） |
+| `scripts/pde/lif_to_zprofiles.py` | 更新・デコード＋統合＋命名規則＋基質フィルタ |
+| `zprofiles_all_ti.csv` | PDE 入力（深さ × 菌種 × 条件） |
+| `D_fit_*_nz48_eps3e-4.json` | フィット結果（$D_i$, $u$） |
 
-**限界**：HOBIC由来なので **CH/DH のみ**（static CS/DS 無し）。
-241018(DH)の **Glass除外**。DH後期(Day15/21)は Ti FOV 2枚と少。
+**データ上の制約**：HOBIC 由来のため **CH / DH のみ**（static 条件 CS/DS は対象外）。
+241018 (DH) の Glass FOV は除外済み。DH 後期（Day 15/21）は Ti FOV 数が 2 枚と少なく，推定精度に影響する。

@@ -1,7 +1,7 @@
 ---
 title: "Metabolism Constrains Oral-Biofilm Community Dynamics"
 subtitle: "Ecological ODE inference, a metabolic sign prior, and a spatial extension — Master's defense"
-author: "Keisuke Nishioka — NIFE / SFB TRR-298"
+author: "Keisuke Nishioka — NIFE"
 date: "2026-11"
 theme: "Madrid"
 colortheme: "whale"
@@ -12,21 +12,21 @@ header-includes:
   - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
-## North-star
+## Research objectives and overview
 
-Model the **dysbiosis of the oral-biofilm community** relevant to
+We model the **dysbiosis of the oral-biofilm community** relevant to
 peri-implantitis as the time evolution of community composition
-(SIIRI / SFB TRR-298 consortium).
+(SIIRI consortium).
 
 - Clinical problem: a microbial community that transitions from commensal to
   dysbiotic around titanium implants.
-- Modelling question: **what drives this transition** — and what does
+- Research question: **what drives this transition** — and what does
   metabolism, computed from genomes, tell us about ecological interactions?
-- Central idea: **metabolism constrains the sign of ecological interactions.**
+- Central thesis: **metabolism constrains the sign of ecological interactions.**
 
 \vspace{0.4em}
-This defense ties ecological ODE inference, a metabolic sign prior, and a
-spatial extension into one narrative.
+This defense presents ecological ODE inference, a metabolic sign prior, and a
+spatial extension as a coherent research arc.
 
 ---
 

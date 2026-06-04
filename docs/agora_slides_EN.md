@@ -1,7 +1,7 @@
 ---
 title: "Integrating Metabolism and Ecology through AGORA"
 subtitle: "From genome-scale metabolic models to interaction signs — formal treatment"
-author: "Keisuke Nishioka — NIFE / SFB TRR-298"
+author: "Keisuke Nishioka — NIFE"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"

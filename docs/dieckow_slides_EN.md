@@ -1,7 +1,7 @@
 ---
 title: "Inferring Oral-Microbiome Interactions In Vivo (Dieckow 16S)"
 subtitle: "From compositional time-series to a signed interaction matrix $A$ — fit, LOO-CV, honest validation"
-author: "Keisuke Nishioka — NIFE / SFB TRR-298"
+author: "Keisuke Nishioka — NIFE"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"
@@ -137,7 +137,7 @@ LOO-RMSE / LOO-BC across prior layers, model forms, and prior stiffness $W$.
 
 ---
 
-## Numbers (key)
+## Performance summary
 
 Best model **L1+L2+AGORA, $W=1.0$**:
 

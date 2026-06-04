@@ -1,7 +1,7 @@
 ---
 title: "プロジェクト全体像：口腔バイオフィルムの群集動態モデリング"
 subtitle: "生態 ODE 推定・代謝シミュレーション・空間拡張を束ねる傘"
-author: "西岡佳祐 — NIFE / SFB TRR-298"
+author: "西岡佳祐 — NIFE"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"
@@ -12,25 +12,23 @@ header-includes:
   - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
-## North-star（目標）
+## 研究の目的と概要
 
 ペリインプラント炎に関わる**口腔バイオフィルム群集の動態**をモデル化する
-（SIIRI / SFB TRR-298 コンソーシアム）。
+（SIIRI コンソーシアム）。
 
 - 健常（commensal）から疾患（dysbiotic）への遷移を、群集組成の時間発展として記述する。
-- 中心的アイデア：**代謝（ゲノムから計算）が生態的相互作用の符号を制約する**。
-- 研究プロジェクトであり、配備アプリではない — 各スクリプトは
-  「1 つの数値・推定パラメータ・図」を出す道具。
+- 中心的命題：**ゲノムから計算した代謝が、生態的相互作用の符号を制約する**。
 
 \vspace{0.4em}
-本デッキは 3 つの緩く結合したモデリングの柱と、それらを繋ぐ
-データ・モデルの共通契約を俯瞰する**傘**である。
+本デッキは 3 つの緩結合したモデリングの柱と、それらを結ぶ
+データ・モデルの共通契約を俯瞰する。
 
 ---
 
 ## 概念図（全体像）
 
-![](results/figures/concept_overview_pub.png){ height=78% }
+![](results/figures/concept_overview_pub.png){ height=66% }
 
 代謝が相互作用の**符号**を決め、dysbiosis は**リワイヤリング＋空間再編**（Pg の中心化・深部沈降）として現れる。
 
@@ -125,17 +123,17 @@ Heine in vitro 系の 4 状態 = commensal/dysbiotic $\times$ static/HOBIC：
 
 ---
 
-## ① 出発点：5 菌種 GPU-Bayesian 推定（Heine in-vitro）
+## ① 出発点：5 菌種 Bayesian ODE フィット（Heine in-vitro）
 
-本研究の**原型**。Heine 2025 の in-vitro 5 菌種（So/An/Vd-Vp/Fn/Pg）時系列に、
-**GPU 加速 TMCMC**（$N_p=10{,}000$ 粒子）で対称相互作用行列 $A$ の full joint posterior を推定し、
-4 アトラクター（CS/CH/DS/DH）を再現。
+Heine 2025 の in-vitro 5 菌種（So/An/Vd-Vp/Fn/Pg）時系列に対し ODE フィットを実施。
+**gLV**（非対称 $A$、RMSE 0.012–0.032）と **Hamilton NUTS**（対称 $A$、RMSE 0.033–0.119）
+の 2 モデルを比較；4 アトラクター（CS/CH/DS/DH）を再現。
 
-![](results/heine2025/glv_heine_fit_paper.png){ height=40% }
+![](results/heine2025/glv_heine_fit_thesis.pdf){ height=40% }
 
-- replicator/Hamilton ODE（$A$ 対称、ψ 自由度込み）。正典 = `results/ultimate_10000p`。
-- **独立検証**：pH 予測 independent $R^2=0.78$（校正未使用）、Gingipain–Pg $r=0.90$。
-- この①を ②（AGORA prior・in-vivo Dieckow・空間 PDE/FISH）へ拡張するのが本研究。
+- 図：gLV MAP 軌道 + 実験 IQR 箱ひげ図（RMSE は列タイトル）。
+- Hamilton NUTS は GPU-TMCMC $N_p=10{,}000$；**独立検証**：pH $R^2=0.78$、Gingipain–Pg $r=0.90$。
+- 本研究では①を AGORA prior・in-vivo Dieckow・空間 PDE/FISH（②）へ拡張する。
 
 ---
 
@@ -209,17 +207,17 @@ $z$ 方向の拡散項付き PDE に拡張する。
 
 ---
 
-## ステータス
+## 現状
 
 | 項目 | 状態 |
 |---|---|
 | 相互作用モデル + 検証 | **完了**（LOO-RMSE 0.0504, $p=4\times10^{-4}$） |
-| 空間拡散 fit | HPC で**実行中** |
+| 空間拡散フィット | HPC で**実行中** |
 | GDI / Joshi 臨床検証 | メタデータ**待ち** |
 
 \vspace{0.3em}
-2 コホート再現と独立な機械論経路（COMETS）で、相互作用の主張は固まりつつある。
-残るは空間 PDE の収束と臨床メタデータの統合。
+2 コホート再現と独立な機械論経路（COMETS）により、相互作用の主張は堅固になりつつある。
+残る課題は空間 PDE の収束と臨床メタデータの統合である。
 
 ---
 

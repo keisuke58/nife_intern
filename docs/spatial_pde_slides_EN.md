@@ -1,7 +1,7 @@
 ---
 title: "Spatial Reaction–Diffusion of the Biofilm (Heine HOBIC)"
 subtitle: "Inverse estimation of spatial transport from FISH depth profiles — formal treatment"
-author: "Keisuke Nishioka — NIFE / SFB TRR-298"
+author: "Keisuke Nishioka — NIFE"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"
@@ -29,36 +29,34 @@ The decks (you-are-here in **bold marker**):
 
 ---
 
-## Question: adding WHERE to WHO
+## Motivation: from temporal dynamics to spatial structure
 
-The bulk ODE fit gives **who interacts with whom (WHO)**; the FISH depth
-profiles add **where that interaction happens (WHERE)**.
+The ODE fit characterises **species interaction relationships**; the FISH depth
+profiles add the **spatial context** — where those interactions occur within
+the biofilm.
 
-- Known: bulk gLV/Hamilton interaction matrix $A$ and growth vector $b$
+- Known: gLV/Hamilton interaction matrix $A$ and growth vector $b$
   (**(1) Heine 5-species TMCMC posterior**).
-- Unknown: per-species **transport** along the substratum depth axis.
-- Goal: keep the reaction term fixed from (1), and infer **only the spatial
-  transport parameters $D_i,u$** from the depth-resolved FISH data.
+- Unknown: per-species **spatial transport** along the depth axis ($D_i$, $u$).
+- Goal: with the reaction term fixed from (1), infer **only the transport
+  parameters $D_i,u$** from the depth-resolved FISH data.
 
 \vspace{0.4em}
-**Thesis.** Dysbiosis manifests not as a change in bulk composition but as a
-**spatial reorganisation** — in particular *P. gingivalis* sinks deep and
-decouples from *F. nucleatum*.
+**Thesis.** Dysbiosis manifests not as a shift in bulk composition but as a
+**spatial reorganisation** — in particular *P. gingivalis* migrates deep and
+loses co-localisation with *F. nucleatum*.
 
 ---
 
-## Foundation: (1) the Heine 5-species GPU-Bayesian model
+## Foundation: (1) the Heine 5-species Bayesian ODE fitting
 
 This deck is the **spatial extension of the Heine 2025 5-species in-vitro work (1)**.
 
-![](results/heine2025/glv_heine_fit_paper.png){ height=40% }
+![](results/heine2025/glv_heine_fit_thesis.pdf){ height=36% }
 
-- In (1), a **GPU-accelerated TMCMC** ($N_p=10{,}000$) infers the posterior of the
-  symmetric $A$, reproducing the four attractors CS/CH/DS/DH (`ultimate_10000p`).
-- We **keep that $A,b$ (the reaction term) fixed** and extend the *same* Heine
-  system to its **HOBIC FISH depth data**, adding the spatial transport $D_i,u$.
-- i.e. (1) = **temporal dynamics** (WHO); this deck = **spatial structure** (WHERE).
-  Heine's system is the consistent protagonist.
+- Figure: gLV MAP trajectories (asymmetric $A$, RMSE 0.012–0.032); Hamilton NUTS (symmetric $A$) also fit.
+- $A,b$ **fixed** from (1); only spatial transport $D_i,u$ is inferred from FISH depth data.
+- (1) = **temporal dynamics** (WHO); this deck = **spatial structure** (WHERE).
 
 ---
 
@@ -244,7 +242,7 @@ Lateral (xy) heterogeneity tracked over time (mean xy-CV):
 
 ---
 
-## Other: bulk CH ≈ DH
+## Bulk composition: CH ≈ DH
 
 The CH–DH **Bray–Curtis divergence** is $\approx 0.2$ and **flat from Day 1**.
 
@@ -266,8 +264,7 @@ The fitted diffusivity $D_i$ correlates **negatively** with gLV interaction
 strength (centrality): CH $r=-0.40$, DH $r=-0.47$ (5 species, illustrative).
 
 \vspace{0.2em}
-$\Rightarrow$ "central species move less": ecological hubs tend to be spatially
-pinned.
+Species with higher centrality tend to have lower fitted diffusivity, suggesting that ecological hubs are spatially anchored.
 
 ---
 

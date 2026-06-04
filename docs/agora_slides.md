@@ -1,7 +1,7 @@
 ---
 title: "AGORA を軸とした代謝—生態の統合"
 subtitle: "ゲノムスケール代謝モデルから相互作用符号へ — 形式的取り扱い"
-author: "西岡佳祐 — NIFE / SFB TRR-298"
+author: "西岡佳祐 — NIFE"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"
@@ -12,7 +12,7 @@ header-includes:
   - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
-## このデッキの位置づけ
+## 本デッキの位置づけ
 
 本プロジェクト = 3 本柱 ＋ 空間拡張。データの流れ：
 
@@ -86,7 +86,7 @@ $$\min_{v}\; \sum_{j}\lvert v_j\rvert \quad\text{s.t.}\quad c^{\!\top}v=\mu^{\st
   $\Rightarrow$ 全 10 ギルドで正の増殖（$\mu = 0.11\text{–}1.66\,\mathrm{h^{-1}}$）。
 
 \vspace{0.3em}
-培地設計は本質的な感度：貧弱だと $\mu\to0$ で cross-feeding 信号が消える。
+培地組成は重要な感度因子であり、栄養が乏しい場合は $\mu\to0$ となり cross-feeding シグナルが消失する。
 
 ---
 

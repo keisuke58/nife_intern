@@ -1,7 +1,7 @@
 ---
 title: "バイオフィルムの空間反応拡散モデル（Heine HOBIC）"
 subtitle: "FISH 深さプロファイルからの空間輸送パラメータ逆推定 — 形式的取り扱い"
-author: "西岡佳祐 — NIFE / SFB TRR-298"
+author: "西岡佳祐 — NIFE"
 date: "2026-06-03"
 theme: "Madrid"
 colortheme: "whale"
@@ -12,7 +12,7 @@ header-includes:
   - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
-## このデッキの位置づけ
+## 本デッキの位置づけ
 
 本プロジェクト = 3 本柱 ＋ 空間拡張。データの流れ：
 
@@ -29,34 +29,34 @@ raw 16S → guild $\varphi$ → gLV/Hamilton（＋符号 prior）→ LOO 検証 
 
 ---
 
-## 問い：WHO に WHERE を足す
+## 動機：時間動態から空間構造へ
 
-bulk な ODE フィットは **誰が誰と相互作用するか（WHO）** を与える。
-FISH 深さプロファイルは **それがどこで起こるか（WHERE）** を加える。
+ODE フィットは**菌種間の相互作用関係**（誰が誰に作用するか）を与える。
+FISH 深さプロファイルはその**空間的文脈**（バイオフィルム内での位置）を加える。
 
-- 既知：bulk gLV/Hamilton の相互作用行列 $A$、増殖ベクトル $b$
+- 既知：gLV/Hamilton の相互作用行列 $A$ と増殖ベクトル $b$
   （**① Heine 5 菌種 TMCMC posterior**）。
-- 未知：種ごとの基質深さ方向の**輸送**（拡散・移流）。
-- 目標：反応項を①から固定したまま、**空間輸送パラメータのみ**を
+- 未知：菌種ごとの深さ方向の**空間輸送**（拡散係数 $D_i$・移流速度 $u$）。
+- 目標：反応項を①から固定し、**空間輸送パラメータのみ**を
   深さ分解 FISH データから逆推定する。
 
 \vspace{0.4em}
-**主張：** dysbiosis は bulk 組成の変化ではなく、**空間的再編成**として現れる。
-特に *P. gingivalis* が深部へ沈み、*F. nucleatum* から自律化する。
+**主張：** dysbiosis は bulk 組成のシフトではなく、**空間的再編成**として現れる。
+とりわけ *P. gingivalis* が深部へ移行し、*F. nucleatum* との共局在が失われる。
 
 ---
 
-## 土台：① Heine 5 菌種 GPU-Bayesian モデル
+## 土台：① Heine 5 菌種 Bayesian ODE フィット
 
 本デッキは **Heine 2025 の 5 菌種 in-vitro 研究（①）の空間拡張**である。
 
-![](results/heine2025/glv_heine_fit_paper.png){ height=40% }
+![](results/heine2025/glv_heine_fit_thesis.pdf){ height=36% }
 
-- ① で **GPU 加速 TMCMC**（$N_p=10{,}000$）により対称 $A$ の posterior を推定し、
-  4 アトラクター CS/CH/DS/DH を再現（`ultimate_10000p`）。
+- 図：gLV MAP 軌道（非対称 $A$、RMSE 0.012–0.032）+ 実験 IQR 箱ひげ図。
+- Hamilton NUTS（対称 $A$, GPU-TMCMC $N_p=10{,}000$）も実施；4 アトラクター CS/CH/DS/DH 再現。
 - その **$A,b$（反応項）を固定**し、同じ Heine 系の **HOBIC FISH 深さデータ**へ拡張 →
   空間輸送 $D_i,u$ を加える。
-- すなわち①＝**時間動態**（WHO）、本デッキ＝**空間構造**（WHERE）。Heine 系が一貫した主役。
+- すなわち①は**時間動態**（相互作用）、本デッキは**空間構造**（輸送）を扱う。Heine 系が一貫した研究対象。
 
 ---
 
@@ -231,17 +231,17 @@ $\Rightarrow$ 生産者が基底層・消費者がその上＝**上方への乳�
 
 ---
 
-## その他：bulk は CH ≈ DH
+## バルク組成：CH ≈ DH
 
-CH–DH の **Bray–Curtis divergence** $\approx 0.2$、Day 1 から**ほぼ一定**。
+CH–DH の **Bray–Curtis 非類似度** $\approx 0.2$、Day 1 から**ほぼ一定**。
 
-- 差は接種（inoculum）で決まり、時間発展でほとんど拡大しない。
-- bulk 組成では CH $\approx$ DH $\Rightarrow$ dysbiosis は **空間的・時間的**であり、
-  bulk 組成のシフトではない。
+- 群集組成の差は接種（inoculum）時点で決まり、その後ほとんど拡大しない。
+- バルク組成において CH $\approx$ DH であることから、dysbiosis の差異は
+  **空間的・時間的構造**にあり、バルク組成のシフトではない。
 
 \vspace{0.4em}
-これは知見 1・2 と整合する：違いは「誰がどれだけいるか」ではなく
-「どこにいて、何と組むか」に現れる。
+この結果は知見 1・2 と整合する：差異は種の存在量ではなく、
+その**空間的分布と相互作用の再配線**に現れる。
 
 ---
 
@@ -253,7 +253,7 @@ CH–DH の **Bray–Curtis divergence** $\approx 0.2$、Day 1 から**ほぼ一
 CH $r=-0.40$、DH $r=-0.47$（5 種、illustrative）。
 
 \vspace{0.2em}
-$\Rightarrow$ 「中心的な種ほど動かない」。生態的ハブが空間的に固定される傾向。
+中心性の高い菌種ほど拡散係数が小さい傾向が示され、生態的ハブは空間的に固定される傾向がある。
 
 ---
 
