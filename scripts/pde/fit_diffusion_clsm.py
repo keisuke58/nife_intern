@@ -146,7 +146,7 @@ def build_loss(A, b, phi_bulk, phi_ic, obs, t_days, Nz, dt=0.05):
 
 def fit_diffusion(A, b, phi_obs, obs_zprofile, z_grid, t_days,
                   Nz=40, dt=0.05, n_restarts=3,
-                  maxiter=300, ftol=1e-9, gtol=1e-6, fd_eps=1e-3):
+                  maxiter=300, ftol=1e-9, gtol=1e-6, fd_eps=1e-3, d_max=0.5):
     """
     Fit log(D_i) and log(u) by L-BFGS-B minimisation of MSE on z-profiles.
 
@@ -164,9 +164,10 @@ def fit_diffusion(A, b, phi_obs, obs_zprofile, z_grid, t_days,
 
     loss_fn = build_loss(A, b, phi_bulk, phi_ic, obs_zprofile, t_days, Nz, dt)
 
-    # bounds: D ∈ [1e-5, 0.5], u ∈ [0, 0.1] (log scale)
+    # bounds: D ∈ [1e-5, d_max], u ∈ [0, 0.1] (log scale). d_max default 0.5; raise
+    # it to diagnose boundary pinning (a D_i sitting at the bound = weakly identified).
     lb = np.full(N_SP + 1, np.log(1e-5))
-    ub = np.array([np.log(0.5)] * N_SP + [np.log(0.1)])
+    ub = np.array([np.log(d_max)] * N_SP + [np.log(0.1)])
     bounds = list(zip(lb, ub))
 
     best_res = None
@@ -239,6 +240,9 @@ def main():
     parser.add_argument('--fd-eps',    type=float, default=1e-3,
                         help='finite-difference step for the numerical gradient '
                              '(larger = less noisy on the stiff PDE)')
+    parser.add_argument('--d-max',     type=float, default=0.5,
+                        help='upper bound on each D_i (log-scale). Raise (e.g. 1.0) '
+                             'to diagnose boundary pinning / weak identifiability')
     parser.add_argument('--tag',       type=str,   default='',
                         help='suffix for output files (D_fit_<cond>_<tag>.json) — '
                              'use for parameter sweeps so runs do not overwrite')
@@ -284,6 +288,7 @@ def main():
         A, b, phi_obs, obs, z_grid, t_days,
         Nz=args.Nz, dt=args.dt, n_restarts=args.restarts,
         maxiter=args.maxiter, ftol=args.ftol, gtol=args.gtol, fd_eps=args.fd_eps,
+        d_max=args.d_max,
     )
     print(f'\nFitted D = {D_fit}')
     print(f'Fitted u = {u_fit:.5f}')
