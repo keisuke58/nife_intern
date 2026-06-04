@@ -159,7 +159,7 @@
 
 \begin{frame}{概念図（全体像）}
 \protect\hypertarget{ux6982ux5ff5ux56f3ux5168ux4f53ux50cf}{}
-\includegraphics[width=\textwidth,height=0.78\textheight]{results/figures/concept_overview_pub.png}
+\includegraphics[width=\textwidth,height=0.66\textheight]{results/figures/concept_overview_pub.png}
 
 代謝が相互作用の\textbf{符号}を決め、dysbiosis
 は\textbf{リワイヤリング＋空間再編}（Pg
@@ -281,6 +281,30 @@ static/HOBIC：
 
 \textbf{HOBIC} = チタンインプラント流路チャンバー（flow chamber）。
 これらのコードは \texttt{results/} とスクリプト全体で繰り返し現れる。
+\end{frame}
+
+\begin{frame}[fragile]{① 出発点：5 菌種 GPU-Bayesian 推定（Heine
+in-vitro）}
+\protect\hypertarget{ux51faux767aux70b95-ux83ccux7a2e-gpu-bayesian-ux63a8ux5b9aheine-in-vitro}{}
+本研究の\textbf{原型}。Heine 2025 の in-vitro 5
+菌種（So/An/Vd-Vp/Fn/Pg）時系列に、 \textbf{GPU 加速
+TMCMC}（\(N_p=10{,}000\) 粒子）で対称相互作用行列 \(A\) の full joint
+posterior を推定し、 4 アトラクター（CS/CH/DS/DH）を再現。
+
+\includegraphics[width=\textwidth,height=0.4\textheight]{results/heine2025/glv_heine_fit_paper.png}
+
+\begin{itemize}
+\tightlist
+\item
+  replicator/Hamilton ODE（\(A\) 対称、ψ 自由度込み）。正典 =
+  \texttt{results/ultimate\_10000p}。
+\item
+  \textbf{独立検証}：pH 予測 independent
+  \(R^2=0.78\)（校正未使用）、Gingipain--Pg \(r=0.90\)。
+\item
+  この①を ②（AGORA prior・in-vivo Dieckow・空間
+  PDE/FISH）へ拡張するのが本研究。
+\end{itemize}
 \end{frame}
 
 \begin{frame}{柱 1 --- 相互作用推定と誠実な検証}

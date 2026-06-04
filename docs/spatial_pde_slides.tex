@@ -172,14 +172,13 @@ FISH 深さプロファイルは \textbf{それがどこで起こるか（WHERE�
 \begin{itemize}
 \tightlist
 \item
-  既知：bulk gLV/Hamilton の相互作用行列 \(A\)、増殖ベクトル
-  \(b\)（Dieckow フィット）。
+  既知：bulk gLV/Hamilton の相互作用行列 \(A\)、増殖ベクトル \(b\)
+  （\textbf{① Heine 5 菌種 TMCMC posterior}）。
 \item
   未知：種ごとの基質深さ方向の\textbf{輸送}（拡散・移流）。
 \item
-  目標：反応項を bulk
-  から固定したまま、\textbf{空間輸送パラメータのみ}を 深さ分解 FISH
-  データから逆推定する。
+  目標：反応項を①から固定したまま、\textbf{空間輸送パラメータのみ}を
+  深さ分解 FISH データから逆推定する。
 \end{itemize}
 
 \vspace{0.4em}
@@ -187,6 +186,28 @@ FISH 深さプロファイルは \textbf{それがどこで起こるか（WHERE�
 \textbf{主張：} dysbiosis は bulk
 組成の変化ではなく、\textbf{空間的再編成}として現れる。 特に \emph{P.
 gingivalis} が深部へ沈み、\emph{F. nucleatum} から自律化する。
+\end{frame}
+
+\begin{frame}[fragile]{土台：① Heine 5 菌種 GPU-Bayesian モデル}
+\protect\hypertarget{ux571fux53f0ux2460-heine-5-ux83ccux7a2e-gpu-bayesian-ux30e2ux30c7ux30eb}{}
+本デッキは \textbf{Heine 2025 の 5 菌種 in-vitro
+研究（①）の空間拡張}である。
+
+\includegraphics[width=\textwidth,height=0.4\textheight]{results/heine2025/glv_heine_fit_paper.png}
+
+\begin{itemize}
+\tightlist
+\item
+  ① で \textbf{GPU 加速 TMCMC}（\(N_p=10{,}000\)）により対称 \(A\) の
+  posterior を推定し、 4 アトラクター CS/CH/DS/DH
+  を再現（\texttt{ultimate\_10000p}）。
+\item
+  その \textbf{\(A,b\)（反応項）を固定}し、同じ Heine 系の \textbf{HOBIC
+  FISH 深さデータ}へ拡張 → 空間輸送 \(D_i,u\) を加える。
+\item
+  すなわち①＝\textbf{時間動態}（WHO）、本デッキ＝\textbf{空間構造}（WHERE）。Heine
+  系が一貫した主役。
+\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{データ：HOBIC フローチャンバー FISH（Heine
@@ -234,7 +255,7 @@ bulk（\(z=L\)）方向。
 は空隙／非占有）を各 \(z\) で満たす。
 \end{frame}
 
-\begin{frame}{支配方程式（反応拡散 PDE）}
+\begin{frame}[fragile]{支配方程式（反応拡散 PDE）}
 \protect\hypertarget{ux652fux914dux65b9ux7a0bux5f0fux53cdux5fdcux62e1ux6563-pde}{}
 深さ \(z\in[0,L]\)、組成 \(\varphi_i(z,t)\) に対する反応 --- 移流 ---
 拡散方程式： \[\frac{\partial \varphi_i}{\partial t}
@@ -245,11 +266,14 @@ bulk（\(z=L\)）方向。
 \begin{itemize}
 \tightlist
 \item
-  \(R_i(\varphi)\) は replicator / Hamilton 反応項。\(A,b\) は bulk
-  フィットから \textbf{固定}。
+  \(R_i(\varphi)\) は replicator / Hamilton 反応項。\(A,b\) は \textbf{①
+  Heine 5 菌種 TMCMC posterior}（\(N_p=10{,}000\),
+  \texttt{ultimate\_10000p}）から
+  \textbf{固定}（本デッキはその空間拡張）。
   \[R_i(\varphi)=\varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big]+\gamma\,\varphi_i.\]
 \item
-  \textbf{自由パラメータは拡散率 \(D_i\) と移流 \(u\) のみ}。
+  \textbf{自由パラメータは拡散率 \(D_i\) と移流 \(u\)
+  のみ}（反応は①で確定済み）。
 \item
   \(\gamma\) は Lagrange 項：各 \(z\) で
   \(\sum_i \varphi_i + \varphi_0 = 1\) を強制する。
@@ -318,27 +342,75 @@ DH（dysbiotic）
 予測（実線）と観測（点）の深さプロファイル。反応項固定・輸送のみフィット。
 \end{frame}
 
-\begin{frame}{フィットされたパラメータ（暫定）}
-\protect\hypertarget{ux30d5ux30a3ux30c3ux30c8ux3055ux308cux305fux30d1ux30e9ux30e1ux30fcux30bfux66abux5b9a}{}
+\begin{frame}[fragile]{フィットされたパラメータ（収束・限定同定）}
+\protect\hypertarget{ux30d5ux30a3ux30c3ux30c8ux3055ux308cux305fux30d1ux30e9ux30e1ux30fcux30bfux53ceux675fux9650ux5b9aux540cux5b9a}{}
 \begin{longtable}[]{@{}lcc@{}}
 \toprule
 種 & \(D\)（CH） & \(D\)（DH） \\
 \midrule
 \endhead
-So & \(0.0123\) & \(0.0596\) \\
-An & \(0.0121\) & \(0.0021\) \\
-Vd/Vp & \(0.0042\) & \(2.1\times10^{-5}\) \\
-Fn & \(0.0075\) & \(0.0019\) \\
-Pg & \(0.0115\) & \(0.0083\) \\
-\textbf{\(u\)（移流）} & \(0.0038\) & \(0.0060\) \\
-\textbf{loss} & \(0.128\) & \(0.102\) \\
+So & \(10^{-5}\,^\dagger\) & \(0.0100\) \\
+An & \(10^{-5}\,^\dagger\) & \(0.0003\) \\
+Vd/Vp & \(0.0015\) & \(10^{-5}\,^\dagger\) \\
+Fn & \(0.0106\) & \(0.0020\) \\
+Pg & \(10^{-5}\,^\dagger\) & \(0.0013\) \\
+\textbf{\(u\)（移流）} & \(0.0\) & \(0.0070\) \\
+\textbf{loss} & \(\mathbf{0.030}\) & \(\mathbf{0.091}\) \\
 \bottomrule
 \end{longtable}
 
 \vspace{0.2em}
 
-\textcolor{red}{**暫定値**：両条件とも `success=False`（optimiser 未収束）。}
-ハイパーパラメータ sweep と高速収束設定を HPC で実行中。
+sweep の最良は\textbf{収束}（\texttt{success=True}）。しかし
+\(^\dagger\) の \textbf{複数 \(D_i\) が下限 \(10^{-5}\) に張り付く}
+（CH: So/An/Pg、DH: Vd/Vp）。
+\textcolor{red}{$\Rightarrow$ 深さプロファイルは 5 つの拡散率を一意に決めない（**限定的同定性**）。}
+\(D_i\) は illustrative。3D PINN も同結論（同定性の限界自体が知見）。
+\end{frame}
+
+\begin{frame}[fragile]{拡散スイープ：CH 交差拡散で損失が半減}
+\protect\hypertarget{ux30b9ux30a4ux30fcux30d7ch-cross-diffusion}{}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/diffusion_fit/fit_CH_xdiff_nz32_eps3e-4.png}
+
+CH best (\texttt{xdiff\_nz32\_eps3e-4}, loss \(=0.0145\))
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\includegraphics[width=\textwidth,height=0.55\textheight]{results/diffusion_fit/fit_DH_xdiff_nz32_eps1e-3.png}
+
+DH best xdiff (\texttt{xdiff\_nz32\_eps1e-3}, loss \(=0.1032\))
+\end{column}
+\end{columns}
+
+CH に交差拡散項を加えると損失が baseline \(0.030\) から \(0.0145\) へ \textbf{52\% 減少}。
+DH は交差拡散でも改善せず（\(0.103\) vs 非xdiff best \(0.091\)）。
+\end{frame}
+
+\begin{frame}{最良フィットパラメータ（更新版）}
+\protect\hypertarget{ux6700ux826fux30d5ux30a3ux30c3ux30c8ux30d1ux30e9ux30e1ux30fcux30bfux66f4ux65b0}{}
+\begin{longtable}[]{@{}lcc@{}}
+\toprule
+種 & \(D\)（CH best） & \(D\)（DH best） \\
+\midrule
+\endhead
+So & \(3.75\times10^{-3}\) & \(0.0100\) \\
+An & \(0.500\,^{\dagger\dagger}\) & \(0.0003\) \\
+Vd/Vp & \(10^{-5}\,^\dagger\) & \(10^{-5}\,^\dagger\) \\
+Fn & \(2.32\times10^{-4}\) & \(0.0020\) \\
+Pg & \(10^{-5}\,^\dagger\) & \(0.0013\) \\
+\textbf{\(u\)（移流）} & \(\approx0\) (\(1.8\times10^{-4}\)) & \(0.0070\) \\
+\textbf{loss} & \(\mathbf{0.0145}\) & \(\mathbf{0.0908}\) \\
+\textbf{収束} & $\checkmark$ & $\checkmark$ \\
+\textbf{設定} & xdiff/Nz32 & fast/Nz24 \\
+\bottomrule
+\end{longtable}
+
+\vspace{0.2em}
+\(^\dagger\) 下限 \(10^{-5}\) に張り付き（同定不能）。
+\(^{\dagger\dagger}\) An は \textbf{上限 0.5 に到達}（探索域が狭すぎる可能性――物理的な mm\(^2\)/h への換算前）。
+\textcolor{red}{DH は反応支配（loss \(\approx 7\times\) CH）：拡散が空間の主役でない。}
 \end{frame}
 
 \begin{frame}{空間生態 知見 1：Pg は dysbiosis で深く沈む}
@@ -357,6 +429,61 @@ Pg & \(0.0115\) & \(0.0083\) \\
 Manders \(M_1\)（Pg のうち Fn と共局在する割合）： DH Day 1 \(=0.76\) →
 Day 6 以降 \(0.15\text{–}0.20\)。CH は \(0.33\text{–}0.49\)。
 \(\Rightarrow\) Pg は Fn から \textbf{脱共役}し、自律的に振る舞う。
+\end{frame}
+
+\begin{frame}{空間生態 知見 3：cross-feeding は空間的に階層化}
+\protect\hypertarget{ux7a7aux9593ux751fux614b-ux77e5ux898b-3cross-feeding-ux306fux7a7aux9593ux7684ux306bux968eux5c64ux5316}{}
+\includegraphics[width=\textwidth,height=0.48\textheight]{results/diffusion_fit/spatial_crossfeeding.png}
+
+AGORA の乳酸バックボーン（\textbf{S.oralis 生産者 → Veillonella
+消費者}）が深さに現れるか検定。 Veillonella の重心は \textbf{10/10
+サンプルで一貫して S.oralis より浅い}（平均 \(-2.8\,\mu\)m, Wilcoxon
+\(p=0.002\)）。 \(\Rightarrow\)
+生産者が基底層・消費者がその上＝\textbf{上方への乳酸拡散}と整合。代謝バックボーンの\textbf{空間的検証}。
+（A.naeslundii は非有意 \(p=0.28\)。）
+\end{frame}
+
+\begin{frame}{空間生態 知見 4：Fn--Pg 脱共役は「深さ」の分離}
+\protect\hypertarget{ux7a7aux9593ux751fux614b-ux77e5ux898b-4fnpg-ux8131ux5171ux5f79ux306fux6df1ux3055ux306eux5206ux96e2}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/fish_3d/fish_3d_fnpg_coloc.png}
+
+84 FOV の\textbf{全 voxel 3-D デコード}で Manders \(M_1\)
+を次元別に分解：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{横（xy 投影）} \(M_1 \approx 1.0\)（DH, Day 6 から飽和）--- Fn
+  と Pg は同じ \(x,y\) フットプリント。
+\item
+  \textbf{3-D（voxel）} \(M_1\) は Day 6 から
+  \textbf{\(0.22\text{–}0.33\) へ低下}（CH は \(0.4\text{–}0.7\)
+  を維持）。
+\item
+  \(\Rightarrow\) 横では重なるが\textbf{深さ \(z\) で分離}：dysbiotic な
+  Fn--Pg 脱共役は\textbf{垂直分離}で、Pg が Fn の\textbf{下}に位置。「Pg
+  が深部へ沈む」の \textbf{3-D 確証}。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{空間生態 知見 5：DH は横方向に均一化（confluent mat）}
+\protect\hypertarget{ux7a7aux9593ux751fux614b-ux77e5ux898b-5dh-ux306fux6a2aux65b9ux5411ux306bux5747ux4e00ux5316confluent-mat}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{results/fish_3d/fish_3d_lateral_heterogeneity.png}
+
+横方向（xy）の不均一性を時間で追跡（平均 xy-CV）：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{DH} は Day 6 以降 \textbf{CV \(\approx 0.33\)} へ均一化 ---
+  連続した\textbf{コンフルエントなマット}。
+\item
+  \textbf{CH} は \textbf{CV \(0.4\text{–}0.9\)}
+  のまま\textbf{パッチ状}（マイクロコロニー構造を保持）。
+\item
+  \(\Rightarrow\) dysbiosis は横方向では\textbf{平滑化}、commensal
+  は\textbf{微小構造を保つ}。知見 4 の垂直分離と相補的。
+\end{itemize}
 \end{frame}
 
 \begin{frame}{その他：bulk は CH ≈ DH}

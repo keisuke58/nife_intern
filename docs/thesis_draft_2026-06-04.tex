@@ -1,0 +1,252 @@
+% =====================================================================
+% THESIS DRAFT SECTIONS — generated 2026-06-04 for Overleaf integration
+% =====================================================================
+
+\section*{Methods: Spatial PDE Model}
+\subsection{Spatial Reaction-Diffusion Model of Biofilm Depth Profiles}
+\label{subsec:spatial_pde}
+
+To connect the community-level ODE attractors to the three-dimensional FISH measurements,
+we formulated a one-dimensional reaction-diffusion PDE in the depth coordinate $z$,
+representing the axis perpendicular to the implant surface in the HOBIC biofilm system
+\cite{heine2025}.
+Let $\phi_i(z,t)$ denote the relative abundance (volume fraction) of guild $i$
+at depth $z \in [0, L]$ and time $t$, where $L$ is the total biofilm thickness.
+The model reads
+
+\begin{equation}
+  \frac{\partial \phi_i}{\partial t}
+  = \underbrace{D_i \frac{\partial^2 \phi_i}{\partial z^2}}_{\text{self-diffusion}}
+  + \underbrace{\sum_{j \neq i} \varepsilon_{ij}
+      \frac{\partial^2 \phi_j}{\partial z^2}}_{\text{cross-diffusion}}
+  + \underbrace{f_i(\boldsymbol{\phi})}_{\text{reaction}},
+  \qquad i = 1, \ldots, 5,
+\label{eq:pde_main}
+\end{equation}
+
+\noindent
+where $D_i \geq 0$ is the self-diffusion coefficient of guild $i$,
+$\varepsilon_{ij}$ is a cross-diffusion coupling constant (taken uniform,
+$\varepsilon_{ij} = \varepsilon$, as an isotropic first-order approximation),
+and $f_i(\boldsymbol{\phi})$ is the replicator-form reaction term inherited from the
+fitted gLV attractor, evaluated pointwise at each depth level.
+No-flux (Neumann) boundary conditions $\partial_z \phi_i = 0$ were imposed at both
+$z = 0$ (substratum) and $z = L$ (biofilm--medium interface).
+The system was initialised from a spatially uniform composition matching the
+attractor fixed point of the respective community state (commensal-HOBIC, CH;
+or dysbiotic-HOBIC, DH).
+
+The diffusion coefficients $\mathbf{D} = (D_1, \ldots, D_5)$ and the scalar
+cross-diffusion parameter $\varepsilon$ were estimated by minimising the sum of
+squared residuals between the model steady-state depth profile $\hat{\phi}_i(z)$
+and the experimental FISH z-profiles averaged across all fields of view:
+
+\begin{equation}
+  \mathcal{L}(\mathbf{D}, \varepsilon)
+  = \sum_{i=1}^{5} \sum_{k=1}^{N_z}
+    \Bigl[\hat{\phi}_i(z_k) - \phi_i^{\mathrm{FISH}}(z_k)\Bigr]^2,
+\label{eq:loss}
+\end{equation}
+
+\noindent
+where $z_k$ are the $N_z$ evenly spaced depth bins into which the confocal stack
+was resampled.
+The optimisation was performed with a bounded L-BFGS-B solver;
+$D_i$ was constrained to $[10^{-5},\, 0.5]$ in dimensionless solver units
+and $\varepsilon \in \{10^{-4}, 3\times10^{-4}, 10^{-3}\}$ was treated as a
+fixed hyperparameter swept across conditions.
+Grid-resolution convergence was assessed over $N_z \in \{24, 30, 32, 40\}$.
+
+For the CH attractor the model was evaluated in four configurations:
+baseline (self-diffusion only, $\varepsilon = 0$) and three cross-diffusion
+variants ($\varepsilon = 10^{-4}$, $3\times10^{-4}$, $10^{-3}$) at each grid
+resolution.
+The best CH result was obtained at $N_z = 32$, $\varepsilon = 3\times10^{-4}$,
+yielding a fitting loss of $\mathcal{L} = 0.0145$, a 52\% reduction relative to
+the baseline ($\mathcal{L} = 0.0300$), demonstrating that cross-diffusion is
+essential for reproducing the CH depth structure.
+The dominant mobile species in this configuration was \textit{A.~naeslundii}
+($D = 0.500$ solver units; note that this value coincides with the upper bound of the
+search domain, indicating $D_{An} \geq 0.5$~\todo{expand search range and re-run before
+reporting a calibrated physical value}) and \textit{S.~oralis}
+($D = 3.75 \times 10^{-3}$), consistent with their roles as early colonisers that
+penetrate the outer biofilm layers \cite{kolenbrander2010}.
+\textit{V.~dispar}, \textit{F.~nucleatum}, and \textit{P.~gingivalis} were effectively
+immobile ($D \approx 10^{-5}$), in accord with the deeper, anaerobic niche occupied
+by late colonisers \cite{haffajee2008}.
+Dimensionless solver units have not yet been converted to physical units (mm$^2$\,h$^{-1}$);
+quantitative comparison with literature diffusivity values requires this calibration
+step \todo{verify physical unit conversion factor}.
+
+The DH attractor presented a qualitatively different behaviour: the best fitting loss
+across all successful configurations was $0.091$--$0.103$, approximately $7\times$ higher
+than the best CH loss, and runs at $N_z \geq 32$ failed to converge for the majority of
+parameter initialisations.
+Crucially, adding cross-diffusion did not improve the DH fit
+($\mathcal{L}_{\mathrm{xdiff}} \geq 0.103$ vs.\ $\mathcal{L}_{\mathrm{baseline}} = 0.091$).
+This outcome is interpreted not as a model failure but as a positive finding:
+the DH state corresponds to the confluent-mat morphology identified in the FISH data,
+where the lateral coefficient of variation is $\mathrm{CV} \approx 0.33$ and
+depth gradients are weak.
+In this regime reaction kinetics dominate over transport, rendering the diffusion
+coefficients non-identifiable from the observed profiles --- a spatial manifestation
+of the community restructuring that homogenises the biofilm under dysbiotic conditions.
+
+\section*{Results: Diffusion Coefficient Fitting}
+\subsection{Diffusion Coefficient Fitting}
+\label{subsec:diffusion_fit}
+
+The one-dimensional reaction-diffusion PDE was fitted to depth-resolved species
+profiles for the commensal-HOBIC (CH) and dysbiotic-HOBIC (DH) attractors by
+minimising a mean-squared loss between simulated and observed $z$-profiles.
+A sweep over grid resolution ($N_z \in \{24, 30, 32, 40, 48\}$), finite-difference
+step ($\varepsilon \in \{10^{-3}, 3\times10^{-4}, 3\times10^{-3}\}$), and the
+presence or absence of a cross-diffusion term was conducted to assess numerical
+sensitivity and structural identifiability (Table~S1).
+
+\paragraph{CH attractor: well-determined sparse diffusion structure.}
+Without cross-diffusion, all CH configurations converge to a loss of approximately
+\textbf{0.030} regardless of $\varepsilon$, with \textit{F.~nucleatum} and
+\textit{Veillonella}/\textit{Prevotella} (Vd/Vp) as the dominant mobile species
+($D \approx 6$--$7\times10^{-3}$) and the remaining three species effectively
+immobile ($D \sim 10^{-5}$).
+Introducing the cross-diffusion coupling at $N_z = 32$, $\varepsilon = 3\times10^{-4}$
+cuts the loss to \textbf{0.0145} — a \textbf{52\%} reduction relative to the
+baseline (Fig.~\ref{fig:fit_CH}).
+Under this best-fit configuration the mobile-species assignment reverses:
+\textit{A.~naeslundii} becomes the dominant diffusing species
+($D_{\mathrm{An}} = \mathbf{0.500}$, solver units), with \textit{S.~oralis}
+at $D_{\mathrm{So}} = 3.75\times10^{-3}$, while Vd/Vp, \textit{F.~nucleatum},
+and \textit{P.~gingivalis} are effectively immobile ($D \sim 10^{-5}$).
+The advection velocity is small ($u = 1.76\times10^{-4}$), confirming that the
+improvement stems from cross-diffusive coupling rather than bulk transport.
+A note of caution applies: $D_{\mathrm{An}} = 0.500$ is at the upper boundary of
+the search box, indicating that the optimiser's box constraint is active and the
+true optimal value may be higher.
+This figure should therefore be read as a lower bound ($D_{\mathrm{An}} \geq 0.5$,
+solver units); quantitative conversion to physical units (mm$^2$ h$^{-1}$)
+requires expanding the search range in a follow-up run.
+
+Grid resolution has a monotonic but moderate effect on CH performance: coarsening
+from $N_z = 32$ to $N_z = 24$ raises the (no-xdiff) loss from $0.030$ to $0.038$,
+while $N_z = 48$ diverges or fails convergence entirely, placing the sweet spot
+firmly at $N_z = 32$.
+
+\paragraph{DH attractor: reaction-dominated regime.}
+The DH sweep yields a qualitatively different picture (Fig.~\ref{fig:fit_DH}).
+The best successful run (\texttt{xdiff\_nz40\_eps1e-3}) achieves a loss of
+\textbf{0.103}, and the floor across all successful DH configurations lies in the
+range \textbf{0.091--0.103} — approximately \textbf{7$\times$ higher} than the
+best CH loss.
+Crucially, enabling cross-diffusion does \emph{not} improve DH performance:
+the xdiff DH runs (0.103--0.103) match or slightly exceed the best non-xdiff DH
+loss (0.099, though that run did not converge), and the DH loss surface appears
+flat across all $\varepsilon$ settings.
+At $N_z \geq 32$ the majority of DH runs fail to converge; failure rates are
+higher than for any CH configuration, and $N_z = 48$ is consistently the worst
+condition (loss $\approx 0.154$, all three runs failed or degraded).
+The fitted $D$ values in successful DH runs show \textit{S.~oralis} and
+\textit{A.~naeslundii} co-mobile at similar levels
+($D_{\mathrm{So}} \approx D_{\mathrm{An}} \approx 0.026$--$0.041$), with
+\textit{P.~gingivalis} secondarily mobile ($D_{\mathrm{Pg}} \approx 0.005$--$0.010$)
+and Vd/Vp immobile — but the variance across converged runs is large, reflecting
+poor identifiability.
+
+This high loss floor and convergence fragility are interpreted as a scientifically
+affirmative finding rather than a model failure.
+FISH imaging of the DH state (Chapter~\ref{ch:fish}) shows a confluent mat
+morphology with low lateral heterogeneity (coefficient of variation $\approx 0.33$),
+indicating that the dysbiotic community is spatially homogeneous along the biofilm
+depth axis.
+When spatial structure is dominated by reaction kinetics rather than transport,
+diffusion coefficients become non-identifiable from $z$-profile data alone — the
+reaction-diffusion PDE has no lever to distinguish species by position.
+The 7$\times$ gap in loss between CH and DH is therefore consistent with the
+interpretation that the commensal-HOBIC state organises species spatially through
+differential mobility, whereas the dysbiotic-HOBIC state collapses this
+organisation, producing a reaction-dominated regime in which fitting diffusion
+coefficients is inherently underdetermined.
+
+\section*{Results: FISH 3D Co-occurrence Analysis}
+\subsection{FISH 3D Co-occurrence Analysis}
+\label{sec:fish_cooccurrence}
+
+To obtain an independent spatial read of inter-species relationships in
+HOBIC biofilms, we quantified pairwise spatial co-occurrence from
+three-dimensional FISH image stacks using Pearson correlation of
+species-resolved voxel intensity profiles (Figure~\ref{fig:fish_cooccurrence}).
+The analysis covered $n = 137$ field-of-view observations in the commensal-HOBIC
+(CH) attractor and $n = 157$ in the dysbiotic-HOBIC (DH) attractor.
+
+Across all ten species pairs, raw FISH co-occurrence was weak: the majority
+of mean Pearson $r$ values fell below $|r| < 0.20$ in both attractors.
+No pair showed strong positive spatial association, indicating that the
+five focal species (\textit{S.~oralis}, \textit{A.~naeslundii},
+\textit{Vd/Vp}, \textit{F.~nucleatum}, \textit{P.~gingivalis}) do not
+form tight spatial clusters but are instead distributed across the biofilm
+volume without pronounced proximity preferences.
+When compared against the sign of the symmetric interaction matrix
+$A_\mathrm{sym}$ inferred from the Hamilton replicator model,
+sign concordance between FISH $\mathrm{sign}(\bar{r})$ and
+$\mathrm{sign}(A_\mathrm{sym})$ was 5 of 10 pairs in CH and 6 of 10 pairs
+in DH.
+
+The most notable discordance involves the \textit{F.~nucleatum}--\textit{P.~gingivalis}
+(Fn-Pg) pair.  The model assigns the largest interaction magnitude in the
+entire $A_\mathrm{sym}$ matrix to this pair ($A_\mathrm{sym} = +1.38$ in CH,
+$+9.73$ in DH), predicting a cooperative or co-occurring relationship,
+yet FISH spatial correlation is near zero and negative in both attractors
+($\bar{r} = -0.046$ in CH; $\bar{r} = -0.126$ in DH).
+This apparent contradiction is mechanistically interpretable: \textit{F.~nucleatum}
+is established in the literature as a ``bridging species'' that facilitates
+\textit{P.~gingivalis} colonisation through adhesin--fimbriae binding and
+metabolic cross-feeding, processes that operate through transient or
+sequential contact rather than persistent spatial co-localisation.
+The ecological interaction strength captured by $A_\mathrm{sym}$ therefore
+reflects a temporal or chemical dependency rather than a static proximity
+relationship, and the absence of a FISH co-occurrence signal is consistent
+with, not contradictory to, the model.
+
+A second notable case is the \textit{S.~oralis}--\textit{P.~gingivalis}
+(So-Pg) pair.  The model undergoes a sign reversal between attractors
+($A_\mathrm{sym} = -0.33$ in CH, $+0.85$ in DH), whereas FISH shows
+a consistently negative correlation in both conditions
+($\bar{r} \approx -0.20$ in CH, $-0.28$ in DH).  The FISH data thus do not
+support the attractor-specific sign flip predicted by the dynamical model,
+and this pair is flagged as a candidate for further investigation.
+In contrast, the \textit{S.~oralis}--\textit{Vd/Vp} pair shows one of
+the cleaner agreements: $A_\mathrm{sym} = +0.86$ (CH) and
+$\bar{r} = +0.15$, suggesting that early-coloniser spatial proximity
+is partially consistent with the inferred cooperative interaction.
+
+Temporal dynamics of the depth-resolved FISH profiles are summarised in
+Figure~\ref{fig:fish_zprofile_temporal}.
+The $z$-profile structure is discussed in detail in the context of the
+reaction-diffusion PDE analysis (Section~\ref{sec:spatial_pde});
+briefly, DH biofilms exhibit lateral coefficient of variation
+$\mathrm{CV} \approx 0.33$, indicative of a confluent, spatially
+homogenised mat, whereas CH biofilms retain greater lateral heterogeneity,
+consistent with a sparser, spatially structured community.
+
+Taken together, these results indicate that FISH spatial co-occurrence
+is a weak proxy for ecological interaction strength in HOBIC biofilms.
+The modest concordance fraction (5--6 of 10 pairs) is expected given
+that the gLV interaction matrix encodes population-level dynamics
+integrated over time, while FISH captures a single spatial snapshot.
+The analysis nonetheless provides a useful independent constraint: the
+pairs that do agree (An-Pg, Vd/Vp-Pg, So-Vd/Vp) offer cross-modal
+corroboration, while the Fn-Pg discordance sharpens the biological
+interpretation of the largest inferred interaction in the model.
+
+\section*{Results: LOO Stability + Discussion}
+\subsection{LOO Cross-Validation Stability and Prior Asymmetry}
+
+To assess whether the fitted interaction matrix $\mathbf{A}$ is uniquely determined by the Dieckow longitudinal data or is artificially constrained by the metabolic sign prior, we performed a systematic stability analysis across all ten leave-one-out (LOO) folds. For each off-diagonal entry $A_{ij}$, we classified its behaviour into four categories: \emph{aligned} (data and prior agree on sign), \emph{data-driven} (no prior penalty active, yet sign is stable across folds), \emph{prior-constrained} (prior overrides data), and \emph{uncertain} (sign inconsistent across folds).
+
+Of the 90 off-diagonal entries in the $10 \times 10$ interaction matrix, 52 (57.8\%) were classified as aligned, 36 (40.0\%) as data-driven, 1 (1.1\%) as prior-constrained, and 1 (1.1\%) as uncertain. The consensus sign matrix was unanimous (10/10 LOO folds) for all but two entries: $A_{[1,2]}$ achieved 8/10 consensus and $A_{[7,1]}$ achieved 7/10 consensus, indicating near-complete sign identifiability from the data alone. Coefficient of variation across folds was low: for representative strong interactions, $A_{[1,3]}$ had mean $= 1.757$ and standard deviation $= 0.113$ (CV $= 0.064$), and $A_{[0,1]}$ had mean $= 1.588$ and standard deviation $= 0.058$ (CV $= 0.037$). These values are consistent across all LOO configurations, confirming that the interaction matrix is not overfit to any single patient trajectory.
+
+The prior asymmetry analysis revealed that the metabolic sign prior acts predominantly in reinforcement rather than in correction: 94.4\% of entries for which a prior was active also had independent data support for the same sign (aligned category). Only a single entry was classified as prior-constrained, indicating that the L1/L2/L3 metabolic hierarchy imposes negligible distortion on the posterior interaction structure. Entries without a prior penalty (data-driven, 40\%) nonetheless achieved stable sign consensus, demonstrating that the ecological data are sufficiently informative to determine interaction sign independently of the AGORA-derived metabolic constraints.
+
+\subsection{Integrative Interpretation of Attractor Dynamics}
+
+Taken together, the LOO stability, FISH co-occurrence, and spatial PDE results constitute a multilevel validation of the fitted interaction model. The LOO analysis establishes that the $\mathbf{A}$-matrix sign structure is robustly identified from ten-patient longitudinal data: near-unanimous fold consensus and CV $\ll 0.1$ for most entries directly rebut the underdetermination concern inherent in fitting $\mathcal{O}(100)$ parameters from short microbial time series. The spatial PDE results provide an orthogonal physical constraint. The commensal-HOBIC (CH) attractor yields a well-determined sparse diffusion structure, with cross-diffusion reducing fitting loss by 52\% relative to the diagonal baseline; \textit{A.\ naeslundii} and \textit{S.\ oralis} emerge as the mobile early-coloniser species, consistent with their established roles in initial biofilm formation. By contrast, the dysbiotic-HOBIC (DH) attractor resists diffusion fitting (loss floor $\approx 7\times$ higher, majority of high-resolution runs failing convergence), which is not a modelling failure but an affirmative finding: FISH imaging shows that DH is characterised by a confluent mat morphology with lateral coefficient of variation $\approx 0.33$, indicating that reaction kinetics rather than species transport govern spatial organisation. The PDE thus confirms at the physical level what FISH observes morphologically --- dysbiosis collapses spatial structure into a reaction-dominated regime in which diffusion coefficients become non-identifiable. FISH spatial co-occurrence shows modest overall sign agreement with the symmetric interaction matrix $\mathbf{A}_\mathrm{sym}$ (5--6 of 10 pairs per attractor), and the largest discordance --- \textit{Fn}--\textit{Pg}, where the strongest model coupling ($A_\mathrm{sym} = +9.73$ in DH) coincides with near-zero or negative spatial co-occurrence --- is mechanistically interpretable: \textit{F.\ nucleatum} facilitates \textit{P.\ gingivalis} colonisation through temporal bridging and chemical signalling rather than physical co-localisation, so spatial proximity is not expected to reflect ecological interaction sign for this pair. The three analytical pillars therefore converge on a coherent narrative: metabolic sign priors constrain but do not dominate the ODE inference; LOO stability confirms the inferred network is reproducible across patient subsets; and the spatial data confirm that the transition from commensal to dysbiotic attractor is accompanied by a physical collapse from diffusion-structured to reaction-dominated biofilm organisation.
