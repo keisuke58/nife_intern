@@ -13,12 +13,9 @@ import matplotlib.patheffects as pe
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 from pathlib import Path
 
-# Times-family font globally
-matplotlib.rcParams.update({
-    'font.family': 'serif',
-    'font.serif': ['Times New Roman', 'Times', 'DejaVu Serif'],
-    'mathtext.fontset': 'stix',
-})
+# Unified thesis style (usetex / lmodern, body-matched)
+from thesis_style import use as thesis_style
+thesis_style()
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
