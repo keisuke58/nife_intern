@@ -151,7 +151,7 @@ def make_fig1():
 
     fig.tight_layout(pad=0.4)
     for ext in ('pdf', 'png'):
-        fig.savefig(OUT / f'fig1_study_design.{ext}', dpi=200, bbox_inches='tight')
+        fig.savefig(OUT / f'fig1_study_design.{ext}', dpi=300, bbox_inches='tight')
     plt.close(fig)
     print('Fig 1 saved.')
 
@@ -276,7 +276,7 @@ def make_fig2():
                  fontsize=11, fontweight='bold', y=0.99)
 
     for ext in ('pdf', 'png'):
-        fig.savefig(OUT / f'fig2_agora_pipeline.{ext}', dpi=200, bbox_inches='tight')
+        fig.savefig(OUT / f'fig2_agora_pipeline.{ext}', dpi=300, bbox_inches='tight')
     plt.close(fig)
     print('Fig 2 saved.')
 
@@ -464,7 +464,7 @@ def make_fig7():
                  fontsize=11, fontweight='bold', y=1.01)
     fig.tight_layout(pad=1.2)
     for ext in ('pdf', 'png'):
-        fig.savefig(OUT / f'fig7_Aij_Fij_scatter.{ext}', dpi=200, bbox_inches='tight')
+        fig.savefig(OUT / f'fig7_Aij_Fij_scatter.{ext}', dpi=300, bbox_inches='tight')
     plt.close(fig)
     print('Fig 7 saved.')
 

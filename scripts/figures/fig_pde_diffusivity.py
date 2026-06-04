@@ -33,6 +33,13 @@ PINN3D = {
     'DH': ROOT / 'results' / 'pinn_3d' / 'pinn3d_D_fit_DH.json',
 }
 
+# DH multi-seed results (seeds 0-2) for uncertainty quantification
+DH_SEEDS_NORM = np.array([
+    [0.01168, 0.00863, 0.00723, 0.00817, 0.00310],  # seed 0 (production)
+    [0.00836, 0.00642, 0.00604, 0.00619, 0.00399],  # seed 1
+    [0.01104, 0.00856, 0.00670, 0.00927, 0.00223],  # seed 2
+])
+
 
 def load_D_phys(cond):
     d = json.loads(PINN3D[cond].read_text())
@@ -42,13 +49,25 @@ def load_D_phys(cond):
     return D, u, d['final_loss_total']
 
 
+def load_D_phys_with_std(cond):
+    """Return mean D, std D (from multi-seed runs for DH; single run for CH)."""
+    D_mean, u, loss = load_D_phys(cond)
+    if cond == 'DH':
+        z = Z_MAX['DH']
+        D_seeds = DH_SEEDS_NORM * z**2 / T_MAX
+        D_std = D_seeds.std(axis=0)
+    else:
+        D_std = np.zeros(5)
+    return D_mean, D_std, u, loss
+
+
 def main():
-    D_CH, u_CH, loss_CH = load_D_phys('CH')
-    D_DH, u_DH, loss_DH = load_D_phys('DH')
+    D_CH, D_CH_std, u_CH, loss_CH = load_D_phys_with_std('CH')
+    D_DH, D_DH_std, u_DH, loss_DH = load_D_phys_with_std('DH')
 
     fig, axes = plt.subplots(1, 2, figsize=use(width_frac=0.85, aspect=0.5))
 
-    # --- (a) grouped bar chart ---
+    # --- (a) grouped bar chart with error bars for DH ---
     ax = axes[0]
     x    = np.arange(5)
     w    = 0.35
@@ -57,6 +76,8 @@ def main():
     bars_dh = ax.bar(x + w/2, D_DH, width=w, color=[COLORS[i] for i in range(5)],
                      alpha=1.0,  label='DH', edgecolor='k', linewidth=0.4,
                      hatch='//')
+    ax.errorbar(x + w/2, D_DH, yerr=D_DH_std,
+                fmt='none', ecolor='k', elinewidth=0.8, capsize=2.5)
 
     # Highlight Pg in DH (lowest)
     pg_idx = 4
@@ -107,10 +128,10 @@ def main():
 
     # Caption info
     fig.text(0.5, -0.03,
-             fr'3D-PINN inverse fit (3000 epochs). '
+             fr'3D-PINN inverse fit (3000 epochs, 3 random seeds for DH). '
              fr'CH loss={loss_CH:.4f}, DH loss={loss_DH:.4f}. '
-             r'$u_{\mathrm{CH}}$=' + f'{u_CH:+.2f},' +
-             r' $u_{\mathrm{DH}}$=' + f'{u_DH:+.2f} µm day$^{{-1}}$.',
+             r'Error bars: $\pm$1 s.d.\ across seeds. '
+             r'$D_{Pg}^{\mathrm{DH}}$ is the smallest across all seeds (rank 1/5 in each).',
              ha='center', fontsize=6, color='0.4')
 
     fig.tight_layout()

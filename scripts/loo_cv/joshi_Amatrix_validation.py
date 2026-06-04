@@ -204,22 +204,23 @@ rng_perm = np.random.default_rng(42)
 perm_rhos = []
 print(f'  Running {N_PERM} permutations...', flush=True)
 
+def run_perm_fn(A_arr, phi0, b_vec):
+    theta = jnp.concatenate([A_arr.ravel(), jnp.array(b_vec)])
+    phibar = simulate_0d_nsp(theta, n_sp=N_G, n_steps=300, dt=1e-4,
+                              phi_init=jnp.array(phi0),
+                              c_const=25.0, alpha_const=100.0)
+    eq = phibar[-1]; s = eq.sum()
+    return jnp.where(s > 1e-10, eq / s, jnp.ones(N_G) / N_G)
+
+run_perm_jit = jax.jit(run_perm_fn)  # compile once; A_arr is a traced dynamic arg
+
 for k in range(N_PERM):
     # Symmetric permutation: shuffle guild labels
     perm = rng_perm.permutation(N_G)
     A_perm = A[np.ix_(perm, perm)]
     A_p_j  = jnp.array(A_perm)
 
-    def run_perm(phi0, b_vec):
-        theta = jnp.concatenate([A_p_j.ravel(), jnp.array(b_vec)])
-        phibar = simulate_0d_nsp(theta, n_sp=N_G, n_steps=300, dt=1e-4,
-                                  phi_init=jnp.array(phi0),
-                                  c_const=25.0, alpha_const=100.0)
-        eq = phibar[-1]; s = eq.sum()
-        return jnp.where(s > 1e-10, eq / s, jnp.ones(N_G) / N_G)
-    run_perm_jit = jax.jit(run_perm)
-
-    eq_p = np.array([run_perm_jit(phi0_all[s], b_mean) for s in range(n_samp)])
+    eq_p = np.array([run_perm_jit(A_p_j, phi0_all[s], b_mean) for s in range(n_samp)])
     rg_p = rg_ratio(eq_p)
     rho_p, _ = stats.spearmanr(diag_num, rg_p)
     perm_rhos.append(rho_p)
@@ -410,17 +411,21 @@ print(f'\nSaved → {out_json}')
 # ══════════════════════════════════════════════════════════════════════════════
 fig, axes = plt.subplots(1, 3, figsize=(14, 4.8))
 
-# Panel A: velocity violin
+# Panel A: velocity violin (skip empty groups)
 ax = axes[0]
-data_v = [vel_agora[diag_arr == d] for d in DIAG_ORDER]
-parts  = ax.violinplot(data_v, positions=range(3),
-                        showmedians=True, showextrema=False, widths=0.6)
-for pc, d in zip(parts['bodies'], DIAG_ORDER):
-    pc.set_facecolor(DIAG_COLORS[d]); pc.set_alpha(0.7)
-parts['cmedians'].set_color('k'); parts['cmedians'].set_linewidth(1.5)
+data_v   = [vel_agora[diag_arr == d] for d in DIAG_ORDER]
+nonempty = [i for i, v in enumerate(data_v) if len(v) > 1]
+if nonempty:
+    parts = ax.violinplot([data_v[i] for i in nonempty], positions=nonempty,
+                          showmedians=True, showextrema=False, widths=0.6)
+    for pc, i in zip(parts['bodies'], nonempty):
+        pc.set_facecolor(DIAG_COLORS[DIAG_ORDER[i]]); pc.set_alpha(0.7)
+    parts['cmedians'].set_color('k'); parts['cmedians'].set_linewidth(1.5)
 for xi, d in enumerate(DIAG_ORDER):
     vals = vel_agora[diag_arr == d]
-    jx   = np.random.default_rng(0).uniform(-0.15, 0.15, len(vals))
+    if len(vals) == 0:
+        continue
+    jx = np.random.default_rng(0).uniform(-0.15, 0.15, len(vals))
     ax.scatter(xi + jx, vals, s=8, color=DIAG_COLORS[d], alpha=0.5, zorder=3)
 ax.axhline(0, color='k', lw=0.6, ls='--')
 ax.set_xticks(range(3))
@@ -459,6 +464,8 @@ ax3.set_title(f'(C) CT attractor prediction\n'
               f'Fisher p={p_fisher:.3f}  ρ={rho_ct:.2f}', fontsize=10)
 ax3.legend(fontsize=8, loc='lower right')
 for i, r in enumerate(ct2_rates):
+    if np.isnan(r):
+        continue
     ax3.text(i, r/2, f'{r:.0%}', ha='center', va='center',
              fontsize=9, color='white', fontweight='bold')
 
