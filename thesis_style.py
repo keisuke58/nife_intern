@@ -120,8 +120,41 @@ def use(width_frac=1.0, aspect=0.62):
         "grid.linewidth": 0.4,
         "savefig.dpi": 300,
         "savefig.bbox": "tight",
+        "figure.facecolor": "white",   # prevent transparent background on export
+        "axes.facecolor": "white",
         "pdf.fonttype": 42,
         "ps.fonttype": 42,
     })
     w = TEXTWIDTH_IN * width_frac
     return (w, w * aspect)
+
+
+# ── Shared palette ────────────────────────────────────────────────────────────
+# Use these in all figure scripts for consistency across the thesis.
+PALETTE = {
+    "health":    "#2196A6",   # teal   — commensal/health conditions
+    "dysbiosis": "#D95F02",   # orange — dysbiotic conditions
+    "prior_on":  "#1a7431",   # dark green — with metabolic prior
+    "prior_off": "#BDBDBD",   # grey       — without prior / baseline
+    "ch":        "#2196A6",   # commensal HOBIC
+    "dh":        "#D95F02",   # dysbiotic HOBIC
+    "cs":        "#5ab4ac",   # commensal static (lighter teal)
+    "ds":        "#f1a340",   # dysbiotic static (lighter orange)
+}
+
+# Species colours (5-species Heine model, consistent with plot_glv_heine_paper.py)
+SP_COLORS = ['#1f77b4', '#2ca02c', '#ff7f0e', '#9467bd', '#d62728']
+SP_SHORT  = ['So', 'An', 'Vd/Vp', 'Fn', 'Pg']
+
+
+def clean_ax(ax):
+    """Remove top and right spines — call once per Axes."""
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+
+def tight_ylim(ax, data, margin=0.12):
+    """Set y-limits to data range ± margin*range, avoiding zero-anchoring."""
+    lo, hi = float(min(data)), float(max(data))
+    span = hi - lo if hi != lo else abs(hi) * 0.1 or 0.1
+    ax.set_ylim(lo - margin * span, hi + margin * span)
