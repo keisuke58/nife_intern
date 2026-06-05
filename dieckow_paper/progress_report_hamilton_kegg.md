@@ -476,7 +476,7 @@ Higher GDI → more dysbiotic equilibrium.
 
 <div class="box-green" style="margin-top:8px">
 
-**External validity**: $A$ matrix fitted on Dieckow oral abutment (10 patients, 3 weeks) predicts PI dysbiosis direction in 127 cross-sectional peri-implant samples from an independent cohort (Joshi mSystems 2025). $A$ generalises across niche and disease context.
+**External validity**: $A$ matrix fitted on Dieckow oral abutment (10 patients, 3 weeks) predicts PI dysbiosis direction in 127 cross-sectional peri-implant samples from an independent cohort (Joshi npj Biofilms Microbiomes 2025). $A$ generalises across niche and disease context.
 
 </div>
 
