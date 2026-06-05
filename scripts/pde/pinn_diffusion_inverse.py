@@ -489,6 +489,17 @@ def run(args):
     print(f'Saved: {out_json}')
     print(f'Inferred D = {np.round(D_fit, 5)}  u = {u_fit:.5f}')
 
+    # Save network weights for forward-pass plotting
+    net_params = opt_params['net']
+    weight_arrays = {}
+    for i, (W, b) in enumerate(net_params):
+        weight_arrays[f'W{i}'] = np.asarray(W)
+        weight_arrays[f'b{i}'] = np.asarray(b)
+    weight_arrays['n_layers'] = np.array(len(net_params))
+    out_npz = OUT_DIR / f'pinn_weights_{cond}{suffix}.npz'
+    np.savez(out_npz, **weight_arrays)
+    print(f'Saved weights: {out_npz}')
+
     if not args.no_plot:
         plot_fit(opt_params, data, OUT_DIR / f'pinn_fit_{cond}{suffix}.png')
 

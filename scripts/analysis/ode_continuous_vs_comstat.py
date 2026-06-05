@@ -50,8 +50,10 @@ HEINE_TO_COMSTAT = {
     "S. oralis":            "S.oralis",
     "A. naeslundii":        "A.naeslundii",
     "V. dispar":            "Vd/Vp",
+    "V. parvula":           "Vd/Vp",        # DS/DH strain variant → same COMSTAT label
     "F. nucleatum":         "F.nucleatum",
     "P. gingivalis_20709":  "P.gingivalis",
+    "P. gingivalis_W83":    "P.gingivalis", # DS/DH strain variant → same COMSTAT label
 }
 
 SPECIES_COLORS = {

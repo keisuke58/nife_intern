@@ -5,12 +5,11 @@ sys.path.insert(0, str(pathlib.Path(__file__).parents[2]))
 """fig_pde_pinn_fit.py — Thesis figure: 1D PINN-fitted PDE vs FISH z-profiles.
 
 For each condition (CH, DH):
-  - Load PINN-fitted D_i, u from results/pinn_diffusion/ or _gpu_retrieve/
-  - Convert D_i, u from normalised (z/L, t/t_max) to physical units
-  - Run 1-D forward PDE (reaction-diffusion-advection) with fitted parameters
-    starting from the day-1 FISH z-profile as IC
-  - Compare PDE model z-profiles (solid) vs observed FISH z-profiles (dashed)
-    at Days 1, 10, 21
+  - If pinn_weights_<COND>.npz exists: reconstruct MLP and use the PINN network's
+    own forward pass (phi_net) to generate predictions — this is the actual output
+    the network learned, consistent with the reported loss.
+  - Fallback: re-run a PDE solver (solve_ivp) with the fitted D, u values.
+  - Compare prediction (solid) vs observed FISH z-profiles (dashed) at Days 1,10,21.
 
 Output:
   results/fig_pde_pinn_fit.{pdf,png}
@@ -28,9 +27,10 @@ import matplotlib.lines as mlines
 
 from thesis_style import use, clean_ax, SP_COLORS
 
-ROOT    = pathlib.Path(__file__).parents[2]
-IC_DIR  = ROOT / "results" / "fish_3d" / "ic"
-OUT     = ROOT / "results" / "fig_pde_pinn_fit"
+ROOT      = pathlib.Path(__file__).parents[2]
+IC_DIR    = ROOT / "results" / "fish_3d" / "ic"
+PINN_DIR  = ROOT / "results" / "pinn_diffusion"
+OUT       = ROOT / "results" / "fig_pde_pinn_fit"
 
 SHORT   = ['So', 'An', 'Vd/Vp', 'Fn', 'Pg']
 COLORS  = SP_COLORS
@@ -39,9 +39,10 @@ Z_UM_PER_SLICE = 2.0          # µm per FISH voxel slice
 T_MAX   = 21.0                 # days
 DAYS_PLOT = [1, 10, 21]        # days to show
 KEY_SP  = {3, 4}               # Fn, Pg — bold
-LW_KEY  = 1.8
-LW_OTH  = 0.75
-ALP_OTH = 0.45
+LW_KEY  = 2.2
+LW_OTH  = 1.2
+ALP_OTH = 0.55
+LW_OBS  = 0.8   # obs lines always grey/thin
 
 # Normalization scales (from pinn_diffusion_inverse.py CSV analysis)
 Z_MAX = {'CH': 64.0, 'DH': 79.0}   # µm
@@ -57,6 +58,37 @@ for cond in ('CH', 'DH'):
     alt = ROOT / 'results' / 'pinn_diffusion' / f'pinn_D_fit_{cond}.json'
     if not PINN_JSON[cond].exists() and alt.exists():
         PINN_JSON[cond] = alt
+
+
+def load_pinn_weights(cond):
+    """Load saved MLP weights from .npz. Returns list of (W, b) or None."""
+    p = PINN_DIR / f'pinn_weights_{cond}.npz'
+    if not p.exists():
+        return None
+    d = np.load(p)
+    n = int(d['n_layers'])
+    return [(d[f'W{i}'], d[f'b{i}']) for i in range(n)]
+
+
+def mlp_forward_np(params, zt):
+    """NumPy MLP forward pass (tanh hidden, linear output)."""
+    h = zt.astype(np.float64)
+    for W, b in params[:-1]:
+        h = np.tanh(h @ W + b)
+    W, b = params[-1]
+    return h @ W + b
+
+
+def softmax_np(x):
+    e = np.exp(x - x.max())
+    return e / e.sum()
+
+
+def pinn_predict(weights, z_norm, t_norm):
+    """Evaluate PINN network: z_norm, t_norm are 1-D arrays. Returns (N, 5)."""
+    zt = np.stack([z_norm, t_norm], axis=1)   # (N, 2)
+    out = np.array([softmax_np(mlp_forward_np(weights, row)) for row in zt])
+    return out                                 # (N, 5)
 
 
 def load_pinn(cond):
@@ -181,15 +213,14 @@ def run_forward_pde(D, u, ic_phi, ic_depth, t_end, Nz=64, z_max=64.0):
 def plot_panel(ax, cond, day, z_obs, phi_obs, z_model, phi_model,
                show_legend=False, show_ylabel=False, show_xlabel=False,
                title=None):
-    """Plot one (cond, day) panel: observed dashed, model solid."""
-    # observed (dashed)
+    """Plot one (cond, day) panel: observed grey dashed, prediction colour solid."""
+    # observed — colour dashed (same hue as prediction, lighter)
     for sp in range(N_SP):
         ax.plot(phi_obs[:, sp], z_obs,
                 color=COLORS[sp], ls='--',
-                lw=LW_KEY * 0.9 if sp in KEY_SP else LW_OTH,
-                alpha=1.0 if sp in KEY_SP else ALP_OTH,
-                zorder=2)
-    # model (solid)
+                lw=LW_KEY * 0.8 if sp in KEY_SP else LW_OTH * 0.8,
+                alpha=0.55, zorder=2)
+    # prediction — colour solid, thick (foreground)
     if phi_model is not None:
         for sp in range(N_SP):
             ax.plot(phi_model[:, sp], z_model,
@@ -215,22 +246,44 @@ def main():
     conds = ['CH', 'DH']
     clabel = {'CH': 'Commensal HOBIC (CH)', 'DH': 'Dysbiotic HOBIC (DH)'}
 
-    # Load PINN params and run forward PDE for each condition
+    # Load PINN params; use network forward pass if weights are available,
+    # otherwise fall back to solve_ivp re-simulation.
     pde_results = {}
     z_grids     = {}
     pinn_params = {}
+    use_network = {}
     for cond in conds:
         params = load_pinn(cond)
         pinn_params[cond] = params
-        ic_phi, ic_depth = load_ic(cond)
-        if ic_phi is None or params is None:
-            continue
-        z_max = Z_MAX[cond]
-        z_grid, res = run_forward_pde(
-            params['D'], params['u'], ic_phi, ic_depth,
-            t_end=21.0, Nz=80, z_max=z_max)
-        pde_results[cond] = res
-        z_grids[cond]     = z_grid
+        weights = load_pinn_weights(cond)
+        z_max   = Z_MAX[cond]
+
+        if weights is not None and params is not None:
+            # PINN network forward pass at each plot day
+            Nz = 80
+            z_norm = np.linspace(0.0, 1.0, Nz)
+            res = {}
+            for day in DAYS_PLOT:
+                t_norm = np.full(Nz, day / T_MAX)
+                phi = pinn_predict(weights, z_norm, t_norm)   # (Nz, 5)
+                phi = np.clip(phi, 0, None)
+                phi /= phi.sum(axis=1, keepdims=True).clip(1e-9)
+                res[day] = phi
+            pde_results[cond]  = res
+            z_grids[cond]      = z_norm * z_max
+            use_network[cond]  = True
+            print(f'{cond}: using PINN network forward pass')
+        elif params is not None:
+            ic_phi, ic_depth = load_ic(cond)
+            if ic_phi is None:
+                continue
+            z_grid, res = run_forward_pde(
+                params['D'], params['u'], ic_phi, ic_depth,
+                t_end=21.0, Nz=80, z_max=z_max)
+            pde_results[cond] = res
+            z_grids[cond]     = z_grid
+            use_network[cond] = False
+            print(f'{cond}: fallback — solve_ivp re-simulation (no weights found)')
 
     # Figure: 2 rows (CH, DH) × len(DAYS_PLOT) cols
     n_days = len(DAYS_PLOT)
@@ -278,8 +331,8 @@ def main():
                                 label=SHORT[i])
                   for i in order]
     style_handles = [
-        mlines.Line2D([], [], color='0.3', ls='--', lw=1.0, label='FISH (obs.)'),
-        mlines.Line2D([], [], color='0.3', ls='-',  lw=1.0, label='PDE model'),
+        mlines.Line2D([], [], color='0.3', ls='--', lw=1.0, alpha=0.55, label='FISH (observed)'),
+        mlines.Line2D([], [], color='0.3', ls='-',  lw=1.4,            label='PDE (prediction)'),
     ]
     fig.legend(handles=sp_handles + style_handles,
                loc='lower center', ncol=7,
