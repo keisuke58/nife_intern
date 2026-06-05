@@ -1,0 +1,16 @@
+{
+  "CH": {
+    "pg_agree": 4,
+    "pg_total": 4,
+    "nonpg_agree": 3,
+    "nonpg_total": 6,
+    "pg_binom_p": 0.0625
+  },
+  "DH": {
+    "pg_agree": 2,
+    "pg_total": 4,
+    "nonpg_agree": 3,
+    "nonpg_total": 6,
+    "pg_binom_p": 0.6875
+  }
+}
