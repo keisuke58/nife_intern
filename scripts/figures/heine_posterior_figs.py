@@ -65,6 +65,15 @@ def fig_heatmap():
         ax.set_yticks(range(5)); ax.set_yticklabels(SP if ck == "CS" else [], fontsize=7)
         ax.set_title(COND_TITLE[ck])
         ax.tick_params(length=0)
+        vmax_abs = np.abs(A).max()
+        thresh = 0.55 * max(0.5, vmax_abs * 0.95)
+        for ii in range(5):
+            for jj in range(5):
+                val = A[ii, jj]
+                if abs(val) > 0.04:
+                    tc = "white" if abs(val) > thresh else "#333333"
+                    ax.text(jj, ii, f"{val:.2f}", ha="center", va="center",
+                            fontsize=4.5, color=tc)
     cb = fig.colorbar(im, ax=axes, fraction=0.018, pad=0.02)
     cb.set_label(r"$A_{ij}$")
     fig.suptitle(r"MAP interaction matrices $\mathbf{A}$ (Phase~2, $N_p=10{,}000$)")

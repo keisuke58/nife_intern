@@ -1,0 +1,63 @@
+{
+  "n_samples": 95,
+  "analysis1_velocity_rg": {
+    "agora": {
+      "rho": 0.1562923160719677,
+      "p": 0.13040825636900888
+    },
+    "glv": {
+      "rho": -0.023630403225735164,
+      "p": 0.8201878560200623
+    }
+  },
+  "analysis2_permutation_rg": {
+    "true_rho": -0.14468439869792232,
+    "true_p": 0.16183905784375657,
+    "perm_rho_mean": -0.15984102224060442,
+    "perm_rho_std": 0.039258401176833393,
+    "perm_p": 0.325,
+    "n_perm": 200
+  },
+  "analysis3_ct": {
+    "rho_ct_diag": -0.05699984244342083,
+    "p_ct_diag": 0.5832405835366998,
+    "fisher_p": 1.0,
+    "fisher_or": NaN,
+    "ct2_rate_by_diag": {
+      "Health": 0.8392857142857143,
+      "Mucositis": 0.7948717948717948,
+      "Peri-implantitis": NaN
+    }
+  },
+  "analysis4_pathobiont_growth": {
+    "Bacteroidia": {
+      "rho": 0.08166999009596189,
+      "p": 0.43139996106432976
+    },
+    "Fusobacteriia": {
+      "rho": 0.22262327249508393,
+      "p": 0.03012608409897209
+    },
+    "delta_f_dys_com": {
+      "rho": 0.1562923160719677,
+      "p": 0.13040825636900888
+    }
+  },
+  "analysis5_bray_curtis": {
+    "rho_bc_diag": -0.06508725099018282,
+    "p_bc_diag": 0.5308829064735795,
+    "kw_p": NaN,
+    "mean_bc_by_diag": {
+      "Health": 0.47756742077498365,
+      "Mucositis": 0.4683036777637567,
+      "Peri-implantitis": NaN
+    }
+  },
+  "analysis6_permutation_bc": {
+    "true_rho": -0.06508725099018282,
+    "perm_rho_mean": -0.017639888723772475,
+    "perm_rho_std": 0.04293299957211104,
+    "perm_p": 0.885,
+    "n_perm": 200
+  }
+}
