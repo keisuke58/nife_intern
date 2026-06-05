@@ -1,0 +1,7 @@
+class,diagnosis_association,CT_association,top_ECs_positive,top_metabolites,ecological_role
+Bacilli,PIH/PIM,CT_I (CT_II),EC 3.2.1.23 (beta-galactosidase); EC 1.2.3.3 (H2O2 production); hexosyltransferases,galactose; H2O2; carbohydrate polymers,Aerotolerant; salivary glycoprotein degradation; H2O2 producer for niche defence
+Negativicutes,PIH/PIM,CT_I,EC 1.11.1.6 (H2O2 detoxification); porphyrin; LPS; amino acid metabolism,H2O2 (detox); porphyrin; short-chain fatty acids,H2O2 detoxification enabling cohabitation with Bacilli; amino acid supplier for Fusobacteriia
+Bacteroidia,PI,CT_III/CT_IV,EC 3.4.22.37 (Arg-gingipain); amino sugar; purine; one-carbon metabolism,amino acids; purines; peptides,Proteolytic; host-derived peptide utilization; PI-driving class
+Fusobacteriia,PI (elevated),CT_III/CT_IV,Porphyrin metabolism; butyrate production; polyamine production,butyrate; polyamines; porphyrins,PI-associated catabolic; butyrate as virulence metabolite; amino acid sink
+Betaproteobacteria (Neisseria),PIM,CT_II,EC 1.9.3.1 (cytochrome c oxidase/O2 depletion); denitrification,nitrate; pyruvate; lipoic acid,Neisseria-rich PIM subtype; elicits host response comparable to classic periodontopathogens
+Spirochaetia,PI,CT_IV,motility-related; proteolysis,host-derived amino acids,PI-associated; co-occurs with Porphyromonas (similar profile)

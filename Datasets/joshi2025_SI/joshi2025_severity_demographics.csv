@@ -1,0 +1,28 @@
+Demographic Characteristics,Demographic Characteristics,Demographic Characteristics
+Number of patients,Number of patients,34
+Number of implants (n),Number of implants (n),49
+Population-specific parameters,Population-specific parameters,Population-specific parameters
+Patient age in years (Mean ± SD),,73 ± 8.9
+Patient sex (%),Males,50
+Patient sex (%),Females,50
+Smoking (%),Yes,5.9
+Smoking (%),No,88.2
+Smoking (%),n/a,5.9
+API (%),≤ 35%,38.2
+API (%),> 35%,61.8
+Implant-specific parameters,Implant-specific parameters,Implant-specific parameters
+Gingival index (Mean ± SD),,2.2 ± 0.8
+Plaque index (Mean ± SD),,1.9 ± 1.1
+Implant position (%),Incisor,20.4
+Implant position (%),Cuspid,14.3
+Implant position (%),Bicuspid,28.6
+Implant position (%),Molar,36.7
+Years of implant in function (Mean ± SD),,9.8 ± 6.1
+Bleeding on probing (%),Yes,100
+Bleeding on probing (%),No,0
+Pocket depth (Mean ± SD),,7.1 ± 2.3
+Suppuration (%),Yes,40.82
+Suppuration (%),No,59.18
+Periotron (Mean ± SD),,126.9 ± 47.4
+Pain (%),Yes,24.5
+Pain (%),No,75.5

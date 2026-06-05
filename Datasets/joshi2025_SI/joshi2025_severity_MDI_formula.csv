@@ -1,0 +1,3 @@
+index,formula_text,features,n_samples,r2_PD,AUC,p_PD
+MDI,log(Pseudoramibacter / (Capnocytophaga + Gemella)),Pseudoramibacter (+PD); Capnocytophaga (-PD); Gemella (-PD),49 (16S) / 27 (RNA-matched),0.29,0.73,0.0002 (n=49); 0.003 (n=27)
+eMDI,MDI_scaled + linear combination of 9 EC features,3 genera + 5 galactose-metabolism ECs + 1 hydrogenase + 3 endopeptidases (serine/aspartic),27,0.51,0.87,0.00003

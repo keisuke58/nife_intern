@@ -1,0 +1,23 @@
+EC,source,lda_cap_biomarker,interpretation
+1.1.1.284,severity_neg,,severity neg only
+1.1.1.31,severity_neg,,severity neg only
+1.1.1.339,BOTH: severity_neg + biomarker_health,0.451,doubly validated health marker
+1.2.1.18,severity_neg,,severity neg only
+1.2.1.21,severity_neg,,severity neg only
+1.2.1.22,severity_neg,,severity neg only
+1.2.1.27,severity_neg,,severity neg only
+1.5.1.38,BOTH: severity_neg + biomarker_health,0.702,doubly validated health marker
+1.7.2.1,BOTH: severity_neg + biomarker_health,0.52,doubly validated health marker
+2.4.1.109,BOTH: severity_neg + biomarker_health,0.53,doubly validated health marker
+2.7.7.68,severity_neg,,severity neg only
+3.1.2.20,BOTH: severity_neg + biomarker_health,0.587,doubly validated health marker
+3.1.2.28,severity_neg,,severity neg only
+3.2.1.170,BOTH: severity_neg + biomarker_health,0.418,doubly validated health marker
+3.4.22.70,BOTH: severity_neg + biomarker_health,0.736,doubly validated health marker
+3.5.1.11,severity_neg,,severity neg only
+3.5.1.23,severity_neg,,severity neg only
+3.5.1.5,BOTH: severity_neg + biomarker_health,0.512,doubly validated health marker
+4.1.2.40,BOTH: severity_neg + biomarker_health,0.67,doubly validated health marker
+4.2.2.7,severity_neg,,severity neg only
+4.2.2.8,severity_neg,,severity neg only
+5.4.99.9,BOTH: severity_neg + biomarker_health,0.653,doubly validated health marker

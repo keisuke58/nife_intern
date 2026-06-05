@@ -1,0 +1,28 @@
+metric,value,comparison,p_value,source
+Total samples,125,peri-implant biofilms from 48 individuals,,Study design
+Diagnosis groups,PIH=41; PIM=52; PI=32,,,Methods
+Species-level phylotypes,756,total identified,,Results
+Genera identified,99,total,,Results
+Shannon diversity H (PIH),3.1 ± 0.5,,,Results
+Shannon diversity H (PI),3.4 ± 0.5,vs PIH,P=0.02,Results
+Bacterial RNA (PIH median),1 ng,,,Results
+Bacterial RNA (PIM median),10 ng,vs PIH,P=0.0096 (Bonferroni),Results
+Bacterial RNA (PI median),50 ng,vs PIH,P=2.1e-6,Results
+Community types (CTs),4 major (I-IV),by SIMPROF on MTX class activity,,Results
+CT_I diagnosis,PIH primary,neg. corr. with disease severity,,Results
+CT_II diagnosis,PIM (Neisseria-rich),,,Results
+CT_III diagnosis,PIM (Bacteroidia/Fuso),,,Results
+CT_IV diagnosis,PI primary,,,Results
+ECs identified (MTX),1824,total; 36% ≥0.1% in ≥1 sample,,Results
+EC separation PIH vs PI,significant,PERMANOVA,P=0.0001,Results
+EC separation PIH vs PIM,ns,PERMANOVA,P=0.488,Results
+CT_II vs CT_III ECs,219,differentially expressed,P<0.05,Results
+Phageome PIH vs PIM vs PI,distinct,PERMANOVA,P=6e-5,Results
+Host genes analyzed,~35000,human genes at implant interface,,Results
+Host PI vs PIH,significant,PERMANOVA,P=0.011,Results
+Host PI vs PIM,significant,PERMANOVA,P=0.004,Results
+Host PIH vs PIM,ns,PERMANOVA,P=0.33,Results
+DEGs PI vs PIM,"102 total (32 up, 70 down in PI)",DESeq2 adj P<0.05,,Results
+Species-enzyme associations,~10000 significant,hierarchical association testing,,Results
+Enzyme-host associations,36617,,,Results
+Gingipain (EC 3.4.22.37) × TNFα-NF-κB,positive,FDR q=6.5e-35,,Results
