@@ -20,7 +20,7 @@ echo "neutral-init no-prior LOO fold ${FOLD} on $(hostname) at $(date)"
 /home/nishioka/IKM_Hiwi/.venv_jax/bin/python scripts/loo_cv/run_hamilton_expanded_loo.py \
     --hold ${FOLD} \
     --gpu -1 \
-    --fit-file results/dieckow_cr/fit_zero_init.json \
+    --fit-file fit_zero_init.json \
     --no-prior \
     --tag noprior_neutral
 
