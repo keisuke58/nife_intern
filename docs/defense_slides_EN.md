@@ -203,17 +203,24 @@ independent $R^2=0.78$, RMSE $0.13$, LOO $R^2=0.92$.
 
 ## Outlook
 
-- **Spatial out-of-sample validation** — predict depth profiles on held-out
-  samples.
-- **2D / 3D PDE** — beyond $z$ to in-plane and volumetric structure.
-- **PINN inverse problem** — infer $D_i,u$ directly with physics-informed
-  neural networks.
-- **GDI / Joshi clinical validation** — integrate clinical metadata
-  (dysbiosis index).
+**Near term**
 
-\vspace{0.4em}
-Solidify the picture — metabolism fixes the sign, dysbiosis is rewiring +
-spatial reorganisation — with spatial validation and clinical indices.
+- **Neutral-init LOO** (submitted) — confirm $p=4\times10^{-4}$ sign enrichment is data-driven, not warm-start artefact.
+- **Unified inference** — TMCMC posteriors regularised by metabolic sign prior → credible intervals on in-vivo $A_{ij}$.
+- **Asymmetric $A$ channel** — relax $A_{ij}=A_{ji}$ for directional metabolite pairs; test whether competition direction recovers significance.
+
+**Medium term**
+
+- **Fn knock-out prediction** — omitting *F. nucleatum* should collapse the dysbiotic *Pg* surge (direct co-culture test).
+- **Full time-series PINN fit** — turn placeholder $D_i$ into measured diffusivities; couple $O_2$-PDE to Monod kinetics.
+
+**Long term**
+
+- **Clinical dysbiosis index** — 10-guild projection onto commensal–dysbiotic axis, calibrated from attractor states.
+- **Patient-specific MAGs** — replace AGORA2 reference strains with personalised GEMs for tighter $A_{ij}$ priors.
+
+\vspace{0.3em}
+\textit{Same principle throughout: mechanistic structure makes scarce data yield testable models.}
 
 ---
 

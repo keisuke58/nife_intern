@@ -203,6 +203,8 @@ $p\approx0.02$). The **Actinobacteria axis** is consistent across cohorts.
   1. the **cross-feeding direction** (Hamilton, $p=4\times10^{-4}$),
   2. **two-cohort strong-pair** signs (Dieckow $\times$ Botelho, $89\%$).
 - Competition direction, prior magnitude, and the full matrix are not validated.
+- The MICOM–gLV RMSE improvement ($p\approx0.07$, $N=10$) is **structurally underpowered** (power $\approx0.30$ for $d=0.5$); read as a consistency result, not a powered effect. The permutation test ($p=4\times10^{-4}$) is the primary statistical claim.
+- A **neutral-initialised no-prior LOO** (zero-init, submitted) will confirm the enrichment is data-driven and not a warm-start artefact.
 
 \vspace{0.3em}
 We do not oversell: a **subset** of signs is supported; the rest remains hypothesis.
