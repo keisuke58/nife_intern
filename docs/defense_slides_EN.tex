@@ -357,27 +357,50 @@ calibration} --- a genuinely independent validation.
 
 \begin{frame}{Outlook}
 \protect\hypertarget{outlook}{}
+\textbf{Near term}
+
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Spatial out-of-sample validation} --- predict depth profiles
-  on held-out samples.
+  \textbf{Neutral-init LOO} (submitted) --- confirm \(p=4\times10^{-4}\)
+  sign enrichment is data-driven, not warm-start artefact.
 \item
-  \textbf{2D / 3D PDE} --- beyond \(z\) to in-plane and volumetric
-  structure.
+  \textbf{Unified inference} --- TMCMC posteriors regularised by
+  metabolic sign prior → credible intervals on in-vivo \(A_{ij}\).
 \item
-  \textbf{PINN inverse problem} --- infer \(D_i,u\) directly with
-  physics-informed neural networks.
-\item
-  \textbf{GDI / Joshi clinical validation} --- integrate clinical
-  metadata (dysbiosis index).
+  \textbf{Asymmetric \(A\) channel} --- relax \(A_{ij}=A_{ji}\) for
+  directional metabolite pairs; test whether competition direction
+  recovers significance.
 \end{itemize}
 
-\vspace{0.4em}
+\textbf{Medium term}
 
-Solidify the picture --- metabolism fixes the sign, dysbiosis is
-rewiring + spatial reorganisation --- with spatial validation and
-clinical indices.
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Fn knock-out prediction} --- omitting \emph{F. nucleatum}
+  should collapse the dysbiotic \emph{Pg} surge (direct co-culture
+  test).
+\item
+  \textbf{Full time-series PINN fit} --- turn placeholder \(D_i\) into
+  measured diffusivities; couple \(O_2\)-PDE to Monod kinetics.
+\end{itemize}
+
+\textbf{Long term}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Clinical dysbiosis index} --- 10-guild projection onto
+  commensal--dysbiotic axis, calibrated from attractor states.
+\item
+  \textbf{Patient-specific MAGs} --- replace AGORA2 reference strains
+  with personalised GEMs for tighter \(A_{ij}\) priors.
+\end{itemize}
+
+\vspace{0.3em}
+
+\textit{Same principle throughout: mechanistic structure makes scarce data yield testable models.}
 \end{frame}
 
 \begin{frame}[fragile]{Take-home}
