@@ -19,8 +19,7 @@
 % VERIFY BEFORE SUBMISSION:
 %   Ward2003MathBiofilm  — the cited title is about DRUG TRANSPORT IN TUMOUR SPHEROIDS,
 %                          not biofilms. This is likely the wrong reference; confirm intent.
-%   Gibson2021MDSINE2    — currently the bioRxiv preprint; replace with the published
-%                          Nature Microbiology (2025) version once you cite it.
+%   Gibson2021MDSINE2    — updated 2026-06-07 to published Nature Microbiology 2025 version.
 % ══════════════════════════════════════════════════════════════════════════════
 
 % ── Hamilton Principle & Biofilm Model ────────────────────────────────────────
@@ -421,12 +420,18 @@
 }
 
 @article{Gibson2021MDSINE2,
-  author  = {Gibson, Travis E and Gerber, Georg K},
-  title   = {Microbial dynamics inference at ecosystem-scale},
-  journal = {bioRxiv},
-  year    = {2021},
-  doi     = {10.1101/2021.12.14.469105},
-  note    = {Preprint; published in \emph{Nature Microbiology} 2025},
+  author  = {Gibson, Travis E and Kim, Younhun and Acharya, Sawal and
+             Kaplan, David E and DiBenedetto, Nicholas and Lavin, Richard and
+             Berger, Bonnie and Allegretti, Jessica R and Bry, Lynn and
+             Gerber, Georg K},
+  title   = {Learning ecosystem-scale dynamics from microbiome data with {MDSINE2}},
+  journal = {Nature Microbiology},
+  year    = {2025},
+  volume  = {10},
+  pages   = {2550--2564},
+  doi     = {10.1038/s41564-025-02112-6},
+  eprint  = {2021.12.14.469105},
+  archivePrefix = {bioRxiv},
 }
 
 @article{Cao2017Identifiability,
@@ -1791,4 +1796,63 @@
   volume  = {52},
   pages   = {e70024},
   doi     = {10.1111/jcpe.70024}
+}
+
+% ── ML Methods for Microbial Dynamics (added 2026-06-07) ──────────────────────
+
+@misc{Holmes2025GrowthFM,
+  author       = {Holmes, Zachary A and Shyti, Irida and Hoffman, Alexandra L and
+                  Duncker, Katherine E and Ma, Helena R and Zhou, Zhengqing and
+                  Lee, Dongheon and Maddamsetti, Rohan and Kim, Kyeri and
+                  {\c{S}}im{\c{s}}ek, Emrah and You, Lingchong and others},
+  title        = {A foundation model for microbial growth dynamics},
+  year         = {2025},
+  howpublished = {bioRxiv},
+  doi          = {10.64898/2025.12.01.691707},
+  note         = {PMC12822751},
+}
+
+@inproceedings{Arruda2024NPE,
+  author    = {Arruda, Jonas and Sch{\"a}lte, Yannik and Peiter, Clemens and
+               Teplytska, Olga and Jaehde, Ulrich and Hasenauer, Jan},
+  title     = {An amortized approach to non-linear mixed-effects modeling based on
+               neural posterior estimation},
+  booktitle = {Proceedings of the 41st International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {235},
+  pages     = {1865--1901},
+  year      = {2024},
+  publisher = {PMLR},
+  eprint    = {2023.08.22.554273},
+  archivePrefix = {bioRxiv},
+}
+
+@misc{Haario2026MINE,
+  author        = {Haario, Heikki and Liu, Zhi-Song and Simon, Martin and Weichel, Hendrik},
+  title         = {{MCMC} Informed Neural Emulators for Uncertainty Quantification
+                   in Dynamical Systems},
+  year          = {2026},
+  eprint        = {2603.10987},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+}
+
+@misc{WangHao2025LENO,
+  author        = {Wang, Jindong and Hao, Wenrui},
+  title         = {Laplacian Eigenfunction-Based Neural Operator for Learning
+                   Nonlinear Reaction-Diffusion Dynamics},
+  year          = {2025},
+  eprint        = {2502.05571},
+  archivePrefix = {arXiv},
+  primaryClass  = {math-ph},
+}
+
+@misc{Tunc2026DDOLART,
+  author        = {Tunc, Huseyin},
+  title         = {Adaptive recurrent flow map operator learning for reaction
+                   diffusion dynamics},
+  year          = {2026},
+  eprint        = {2602.09487},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
 }
