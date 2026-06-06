@@ -37,7 +37,7 @@ COLORS  = SP_COLORS
 N_SP    = 5
 Z_UM_PER_SLICE = 2.0          # µm per FISH voxel slice
 T_MAX   = 21.0                 # days
-DAYS_PLOT = [1, 10, 21]        # days to show
+DAYS_PLOT = [1, 6, 10, 15, 21]  # days to show
 KEY_SP  = {3, 4}               # Fn, Pg — bold
 LW_KEY  = 2.2
 LW_OTH  = 1.2
@@ -289,7 +289,7 @@ def main():
     n_days = len(DAYS_PLOT)
     fig, axes = plt.subplots(
         2, n_days,
-        figsize=use(width_frac=1.0, aspect=0.48),
+        figsize=use(width_frac=1.0, aspect=0.55),
         sharey=False,
     )
 
@@ -311,16 +311,22 @@ def main():
                        show_xlabel=(row == 1),
                        title=f'Day {day}' if row == 0 else None)
 
-        if pinn_params.get(cond):
-            p = pinn_params[cond]
+    # Row labels as fig.text (avoids overlap with ylabel)
+    for row, cond in enumerate(conds):
+        p = pinn_params.get(cond)
+        if p:
             D_Fn = p['D'][3]; D_Pg = p['D'][4]; u_ph = p['u']
-            axes[row, 0].text(
-                -0.55, 0.5,
+            # get axes bbox in figure coords to center vertically
+            ax0 = axes[row, 0]
+            fig.canvas.draw()
+            bbox = ax0.get_position()
+            y_mid = (bbox.y0 + bbox.y1) / 2
+            fig.text(
+                0.01, y_mid,
                 f'{clabel[cond]}\n'
                 fr'$D_{{Fn}}$={D_Fn:.1f}, $D_{{Pg}}$={D_Pg:.1f} µm²/d'
                 f'\n$u$={u_ph:+.1f} µm/d',
-                transform=axes[row, 0].transAxes,
-                va='center', ha='center', fontsize=6.5,
+                va='center', ha='center', fontsize=6.0,
                 fontweight='bold', rotation=90)
 
     # Legend: species + line style
@@ -339,7 +345,7 @@ def main():
                fontsize=7, framealpha=0.9, edgecolor='0.8',
                bbox_to_anchor=(0.5, -0.03))
 
-    fig.tight_layout(rect=[0, 0.07, 1, 1])
+    fig.tight_layout(rect=[0.08, 0.07, 1, 1])
 
     for ext in ('pdf', 'png'):
         fig.savefig(f'{OUT}.{ext}', bbox_inches='tight')
