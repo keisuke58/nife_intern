@@ -30,9 +30,22 @@ Oral biofilm community dynamics (NIFE / SIIRI TRR-298). Research codebase — sc
 | `/thesis-sync` | LIGHT figures + JA/EN decks |
 | `/litwatch` | arXiv reading list update |
 
+## Pre-commit
+
+```bash
+pip install pre-commit && pre-commit install
+```
+
+## Pre-approved commands (project `.grok/settings.json`)
+
+- `./scripts/reproduce_core.sh`
+- `make figures`
+- `make reproduce`
+
 ## Key docs
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — data flow
 - [docs/PROVENANCE.md](docs/PROVENANCE.md) — figure regeneration map
+- [docs/ZENODO.md](docs/ZENODO.md) — archive / citation setup
 - [CLAUDE.md](CLAUDE.md) — full developer guide
 - [PAPER_OUTLINE.md](PAPER_OUTLINE.md) — manuscript structure

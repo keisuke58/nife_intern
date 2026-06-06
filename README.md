@@ -134,9 +134,24 @@ Key result: `Fn_mu_max` (ST=0.49) and `Vp_Km_lac` dominate dysbiosis — driven 
 |-----|---------|
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Core data flow + three pillars |
 | [docs/PROVENANCE.md](docs/PROVENANCE.md) | Figure regeneration (LIGHT vs HEAVY) |
+| [docs/ZENODO.md](docs/ZENODO.md) | Zenodo archive + citation |
 | [AGENTS.md](AGENTS.md) | AI agent / slash-command entry points |
 | [CLAUDE.md](CLAUDE.md) | Full developer guide |
 | [PAPER_OUTLINE.md](PAPER_OUTLINE.md) | Manuscript structure |
+
+## Citation
+
+See [CITATION.cff](CITATION.cff) and [docs/ZENODO.md](docs/ZENODO.md). Interim BibTeX:
+
+```bibtex
+@software{nishioka2026nife,
+  author  = {Nishioka, Keisuke},
+  title   = {nife},
+  year    = {2026},
+  url     = {https://github.com/keisuke58/nife_intern},
+  version = {0.2.0}
+}
+```
 
 ## Context
 

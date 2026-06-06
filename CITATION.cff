@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software in your research, please cite it using
+  the metadata in this file.
+
+title: >-
+  nife: Oral biofilm community dynamics — Hamilton/gLV inference
+  with metabolic sign priors and COMETS dFBA
+
+type: software
+
+authors:
+  - family-names: Nishioka
+    given-names: Keisuke
+    affiliation: >-
+      NIFE (Niedersächsisches Institut für angewandte Zellgewebezüchtung),
+      Leibniz University Hannover / Keio University
+    email: kei128608@gmail.com
+
+repository-code: "https://github.com/keisuke58/nife_intern"
+
+url: "https://github.com/keisuke58/nife_intern"
+
+abstract: >-
+  Computational pipeline for oral biofilm community dynamics developed
+  during the NIFE internship (SIIRI / TRR-298). Connects patient
+  metagenomics (MetaPhlAn) to mechanistic COMETS/dFBA simulation and
+  fits generalized Lotka–Volterra / Hamilton replicator models with
+  metabolic sign priors. Light reproduction via scripts/reproduce_core.sh
+  and CI-tested ETL unit tests.
+
+keywords:
+  - oral biofilm
+  - peri-implantitis
+  - generalized Lotka-Volterra
+  - COMETS
+  - dynamic flux balance analysis
+  - metagenomics
+  - ecological inference
+
+license: MIT
+
+version: "0.2.0"
+
+date-released: "2026-06-07"
