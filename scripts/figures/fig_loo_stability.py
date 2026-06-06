@@ -65,7 +65,7 @@ def draw_heatmap(ax, data, cmap, norm, title, cbar_label):
 
 def main():
     figsize = use(width_frac=1.0, aspect=0.42)
-    _mpl.rcParams["text.usetex"] = False   # use() sets it True; override for this headless node
+    # usetex=True set by use() — requires TL2025 in PATH
     sc, cv, pri = load_stats(STATS)
 
     sc_up  = mask_lower(sc)
