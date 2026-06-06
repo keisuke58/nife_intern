@@ -12,17 +12,21 @@
 PYTHON ?= python3
 
 .DEFAULT_GOAL := help
-.PHONY: help figures decks
+.PHONY: help figures decks reproduce
 
 help:  ## Show this help
 	@echo "nife — thesis sync helpers (LOCAL, LIGHT only)"
 	@echo
 	@echo "Targets:"
-	@echo "  make figures   Regenerate the LIGHT matplotlib data figures (no cluster/GPU)"
-	@echo "  make decks     Rebuild + upload all JA+EN decks (runs the /thesis-sync deck build)"
-	@echo "  make help      Show this help (default)"
+	@echo "  make figures    Regenerate the LIGHT matplotlib data figures (no cluster/GPU)"
+	@echo "  make reproduce  LIGHT figures + Dieckow paper figs + ETL tests"
+	@echo "  make decks      Rebuild + upload all JA+EN decks (runs the /thesis-sync deck build)"
+	@echo "  make help       Show this help (default)"
 	@echo
 	@echo "Excluded (heavy / extra stacks): fish_3d_batch, AGORA/FBA figs. See docs/PROVENANCE.md"
+
+reproduce:  ## LIGHT reproduce script (figures + paper figs + pytest)
+	./scripts/reproduce_core.sh
 
 figures:  ## Regenerate the LIGHT data figures (matplotlib; NO cluster, NO GPU)
 	$(PYTHON) scripts/figures/make_pipeline_overview.py

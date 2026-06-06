@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nife"
+version = "0.2.0"
+description = "Oral biofilm community dynamics — Hamilton/gLV inference + COMETS dFBA"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Keisuke Nishioka", email = "kei128608@gmail.com" }]
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "scikit-learn>=1.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.package-dir]
+nife = "."
+"nife.comets" = "comets"
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

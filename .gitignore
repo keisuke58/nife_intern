@@ -126,3 +126,17 @@ docs/refs/
 # Claude Code personal per-project settings (not shared)
 .claude/settings.local.json
 joshi_mtx_humann.err
+
+# Generated ML / analysis outputs (reproducible)
+results/attractor_predictor/
+results/symbolic_regression/
+results/neural_ode_sign/
+results/joshi_mtx_humann/
+results/fit_stochastic_glv_moments.json
+
+# Claude scheduled task lock
+.claude/scheduled_tasks.lock
+
+# pytest
+.pytest_cache/
+*.egg-info/

@@ -39,15 +39,12 @@ def test_export_qiime2_creates_manifest_and_metadata(tmp_path):
         "export_qiime2.py",
         "--combined-meta",
         str(combined),
-        "--fastq-prjna-dir",
+        "--fastq-dir",
         str(fqdir),
         "--out-manifest",
         str(manifest),
         "--out-metadata",
         str(metadata),
-        "--report-json",
-        str(report),
-        "--allow-missing-fastq",
     ]
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr("sys.argv", argv)
@@ -65,7 +62,7 @@ def test_export_qiime2_creates_manifest_and_metadata(tmp_path):
 
 
 def test_export_qiime2_errors_on_missing_fastq_by_default(tmp_path):
-    from nife.export_qiime2 import main as export_main
+    from nife.export_qiime2 import ExportQiime2Error, main as export_main
 
     combined = tmp_path / "combined_meta.tsv"
     combined.write_text(
@@ -80,16 +77,15 @@ def test_export_qiime2_errors_on_missing_fastq_by_default(tmp_path):
         "export_qiime2.py",
         "--combined-meta",
         str(combined),
-        "--fastq-prjna-dir",
+        "--fastq-dir",
         str(fqdir),
         "--out-manifest",
         str(tmp_path / "m.tsv"),
         "--out-metadata",
         str(tmp_path / "s.tsv"),
-        "--report-json",
-        str(tmp_path / "r.json"),
+        "--strict",
     ]
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr("sys.argv", argv)
-        with pytest.raises(Exception):
+        with pytest.raises(ExportQiime2Error):
             export_main()

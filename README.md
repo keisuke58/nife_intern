@@ -1,6 +1,10 @@
-# nife_intern
+# nife
+
+[![CI](https://github.com/keisuke58/nife_intern/actions/workflows/ci.yml/badge.svg)](https://github.com/keisuke58/nife_intern/actions/workflows/ci.yml)
 
 Computational oral biofilm pipeline developed during internship at [NIFE](https://nife-hannover.de/en/) (Niedersächsisches Institut für angewandte Zellgewebezüchtung), Hannover — part of the **SIIRI/TRR-298** consortium.
+
+**North star:** Hamilton/gLV ecological inference with metabolic sign priors → see `PAPER_OUTLINE.md`.
 
 ## 日本語（簡易）
 
@@ -43,26 +47,35 @@ NGS (shotgun) → MetaPhlAn 4 → init_comp.json → GEM (AGORA) → dFBA → CO
 
 The pipeline models multi-species oral biofilm on implant surfaces, focusing on the transition between commensal and dysbiotic states relevant to peri-implantitis.
 
+## Quick Start
+
+```bash
+pip install -e ".[dev]"
+./scripts/reproduce_core.sh   # LIGHT figures + ETL tests (no cluster)
+make figures                  # matplotlib data figures only
+pytest tests/ -q              # metadata / QIIME2 ETL tests
+```
+
 ## Repository Structure
 
 ```
-nife_intern/
-├── comets/                    # COMETS / dFBA simulation
-│   ├── agora_gems/            # AGORA GEM reconstructions (5 species)
-│   ├── notebooks/             # Jupyter notebooks (beginner + visualization)
-│   ├── spatial_dfba.py        # 2D spatial Monod dFBA (60×40 grid, 7 species)
-│   ├── oral_biofilm.py        # 0D community dFBA model
-│   ├── run_comets_pipeline.py # End-to-end pipeline runner (Step A/B/C)
-│   ├── sweep_comets_0d.py     # Parameter sweep (glucose, cross-feeding)
-│   ├── run_sobol.sh           # Sobol sensitivity analysis (PBS job)
-│   ├── make_pipeline_overview.py  # Pipeline figure generator
-│   ├── pipeline_overview.tex  # TikZ pipeline diagram
-│   └── pipeline_results/      # Output figures and COMETS run files
-└── data/
-    ├── metaphlan_pipeline.sh           # MetaPhlAn 4 PBS pipeline script
-    ├── metaphlan_feature_table_to_init_comp.py  # Profile → init_comp.json
-    ├── download_prjeb71108_fastq.py    # FASTQ download helper (PRJEB71108)
-    └── PRJEB71108_filereport.tsv       # ENA file report
+nife/
+├── paper_data.py              # Canonical paper-grade run paths (single source of truth)
+├── guild_replicator_dieckow.py  # 10-guild taxonomy + gLV ODE
+├── scripts/
+│   ├── fitting/               # gLV / Hamilton fits
+│   ├── loo_cv/                # Leave-one-patient-out validation
+│   ├── figures/               # Thesis + paper figure generators
+│   ├── pde/                   # Spatial diffusion / PINN
+│   └── analysis/              # ML extensions (symbolic regression, attractor predictor)
+├── dieckow_paper/             # Manuscript figures (make_figures.py)
+├── comets/                    # COMETS / dFBA simulation (5-species mechanistic)
+├── jobs/                      # PBS / GPU job scripts (cluster only)
+├── tests/                     # ETL unit tests (pytest)
+├── docs/ARCHITECTURE.md       # Data-flow diagram
+├── docs/PROVENANCE.md         # Per-figure regeneration commands
+├── Makefile                   # `make figures` (LIGHT only)
+└── data/                      # NGS preprocessing scripts
 ```
 
 ## Species
@@ -114,6 +127,16 @@ Key result: `Fn_mu_max` (ST=0.49) and `Vp_Km_lac` dominate dysbiosis — driven 
 - Dukovski et al. 2021, *Nat. Protocols* — COMETS framework
 - Frings, Mukherjee et al. 2025, *Analyst* — ATR-FTIR strain-level identification of oral bacteria
 - Joshi et al. 2025, *npj Biofilms Microbiomes* — peri-implantitis submucosal microbiome
+
+## Documentation
+
+| Doc | Purpose |
+|-----|---------|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Core data flow + three pillars |
+| [docs/PROVENANCE.md](docs/PROVENANCE.md) | Figure regeneration (LIGHT vs HEAVY) |
+| [AGENTS.md](AGENTS.md) | AI agent / slash-command entry points |
+| [CLAUDE.md](CLAUDE.md) | Full developer guide |
+| [PAPER_OUTLINE.md](PAPER_OUTLINE.md) | Manuscript structure |
 
 ## Context
 

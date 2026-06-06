@@ -54,7 +54,7 @@ def test_run_qiime2_dry_run_validates_and_writes_report(tmp_path, monkeypatch):
 
 
 def test_run_qiime2_rejects_mismatched_sample_ids(tmp_path, monkeypatch):
-    from nife.run_qiime2_dada2 import main
+    from nife.run_qiime2_dada2 import Qiime2RunError, main
 
     fq1 = tmp_path / "SRR1_NU_01_1.fastq.gz"
     fq2 = tmp_path / "SRR1_NU_01_2.fastq.gz"
@@ -87,5 +87,5 @@ def test_run_qiime2_rejects_mismatched_sample_ids(tmp_path, monkeypatch):
         "--dry-run",
     ]
     monkeypatch.setattr("sys.argv", argv)
-    with pytest.raises(Exception):
+    with pytest.raises(Qiime2RunError):
         main()

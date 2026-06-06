@@ -9,6 +9,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 
 class Qiime2RunError(RuntimeError):
     pass
@@ -98,6 +100,19 @@ def main() -> int:
             raise Qiime2RunError(f"metadata must be under workdir={workdir}: {metadata}")
     except Exception as e:
         raise Qiime2RunError(f"metadata must be under workdir={workdir}: {metadata}") from e
+
+    man_df = pd.read_csv(manifest, sep="\t", dtype=str)
+    meta_df = pd.read_csv(metadata, sep="\t", dtype=str)
+    if "sample-id" not in man_df.columns or "sample-id" not in meta_df.columns:
+        raise Qiime2RunError("manifest and metadata must contain a sample-id column")
+    man_ids = set(man_df["sample-id"].astype(str))
+    meta_ids = set(meta_df["sample-id"].astype(str))
+    if man_ids != meta_ids:
+        only_manifest = sorted(man_ids - meta_ids)
+        only_meta = sorted(meta_ids - man_ids)
+        raise Qiime2RunError(
+            f"sample-id mismatch: only_in_manifest={only_manifest[:5]} only_in_metadata={only_meta[:5]}"
+        )
 
     container_manifest = outdir / "qiime2_manifest.container.tsv"
     _write_container_manifest(manifest, workdir=workdir, out_path=container_manifest)
