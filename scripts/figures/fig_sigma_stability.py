@@ -108,18 +108,32 @@ for metric in ("sigma", "mu", "lambda_max"):
         tests[metric][(c1, c2)] = p
         print(f"  {metric:12s}  {c1} vs {c2}:  p={p:.2e}")
 
-# ── Figure ─────────────────────────────────────────────────────────────────────
+# MINE R² per condition (from fig_mine_emulator run)
+MINE_R2 = {"CS": 0.916, "CH": 0.957, "DS": 0.958, "DH": 0.787}
+
+
+def _add_significance(ax, x1, x2, y_bracket, h_frac, stars, color="k"):
+    """Draw a bracket + stars above a violin plot without escaping the axes."""
+    y2 = y_bracket + h_frac
+    ax.plot([x1, x1, x2, x2], [y_bracket, y2, y2, y_bracket],
+            color=color, lw=0.8, clip_on=False)
+    ax.text((x1 + x2) / 2, y2, stars,
+            ha="center", va="bottom", fontsize=7, color=color)
+
+
+# ── Figure (1×4) ───────────────────────────────────────────────────────────────
 thesis_style()
-fig, axes = plt.subplots(1, 3, figsize=thesis_style(1.0, aspect=0.30))
+fig, axes = plt.subplots(1, 4, figsize=(10, 3.2))
 
 metrics = [
-    ("sigma",      r"$\sigma_A$ (off-diag std)",    False),
-    ("mu",         r"$\mu_A$ (mean $|A_{ij}|$)",     False),
-    ("lambda_max", r"$\lambda_{\max}$ (spectral)",    True),
+    ("sigma",      r"$\sigma_A$", False),
+    ("mu",         r"$\mu_A$",    False),
+    ("lambda_max", r"$\lambda_{\max}$", True),
 ]
 
-for ax, (key, ylabel, add_zero) in zip(axes, metrics):
+for ax, (key, ylabel, add_zero) in zip(axes[:3], metrics):
     vals = [data[c][key] for c in CONDS]
+
     parts = ax.violinplot(vals, positions=range(4), showmedians=True,
                           showextrema=False)
     for body, cond in zip(parts["bodies"], CONDS):
@@ -129,34 +143,57 @@ for ax, (key, ylabel, add_zero) in zip(axes, metrics):
     parts["cmedians"].set_linewidth(1.5)
 
     if add_zero:
-        ax.axhline(0, color="k", lw=0.8, ls="--", alpha=0.5)
+        ax.axhline(0, color="k", lw=0.8, ls="--", alpha=0.4)
 
     ax.set_xticks(range(4))
     ax.set_xticklabels([COND_LABEL[c] for c in CONDS])
     ax.set_ylabel(ylabel)
 
-    # Annotate p-values
-    for (c1, c2) in pairs:
-        p = tests[key].get((c1, c2), None)
+    # significance in axes fraction space — immune to ylim/KDE issues
+    for (c1, c2), yline, ytxt in [(("CH", "DS"), 0.91, 0.93),
+                                   (("CS", "DH"), 0.97, 0.99)]:
+        p = tests[key].get((c1, c2))
+        if p is None:
+            p = tests[key].get((c2, c1))
         if p is None:
             continue
-        x1, x2 = CONDS.index(c1), CONDS.index(c2)
-        ymax = max(np.percentile(data[c1][key], 97.5),
-                   np.percentile(data[c2][key], 97.5))
-        h = (ax.get_ylim()[1] - ax.get_ylim()[0]) * 0.05 if ax.get_ylim()[1] != 0 else 0.1
         stars = "***" if p < 0.001 else ("**" if p < 0.01 else ("*" if p < 0.05 else "ns"))
-        ax.annotate("", xy=(x2, ymax + h), xytext=(x1, ymax + h),
-                    arrowprops=dict(arrowstyle="-", color="k", lw=0.8))
-        ax.text((x1 + x2) / 2, ymax + h * 1.1, stars,
-                ha="center", va="bottom", fontsize=7)
+        x1f = (CONDS.index(c1) + 0.5) / 4.0
+        x2f = (CONDS.index(c2) + 0.5) / 4.0
+        xmid = (x1f + x2f) / 2.0
+        # horizontal line at yline in axes fraction
+        ax.plot([x1f, x2f], [yline, yline], transform=ax.transAxes,
+                color="k", lw=0.8, clip_on=False)
+        ax.text(xmid, ytxt, stars, transform=ax.transAxes,
+                ha="center", va="bottom", fontsize=7, color="k", clip_on=False)
 
-axes[0].set_title("Interaction heterogeneity")
-axes[1].set_title("Interaction strength scale")
-axes[2].set_title("Marginal stability")
+# Panel 4: σ_A vs MINE R² scatter — ties both analyses together
+ax4 = axes[3]
+sigma_med = {c: np.median(data[c]["sigma"]) for c in CONDS}
+sigma_iqr = {c: (np.percentile(data[c]["sigma"], 75) -
+                 np.percentile(data[c]["sigma"], 25)) for c in CONDS}
+for c in CONDS:
+    ax4.errorbar(sigma_med[c], MINE_R2[c],
+                 xerr=sigma_iqr[c] / 2,
+                 fmt="o", color=COND_COLOR[c], ms=8, capsize=3, label=c)
+    ax4.annotate(c, (sigma_med[c], MINE_R2[c]),
+                 xytext=(4, 4), textcoords="offset points", fontsize=8)
+# Pearson r
+xs = [sigma_med[c] for c in CONDS]
+ys = [MINE_R2[c] for c in CONDS]
+r_val = np.corrcoef(xs, ys)[0, 1]
+ax4.set_xlabel(r"$\sigma_A$ (posterior heterogeneity)")
+ax4.set_ylabel(r"MINE $R^2$ (emulator accuracy)")
+ax4.set_title(f"Posterior width vs emulability\n$r={r_val:.2f}$")
+ax4.set_ylim(0.7, 1.0)
 
-fig.suptitle(r"Heine 2025 attractor states — TMCMC posterior ($N_p=10{,}000$)"
-             "\n(cf. Pasqualini et al. 2024)", fontsize=8)
-fig.tight_layout()
+axes[0].set_title(r"Interaction heterogeneity ($\sigma_A$)")
+axes[1].set_title(r"Interaction strength ($\mu_A$)")
+axes[2].set_title(r"Marginal stability ($\lambda_{\max}$)")
+
+fig.suptitle(r"Heine 2025 — TMCMC posterior ($N_p=10{,}000$) $\times$ MINE emulator",
+             fontsize=9)
+fig.tight_layout(rect=[0, 0, 1, 0.93])
 
 for ext in ("pdf", "png"):
     fig.savefig(OUT / f"fig_sigma_stability.{ext}", dpi=300, bbox_inches="tight")

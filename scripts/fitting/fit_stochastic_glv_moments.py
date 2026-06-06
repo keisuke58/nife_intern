@@ -57,7 +57,7 @@ SPECIES = {
     "Dysbiotic": ["S. oralis", "A. naeslundii", "V. parvula", "F. nucleatum", "P. gingivalis_W83"],
 }
 SHORT = ["So", "An", "Vd/Vp", "Fn", "Pg"]
-N_RESTARTS = 5
+N_RESTARTS = 2
 ALPHA_COV = 0.1   # covariance loss weight
 
 
@@ -182,7 +182,7 @@ def fit_deterministic(mu_obs, rng):
         x0 = rng.normal(0, 0.5, N_PARAMS_DET)
         res = minimize(rmse_det, x0, args=(mu_obs,),
                        method="L-BFGS-B",
-                       options={"maxiter": 2000, "ftol": 1e-12})
+                       options={"maxiter": 500, "ftol": 1e-12})
         if best_res is None or res.fun < best_res.fun:
             best_res = res
     A = best_res.x[:N_SP * N_SP].reshape(N_SP, N_SP)
@@ -237,7 +237,7 @@ def fit_moments(mu_obs, C_obs, A_det, b_det, rng):
                            method="L-BFGS-B",
                            bounds=([(None, None)] * N_PARAMS_DET +
                                    [(0.0, None)] * N_SP),
-                           options={"maxiter": 3000, "ftol": 1e-12})
+                           options={"maxiter": 800, "ftol": 1e-12})
         if best_res is None or res.fun < best_res.fun:
             best_res = res
 
