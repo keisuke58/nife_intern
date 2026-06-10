@@ -93,11 +93,12 @@ def main():
     clean_ax(axa)
     axa.tick_params(labelsize=7)
 
-    # legend in the empty upper-right region (short gLV bars sit at the top)
+    # legend pinned to the top-right corner — the three short gLV bars sit at
+    # the top, so the right half of those rows is guaranteed empty.
     legend_handles = [Patch(facecolor=c, label=lab) for lab, c in FAMILY.values()]
-    axa.legend(handles=legend_handles, fontsize=6.5, loc='upper right',
-               bbox_to_anchor=(1.0, 0.62), frameon=False,
-               handlelength=1.1, handleheight=1.1, borderpad=0.3, labelspacing=0.35)
+    axa.legend(handles=legend_handles, fontsize=6.3, loc='upper right',
+               bbox_to_anchor=(1.0, 1.0), frameon=False,
+               handlelength=1.0, handleheight=1.0, borderpad=0.2, labelspacing=0.3)
     axa.set_title('(a) Predictive accuracy ranking', fontsize=8, loc='left')
 
     # ── Panel (b): paired per-fold vs best gLV ───────────────────────────────
