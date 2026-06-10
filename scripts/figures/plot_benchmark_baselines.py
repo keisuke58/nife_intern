@@ -23,16 +23,20 @@ _here = _pathlib.Path(__file__).resolve().parents[2]
 IN_JSON = _here / 'results' / 'benchmark_baselines' / 'rmse_table.json'
 OUT_DIR = _here / 'results' / 'benchmark_baselines'
 
-# Display order and labels
+# Display order and labels.
+# Three families: mechanistic ODE (blue) | ML regression (orange/grey) |
+# generative (green = ODE Flow Matching, purple = SDE diffusion).
 METHODS = [
-    ('gLV + AGORA',       r'gLV+AGORA',       '#1a6faf'),
-    ('gLV (no prior)',    r'gLV (no prior)',   '#4c9ed9'),
-    ('gLV + L1/L2 prior', r'gLV+L1/L2',       '#7fbfe8'),
-    ('random_forest',     r'Random Forest',    '#e07b39'),
-    ('mean_train',        r'Train mean',       '#b0b0b0'),
-    ('persistence',       r'Persistence',      '#909090'),
-    ('lasso',             r'LASSO',            '#d4b483'),
-    ('ridge',             r'Ridge',            '#c4956a'),
+    ('gLV + AGORA',                 r'gLV+AGORA',       '#1a6faf'),
+    ('gLV (no prior)',              r'gLV (no prior)',   '#4c9ed9'),
+    ('gLV + L1/L2 prior',           r'gLV+L1/L2',       '#7fbfe8'),
+    ('random_forest',               r'Random Forest',    '#e07b39'),
+    ('mean_train',                  r'Train mean',       '#b0b0b0'),
+    ('persistence',                 r'Persistence',      '#909090'),
+    ('lasso',                       r'LASSO',            '#d4b483'),
+    ('ridge',                       r'Ridge',            '#c4956a'),
+    ('Flow Matching (conditional)', r'Flow Matching',    '#2e8b57'),
+    ('DDPM (conditional)',          r'DDPM',             '#7b4ba3'),
 ]
 
 DIVIDER_AFTER = 2   # draw vertical divider after gLV methods
@@ -60,13 +64,18 @@ def main():
     div_x = DIVIDER_AFTER + 0.5
     ax.axvline(div_x, color='#444444', linewidth=0.8, linestyle='--', zorder=2)
 
-    # bracket labels
-    ax.text(1.0, max(means) * 0.97, 'mechanistic ODE',
-            ha='center', va='top', fontsize=7, color='#1a6faf',
+    # group labels (3 families)
+    ax.text(1.0, 0.97, 'mechanistic ODE',
+            ha='center', va='top', fontsize=6.5, color='#1a6faf',
             transform=ax.get_xaxis_transform())
-    ax.text(5.5, max(means) * 0.97, 'ML baselines',
-            ha='center', va='top', fontsize=7, color='#777777',
+    ax.text(5.0, 0.97, 'ML regression',
+            ha='center', va='top', fontsize=6.5, color='#999999',
             transform=ax.get_xaxis_transform())
+    ax.text(8.5, 0.97, 'generative',
+            ha='center', va='top', fontsize=6.5, color='#5a5a8a',
+            transform=ax.get_xaxis_transform())
+    # second divider between ML and generative
+    ax.axvline(7.5, color='#888888', linewidth=0.6, linestyle=':', zorder=2)
 
     # value labels on top of each bar
     for xi, (mean, std) in enumerate(zip(means, stds)):
