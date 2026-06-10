@@ -135,47 +135,71 @@ def fit_b_given_A(A_flat, phi_obs, n_init=3):
 
 # ── Unadjusted Langevin Algorithm (ULA) ──────────────────────────────────────
 
+def _enforce_neg_diag(A_flat):
+    A_mat = A_flat.reshape(N_G, N_G)
+    np.fill_diagonal(A_mat, np.minimum(np.diag(A_mat), -1e-6))
+    return A_mat.ravel()
+
+
 def ula_sample(phi_obs, n_steps=2000, step_size=1e-4, thin=10,
-               sigma=0.10, sigma_prior=0.5, seed=0, verbose=True):
+               sigma=0.10, sigma_prior=0.5, seed=0, verbose=True, mala=False):
+    """Langevin sampler over A. mala=True adds a Metropolis accept/reject step
+    (MALA), which keeps the chain off the stiff-ODE regions a plain ULA can drift
+    into and yields an unbiased posterior. MALA costs ~2x score evals per step."""
     rng = np.random.RandomState(seed)
 
     # Initialise A near zero (wide prior sample)
     A_flat = rng.randn(N_G * N_G) * 0.05
     np.fill_diagonal(A_flat.reshape(N_G, N_G), -0.1)
 
-    # Fit b for initial A
+    # Fit b for initial A; cache score/logp at the current state
     b_all = fit_b_given_A(A_flat, phi_obs)
+    grad, lp = score_A(A_flat, phi_obs, b_all, sigma, sigma_prior)
 
-    samples = []
-    log_probs = []
+    samples, log_probs = [], []
+    n_acc, n_prop = 0, 0
     t0 = time.time()
 
     for step in range(n_steps):
-        # Refit b every 200 steps to track A
-        if step % 200 == 0:
+        # Refit b every 200 steps to track A, then refresh the cached score
+        if step % 200 == 0 and step > 0:
             b_all = fit_b_given_A(A_flat, phi_obs)
-
-        grad, lp = score_A(A_flat, phi_obs, b_all, sigma, sigma_prior)
+            grad, lp = score_A(A_flat, phi_obs, b_all, sigma, sigma_prior)
 
         # Annealed step size: large initially, shrinks toward end
         eta = step_size * (1 + 0.5 * np.cos(np.pi * step / n_steps))
 
-        noise  = rng.randn(N_G * N_G) * np.sqrt(2 * eta)
-        A_flat = A_flat + eta * grad + noise
+        # Langevin proposal
+        z   = rng.randn(N_G * N_G)
+        A_p = _enforce_neg_diag(A_flat + eta * grad + np.sqrt(2 * eta) * z)
 
-        # Enforce negative diagonal (self-competition)
-        A_mat = A_flat.reshape(N_G, N_G)
-        np.fill_diagonal(A_mat, np.minimum(np.diag(A_mat), -1e-6))
-        A_flat = A_mat.ravel()
+        if mala:
+            # Metropolis-adjusted: accept with prob min(1, posterior x proposal ratio)
+            grad_p, lp_p = score_A(A_p, phi_obs, b_all, sigma, sigma_prior)
+            # log q(x|x') - log q(x'|x) for Gaussian Langevin proposal
+            fwd = -np.sum((A_p   - A_flat - eta * grad  )**2) / (4 * eta)
+            bwd = -np.sum((A_flat - A_p   - eta * grad_p)**2) / (4 * eta)
+            log_alpha = (lp_p - lp) + (bwd - fwd)
+            n_prop += 1
+            if np.log(rng.rand() + 1e-300) < log_alpha:
+                A_flat, grad, lp = A_p, grad_p, lp_p
+                n_acc += 1
+            # else: reject — keep current A_flat, grad, lp
+        else:
+            A_flat = A_p
+            grad, lp = score_A(A_flat, phi_obs, b_all, sigma, sigma_prior)
 
         if step % thin == 0:
             samples.append(A_flat.copy())
             log_probs.append(lp)
             if verbose and step % 400 == 0:
                 rmse = np.sqrt(-lp / (phi_obs.shape[0] * 2 * N_G) * 2 * sigma**2)
-                print(f'  step {step:4d}  log_p={lp:.2f}  RMSE≈{rmse:.4f}  '
+                acc  = f'  acc={n_acc/max(1,n_prop):.2f}' if mala else ''
+                print(f'  step {step:4d}  log_p={lp:.2f}  RMSE≈{rmse:.4f}{acc}  '
                       f'({time.time()-t0:.1f}s)', flush=True)
 
+    if mala and verbose:
+        print(f'  MALA acceptance rate: {n_acc/max(1,n_prop):.3f}', flush=True)
     return np.array(samples), np.array(log_probs)
 
 
@@ -207,6 +231,9 @@ def main():
                         help='likelihood noise scale (guild RMSE units)')
     parser.add_argument('--sigma-prior', type=float, default=0.5,
                         help='Gaussian prior std on A entries')
+    parser.add_argument('--mala', action='store_true',
+                        help='Metropolis-adjusted Langevin (MH accept/reject; '
+                             'unbiased, avoids stiff-ODE drift, ~2x cost/step)')
     args = parser.parse_args()
 
     phi_all = np.load(PHI_NPY)   # (10,3,10)
@@ -227,6 +254,7 @@ def main():
             sigma_prior=args.sigma_prior,
             seed=c,
             verbose=True,
+            mala=args.mala,
         )
         all_samples.append(samples)
         all_lps.append(lps)
