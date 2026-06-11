@@ -1,0 +1,378 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{GPU-Accelerated Bayesian Inference of Multi-Species Biofilm
+Interaction Parameters via TMCMC}
+\subtitle{Full discovery of the 15-dimensional interaction matrix \(A\)
+with two-phase GPU-TMCMC}
+\author{Keisuke Nishioka --- IKM, Leibniz University Hannover}
+\date{2026-06-11}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[Path=/home/nishioka/texlive/2025/texmf-dist/fonts/opentype/public/stix2-otf/, BoldFont=STIXTwoText-Bold.otf, ItalicFont=STIXTwoText-Italic.otf, BoldItalicFont=STIXTwoText-BoldItalic.otf]{STIXTwoText-Regular.otf}
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={GPU-Accelerated Bayesian Inference of Multi-Species Biofilm Interaction Parameters via TMCMC},
+  pdfauthor={Keisuke Nishioka --- IKM, Leibniz University Hannover},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{caption}
+% Make caption package work with longtable
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% EN builds use a Times-family text font (STIX Two Text) that lacks a few set /
+% relation glyphs. Route those Unicode symbols through math mode so they always
+% render (regardless of the text/mono font), keeping clean Times for the prose.
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{↑}{\ensuremath{\uparrow}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{Motivation --- peri-implantitis and biofilm dysbiosis}
+\protect\hypertarget{motivation-peri-implantitis-and-biofilm-dysbiosis}{}
+Peri-implantitis is driven by a shift of the peri-implant oral biofilm
+from a \textbf{commensal} to a \textbf{dysbiotic} multi-species
+community.
+
+\begin{itemize}
+\tightlist
+\item
+  The ecological driver is the \textbf{species--species interaction
+  matrix} \(A\).
+\item
+  \textbf{Goal:} infer \(A\) from compositional time-series, and
+  quantify how the health \(\to\) disease transition reshapes it.
+\item
+  \textbf{Thesis.} All 15 interaction parameters are recovered from data
+  alone (no a-priori sign locking); the health/disease difference is a
+  \textbf{topological reorganisation}, not a simple rescaling.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Data --- Heine et al.~(2025), four conditions}
+\protect\hypertarget{data-heine-et-al.-2025-four-conditions}{}
+Longitudinal relative-abundance time-series of a \textbf{five-species}
+oral biofilm, under \textbf{four conditions}:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Commensal} vs \textbf{dysbiotic} community \(\times\)
+  \textbf{static} vs \textbf{HOBIC} reactor flow \(\Rightarrow\) CS, CH,
+  DS, DH.
+\item
+  Five species: \emph{S. oralis} (So), \emph{A. naeslundii} (An),
+  \emph{Veillonella} (Vei), \emph{F. nucleatum} (Fn), \emph{P.
+  gingivalis} (Pg).
+\item
+  Each sample is a composition \(\varphi\in\Delta^{4}\) with
+  \(\sum_i\varphi_i=1\).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Model --- continuum biofilm / replicator dynamics}
+\protect\hypertarget{model-continuum-biofilm-replicator-dynamics}{}
+State: relative abundances \(\varphi_i\) on the simplex. The Extended
+Hamilton Principle yields replicator dynamics with a \textbf{symmetric}
+interaction matrix \(A\):
+\[\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big],
+\qquad \sum_i\varphi_i = 1 .\]
+
+\begin{itemize}
+\tightlist
+\item
+  Symmetric \(A\) (5\$\times\$5) \(\Rightarrow\) \textbf{15 free
+  parameters}.
+\item
+  \(A_{ij}>0\): facilitation; \(A_{ij}<0\): suppression / competition.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Inference --- Bayesian framework}
+\protect\hypertarget{inference-bayesian-framework}{}
+\[\mathcal{L}(A,b)=\frac{1}{2\sigma^{2}}\sum_{t}\big\lVert\varphi^{\text{obs}}_{t}-\varphi^{\text{pred}}_{t}\big\rVert^{2}
+\;+\; \text{(weakly-informative prior)} .\]
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{All 15 entries free} --- no a-priori sign constraint, so any
+  sparsity is data-driven.
+\item
+  Posterior sampled by \textbf{Transitional MCMC (TMCMC)} with tempered
+  likelihood and \(N_p\) particles.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Two-phase estimation strategy}
+\protect\hypertarget{two-phase-estimation-strategy}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Phase 1} (fix \(\psi\), \(N_p=1{,}000\)): rapid, robust
+  identification of \(A\).
+\item
+  \textbf{Phase 2} (free \(\psi\), \(N_p=10{,}000\)): full joint
+  posterior, physically consistent.
+\end{itemize}
+
+Phase-1 MAP is already close to Phase-2
+(\(\Delta\mathrm{RMSE}\le 0.03\)), confirming the fix-\(\psi\) stage is
+a robust warm start.
+\end{frame}
+
+\begin{frame}[fragile]{GPU acceleration}
+\protect\hypertarget{gpu-acceleration}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{JAX + \texttt{vmap}} on a single RTX 4090.
+\item
+  \(\sim\)\textbf{200\(\times\) speedup} vs CPU; \(N_p=10{,}000\) in
+  \$\sim\$2 h per condition.
+\item
+  Makes production runs of the full \textbf{15-D posterior} feasible.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Posterior predictive fits --- all four conditions}
+\protect\hypertarget{posterior-predictive-fits-all-four-conditions}{}
+\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{results/heine2025/hamilton_tmcmc_fit_paper.pdf}\end{center}
+
+Observations (points) and posterior-predictive trajectories (lines) for
+CS, CH, DS, DH. DS shows the best identifiability (RMSE \(=0.033\)).
+\end{frame}
+
+\begin{frame}{Inferred interaction matrices --- commensal vs dysbiotic}
+\protect\hypertarget{inferred-interaction-matrices-commensal-vs-dysbiotic}{}
+\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{results/heine_repro/heatmap_A_4cond.pdf}\end{center}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Commensal (CS, CH):} So--An and So--Vei blocks dominant; Fn,
+  Pg entries \(\approx 0\) --- \textbf{emergent sparsity} without
+  locking.
+\item
+  \textbf{Dysbiotic (DS, DH):} strong \textbf{Vei\(\to\)Pg} (pH) and
+  \textbf{Fn\(\to\)Pg} (peptides); \(\hat a^{\,DH}_{45}=5.63\).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Posterior parameter distributions (Phase 2,
+\(N_p=10{,}000\))}
+\protect\hypertarget{posterior-parameter-distributions-phase-2-n_p10000}{}
+\begin{center}\includegraphics[height=0.66\textheight,keepaspectratio]{results/heine_repro/posterior_violin.pdf}\end{center}
+
+Pg-related parameters (\(a_{15},a_{25},a_{35},a_{45},a_{55}\))
+concentrate near zero in CS/CH \textbf{without a-priori locking}, and
+activate in DS/DH.
+\end{frame}
+
+\begin{frame}{Quantitative fit metrics and phase consistency}
+\protect\hypertarget{quantitative-fit-metrics-and-phase-consistency}{}
+\begin{longtable}[]{@{}lllll@{}}
+\toprule
+Cond. & Phase 1 RMSE & Phase 2 RMSE & Phase 2 MAE & Phase MAP \(r\) \\
+\midrule
+\endhead
+CS & \(0.119\) & \(0.119\) & \(0.075\) & \(0.87\) \\
+CH & \(0.071\) & \(0.104\) & \(0.088\) & \(0.68\) \\
+DS & \(0.020\) & \(0.033\) & \(0.024\) & \(0.42\) \\
+DH & \(0.067\) & \(0.087\) & \(0.060\) & \(0.62\) \\
+\bottomrule
+\end{longtable}
+
+\begin{itemize}
+\tightlist
+\item
+  DS: lowest RMSE \(=0.033\) (best identifiability).
+\item
+  Phase-2 \(\Delta\mathrm{RMSE}\le 0.03\): Phase 1 is robust.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Independent validation --- pH prediction}
+\protect\hypertarget{independent-validation-ph-prediction}{}
+\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{results/figures/fig_ph_validation.png}\end{center}
+
+pH predicted from the posterior \(A\) via the Hamilton ODE ---
+\textbf{not used in calibration}. Independent \(R^2=0.78\) (RMSE
+\(0.13\), \(N=12\) held-out; LOO \(R^2=0.92\)); lactate-driven
+acidification. Gingipain--Pg: \(r=0.90\).
+\end{frame}
+
+\begin{frame}{Discussion --- biological interpretation}
+\protect\hypertarget{discussion-biological-interpretation}{}
+\textbf{Commensal state (CS, CH)}
+
+\begin{itemize}
+\tightlist
+\item
+  So--An co-aggregation + So--Vei lactate exchange: a stable
+  \textbf{mutualistic core}.
+\item
+  Fn, Pg entries emerge near zero --- data-driven sparsity.
+\end{itemize}
+
+\textbf{Dysbiotic transition (DS, DH)}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Vei\(\to\)Pg} (pH) and \textbf{Fn\(\to\)Pg} (peptides)
+  strongly activated by W83.
+\item
+  \(\rho(\mathrm{DH}-\mathrm{CS})=-0.49\): \textbf{topological
+  reorganisation}, not recoverable by parameter rescaling.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusions}
+\protect\hypertarget{conclusions}{}
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{Two-phase full-discovery TMCMC:} Phase 1 (fix-\(\psi\)) gives
+  rapid robust \(A\); Phase 2 (free \(\psi\)) gives a consistent joint
+  posterior. All 15 parameters free --- \textbf{emergent sparsity} from
+  data.
+\item
+  \textbf{GPU-accelerated TMCMC:} \$\sim\(200\)\times\$ speedup;
+  \(N_p=10{,}000\) in \$\sim\$2 h per condition.
+\item
+  \textbf{Validated interpretation:} pH \(r=0.84\), gingipain
+  \(r=0.90\); dysbiosis is a \textbf{topological reorganisation}
+  (\(\rho=-0.49\)).
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Future work}
+\protect\hypertarget{future-work}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{6-species model} (Siddiqui et al.~2021, cpTi, 21 days).
+\item
+  \textbf{Mechanistic pH} (Henderson--Hasselbalch + lactate from
+  So/Vei).
+\item
+  Extension to additional longitudinal cohorts for cross-study
+  validation.
+\end{itemize}
+
+\vspace{0.4em}
+
+Code and data available upon request.
+\end{frame}
+
+\begin{frame}{Appendix --- spatially-resolved FISH (.lif) data}
+\protect\hypertarget{appendix-spatially-resolved-fish-.lif-data}{}
+\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{results/fig_fish_zprofile_temporal.pdf}\end{center}
+
+Depth-resolved relative abundance of the five species (CH top, DH
+bottom) over 21 days, from confocal FISH (.lif) z-stacks. In the
+dysbiotic condition Pg accumulates with depth and time --- the spatial
+dimension that motivates future Hamilton + reaction--diffusion
+modelling.
+\end{frame}
+
+\end{document}
