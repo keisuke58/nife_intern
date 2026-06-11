@@ -204,33 +204,33 @@ Code and data available upon request.
 
 ---
 
-## Appendix A — FISH (.lif): depth-resolved composition
+## Appendix A — raw .lif data (5-species FISH montage)
 
-\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{results/fig_fish_zprofile_temporal.pdf}\end{center}
+\begin{center}\includegraphics[height=0.72\textheight,keepaspectratio]{figures/lif_quicklook/220518_HOBIC22_5Spezies_FISH_Tag1__species.png}\end{center}
 
-Depth-resolved relative abundance of the five species (CH top, DH bottom) over
-21 days, from confocal FISH (.lif) z-stacks. In the dysbiotic condition Pg
-accumulates with depth and time — the spatial dimension that motivates future
-Hamilton + reaction–diffusion modelling.
-
----
-
-## Appendix B — raw .lif 3-D structure (5 channels)
-
-\begin{center}\includegraphics[width=0.95\textwidth,keepaspectratio]{results/fish_3d/fish3d_proj_DH_d6_s0.png}\end{center}
-
-Confocal FISH (.lif) of the dysbiotic biofilm, day 6: per-species fluorescence,
-lateral $xy$ projection (top) and depth $xz$ section (bottom). Pg occupies the
-deeper layers, consistent with the depth profiles.
+Raw confocal FISH (.lif) quicklook: rows = depth ($z$) slices, columns = the five
+species channels and the merged composite — the **unprocessed acquisition** that
+underlies every downstream composition profile.
 
 ---
 
-## Appendix C — raw .lif: Pg orthogonal views
+## Appendix B — raw .lif: Pg orthogonal views
 
 \begin{center}\includegraphics[width=0.95\textwidth,keepaspectratio]{results/fish_3d/fish3d_ortho_P.g_DH_d6_s0.png}\end{center}
 
 Orthogonal ($xy$/$xz$/$yz$) sections of *P. gingivalis* in the dysbiotic biofilm
 — a spatially structured, depth-biased distribution rather than a uniform layer.
+
+---
+
+## Appendix C — FISH (.lif): depth-resolved composition
+
+\begin{center}\includegraphics[width=0.90\textwidth,keepaspectratio]{results/fig_fish_zprofile_temporal.pdf}\end{center}
+
+Depth-resolved relative abundance of the five species (CH top, DH bottom) over
+21 days, derived from the FISH (.lif) z-stacks. In the dysbiotic condition Pg
+accumulates with depth and time — motivating future Hamilton + reaction–diffusion
+modelling.
 
 ---
 
@@ -246,7 +246,7 @@ Manders $M_1$ (Pg with Fn) over time, lateral patch ($xy$) and 3-D voxels
 
 ## Appendix E — FISH lateral heterogeneity
 
-\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{results/fish_3d/fish_3d_lateral_heterogeneity.png}\end{center}
+\begin{center}\includegraphics[width=0.64\textwidth,keepaspectratio]{results/fish_3d/fish_3d_lateral_heterogeneity.png}\end{center}
 
 Lateral (field-of-view to field-of-view) variability of the depth-resolved
 composition — quantifying the spatial heterogeneity not captured by the
