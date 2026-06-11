@@ -8,9 +8,9 @@
 ]{beamer}
 \title{Inferring Oral-Microbiome Interactions In Vivo (Dieckow 16S)}
 \subtitle{From compositional time-series to a signed interaction matrix
-\(A\) --- fit, LOO-CV, honest validation}
+\(A\) --- fit, LOO-CV, critical validation}
 \author{Keisuke Nishioka --- NIFE}
-\date{2026-06-03}
+\date{2026-06-11}
 
 \usepackage{pgfpages}
 \setbeamertemplate{caption}[numbered]
@@ -100,19 +100,6 @@
 \makeatletter
 \def\fnum@table{\tablename~\thetable}
 \makeatother
-\usepackage{graphicx}
-\makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-% Set default figure placement to htbp
-\makeatletter
-\def\fps@figure{htbp}
-\makeatother
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
@@ -138,30 +125,32 @@
 \begin{document}
 \frame{\titlepage}
 
-\begin{frame}{Where this deck sits}
-\protect\hypertarget{where-this-deck-sits}{}
-The project = three pillars + a spatial extension. Data flow:
+\begin{frame}{Position within the project}
+\protect\hypertarget{position-within-the-project}{}
+The project comprises three pillars and a spatial extension. Data flow:
 
 raw 16S → guild \(\varphi\) → gLV/Hamilton (+ sign prior) → LOO
 validation → spatial PDE
 
-The decks (you-are-here in \textbf{bold marker}):
+Decks in the series (the present deck in \textbf{bold}):
 
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Overview} (umbrella) --- the whole picture, three pillars
+  \textbf{Overview} (umbrella) --- the complete picture across the three
+  pillars
 \item
   \textbf{AGORA} --- metabolism → sign prior (input to the ecological
   model)
 \item
-  \textbf{Dieckow} --- in-vivo interaction inference \& validation (the
-  model) --- \textbf{(you are here)}
+  \textbf{Dieckow} --- in vivo interaction inference and validation (the
+  present deck)
 \item
   \textbf{Network} --- structural analysis of the interaction matrix
   \(A\)
 \item
-  \textbf{Spatial-PDE} --- reaction-diffusion of the FISH depth profiles
+  \textbf{Spatial-PDE} --- reaction--diffusion of the FISH depth
+  profiles
 \item
   \textbf{FISH pipeline} --- .lif → 5-species depth composition
 \end{itemize}
@@ -183,14 +172,14 @@ inference can be trusted.
   AGORA deck; cited here only briefly)
 \item
   focus: the \textbf{fit}, \textbf{LOO-CV}, model comparison, and
-  \textbf{honest validation}
+  \textbf{critical validation}
 \end{itemize}
 
 \vspace{0.4em}
 
-\textbf{Thesis.} The prior buys sign-consistency and interpretability,
-not predictive accuracy. What is validated independently of the data is
-the \textbf{cross-feeding direction only} (below).
+\textbf{Claim.} The prior provides sign-consistency and interpretability
+rather than predictive accuracy. What is validated independently of the
+data is the \textbf{cross-feeding direction only} (below).
 \end{frame}
 
 \begin{frame}[fragile]{Data and design}
@@ -199,7 +188,7 @@ Dieckow et al.~2024 (ENA \textbf{PRJEB71108}): a longitudinal 16S series
 of \textbf{10 patients \(\times\) 3 weeks}, aggregated to \textbf{10
 class-level guilds} (\texttt{GUILD\_ORDER} is canonical).
 
-\includegraphics[width=\textwidth,height=0.58\textheight]{dieckow_paper/figures/fig0_study_design.png}
+\begin{center}\includegraphics[width=0.86\textwidth,keepaspectratio]{dieckow_paper/figures/fig0_study_design.png}\end{center}
 
 Early peri-implant colonization. Each sample is treated as a composition
 \(\varphi\in\Delta^{9}\) with \(\sum_i\varphi_i=1\).
@@ -249,7 +238,7 @@ one-sided hinge penalises \textbf{sign violations only}:
 
 \begin{frame}{Fitted interaction matrix \(A\)}
 \protect\hypertarget{fitted-interaction-matrix-a}{}
-\includegraphics[width=\textwidth,height=0.6\textheight]{dieckow_paper/figures/fig1_A_matrix.png}
+\begin{center}\includegraphics[height=0.62\textheight,keepaspectratio]{dieckow_paper/figures/fig1_A_matrix.png}\end{center}
 
 Diagonal shows \textbf{self-limitation} \(A_{ii}<0\) (resource
 limitation / saturation). Off-diagonal: Actinobacteria
@@ -258,7 +247,7 @@ limitation / saturation). Off-diagonal: Actinobacteria
 
 \begin{frame}{Trajectory fit (all 10 patients)}
 \protect\hypertarget{trajectory-fit-all-10-patients}{}
-\includegraphics[width=\textwidth,height=0.66\textheight]{dieckow_paper/figures/fig_fitting_results.png}
+\begin{center}\includegraphics[height=0.68\textheight,keepaspectratio]{dieckow_paper/figures/fig_fitting_results.png}\end{center}
 
 Observations (points) and predicted trajectories (lines). Per-patient
 \(b\) vectors with a shared matrix \(A\).
@@ -266,7 +255,7 @@ Observations (points) and predicted trajectories (lines). Per-patient
 
 \begin{frame}{Sign correspondence: \(A_{ij}\) vs metabolic \(F_{ij}\)}
 \protect\hypertarget{sign-correspondence-a_ij-vs-metabolic-f_ij}{}
-\includegraphics[width=\textwidth,height=0.58\textheight]{dieckow_paper/figures/fig5b_aij_fij_scatter.png}
+\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{dieckow_paper/figures/fig5b_aij_fij_scatter.png}\end{center}
 
 \(x\)-axis = metabolic flow \(F_{ij}\); \(y\)-axis = fitted
 \(\hat A_{ij}\). At \(W=1.0\),
@@ -287,12 +276,9 @@ and averaged.
 
 \begin{frame}{LOO model comparison}
 \protect\hypertarget{loo-model-comparison}{}
-\includegraphics[width=\textwidth,height=0.44\textheight]{dieckow_paper/figures/fig2_loo_comparison.png}
+\begin{center}\includegraphics[width=0.50\textwidth,keepaspectratio]{dieckow_paper/figures/fig2_loo_comparison.png}\hfill\includegraphics[width=0.48\textwidth,keepaspectratio]{dieckow_paper/figures/fig8_all_models_rmse_bc.png}\end{center}
 
-\includegraphics[width=\textwidth,height=0.3\textheight]{dieckow_paper/figures/fig8_all_models_rmse_bc.png}
-
-LOO-RMSE / LOO-BC across prior layers, model forms, and prior stiffness
-\(W\).
+\begin{center}\small LOO-RMSE / LOO-BC across prior layers, model forms, and prior stiffness $W$.\end{center}
 \end{frame}
 
 \begin{frame}{Performance summary}
@@ -325,21 +311,21 @@ LOO-BC & \(0.1468\) \\
 
 \vspace{0.2em}
 
-\(\Rightarrow\) the prior buys \textbf{sign-consistency and
-interpretability}, not raw accuracy.
+\(\Rightarrow\) the prior provides \textbf{sign-consistency and
+interpretability} rather than raw accuracy.
 \end{frame}
 
 \begin{frame}{LOO stability of the \(A\) matrix}
 \protect\hypertarget{loo-stability-of-the-a-matrix}{}
-\includegraphics[width=\textwidth,height=0.6\textheight]{dieckow_paper/figures/fig7_loo_stability.png}
+\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{dieckow_paper/figures/fig7_loo_stability.png}\end{center}
 
 Across the 10 hold-out re-fits, every pair has \textbf{sign-consistency
 \(\geq 0.70\)}. The inferred sign structure is robust to leaving out any
 single patient.
 \end{frame}
 
-\begin{frame}{Critical validation (honest)}
-\protect\hypertarget{critical-validation-honest}{}
+\begin{frame}{Critical validation}
+\protect\hypertarget{critical-validation}{}
 With the prior \textbf{OFF} (\(\alpha=0\)) the prior is
 \textbf{all-positive}, so naive sign-agreement is inflated. A
 \textbf{label permutation test} (\(n=10^{4}\)) controls for this:
@@ -364,7 +350,7 @@ gLV & \(41\%\) (null) & null \\
 \bottomrule
 \end{longtable}
 
-\includegraphics[width=\textwidth,height=0.3\textheight]{results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png}
+\begin{center}\includegraphics[height=0.34\textheight,keepaspectratio]{results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png}\end{center}
 
 \textbf{Only the cross-feeding direction is validated. Competition is
 not.}
@@ -376,15 +362,15 @@ Botelho 2021 (\textbf{PRJNA725874}, 15 patients \(\times\) 7 timepoints)
 is fit \textbf{prior-free} and independently, then strong-pair signs are
 compared to Dieckow:
 
-\includegraphics[width=\textwidth,height=0.46\textheight]{results/botelho_validation/fig_botelho_A_comparison_noprior.png}
+\begin{center}\includegraphics[width=0.94\textwidth,keepaspectratio]{results/botelho_validation/fig_botelho_A_comparison_noprior.png}\end{center}
 
 Strong-pair directed signs agree at \textbf{\(89\%\)} (\(8/9\)
 upper-triangular, \(p\approx0.02\)). The \textbf{Actinobacteria axis} is
 consistent across cohorts.
 \end{frame}
 
-\begin{frame}{Honest interpretation}
-\protect\hypertarget{honest-interpretation}{}
+\begin{frame}{Interpretation and limitations}
+\protect\hypertarget{interpretation-and-limitations}{}
 \begin{itemize}
 \tightlist
 \item
@@ -420,8 +406,8 @@ consistent across cohorts.
 
 \vspace{0.3em}
 
-We do not oversell: a \textbf{subset} of signs is supported; the rest
-remains hypothesis.
+To avoid overstating the result: a \textbf{subset} of signs is
+supported; the remainder remains hypothesis.
 \end{frame}
 
 \begin{frame}{External clinical validation (in progress)}
@@ -429,10 +415,21 @@ remains hypothesis.
 Plan to compare a Guild Dysbiosis Index against the Joshi 2025 cohort
 (\textbf{PRJNA1192962}):
 
-\includegraphics[width=\textwidth,height=0.46\textheight]{dieckow_paper/figures/fig3_joshi_attractor.png}
+\begin{itemize}
+\tightlist
+\item
+  the index is derived from the inferred attractor of the fitted \(A\)
+  matrix, then scored against the cohort's health/disease labels;
+\item
+  this provides an external, patient-level test that is independent of
+  the Dieckow training data.
+\end{itemize}
 
-\textcolor{red}{\textbf{Preliminary}: awaiting clinical metadata. This figure is
-provisional and the matching to health/disease labels is not yet complete.}
+\vspace{0.4em}
+
+\textcolor{red}{\textbf{Preliminary}: awaiting clinical metadata. The
+health/disease matching is not yet complete; results will be added once the
+cohort metadata is released.}
 \end{frame}
 
 \begin{frame}{Conclusions}
@@ -447,8 +444,8 @@ provisional and the matching to health/disease labels is not yet complete.}
   prior} (one-sided hinge); posterior via TMCMC.
 \item
   Best: L1+L2+AGORA \(W=1.0\) gives \textbf{LOO-RMSE \(0.0504\)}, SA
-  \(100\%\). But prior-free gLV reaches \(0.0455\) --- the prior buys
-  \textbf{interpretability}, not accuracy.
+  \(100\%\). But prior-free gLV reaches \(0.0455\) --- the prior
+  provides \textbf{interpretability} rather than accuracy.
 \item
   \textbf{Signs are stable under LOO} (\(\geq0.70\)); the MacArthur
   magnitude prior fails.

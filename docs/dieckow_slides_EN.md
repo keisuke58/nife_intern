@@ -1,8 +1,8 @@
 ---
 title: "Inferring Oral-Microbiome Interactions In Vivo (Dieckow 16S)"
-subtitle: "From compositional time-series to a signed interaction matrix $A$ — fit, LOO-CV, honest validation"
+subtitle: "From compositional time-series to a signed interaction matrix $A$ — fit, LOO-CV, critical validation"
 author: "Keisuke Nishioka — NIFE"
-date: "2026-06-03"
+date: "2026-06-11"
 theme: "Madrid"
 colortheme: "whale"
 aspectratio: 169
@@ -12,19 +12,19 @@ header-includes:
   - \newcommand{\relu}[1]{\left[#1\right]_{+}}
 ---
 
-## Where this deck sits
+## Position within the project
 
-The project = three pillars + a spatial extension. Data flow:
+The project comprises three pillars and a spatial extension. Data flow:
 
 raw 16S → guild $\varphi$ → gLV/Hamilton (+ sign prior) → LOO validation → spatial PDE
 
-The decks (you-are-here in **bold marker**):
+Decks in the series (the present deck in **bold**):
 
-- **Overview** (umbrella) — the whole picture, three pillars
+- **Overview** (umbrella) — the complete picture across the three pillars
 - **AGORA** — metabolism → sign prior (input to the ecological model)
-- **Dieckow** — in-vivo interaction inference & validation (the model)  — **(you are here)**
+- **Dieckow** — in vivo interaction inference and validation (the present deck)
 - **Network** — structural analysis of the interaction matrix $A$
-- **Spatial-PDE** — reaction-diffusion of the FISH depth profiles
+- **Spatial-PDE** — reaction–diffusion of the FISH depth profiles
 - **FISH pipeline** — .lif → 5-species depth composition
 
 ---
@@ -37,12 +37,12 @@ interaction matrix** $A$, and quantify how far that inference can be trusted.
 - model: generalized Lotka–Volterra (gLV) / Hamilton replicator on the simplex
 - constraint: an AGORA2-derived **metabolic sign prior** (see the AGORA deck;
   cited here only briefly)
-- focus: the **fit**, **LOO-CV**, model comparison, and **honest validation**
+- focus: the **fit**, **LOO-CV**, model comparison, and **critical validation**
 
 \vspace{0.4em}
-**Thesis.** The prior buys sign-consistency and interpretability, not predictive
-accuracy. What is validated independently of the data is the **cross-feeding
-direction only** (below).
+**Claim.** The prior provides sign-consistency and interpretability rather than
+predictive accuracy. What is validated independently of the data is the
+**cross-feeding direction only** (below).
 
 ---
 
@@ -52,7 +52,7 @@ Dieckow et al. 2024 (ENA **PRJEB71108**): a longitudinal 16S series of
 **10 patients $\times$ 3 weeks**, aggregated to **10 class-level guilds**
 (`GUILD_ORDER` is canonical).
 
-![](dieckow_paper/figures/fig0_study_design.png){ height=58% }
+\begin{center}\includegraphics[width=0.86\textwidth,keepaspectratio]{dieckow_paper/figures/fig0_study_design.png}\end{center}
 
 Early peri-implant colonization. Each sample is treated as a composition
 $\varphi\in\Delta^{9}$ with $\sum_i\varphi_i=1$.
@@ -91,7 +91,7 @@ $$\mathcal{L}(A,b)=\frac{1}{2\sigma^{2}}\sum_{t}\big\lVert\varphi^{\text{obs}}_{
 
 ## Fitted interaction matrix $A$
 
-![](dieckow_paper/figures/fig1_A_matrix.png){ height=60% }
+\begin{center}\includegraphics[height=0.62\textheight,keepaspectratio]{dieckow_paper/figures/fig1_A_matrix.png}\end{center}
 
 Diagonal shows **self-limitation** $A_{ii}<0$ (resource limitation / saturation).
 Off-diagonal: Actinobacteria $\leftrightarrow$ Bacilli **facilitation**.
@@ -100,7 +100,7 @@ Off-diagonal: Actinobacteria $\leftrightarrow$ Bacilli **facilitation**.
 
 ## Trajectory fit (all 10 patients)
 
-![](dieckow_paper/figures/fig_fitting_results.png){ height=66% }
+\begin{center}\includegraphics[height=0.68\textheight,keepaspectratio]{dieckow_paper/figures/fig_fitting_results.png}\end{center}
 
 Observations (points) and predicted trajectories (lines). Per-patient $b$ vectors
 with a shared matrix $A$.
@@ -109,7 +109,7 @@ with a shared matrix $A$.
 
 ## Sign correspondence: $A_{ij}$ vs metabolic $F_{ij}$
 
-![](dieckow_paper/figures/fig5b_aij_fij_scatter.png){ height=58% }
+\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{dieckow_paper/figures/fig5b_aij_fij_scatter.png}\end{center}
 
 $x$-axis = metabolic flow $F_{ij}$; $y$-axis = fitted $\hat A_{ij}$.
 At $W=1.0$, $\sgn(\hat A_{ij})=\sgn(F_{ij})$ holds on the constrained set $\mathcal{M}$.
@@ -129,11 +129,9 @@ Every one of the 10 patients is held out in turn (leave-one-patient-out) and ave
 
 ## LOO model comparison
 
-![](dieckow_paper/figures/fig2_loo_comparison.png){ height=44% }
+\begin{center}\includegraphics[width=0.50\textwidth,keepaspectratio]{dieckow_paper/figures/fig2_loo_comparison.png}\hfill\includegraphics[width=0.48\textwidth,keepaspectratio]{dieckow_paper/figures/fig8_all_models_rmse_bc.png}\end{center}
 
-![](dieckow_paper/figures/fig8_all_models_rmse_bc.png){ height=30% }
-
-LOO-RMSE / LOO-BC across prior layers, model forms, and prior stiffness $W$.
+\begin{center}\small LOO-RMSE / LOO-BC across prior layers, model forms, and prior stiffness $W$.\end{center}
 
 ---
 
@@ -154,20 +152,20 @@ Best model **L1+L2+AGORA, $W=1.0$**:
 - **MacArthur magnitude prior FAILED**: SA $4\text{–}8/70$.
 
 \vspace{0.2em}
-$\Rightarrow$ the prior buys **sign-consistency and interpretability**, not raw accuracy.
+$\Rightarrow$ the prior provides **sign-consistency and interpretability** rather than raw accuracy.
 
 ---
 
 ## LOO stability of the $A$ matrix
 
-![](dieckow_paper/figures/fig7_loo_stability.png){ height=60% }
+\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{dieckow_paper/figures/fig7_loo_stability.png}\end{center}
 
 Across the 10 hold-out re-fits, every pair has **sign-consistency $\geq 0.70$**.
 The inferred sign structure is robust to leaving out any single patient.
 
 ---
 
-## Critical validation (honest)
+## Critical validation
 
 With the prior **OFF** ($\alpha=0$) the prior is **all-positive**, so naive
 sign-agreement is inflated. A **label permutation test** ($n=10^{4}$) controls for this:
@@ -177,7 +175,7 @@ sign-agreement is inflated. A **label permutation test** ($n=10^{4}$) controls f
 | **Hamilton $\alpha=0$** | $\mathbf{78.6\%}$ (11/14) vs random $37.7\%$, $p=4\times10^{-4}$, $z=+3.79$ | $\approx$ chance |
 | gLV | $41\%$ (null) | null |
 
-![](results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png){ height=30% }
+\begin{center}\includegraphics[height=0.34\textheight,keepaspectratio]{results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png}\end{center}
 
 **Only the cross-feeding direction is validated. Competition is not.**
 
@@ -188,14 +186,14 @@ sign-agreement is inflated. A **label permutation test** ($n=10^{4}$) controls f
 Botelho 2021 (**PRJNA725874**, 15 patients $\times$ 7 timepoints) is fit
 **prior-free** and independently, then strong-pair signs are compared to Dieckow:
 
-![](results/botelho_validation/fig_botelho_A_comparison_noprior.png){ height=46% }
+\begin{center}\includegraphics[width=0.94\textwidth,keepaspectratio]{results/botelho_validation/fig_botelho_A_comparison_noprior.png}\end{center}
 
 Strong-pair directed signs agree at **$89\%$** ($8/9$ upper-triangular,
 $p\approx0.02$). The **Actinobacteria axis** is consistent across cohorts.
 
 ---
 
-## Honest interpretation
+## Interpretation and limitations
 
 - The **AGORA prior itself is not reproduced** by the 16S dynamics $\Rightarrow$
   it is a **modelling choice**, not a data-confirmed fact.
@@ -207,7 +205,7 @@ $p\approx0.02$). The **Actinobacteria axis** is consistent across cohorts.
 - A **neutral-initialised no-prior LOO** (zero-init, submitted) will confirm the enrichment is data-driven and not a warm-start artefact.
 
 \vspace{0.3em}
-We do not oversell: a **subset** of signs is supported; the rest remains hypothesis.
+To avoid overstating the result: a **subset** of signs is supported; the remainder remains hypothesis.
 
 ---
 
@@ -216,10 +214,15 @@ We do not oversell: a **subset** of signs is supported; the rest remains hypothe
 Plan to compare a Guild Dysbiosis Index against the Joshi 2025 cohort
 (**PRJNA1192962**):
 
-![](dieckow_paper/figures/fig3_joshi_attractor.png){ height=46% }
+- the index is derived from the inferred attractor of the fitted $A$ matrix,
+  then scored against the cohort's health/disease labels;
+- this provides an external, patient-level test that is independent of the
+  Dieckow training data.
 
-\textcolor{red}{\textbf{Preliminary}: awaiting clinical metadata. This figure is
-provisional and the matching to health/disease labels is not yet complete.}
+\vspace{0.4em}
+\textcolor{red}{\textbf{Preliminary}: awaiting clinical metadata. The
+health/disease matching is not yet complete; results will be added once the
+cohort metadata is released.}
 
 ---
 
@@ -229,7 +232,7 @@ provisional and the matching to health/disease labels is not yet complete.}
 2. Under-determination is eased by the **AGORA metabolic sign prior** (one-sided
    hinge); posterior via TMCMC.
 3. Best: L1+L2+AGORA $W=1.0$ gives **LOO-RMSE $0.0504$**, SA $100\%$. But
-   prior-free gLV reaches $0.0455$ — the prior buys **interpretability**, not accuracy.
+   prior-free gLV reaches $0.0455$ — the prior provides **interpretability** rather than accuracy.
 4. **Signs are stable under LOO** ($\geq0.70$); the MacArthur magnitude prior fails.
 5. Honest validation: only the **cross-feeding direction** ($p=4\times10^{-4}$) and
    **two-cohort strong pairs** ($89\%$) are independently supported. Clinical
