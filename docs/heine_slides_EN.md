@@ -1,11 +1,13 @@
 ---
 title: "GPU-Accelerated Bayesian Inference of Multi-Species Biofilm Interaction Parameters via TMCMC"
 subtitle: "Full discovery of the 15-dimensional interaction matrix $A$ with two-phase GPU-TMCMC"
-author: "Keisuke Nishioka — IKM, Leibniz University Hannover"
+author: "Keisuke Nishioka, Felix Klempt, Hendrik Geisler, Meisam Soleimani, Philipp Junker (IKM, LUH); R. Mukherjee, S. P. Szafrański, M. Stiesch (MHH / NIFE)"
 date: "2026-06-11"
 theme: "Madrid"
 colortheme: "whale"
 aspectratio: 169
+classoption:
+  - "c"
 header-includes:
   - \usepackage{amsmath,amssymb}
   - \newcommand{\sgn}{\operatorname{sgn}}
@@ -76,7 +78,7 @@ confirming the fix-$\psi$ stage is a robust warm start.
 ## GPU acceleration
 
 - **JAX + `vmap`** on a single RTX 4090.
-- $\sim$**200$\times$ speedup** vs CPU; $N_p=10{,}000$ in $\sim$2 h per condition.
+- **≈200× speedup** vs CPU; $N_p=10{,}000$ in ≈2 h per condition.
 - Makes production runs of the full **15-D posterior** feasible.
 
 ---
@@ -90,6 +92,16 @@ DS, DH. DS shows the best identifiability (RMSE $=0.033$).
 
 ---
 
+## Reference — classic gLV fits the data more tightly
+
+\begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{results/heine2025/glv_heine_fit_paper.pdf}\end{center}
+
+The asymmetric **gLV** model reaches lower RMSE ($0.011$–$0.032$), but its $A$ is
+not symmetric. The Hamilton replicator trades a little fit quality for an
+**interpretable symmetric** $A$ — the object of interest here.
+
+---
+
 ## Inferred interaction matrices — commensal vs dysbiotic
 
 \begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{results/heine_repro/heatmap_A_4cond.pdf}\end{center}
@@ -98,6 +110,16 @@ DS, DH. DS shows the best identifiability (RMSE $=0.033$).
   $\approx 0$ — **emergent sparsity** without locking.
 - **Dysbiotic (DS, DH):** strong **Vei$\to$Pg** (pH) and **Fn$\to$Pg**
   (peptides); $\hat a^{\,DH}_{45}=5.63$.
+
+---
+
+## Interaction matrices across conditions — UMAP embedding
+
+\begin{center}\includegraphics[height=0.66\textheight,keepaspectratio]{results/heine_repro/umap_A_3d.pdf}\end{center}
+
+The four posterior $A$-matrices separate in interaction space: commensal
+(CS, CH) and dysbiotic (DS, DH) form distinct clusters — the health/disease
+shift is a structural reorganisation, not a small perturbation.
 
 ---
 
@@ -154,8 +176,8 @@ LOO $R^2=0.92$); lactate-driven acidification. Gingipain–Pg: $r=0.90$.
 1. **Two-phase full-discovery TMCMC:** Phase 1 (fix-$\psi$) gives rapid robust
    $A$; Phase 2 (free $\psi$) gives a consistent joint posterior. All 15
    parameters free — **emergent sparsity** from data.
-2. **GPU-accelerated TMCMC:** $\sim$200$\times$ speedup; $N_p=10{,}000$ in
-   $\sim$2 h per condition.
+2. **GPU-accelerated TMCMC:** ≈200× speedup; $N_p=10{,}000$ in ≈2 h per
+   condition.
 3. **Validated interpretation:** pH $r=0.84$, gingipain $r=0.90$; dysbiosis is a
    **topological reorganisation** ($\rho=-0.49$).
 
