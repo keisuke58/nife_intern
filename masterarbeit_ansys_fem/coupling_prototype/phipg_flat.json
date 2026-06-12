@@ -1,0 +1,12 @@
+{
+ "z_norm": [
+  0.0,
+  1.0
+ ],
+ "phi_Pg": [
+  0.2,
+  0.2
+ ],
+ "cond": "PATCH",
+ "note": "flat profile: patch test (uniform growth -> uniform stress, machine precision)"
+}

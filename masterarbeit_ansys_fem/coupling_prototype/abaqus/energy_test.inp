@@ -1,0 +1,41 @@
+*HEADING
+ A2 energy conservation: neo-Hookean unit cube, prescribed stretch (growth off)
+*NODE
+ 1, 0.0, 0.0, 0.0
+ 2, 1.0, 0.0, 0.0
+ 3, 1.0, 1.0, 0.0
+ 4, 0.0, 1.0, 0.0
+ 5, 0.0, 0.0, 1.0
+ 6, 1.0, 0.0, 1.0
+ 7, 1.0, 1.0, 1.0
+ 8, 0.0, 1.0, 1.0
+*ELEMENT, TYPE=C3D8, ELSET=BLK
+ 1, 1,2,3,4,5,6,7,8
+*SOLID SECTION, ELSET=BLK, MATERIAL=BIOFILM
+*MATERIAL, NAME=BIOFILM
+*USER MATERIAL, CONSTANTS=2
+ 5000., 0.45
+*DEPVAR
+ 1
+*NSET, NSET=ZBOT
+ 1,2,3,4
+*NSET, NSET=ZTOP
+ 5,6,7,8
+*BOUNDARY
+ ZBOT, 3, 3
+ 1, 1, 2
+ 2, 2, 2
+ 4, 1, 1
+*STEP, NLGEOM=YES, INC=100
+ uniaxial stretch by prescribed top displacement
+*STATIC
+ 0.05, 1.0, 1.0E-4, 0.05
+*BOUNDARY
+ ZTOP, 3, 3, 0.2000
+*OUTPUT, FIELD
+*NODE OUTPUT
+ U, RF
+*ELEMENT OUTPUT, POSITION=CENTROID
+ S, E
+*OUTPUT, HISTORY, VARIABLE=PRESELECT
+*END STEP

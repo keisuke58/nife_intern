@@ -1,0 +1,33 @@
+{
+  "source": "results/diffusion_fit/zprofiles_all_ti.csv",
+  "occ_threshold": 0.05,
+  "model": "anisotropic depth growth: eps_zz = beta_depth*phi_Pg (+intercept)",
+  "DH": {
+    "h_ref_um": 22.458,
+    "beta_depth": 17.18064066469867,
+    "intercept": -1.3372227479622267,
+    "corr": 0.8819046163311506,
+    "phi_Pg_range": [
+      0.08100076059547444,
+      0.20623233819149941
+    ],
+    "h_um_range": [
+      22.458,
+      78.95259999999999
+    ]
+  },
+  "CH": {
+    "h_ref_um": 28.38296,
+    "beta_depth": -10.405913659597227,
+    "intercept": 2.1659596981156377,
+    "corr": -0.761863353828191,
+    "phi_Pg_range": [
+      0.09977618815285008,
+      0.19685120921020297
+    ],
+    "h_um_range": [
+      28.38296,
+      63.9616
+    ]
+  }
+}

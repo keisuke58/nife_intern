@@ -1,0 +1,30 @@
+# Abaqus run artifacts (regenerable from the .inp + gen_*.py + socket UMAT)
+*.odb
+*.dat
+*.msg
+*.sta
+*.prt
+*.com
+*.sim
+*.lck
+*.fil
+*.ipm
+*.log
+*.mdl
+*.pac
+*.res
+*.stt
+*.abq
+*.SMABulk
+*.SMAManifest
+*.env
+explicit*
+standardU*
+*.o
+*.so
+abaqus_v6.env
+# keep the small text result summaries, sources, decks, figures, notes
+!*.txt
+
+# compiled slide deck (rebuild via slides/build.sh)
+slides/*.pdf
