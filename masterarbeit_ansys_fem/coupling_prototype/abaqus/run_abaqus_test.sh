@@ -22,6 +22,8 @@ case "$MODE" in
   energy)      SERVER="umat_server_col.py --profile phipg_zero.json --gamma 0.0 --nramp 1"; UMAT="umat_socket_col.f"; JOB="energy_test" ;;
   buckle)      SERVER="umat_server_col.py --profile phipg_depth_DH.json --gamma ${BUCKLE_G:-3.0} --nramp 40"; UMAT="umat_socket_col.f"; JOB="film_buckle" ;;
   buckle_ch)   SERVER="umat_server_col.py --profile phipg_depth_CH.json --gamma ${BUCKLE_G:-3.0} --nramp 40"; UMAT="umat_socket_col.f"; JOB="film_buckle_ch" ;;
+  bilayer)     SERVER="umat_server_col.py --profile phipg_flat_DH.json --gamma ${BILAYER_G:-6.0} --nramp 40"; UMAT="umat_socket_col.f"; JOB="film_bilayer" ;;
+  bilayer_ch)  SERVER="umat_server_col.py --profile phipg_flat_CH.json --gamma ${BILAYER_G:-6.0} --nramp 40"; UMAT="umat_socket_col.f"; JOB="film_bilayer_ch" ;;
   film)        SERVER="umat_server_col.py --profile phipg_depth_DH.json --gamma 0.4 --nramp 20"; UMAT="umat_socket_col.f"; JOB="film_fs" ;;
   delam)       SERVER="umat_server_col.py --profile phipg_depth_DH.json --gamma 0.4 --nramp 40"; UMAT="umat_socket_col.f"; JOB="film_delam" ;;
   delam_ch)    SERVER="umat_server_col.py --profile phipg_depth_CH.json --gamma 0.4 --nramp 40"; UMAT="umat_socket_col.f"; JOB="film_delam_ch" ;;
@@ -54,12 +56,15 @@ case "$MODE" in
   delam|delam_ch)   python gen_film_delam_inp.py 12 8 "$JOB.inp" "${DELAM_TN0:-120}" "${DELAM_GC:-4.0}" >/dev/null ;;
   energy)           python gen_energy_inp.py "$JOB.inp" 0.20 >/dev/null ;;
   buckle|buckle_ch) python gen_film_buckle_inp.py 16 8 "$JOB.inp" >/dev/null ;;
+  bilayer|bilayer_ch) python gen_film_bilayer_inp.py 48 8 "$JOB.inp" >/dev/null ;;
 esac
 rm -f "$JOB".lck 2>/dev/null || true
 abaqus job="$JOB" user="$UMAT" interactive ask_delete=OFF
 
 echo "[3/3] result summary:"
-if { [ "$MODE" = "buckle" ] || [ "$MODE" = "buckle_ch" ]; } && [ -f "$JOB.odb" ]; then
+if { [ "$MODE" = "bilayer" ] || [ "$MODE" = "bilayer_ch" ]; } && [ -f "$JOB.odb" ]; then
+  abaqus python extract_wrinkle.py "$JOB" 48 8 8.0 2>/dev/null || echo "  (run: abaqus python extract_wrinkle.py $JOB 48 8 8.0)"
+elif { [ "$MODE" = "buckle" ] || [ "$MODE" = "buckle_ch" ]; } && [ -f "$JOB.odb" ]; then
   abaqus python extract_buckle.py "$JOB" 2>/dev/null || echo "  (run: abaqus python extract_buckle.py $JOB)"
 elif { [ "$MODE" = "delam" ] || [ "$MODE" = "delam_ch" ]; } && [ -f "$JOB.odb" ]; then
   abaqus python extract_delam.py "$JOB" 12 8 2>/dev/null || echo "  (run: abaqus python extract_delam.py $JOB 12 8)"

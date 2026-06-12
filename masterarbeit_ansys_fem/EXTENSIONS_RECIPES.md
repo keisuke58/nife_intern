@@ -25,8 +25,37 @@ numerical/FEM, so **A is the highest-value block.**
   (non-patch) solution. (α=1e-4 keeps the neo-Hookean O(α²) nonlinearity below the discretization error;
   at α=1e-3 the finest mesh flattens to p≈0.5 as the forcing floor is reached — a documented, expected
   artefact, not an FE bug.) Driver: `abaqus/run_mms.sh` → `mms_convergence.txt`.
+- **A4 SOCKET-FREE column mesh convergence — ✅ PASS (Abaqus 2024).** The field-driven UMAT
+  (`umat_growth_phi.f`) column at N=4,8,16,32. **Uniform φ_Pg=0.20**: the confined-bottom plateau
+  `|σ_xx| = 0.848μ` is **machine-identical across all N** (patch/plateau verification of the element +
+  growth coupling). **Graded φ_Pg(z), DH**: the confined-region stress converges to **N=16 vs 32 =
+  +0.27 %** ⇒ **use N=16**. Driver: `gen_column_phi_inp.py` (+`GSCALE` moderate-growth regime,
+  `HEIGHT` aspect ratio) → `extract_plateau.py`; figure
+  `figures/F5_mesh_convergence.pdf` (thesis figure, via `gen_thesis_figs.py`).
+- **Tall-column physics (HEIGHT=4×w) — resolves the headline.** With a unit-height column the
+  free-surface relief and the fixed-base layer overlap; a **tall column** separates them and shows the
+  true picture: the in-plane residual stress is a **substratum boundary layer** (~one width deep from
+  the fixed base = the implant surface) — above it the film **relieves the isotropic growth by free
+  upward expansion → ~zero stress**, regardless of φ_Pg. *Within* the interface layer σ_xx tracks φ_Pg
+  (corr **+1.0**). **DH ≫ CH at the interface: peak 6.4×, mean 10×.** Clinically sharp (stress
+  concentrates exactly where delamination/detachment occurs). Figure `figures/F4_residual_stress_DHvsCH.pdf`
+  (the headline, tall column). The "depth-resolved σ tracks φ" framing is retired in favour of "substratum-interface
+  stress, DH≫CH". Tangent verified independently: `tangent_check_growth_phi.py` (Kirchhoff/Jaumann FD,
+  rel-err 5e-8 at full CLSM magnitude).
 
 ## B. High-impact mechanics
+- **B1+ Bilayer wrinkling (true Biot bifurcation) — ✅ ran (Abaqus, 384 elem), upgrades B1.** Stiff
+  growing crust (`*USER MATERIAL`, top 2 layers, E=50000) on a soft **inert** foundation (`*ELASTIC`,
+  E=2000): the crust grows in-plane but is bonded to the non-growing base → forced into compression →
+  genuine surface wrinkling (`gen_film_bilayer_inp.py`, multi-wave seed, `*STATIC, STABILIZE, ALLSDTOL`).
+  At γ=4 the system matrix develops **negative eigenvalues at growth-frac≈0.28** (loss of stability =
+  the bifurcation); a completed γ=2 run shows the **super-linear amplitude onset** and, decisively,
+  **condition-specific wavelength selection: DH selects a short wrinkle (mode 9, λ≈1.8) while CH stays
+  in the long-wave global-bending mode (mode 1, λ=16)** — i.e. *only the dysbiotic crust crosses the
+  wrinkling threshold*; CH merely bends. DH amplitude > CH at every growth level.
+  `run_abaqus_test.sh bilayer`/`bilayer_ch` (`BILAYER_G=`) → `extract_wrinkle.py`, figure
+  `F9_wrinkling_DHvsCH.pdf`. Converts the B1 free-edge "precursor" into a real growth-instability
+  result; natural bridge to phase-field (Keio).
 - **B0 Film strip free-edge — ✅ ran (Abaqus, 96 elem).** Depth-graded growth on a strip with a free
   right edge produces a clean **through-depth bending signature** (top S11 = −118 compression, mid =
   +43 tension, bottom = −39 — neutral axis inside the film) plus **Saint-Venant relaxation toward the
@@ -64,12 +93,22 @@ numerical/FEM, so **A is the highest-value block.**
   One-element simple-shear relaxation deck `abaqus/biofilm_viscoelastic.inp` (`*VISCO`, hold shear)
   COMPLETED; S13 relaxes from the glassy value to the floor: **final/instantaneous = 0.0544 vs theory
   0.0543**, and **RMS(FE − analytic Prony) = 9e-4** over the whole curve (relaxation clock at the
-  strain-application instant). Figure `coupling_prototype/fig_ve_relaxation.{pdf,png}` (**F7**). The
+  strain-application instant). Figure `figures/F7_viscoelastic_relaxation.pdf`. The
   long-time relaxation is exactly the fluid-like complement of Böl 2014 (`notes/bol2014_validation_paragraph.md`).
   *Outlook route (i): carry the viscous strain in STATEV inside the φ_Pg growth UMAT for coupled
   growth+relaxation; pairs with ④ G(t) from rheology.*
 
 ## C. Data / ideas
+- **C4 Patient-specific detachment risk — ✅ ran (Abaqus sweep), the clinical translation.** The
+  cohesive-delamination model run across the growth driver φ_Pg gives a monotone **detachment-risk
+  curve** on the clinically relevant branch (φ≤0.14: delam 0→8→33 %). Mapping the **10 Dieckow patients**
+  by their Bacteroidia(Pg) load (0.001–0.122, median 0.054) onto it stratifies the cohort: **nine
+  patients sit below the delamination onset (~φ 0.12, low risk); a single high-Pg patient (φ=0.122)
+  reaches ~26 % predicted detachment** — a mechanics-derived, per-patient risk score from routine 16S
+  Pg load. `abaqus/run_risk_sweep.sh` (PHIS, RISK_GAMMA) → `risk_sweep.txt`; figure `F10_patient_risk.pdf`.
+  Honest caveat: the high-φ branch of the sweep is non-monotone (cohesive damage-snap, stabilization-
+  sensitive) so only the clean low-φ clinical branch is used; absolute % is model-parametric, the
+  patient *ordering* is the robust output.
 - **C1 Biofilm mechanics literature — [me, ④ scaffold].** Oral/biofilm shear modulus **G ~ 10–10³ Pa**
   (species- and shear-history-dependent), strongly **viscoelastic** (creep/relaxation), often Maxwell
   / Burgers / power-law. Detachment driven by interfacial shear ~ 0.1–10 Pa wall shear in flow.

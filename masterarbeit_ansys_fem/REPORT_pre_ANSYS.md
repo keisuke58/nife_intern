@@ -28,7 +28,8 @@ generalised from a 1-D method-of-lines grid to 3-D element Gauss points.
 | 2 | Python↔Fortran socket bridge (wire protocol) | ✅ exact |
 | 3 | **Abaqus UMAT (small strain) — VERIFIED on Abaqus 2024** | ✅ σ_xx=E·ε |
 | 3b | **Abaqus NSP finite-strain (NLGEOM) — VERIFIED on Abaqus 2024** | ✅ U3→0.302=λ_z−1, σ=0, SDV1 0→20 |
-| 3c | **SOCKET-FREE growth UMAT** (`umat_growth_phi.f`) — φ_Pg via FIELD var, geometric tangent | ✅ U3=0.30011=λ_z−1 (err 0), σ~2e-14 |
+| 3c | **SOCKET-FREE growth UMAT** (`umat_growth_phi.f`) — φ_Pg via FIELD var, geometric tangent; **FD tangent check** (`tangent_check_growth_phi.py`, Kirchhoff/Jaumann) | ✅ U3=0.30011=λ_z−1 (err 0), σ~2e-14; tangent FD rel-err **5e-8** (full CLSM magnitude) |
+| 3d | **SOCKET-FREE substratum-interface column** (φ_Pg(z) field, **tall H=4×w**, no server) — **γ CLSM-calibrated** (iso volume-matched s=Jg^⅓, real DH/CH β,ic) + **mesh convergence** (A4) | ✅ stress = substratum boundary layer (free top relieves); within it σ_xx tracks φ (corr +1.0); **DH≫CH peak 6.4×, mean 10×**; converged N16 (+0.27%) |
 | 4 | ANSYS USERMAT port (near-copy of 3c: FIELD→ANSYS field var) | ⏳ after ANSYS seat |
 
 ## 3. Key results

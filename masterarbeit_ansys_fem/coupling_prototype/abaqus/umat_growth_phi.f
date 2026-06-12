@@ -8,10 +8,16 @@ c  pattern an ANSYS USERMAT uses (field variable -> growth stretch).
 c
 c  Constitutive model: compressible neo-Hookean on the elastic part of a
 c  multiplicative growth split  F = Fe . Fg.
-c    mode 0 (depth, default): anisotropic substratum-normal growth
+c    mode 0 (depth): anisotropic substratum-normal growth
 c        Fg = diag(1, 1, lam_z),  lam_z = 1 + max(0, beta*phi + ic)
-c        (= mholla umat_fiber_morph with fiber n = e_z; CLSM-calibrated beta,ic)
-c    mode 1 (iso): Fg = s*I,  s = 1 + max(0, beta*phi + ic)
+c        (= mholla umat_fiber_morph with fiber n = e_z; CLSM-calibrated beta,ic).
+c        NOTE: in a laterally-confined, free-top column this gives sigma_xx ~ 0
+c        (the column grows taller freely) -> use mode 1 for in-plane residual stress.
+c    mode 1 (iso, VOLUME-MATCHED to CLSM): Fg = s*I, s = Jg^(1/3),
+c        Jg = 1 + max(0, beta*phi + ic) = the CLSM-measured volume/thickness factor
+c        (lateral FOV fixed -> thickness ratio = volume ratio = lam_z). The isotropic
+c        model thus reproduces the measured volume increase; magnitude is model-
+c        dependent because the true growth is anisotropic (z) -- thesis caveat (3).
 c
 c  Stress + CONSISTENT GEOMETRIC TANGENT are the textbook neo-Hookean+growth
 c  forms from Holland, "Hitchhiker's Guide to Abaqus" (mholla/growth,
@@ -33,7 +39,7 @@ c =====================================================================
      2 TIME(2),PREDEF(*),DPRED(*),PROPS(NPROPS),COORDS(3),DROT(3,3),
      3 DFGRD0(3,3),DFGRD1(3,3)
 
-      real*8 E, nu, lam, mu, beta, ic, phi, growth, lam_z
+      real*8 E, nu, lam, mu, beta, ic, phi, growth, lam_z, s_iso
       real*8 fe(3,3), be(6), xi(6), detfe, lnJe
       integer i, j, mode
 
@@ -58,10 +64,11 @@ c...  growth stretch from the CLSM calibration (clamped at no-growth)
 
 c...  elastic deformation gradient Fe = F . Fg^{-1}
       if (mode .eq. 1) then
-c       isotropic: Fg = lam_z * I  ->  Fe = F / lam_z
+c       isotropic, volume-matched: Jg = lam_z (CLSM volume factor), s = Jg^(1/3)
+        s_iso = lam_z**(1.d0/3.d0)
         do i=1,3
           do j=1,3
-            fe(i,j) = DFGRD1(i,j) / lam_z
+            fe(i,j) = DFGRD1(i,j) / s_iso
           end do
         end do
       else
