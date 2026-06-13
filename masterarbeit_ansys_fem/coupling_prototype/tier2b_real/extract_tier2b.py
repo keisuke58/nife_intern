@@ -1,10 +1,10 @@
 """Extract per-element centroid, material and von Mises (both steps) for the Tier-2(b) assembly.
 Run: abaqus python extract_tier2b.py   (reads tier2b_real.inp + tier2b_real.odb)"""
 from __future__ import print_function
-import json, math
+import sys, json, math
 from odbAccess import openOdb
 
-JOB = "tier2b_real"
+JOB = sys.argv[1] if len(sys.argv) > 1 else "tier2b_real"
 nodes = {}; elems = {}; emat = {}; mode = None; curset = None
 for line in open(JOB + ".inp"):
     s = line.strip()

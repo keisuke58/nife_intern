@@ -60,9 +60,12 @@ def free_faces(tets, elem_gids):
 
 
 def main():
+    # optional argv: <implant_cache.npz> <job_basename>  (defaults = original root-analog model)
+    imp_cache = sys.argv[1] if len(sys.argv) > 1 else "cache_implant.npz"
+    job = sys.argv[2] if len(sys.argv) > 2 else "tier2b_real"
     bone = np.load(f"{OUT}/cache_bone.npz")
     dent = np.load(f"{OUT}/cache_dentin.npz")
-    imp = np.load(f"{OUT}/cache_implant.npz")
+    imp = np.load(f"{OUT}/{imp_cache}")
     bn, bt = bone["nodes"], bone["tets"]
     dn, dt = dent["nodes"], dent["tets"]
     sverts, sfaces = dent["sverts"], dent["sfaces"]
@@ -130,13 +133,17 @@ def main():
     bone_all = np.vstack([eid["BONE"][1], eid["BIOFILM"][1]])
     bone_gids = np.concatenate([eid["BONE"][0], eid["BIOFILM"][0]])
     bone_free = free_faces(bone_all, bone_gids)
-    # restrict master to socket region (near tooth axes, below crest)
+    # restrict master to socket region (near tooth axes, below crest). The tooth-23 alveolar socket
+    # is wider (buccolingually) than a standard Ø4.1 implant, so the tooth-23 master radius is enlarged
+    # and the implant tie uses a larger position tolerance (the standard screw is bonded to the socket
+    # walls -- an explicit idealisation, since a real placement would be in a healed/drilled ridge).
+    R23_MASTER = 4.8 if job != "tier2b_real" else 3.2
     master = {}
     for k, v in bone_free.items():
         fc = nodes[list(k)].mean(axis=0)
         rr24 = np.hypot(fc[0] - T24_AXIS[0], fc[1] - T24_AXIS[1])
         rr23 = np.hypot(fc[0] - T23_AXIS[0], fc[1] - T23_AXIS[1])
-        if fc[2] <= CREST_Z + 0.5 and (rr24 <= 3.2 or rr23 <= 3.2):
+        if fc[2] <= CREST_Z + 0.5 and (rr24 <= 3.2 or rr23 <= R23_MASTER):
             master[k] = v
     print(f"TIE faces: master(bone socket)={len(master)} slave_pdl={len(pdl_free)} slave_imp={len(imp_free)}")
 
@@ -179,9 +186,10 @@ def main():
     surf("IMP_OUT", imp_free)
     # ADJUST=NO: do NOT move slave nodes onto the master (that collapses the thin PDL / implant-tip
     # tets); the small initial socket gap is absorbed into the rigid tie constraint instead.
+    imp_tol = 2.8 if job != "tier2b_real" else 1.0   # generic screw < natural socket -> larger gap
     ap("*TIE, NAME=T_PDL, ADJUST=NO, POSITION TOLERANCE=1.0")
     ap(" PDL_OUT, BONE_SOCKET")
-    ap("*TIE, NAME=T_IMP, ADJUST=NO, POSITION TOLERANCE=1.0")
+    ap("*TIE, NAME=T_IMP, ADJUST=NO, POSITION TOLERANCE=%.1f" % imp_tol)
     ap(" IMP_OUT, BONE_SOCKET")
 
     def nset(nm, ids):
@@ -207,16 +215,16 @@ def main():
                 ap(" %d, 3, %.5f" % (n, -f)); ap(" %d, 1, %.5f" % (n, 0.2 * f))
     ap("*OUTPUT, FIELD"); ap("*NODE OUTPUT"); ap(" U")
     ap("*ELEMENT OUTPUT, POSITION=CENTROID"); ap(" S, COORD"); ap("*END STEP")
-    open(f"{OUT}/tier2b_real.inp", "w").write("\n".join(L) + "\n")
+    open(f"{OUT}/{job}.inp", "w").write("\n".join(L) + "\n")
 
     # meta for visualisation
     matarr = np.empty(gid - 1, dtype=object)
     for name, ids, conn in elem_rows:
         matarr[ids - 1] = name
     allconn = np.vstack([c for _, _, c in elem_rows])
-    np.savez(f"{OUT}/assembly_meta.npz", nodes=nodes, conn=allconn,
+    np.savez(f"{OUT}/{job}_meta.npz", nodes=nodes, conn=allconn,
              mat=matarr.astype(str), cent=nodes[allconn].mean(axis=1))
-    print("wrote tier2b_real.inp  total elems=%d nodes=%d" % (gid - 1, len(nodes)))
+    print("wrote %s.inp  total elems=%d nodes=%d" % (job, gid - 1, len(nodes)))
 
 
 if __name__ == "__main__":

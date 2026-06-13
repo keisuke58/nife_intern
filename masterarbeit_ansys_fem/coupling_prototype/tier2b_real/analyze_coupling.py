@@ -1,5 +1,6 @@
-import json, numpy as np
-d = json.load(open("/home/nishioka/IKM_Hiwi/FEM/tier2b_real/tier2b_real_field.json"))["els"]
+import sys, json, numpy as np
+JOB = sys.argv[1] if len(sys.argv) > 1 else "tier2b_real"
+d = json.load(open("/home/nishioka/IKM_Hiwi/FEM/tier2b_real/%s_field.json" % JOB))["els"]
 x = np.array([r["x"] for r in d]); y = np.array([r["y"] for r in d]); z = np.array([r["z"] for r in d])
 mat = np.array([r["mat"] for r in d]); vmo = np.array([r["vmo"] for r in d]); vmg = np.array([r["vmg"] for r in d])
 T24 = np.array([-63.9, -41.2]); T23 = np.array([-69.4, -41.0])

@@ -22,7 +22,12 @@ ROOT = Path("/home/nishioka/IKM_Hiwi/nife")
 sys.path.insert(0, str(ROOT))
 from thesis_style import use  # noqa: E402
 
-FIELD = Path("/home/nishioka/IKM_Hiwi/FEM/tier2b_real/tier2b_real_field.json")
+# argv: <job> (default tier2b_real = patient root-analog; tier2b_generic = standard screw implant)
+JOB = sys.argv[1] if len(sys.argv) > 1 else "tier2b_real"
+TITLE_A = {"tier2b_real": r"(A) real anatomy: root-analog implant $+$ tooth $+$ bone",
+           "tier2b_generic": r"(A) real bone: generic Ø4.1 screw implant $+$ tooth"}.get(
+    JOB, "(A) real anatomy")
+FIELD = Path("/home/nishioka/IKM_Hiwi/FEM/tier2b_real/%s_field.json" % JOB)
 OUT = ROOT / "masterarbeit_ansys_fem" / "figures"
 MAT_ORDER = ["BONE", "PDL", "DENTIN", "TI", "BIOFILM"]
 MAT_COL = {"BONE": "#e7d8b0", "PDL": "#ff8c00", "DENTIN": "#9ecae1",
@@ -45,7 +50,7 @@ def main():
     cmap = ListedColormap([MAT_COL[k] for k in MAT_ORDER])
     norm = BoundaryNorm(np.arange(-0.5, len(MAT_ORDER)), cmap.N)
     axA.scatter(x[m], z[m], c=code[m], cmap=cmap, norm=norm, s=6, marker="s", linewidths=0)
-    axA.set_title(r"(A) real anatomy: implant $+$ tooth $+$ bone", fontsize=7.5)
+    axA.set_title(TITLE_A, fontsize=7.0)
     handles = [plt.Line2D([], [], marker="s", ls="", mfc=MAT_COL[k], mec="none",
                           label={"TI": "implant (Ti)", "DENTIN": "tooth (dentin)"}.get(k, k.title()))
                for k in MAT_ORDER]
@@ -72,9 +77,10 @@ def main():
     axA.set_ylabel(r"depth $z$ (mm)", fontsize=6.5)
 
     OUT.mkdir(exist_ok=True)
-    fig.savefig(OUT / "fem_tier2b_real.pdf", bbox_inches="tight")
+    outpdf = OUT / ("fem_%s.pdf" % JOB)
+    fig.savefig(outpdf, bbox_inches="tight")
     plt.close(fig)
-    print("slice elems=%d  wrote %s" % (m.sum(), OUT / "fem_tier2b_real.pdf"))
+    print("slice elems=%d  wrote %s" % (m.sum(), outpdf))
 
 
 if __name__ == "__main__":
