@@ -126,7 +126,7 @@ signature). The composition mechanism **transfers unchanged** into realistic ana
 A real-tooth ceramic crown on the abutment carries the bite at the **occlusal
 table (z≈38, the neighbour's plane)**, raising the bending moment at the implant
 neck **~3.4×**. Even under physiological occlusion (100 N, 30°, ISO 14801) the
-**crestal peri-implant bone peak rises ×1.6 (55→88 MPa)**.
+**crestal peri-implant bone stress (p95) rises ×1.5 (18→27 MPa)**.
 $\Rightarrow$ prosthetic design (crown height, load position) **directly drives marginal-bone risk**.
 
 ---

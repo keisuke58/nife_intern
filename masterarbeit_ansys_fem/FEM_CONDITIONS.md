@@ -27,7 +27,7 @@ The **single canonical material set** (defined in `coupling_prototype/tier2b_rea
 | **PDL** | 50 | 0.45 | 0.25 mm periodontal ligament, neighbour tooth | linear-elastic PDL idealisation (Cattaneo 2005 use 50–69 MPa; real PDL is nonlinear → **idealisation, noted**) |
 | **CROWN** (ceramic) | 95 000 | 0.30 | load-bearing restoration | lithium-disilicate-class glass-ceramic (e.max ≈ 95 GPa). Zirconia variant = 210 GPa (design sweep) |
 | **GINGIVA** (mucosa) | 3 | 0.45 | peri-implant soft-tissue cuff (transmucosal model only) | oral mucosa, ~MPa-scale, near-incompressible |
-| **BIOFILM** | 1.0 | 0.45 | dysbiotic growth collar (+ growth eigenstrain) | soft hydrogel-like; modulus is **uncertain (Pa–MPa, 6 orders)** → results given as *ratios*, not absolutes |
+| **BIOFILM** | 1.0 | 0.45 | supracrestal **sulcular** sleeve on the Ti/tooth neck (+ growth eigenstrain) | soft hydrogel-like; modulus is **uncertain (Pa–MPa, 6 orders)** → results given as *ratios*, not absolutes |
 
 **Notes that matter for the defence**
 - **PDL and biofilm are deliberate linear-elastic idealisations.** Real PDL is hyperelastic/viscoelastic
@@ -155,7 +155,7 @@ screw (Ø4.1) is narrower than the natural socket (buccolingual ≈ 8.5 mm) → 
 | Result | Condition | Value |
 |---|---|---|
 | Dysbiosis stress ratio (DH/CH) | every growth model | **2.3 – 3.3×** (robust across plane-strain/axisym/3D/RVE) |
-| Crown moment arm → crestal bone peak | tier2b_crown, 100 N/30°, load z 32.5 → 38 | 55 → 88 MPa (**×1.6**); neck Ti 146 → 180 MPa |
+| Crown moment arm → crestal bone p95 | tier2b_crown (intact bone), 100 N/30°, load z 32.5 → 38 | 18 → 27 MPa (**×1.5**, p95; abs. max is a crown-insensitive neck singularity) |
 | Real-molar crown validation | tier2b_crownreal vs tier2b_crown | 79 vs 88 MPa (**−10%** → parametric crown adequate) |
 | C/I-ratio feedback | coupon sweep + resorption ODE, same severity | crowned reaches point-of-no-return **34 mo vs 55 mo** (38% sooner) |
 | Marginal-bone-loss → stress | coupon, bone 2 → 8 mm | crest 14 → 35 MPa; stiffness 2.7 → 0.7 N/µm |
