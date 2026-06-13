@@ -177,6 +177,18 @@ cascade into a probabilistic one (on-brand with the thesis's Bayesian core):
   nearly irrelevant. (For the moderate Botelho cohort P(progress) stays ≤0.12 — honest: none is likely
   to reach the mechanical point-of-no-return within 36 mo.)
 
+## Anatomically faithful transmucosal model (where the biofilm sits)
+`gen_transmucosal_axi.py` + `extract_tm.py` + `fig_transmucosal.py` -> `fem_transmucosal.pdf`.
+An axisymmetric CAX4 transmucosal section with the Ti implant/abutment, alveolar bone, the peri-implant
+mucosa (gingiva cuff, E~3 MPa), the gingival sulcus, and the BIOFILM as a thin layer ON the titanium
+WITHIN the sulcus -- i.e. between the Ti and the gingiva, exactly where peri-implant biofilm forms.
+Three stages parameterise the pocket bottom: healthy sulcus -> peri-mucositis -> peri-implantitis, where
+the biofilm DESCENDS apically along the implant and into the resorbed (infrabony) bone defect (bone
+elements there are replaced by biofilm). Confirms the clinical placement; mechanically the soft biofilm/
+gingiva change the bone stress little (their role is biological, carried by the inflammation cascade) --
+the model's value is the explicit anatomy + the descent path linking sulcus colonisation to the
+bone-loss studies.
+
 ## Result (honest, root-analog `tier2b_real`)
 The fully real-geometry coupled model **solves successfully** — the methodological goal. With a
 literature-standard linear PDL (50 MPa) the peri-implant vs peri-tooth crestal-bone contrast is
