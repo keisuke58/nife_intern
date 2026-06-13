@@ -23,11 +23,14 @@ FEMDIR = Path("/home/nishioka/IKM_Hiwi/FEM/tier2b_real")
 META = FEMDIR / "tier2b_generic_meta.npz"
 FIELD = FEMDIR / "tier2b_generic_field.json"
 OUT = ROOT / "masterarbeit_ansys_fem" / "figures"
-COL = {"BONE": "#d6c193", "TI": "#5a5a5a", "DENTIN": "#9ecae1", "PDL": "#ff8c00", "BIOFILM": "#d62728"}
+COL = {"BONE": "#d6c193", "TI": "#7c8893", "DENTIN": "#9ecae1", "PDL": "#ff8c00", "BIOFILM": "#d62728"}
 LAB = {"TI": "implant (Ti)", "DENTIN": "tooth (dentin)", "PDL": "PDL", "BIOFILM": "biofilm", "BONE": "bone"}
 BONE_MATS = ("CORTICAL", "CANCELLOUS")
-ELEV, AZIM = 14, -58
-LIGHT = np.array([0.35, 0.55, 0.75]); LIGHT = LIGHT / np.linalg.norm(LIGHT)
+ELEV, AZIM = 11, -50
+LIGHT = np.array([0.32, 0.5, 0.8]); LIGHT = LIGHT / np.linalg.norm(LIGHT)
+# per-material shading (lo, span, specular) -- metal gets more contrast + a highlight
+SH = {"TI": (0.32, 0.80, 0.55), "DENTIN": (0.5, 0.5, 0.0), "PDL": (0.5, 0.5, 0.0),
+      "BIOFILM": (0.5, 0.5, 0.0), "BONE": (0.5, 0.5, 0.0)}
 
 
 def boundary_faces(tets):
@@ -44,10 +47,18 @@ def boundary_faces(tets):
     return F[sel], parent[sel]
 
 
-def shade(tris, rgb):
+def _brightness(tris, lo=0.45, span=0.55, spec=0.0):
     n = np.cross(tris[:, 1] - tris[:, 0], tris[:, 2] - tris[:, 0])
     n /= (np.linalg.norm(n, axis=1, keepdims=True) + 1e-12)
-    s = 0.45 + 0.55 * np.clip(np.abs(n @ LIGHT), 0, 1)
+    d = np.clip(np.abs(n @ LIGHT), 0, 1)
+    s = lo + span * d
+    if spec:
+        s = s + spec * d ** 12
+    return s
+
+
+def shade(tris, rgb, lo=0.45, span=0.55, spec=0.0):
+    s = _brightness(tris, lo, span, spec)
     return np.clip(np.asarray(rgb)[None, :] * s[:, None], 0, 1)
 
 
@@ -109,7 +120,7 @@ def main():
                                           edgecolors="none", alpha=0.28, rasterized=True))
     for M in ["DENTIN", "PDL", "TI", "BIOFILM"]:
         tris, _ = surf[M]
-        axA.add_collection3d(Poly3DCollection(tris, facecolors=shade(tris, to_rgb(COL[M])),
+        axA.add_collection3d(Poly3DCollection(tris, facecolors=shade(tris, to_rgb(COL[M]), *SH[M]),
                                               edgecolors=(0, 0, 0, 0.10), linewidths=0.05, rasterized=True))
     label3d(axA, *imp_xyz, "IMPLANT (Ti screw)", "#222222")
     label3d(axA, *too_xyz, "natural tooth", "#b35806")
@@ -124,15 +135,17 @@ def main():
     # ---------- Panel B: von Mises ----------
     axB = fig.add_subplot(1, 2, 2, projection="3d")
     allv = np.concatenate([surf[M][1] for M in surf])
-    vclip = float(np.nanpercentile(allv, 96)); norm = Normalize(0, vclip); cmap = plt.get_cmap("inferno")
+    # clip at a robust mid value (a few high-stress implant-neck faces otherwise blacken
+    # everything else); viridis keeps low stress coloured (dark teal) rather than pure black.
+    vclip = float(np.nanpercentile(allv, 80)); norm = Normalize(0, vclip); cmap = plt.get_cmap("viridis")
     axB.add_collection3d(Poly3DCollection(surfB, facecolors=(0.7, 0.7, 0.7, 0.06),
                                           edgecolors="none", rasterized=True))
     for M in ["DENTIN", "PDL", "TI", "BIOFILM"]:
         tris, fv = surf[M]
         base = cmap(norm(np.clip(np.nan_to_num(fv), 0, vclip)))[:, :3]
-        sh = shade(tris, [1, 1, 1])[:, 0]
+        sh = _brightness(tris, 0.72, 0.28)              # higher floor so faces never go black
         pc = Poly3DCollection(tris, edgecolors="none", rasterized=True)
-        pc.set_facecolor(np.clip(base * (0.5 + 0.5 * sh)[:, None], 0, 1))
+        pc.set_facecolor(np.clip(base * sh[:, None], 0, 1))
         axB.add_collection3d(pc)
     label3d(axB, *imp_xyz, "IMPLANT", "#222222")
     label3d(axB, *too_xyz, "tooth", "#b35806")
