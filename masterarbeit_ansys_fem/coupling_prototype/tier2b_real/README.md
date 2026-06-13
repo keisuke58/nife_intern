@@ -136,6 +136,11 @@ A(loss)=crest(loss)/crest(2mm). Resorption ODE: d(loss)/dt = k·severity·A(loss
   trajectory + risk ranking** (extends the thesis per-patient J ranking). Honest caveat: Dieckow is a
   longitudinal *development* cohort (all GDI<0, sub-clinical) -> the result is RELATIVE per-patient
   stratification; the absolute disease range comes from the Joshi-validated DI–severity link (ρ=0.46).
+- `fig_periimplantitis_botelho.py` -> `fem_periimplantitis_botelho.pdf` **(strongest in-vivo)**: same
+  GDI driver on Botelho 2021 (PRJNA725874, `data/prjna725874/phi_guild.npy`, 15 pt × 7 tp / 12 wk) --
+  a genuine **periodontitis** longitudinal cohort (dysbiotic bone-loss disease, peri-implantitis
+  analogue), so more disease signal + a longer window than Dieckow. Per-patient GDI(t) → bone-loss
+  trajectory + ranking (P8/P2/P13 highest-risk).
 - `fig_periimplantitis_timeseries.py` -> `fem_periimplantitis_timeseries.pdf` (in-vitro, secondary):
   the gLV/Hamilton-fitted 5-species attractor trajectories φ_Pg(t) (CS/CH/DS/DH). **Driver caveat**:
   raw φ_Pg mis-ranks severity here — Pg is a minor member and the dysbiotic states differ partly by Pg
