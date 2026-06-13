@@ -93,7 +93,8 @@ def main():
     sverts, sfaces = dent["sverts"], dent["sfaces"]
     inn, it = imp["nodes"], imp["tets"]
     if WITH_CROWN:
-        crw = np.load(f"{OUT}/cache_crown.npz")
+        crown_cache = "cache_crown_real.npz" if "crownreal" in job else "cache_crown.npz"
+        crw = np.load(f"{OUT}/{crown_cache}")
         cnn, ct = crw["nodes"], crw["tets"]
 
     # PDL: offset tooth-24 surface outward along vertex normals
