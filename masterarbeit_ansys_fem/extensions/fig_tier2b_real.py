@@ -29,9 +29,11 @@ TITLE_A = {"tier2b_real": r"(A) real anatomy: root-analog implant $+$ tooth $+$ 
     JOB, "(A) real anatomy")
 FIELD = Path("/home/nishioka/IKM_Hiwi/FEM/tier2b_real/%s_field.json" % JOB)
 OUT = ROOT / "masterarbeit_ansys_fem" / "figures"
-MAT_ORDER = ["BONE", "PDL", "DENTIN", "TI", "BIOFILM"]
-MAT_COL = {"BONE": "#e7d8b0", "PDL": "#ff8c00", "DENTIN": "#9ecae1",
-           "TI": "#636363", "BIOFILM": "#d62728"}
+MAT_ORDER = ["CANCELLOUS", "BONE", "CORTICAL", "PDL", "DENTIN", "TI", "BIOFILM"]
+MAT_COL = {"BONE": "#e7d8b0", "CANCELLOUS": "#efe3c2", "CORTICAL": "#c9a96a", "PDL": "#ff8c00",
+           "DENTIN": "#9ecae1", "TI": "#636363", "BIOFILM": "#d62728"}
+MAT_LAB = {"TI": "implant (Ti)", "DENTIN": "tooth (dentin)", "CORTICAL": "cortical bone",
+           "CANCELLOUS": "cancellous bone", "PDL": "PDL", "BIOFILM": "biofilm", "BONE": "bone"}
 T23, T24 = -69.4, -63.9   # mesiodistal x of implant / tooth axes
 
 
@@ -51,14 +53,14 @@ def main():
     norm = BoundaryNorm(np.arange(-0.5, len(MAT_ORDER)), cmap.N)
     axA.scatter(x[m], z[m], c=code[m], cmap=cmap, norm=norm, s=6, marker="s", linewidths=0)
     axA.set_title(TITLE_A, fontsize=7.0)
-    handles = [plt.Line2D([], [], marker="s", ls="", mfc=MAT_COL[k], mec="none",
-                          label={"TI": "implant (Ti)", "DENTIN": "tooth (dentin)"}.get(k, k.title()))
-               for k in MAT_ORDER]
-    axA.legend(handles=handles, fontsize=5.3, loc="lower center", ncol=3,
+    present = [k for k in MAT_ORDER if (mat[m] == k).any()]
+    handles = [plt.Line2D([], [], marker="s", ls="", mfc=MAT_COL[k], mec="none", label=MAT_LAB[k])
+               for k in present]
+    axA.legend(handles=handles, fontsize=5.0, loc="lower center", ncol=3,
                handletextpad=0.2, columnspacing=0.7, framealpha=0.9)
 
     # ---- Panel B: occlusal von Mises ----
-    vclip = 8.0
+    vclip = float(np.ceil(np.percentile(vmo[m], 97)))   # adaptive (oblique load -> higher range)
     sc = axB.scatter(x[m], z[m], c=np.clip(vmo[m], 0, vclip), cmap="inferno",
                      s=6, marker="s", vmin=0, vmax=vclip, linewidths=0)
     axB.set_title(r"(B) occlusal load: shared-bone coupling", fontsize=7.5)

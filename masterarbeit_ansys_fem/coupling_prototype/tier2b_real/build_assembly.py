@@ -28,8 +28,9 @@ PDL_THICK = 0.25
 EPS_GROWTH = 0.19
 # crop-box (must match prep_meshes.py)
 X0, X1, Y0, Y1, Z0, Z1 = -76.0, -59.0, -47.0, -37.5, 15.0, 31.0
-MATS = {"BONE": (13700., 0.30), "TI": (110000., 0.34), "DENTIN": (18000., 0.31),
-        "PDL": (50., 0.45), "BIOFILM": (1.0, 0.45)}
+MATS = {"BONE": (13700., 0.30), "CORTICAL": (13700., 0.30), "CANCELLOUS": (1000., 0.30),
+        "TI": (110000., 0.34), "DENTIN": (18000., 0.31), "PDL": (50., 0.45), "BIOFILM": (1.0, 0.45)}
+CORTICAL_THICK = 1.8          # cortical shell / lamina-dura thickness (mm) for the two-layer bone
 # C3D4 face -> local node triple (Abaqus 1-based)
 FACE_NODES = {1: (0, 1, 2), 2: (0, 3, 1), 3: (1, 3, 2), 4: (2, 3, 0)}
 
@@ -44,6 +45,25 @@ def clean_tets(conn, nodes, vol_min=1e-4):
     out[neg] = out[neg][:, [0, 1, 3, 2]]          # swap last two -> flip orientation
     keep = np.abs(v6) / 6.0 > vol_min
     return out[keep], int((~keep).sum()), int(neg.sum())
+
+
+def boundary_face_centroids(tets, nodes, exclude_planes):
+    """Centroids of the free (boundary) faces of a tet block, excluding faces lying on the artificial
+    crop planes (so 'outer surface' = real mandible cortex + socket lamina dura, not the cut faces)."""
+    cnt = {}
+    for t in tets:
+        for (a, b, c) in FACE_NODES.values():
+            key = tuple(sorted((int(t[a]), int(t[b]), int(t[c]))))
+            cnt[key] = cnt.get(key, 0) + 1
+    cents = []
+    for key, n in cnt.items():
+        if n != 1:
+            continue
+        fc = nodes[list(key)].mean(axis=0)
+        on_plane = any(abs(fc[ax] - val) < 0.8 for ax, val in exclude_planes)
+        if not on_plane:
+            cents.append(fc)
+    return np.array(cents)
 
 
 def free_faces(tets, elem_gids):
@@ -108,9 +128,22 @@ def main():
     coll = band & ((r24 <= 2.6) | (r23 <= 2.6))
     print(f"biofilm collar tets: {coll.sum()}")
 
-    # ---- element sets (global element ids assigned per block) ----
-    blocks = [("BONE", bt_g[~coll]), ("BIOFILM", bt_g[coll]),
-              ("DENTIN", dt_g), ("TI", it_g), ("PDL", pdl_tets)]
+    # ---- two-layer bone (level-up): cortical shell / lamina dura vs cancellous core ----
+    # only for the generic-implant job; tier2b_real stays single-layer (preserved original).
+    bone_block = bt_g[~coll]
+    if job != "tier2b_real":
+        from scipy.spatial import cKDTree
+        planes = [(0, X0), (0, X1), (1, Y0), (1, Y1), (2, Z0)]   # artificial crop faces to ignore
+        surf_c = boundary_face_centroids(bt_g, bn, planes)       # real outer + socket-wall faces
+        bc = bn[bone_block].mean(axis=1)
+        dist, _ = cKDTree(surf_c).query(bc)
+        is_cort = dist < CORTICAL_THICK
+        print(f"two-layer bone: cortical={int(is_cort.sum())} cancellous={int((~is_cort).sum())}")
+        blocks = [("CORTICAL", bone_block[is_cort]), ("CANCELLOUS", bone_block[~is_cort]),
+                  ("BIOFILM", bt_g[coll]), ("DENTIN", dt_g), ("TI", it_g), ("PDL", pdl_tets)]
+    else:
+        blocks = [("BONE", bone_block), ("BIOFILM", bt_g[coll]),
+                  ("DENTIN", dt_g), ("TI", it_g), ("PDL", pdl_tets)]
     eid = {}; gid = 1; elem_rows = []
     for name, conn in blocks:
         conn, ndrop, nflip = clean_tets(conn, nodes)
@@ -129,9 +162,10 @@ def main():
     # 0.25 mm PDL compliance), so they are dropped.
     pdl_free = {k: v for k, v in pdl_free_all.items() if min(k) >= off_p}
     imp_free = free_faces(it_g, eid["TI"][0])
-    # master: BONE boundary faces near either socket wall
-    bone_all = np.vstack([eid["BONE"][1], eid["BIOFILM"][1]])
-    bone_gids = np.concatenate([eid["BONE"][0], eid["BIOFILM"][0]])
+    # master: BONE boundary faces near either socket wall (over all bone elsets: single or two-layer)
+    bone_sets = [s for s in ("BONE", "CORTICAL", "CANCELLOUS", "BIOFILM") if s in eid]
+    bone_all = np.vstack([eid[s][1] for s in bone_sets])
+    bone_gids = np.concatenate([eid[s][0] for s in bone_sets])
     bone_free = free_faces(bone_all, bone_gids)
     # restrict master to socket region (near tooth axes, below crest). The tooth-23 alveolar socket
     # is wider (buccolingually) than a standard Ø4.1 implant, so the tooth-23 master radius is enlarged
@@ -171,6 +205,8 @@ def main():
         for e, c in zip(ids, conn + 1):
             ap(" %d, %d, %d, %d, %d" % (e, c[0], c[1], c[2], c[3]))
     for m, (E, nu) in MATS.items():
+        if m not in eid:                      # only emit materials that have elements
+            continue
         ap("*SOLID SECTION, ELSET=%s, MATERIAL=%s" % (m, m))
         ap("*MATERIAL, NAME=%s" % m)
         ap("*ELASTIC"); ap(" %.1f, %.3f" % (E, nu))
@@ -206,13 +242,17 @@ def main():
     ap("*TEMPERATURE"); ap(" ALLN, 1.0")
     ap("*OUTPUT, FIELD"); ap("*NODE OUTPUT"); ap(" U")
     ap("*ELEMENT OUTPUT, POSITION=CENTROID"); ap(" S, COORD"); ap("*END STEP")
-    ap("*STEP, NLGEOM=NO"); ap(" 2) occlusal load on both crowns"); ap("*STATIC")
+    # occlusal load: ISO 14801-style 30deg oblique for the leveled-up generic job (lateral/axial =
+    # tan30 = 0.577); the preserved tier2b_real keeps its original ~11deg (0.2) load.
+    lat = 0.577 if job != "tier2b_real" else 0.2
+    ang = "30deg oblique (ISO 14801)" if job != "tier2b_real" else "near-axial"
+    ap("*STEP, NLGEOM=NO"); ap(" 2) occlusal load on both crowns (%s)" % ang); ap("*STATIC")
     ap("*CLOAD")
     for ids in (too_top, imp_top):
         if len(ids):
-            f = 60.0 / len(ids)
+            f = 100.0 / len(ids)            # ~100 N occlusal resultant per crown
             for n in np.unique(ids) + 1:
-                ap(" %d, 3, %.5f" % (n, -f)); ap(" %d, 1, %.5f" % (n, 0.2 * f))
+                ap(" %d, 3, %.5f" % (n, -f)); ap(" %d, 1, %.5f" % (n, lat * f))
     ap("*OUTPUT, FIELD"); ap("*NODE OUTPUT"); ap(" U")
     ap("*ELEMENT OUTPUT, POSITION=CENTROID"); ap(" S, COORD"); ap("*END STEP")
     open(f"{OUT}/{job}.inp", "w").write("\n".join(L) + "\n")

@@ -7,7 +7,7 @@ T24 = np.array([-63.9, -41.2]); T23 = np.array([-69.4, -41.0])
 r24 = np.hypot(x - T24[0], y - T24[1]); r23 = np.hypot(x - T23[0], y - T23[1])
 X0, X1, Y0, Y1, Z0 = -73.0, -59.0, -47.0, -37.5, 15.0
 faredge = (x < X0 + 1.0) | (x > X1 - 1.0) | (y < Y0 + 1.0) | (y > Y1 - 1.0) | (z < Z0 + 1.0)
-bone = (mat == "BONE") & ~faredge
+bone = np.isin(mat, ["BONE", "CORTICAL", "CANCELLOUS"]) & ~faredge
 
 
 def shell(rr, lo, hi, zmax=28.5):

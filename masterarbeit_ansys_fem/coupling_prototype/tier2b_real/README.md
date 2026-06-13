@@ -48,11 +48,24 @@ tolerance (2.8 mm) only for the generic job, because the standard Ø4.1 screw is
 natural (buccolingually ~8.5 mm) socket — the screw is bonded to the socket walls, an **explicit
 idealisation** (a real placement would be a healed/drilled ridge).
 
-**Generic-screw result**: peak stress is now carried by the **titanium thread roots** (occlusal vM
-≈79 MPa vs 49 MPa for the smooth root-analog — the classic implant thread stress-concentration). The
-peri-implant vs peri-tooth crestal-bone contrast stays modest (implant 5.9 ≈ tooth 5.9 MPa at the
-crest; ratio 0.85 over the interface shell), reflecting the partial socket engagement of a standard
-screw in this site. Figure `figures/fem_tier2b_generic.pdf`.
+### Level-up (the adopted generic model)
+The `tier2b_generic` job additionally carries two realism upgrades over the root-analog:
+1. **Two-layer bone** — cortical shell / lamina dura (within 1.8 mm of the real outer & socket-wall
+   surfaces, 13.7 GPa) vs cancellous core (1.0 GPa). This thin alveolar crop is cortical-dominated
+   (cortical 232792 vs cancellous 6406 tets) — anatomically reasonable; the cancellous core is deep
+   and lightly loaded (≈0.5 MPa), so it barely shifts the interface result, but the distinction is
+   carried explicitly.
+2. **ISO 14801-style 30° oblique occlusal load, ~100 N/crown** (lateral/axial = tan30 = 0.577),
+   replacing the earlier near-axial load — the standardised, clinically dominant condition.
+
+**Leveled-up generic result**: under 30° oblique loading the **crestal peri-implant bone reaches
+≈20 MPa** (vs ≈6 MPa near-axial — oblique load dominates marginal-bone stress), with the implant
+slightly exceeding the tooth at the crest (z∈[26,28.5]: implant 20.3 vs tooth 19.1 MPa; interface
+shell ratio 1.03) — the peri-implant marginal-bone-loss signature now emerges. Peak stress sits in
+the **titanium thread roots** (≈146 MPa, well within Ti yield) — the classic implant thread stress
+concentration. The standard Ø4.1 screw is narrower than the natural (buccolingually ~8.5 mm) socket,
+so it is bonded to the socket walls (immediate-placement-like partial engagement — an explicit
+idealisation). Figure `figures/fem_tier2b_generic.pdf`.
 
 ## Result (honest, root-analog `tier2b_real`)
 The fully real-geometry coupled model **solves successfully** — the methodological goal. With a
