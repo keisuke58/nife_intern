@@ -99,6 +99,34 @@ Figure `figures/fem_implant_design.pdf` (4 panels). Peak Ti stresses (60–230 M
 Ti-6Al-4V yield (~800 MPa). The coupon isolates implant design; the full-mandible `tier2b_generic`
 provides the anatomical-coupling context.
 
+## Peri-implantitis DISEASE-process studies (4 pillars)
+Beyond implant *design*, these model the disease itself --- progressive marginal bone loss --- on the
+same coupon. Scripts: `periimplantitis_coupon.py` (parametric bone level, bonded), `contact_coupon.py`
+(debonded, frictional general contact), `extract_pimp.py` / `extract_pimp_field.py` /
+`extract_contact.py`, runner `run_pimp.sh`. Figures: `fig_periimplantitis*.py`.
+
+**(1) Progressive marginal bone loss → stress feedback** (`run_pimp.sh`, bone level 2→8 mm):
+crestal-bone $\sigma_\mathrm{vM}$ rises $14\to35$ MPa and coupon stiffness collapses $2.7\to0.7$ N/µm
+(×3.7) — an **accelerating vicious cycle / point-of-no-return** (sharp jump at 8 mm). Fig
+`fem_periimplantitis_progression.pdf` (A).
+
+**(3) Biofilm severity sets the rate** (same fig, B): the dysbiotic interface drives resorption ≈2.5×
+faster than the commensal (the Chapter-5 contrast applied as the time-axis rate), so DH reaches the
+accelerating regime far sooner. (Severity enters the rate, not the mesh.)
+
+**(2) Mechanobiological remodelling (Frost/Carter mechanostat)** (`fig_periimplantitis_remodel.py`):
+strain-energy density SED$=\sigma_\mathrm{vM}^2/2E$ concentrates at the **crestal** bone on the loaded
+(buccal) side → the FEM predicts resorption initiates there and progresses as a saucer-shaped defect
+("saucerisation"). Fig `fem_periimplantitis_remodel.pdf`.
+
+**(4) Loss of osseointegration → micromotion (Brunski)** (`contact_coupon.py`, 0% BIC, µ=0.3):
+a fully debonded implant micro-moves only ≈7–8 µm at 100 N across 4–8 mm bone loss — **well below the
+Brunski ~150 µm** fibrous-encapsulation threshold; sub-threshold even at ~6× bite force. Honest
+conclusion: early/moderate peri-implant bone loss is **biofilm-driven, not micromotion-driven** ---
+mechanical instability appears only at near-total loss / parafunction. Fig
+`fem_periimplantitis_micromotion.pdf`. (general contact, `STABILIZE`; micromotion = implant-vs-socket
+nodal $\Delta U$; contact-output CSLIP/CPRESS dropped — invalid for this option.)
+
 ## Result (honest, root-analog `tier2b_real`)
 The fully real-geometry coupled model **solves successfully** — the methodological goal. With a
 literature-standard linear PDL (50 MPa) the peri-implant vs peri-tooth crestal-bone contrast is

@@ -1,0 +1,4 @@
+{"tag": "e2", "expose": 2.0, "iface": "bond", "order": 2, "z_bone_top": 8.0}
+{"tag": "e4", "expose": 4.0, "iface": "bond", "order": 2, "z_bone_top": 6.0}
+{"tag": "e6", "expose": 6.0, "iface": "bond", "order": 2, "z_bone_top": 4.0}
+{"tag": "e8", "expose": 8.0, "iface": "bond", "order": 2, "z_bone_top": 2.0}
