@@ -71,15 +71,15 @@ def main():
     axA = fig.add_subplot(1, 2, 1, projection="3d")
     panel(axA, FEMDIR / "tier2b_generic_meta.npz", r"(A) bare screw $+$ abutment (load at platform)", False)
     pk_b = cf.peri_implant_bone_peak(FEMDIR / "tier2b_generic_field.json")
-    axA.text2D(0.04, 0.06, r"crestal bone peak %.0f MPa" % pk_b, transform=axA.transAxes,
+    axA.text2D(0.04, 0.06, r"crestal bone p95 %.0f MPa" % pk_b, transform=axA.transAxes,
                fontsize=5.6, color="0.25")
     axB = fig.add_subplot(1, 2, 2, projection="3d")
     panel(axB, FEMDIR / "tier2b_crown_meta.npz", r"(B) restored: crown $+$ gingiva (load at occlusal table)", True)
     pk_c = cf.peri_implant_bone_peak(FEMDIR / "tier2b_crown_field.json")
-    axB.text2D(0.04, 0.06, r"crestal bone peak %.0f MPa ($\times$%.1f)" % (pk_c, pk_c / pk_b),
+    axB.text2D(0.04, 0.06, r"crestal bone p95 %.0f MPa ($\times$%.1f)" % (pk_c, pk_c / pk_b),
                transform=axB.transAxes, fontsize=5.6, color="#b30000", fontweight="bold")
     fig.suptitle(r"Crown moment arm: load moves from the abutment platform to the occlusal table "
-                 r"$\Rightarrow$ crestal peri-implant bone peak $\times$%.1f" % (pk_c / pk_b),
+                 r"$\Rightarrow$ crestal peri-implant bone (p95) $\times$%.1f" % (pk_c / pk_b),
                  fontsize=7.2, y=0.99)
     fig.subplots_adjust(left=0.0, right=0.99, bottom=0.0, top=0.9, wspace=0.0)
     OUT.mkdir(exist_ok=True)

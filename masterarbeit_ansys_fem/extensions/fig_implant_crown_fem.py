@@ -155,13 +155,16 @@ def gingiva_cuff(cx=T23[0], cy=T23[1], prof=None, nth=64):
 
 
 def peri_implant_bone_peak(field_json):
-    """Peak occlusal vM in the crestal peri-implant bone (cortical/cancellous, r<3 mm, near crest)."""
+    """Robust (p95) occlusal vM in the crestal peri-implant bone (cortical/cancellous, r<3 mm, near
+    crest). p95 not max: with anatomically intact crestal bone the absolute max is a neck/TIE-edge
+    geometric singularity (insensitive to the crown), so the broad crestal stress (p95) is the
+    physically meaningful measure of the moment-arm effect."""
     d = json.load(open(field_json))["els"]
     x = np.array([e["x"] for e in d]); y = np.array([e["y"] for e in d]); z = np.array([e["z"] for e in d])
     vm = np.array([e["vmo"] for e in d]); mat = np.array([e["mat"] for e in d])
     r = np.hypot(x - T23[0], y - T23[1])
     pib = np.isin(mat, ["CORTICAL", "CANCELLOUS", "BONE"]) & (r <= 3.0) & (z >= CREST - 3) & (z <= CREST + 1.5)
-    return float(vm[pib].max())
+    return float(np.percentile(vm[pib], 95))
 
 
 def main():
@@ -256,7 +259,7 @@ def main():
     pk_gen = peri_implant_bone_peak(GEN_FIELD) if GEN_FIELD.exists() else None
     if pk_gen:
         axB.text2D(0.02, 0.04,
-                   r"peri-implant bone peak $\sigma_\mathrm{vM}$:" + "\n"
+                   r"crestal peri-implant bone $\sigma_\mathrm{vM}$ (p95):" + "\n"
                    + r"%.0f $\to$ %.0f MPa ($\times$%.1f) via crown moment arm"
                    % (pk_gen, pk_crown, pk_crown / pk_gen),
                    transform=axB.transAxes, fontsize=5.4, color="#b30000",

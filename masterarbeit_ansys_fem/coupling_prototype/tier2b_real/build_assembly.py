@@ -34,9 +34,39 @@ MATS = {"BONE": (13700., 0.30), "CORTICAL": (13700., 0.30), "CANCELLOUS": (1000.
 CORTICAL_THICK = 1.8          # cortical shell / lamina-dura thickness (mm) for the two-layer bone
 # C3D4 face -> local node triple (Abaqus 1-based)
 FACE_NODES = {1: (0, 1, 2), 2: (0, 3, 1), 3: (1, 3, 2), 4: (2, 3, 0)}
+# anatomical peri-implant/peri-tooth biofilm sleeve (supracrestal, in the gingival sulcus, ON the
+# hard-tissue surface): a thin annulus from the bone crest up into the sulcus, tied to the implant /
+# tooth neck.  Replaces the old subcrestal bone-carved collar for the coupled (crown) assembly.
+SULC_Z0, SULC_Z1 = CREST_Z + 0.0, CREST_Z + 2.3    # crest -> ~2.3 mm up the sulcus
+# 6-tet (Kuhn) split of a hex with corners 0..7 (0-3 bottom ring, 4-7 top ring)
+_HEX6 = [(0, 1, 2, 6), (0, 2, 3, 6), (0, 3, 7, 6), (0, 7, 4, 6), (0, 4, 5, 6), (0, 5, 1, 6)]
 
 
-def clean_tets(conn, nodes, vol_min=1e-4):
+def biofilm_sleeve(ax, r_in, r_out, z0=SULC_Z0, z1=SULC_Z1, nth=56, nz=8):
+    """Thin annular biofilm sleeve (body of revolution) hugging a neck in the sulcus. Returns
+    (nodes, tets) with tets 0-based into the returned nodes; inner shell = r_in (tied to the neck)."""
+    th = np.linspace(0, 2 * np.pi, nth, endpoint=False)
+    zs = np.linspace(z0, z1, nz + 1)
+    nd = np.empty(((nz + 1) * nth * 2, 3))
+
+    def nid(it, jz, sh):
+        return (it * (nz + 1) + jz) * 2 + sh
+    for it in range(nth):
+        for jz in range(nz + 1):
+            for sh, r in enumerate((r_in, r_out)):
+                nd[nid(it, jz, sh)] = (ax[0] + r * np.cos(th[it]), ax[1] + r * np.sin(th[it]), zs[jz])
+    tets = []
+    for it in range(nth):
+        j2 = (it + 1) % nth
+        for jz in range(nz):
+            n = [nid(it, jz, 0), nid(j2, jz, 0), nid(j2, jz, 1), nid(it, jz, 1),
+                 nid(it, jz + 1, 0), nid(j2, jz + 1, 0), nid(j2, jz + 1, 1), nid(it, jz + 1, 1)]
+            for a, b, c, d in _HEX6:
+                tets.append([n[a], n[b], n[c], n[d]])
+    return nd, np.array(tets, dtype=np.int64)
+
+
+def clean_tets(conn, nodes, vol_min=2.5e-4):
     """Flip negative-volume tets (winding) and drop sliver tets (volume < vol_min mm^3, which
     Abaqus rejects as zero/small). conn 0-based into nodes."""
     p = nodes[conn]
@@ -85,6 +115,9 @@ def main():
     imp_cache = sys.argv[1] if len(sys.argv) > 1 else "cache_implant.npz"
     job = sys.argv[2] if len(sys.argv) > 2 else "tier2b_real"
     WITH_CROWN = "crown" in job          # ceramic crown seated on the abutment -> occlusal moment arm
+    ANAT_BIO = job != "tier2b_real"       # anatomical biofilm: supracrestal sulcular sleeve on the neck
+    #                                       (all leveled-up coupled jobs); only original tier2b_real
+    #                                       keeps the legacy subcrestal bone-carved collar.
     if len(sys.argv) > 3:                 # optional crown Young's modulus override (MPa), design sweep
         MATS["CROWN"] = (float(sys.argv[3]), 0.30)
     bone = np.load(f"{OUT}/cache_bone.npz")
@@ -114,10 +147,26 @@ def main():
     off_i = Nb + Nd
     off_p = Nb + Nd + Ni                 # pdl OUTER nodes (inner reuse dentin ids)
     off_c = off_p + V                    # crown nodes (after pdl-outer); 0 of them if no crown
-    if WITH_CROWN:
-        nodes = np.vstack([bn, dn, inn, pdl_outer_xyz, cnn])
+    Nc = len(cnn) if WITH_CROWN else 0
+    off_bf = off_c + Nc                  # anatomical-biofilm sleeve nodes (after crown)
+    # supracrestal sulcular biofilm sleeves on the implant (r_in just outside the Ø4.1 crest 2.05)
+    # and the tooth-24 neck (just outside dentin ~3.43); inner shells tie to the necks.
+    if ANAT_BIO:
+        sb_i, st_i = biofilm_sleeve(T23_AXIS, 2.10, 2.40)      # peri-implant
+        sb_t, st_t = biofilm_sleeve(T24_AXIS, 3.50, 3.80)      # peri-tooth
+        Nbi = len(sb_i)
+        bf_nodes = np.vstack([sb_i, sb_t])
+        bf_tets = np.vstack([st_i + off_bf, st_t + off_bf + Nbi])
+        bf_rin = {"imp": (T23_AXIS, 2.10, 2.40), "too": (T24_AXIS, 3.50, 3.80)}
     else:
-        nodes = np.vstack([bn, dn, inn, pdl_outer_xyz])
+        bf_nodes = np.zeros((0, 3)); bf_tets = np.zeros((0, 4), np.int64)
+
+    parts = [bn, dn, inn, pdl_outer_xyz]
+    if WITH_CROWN:
+        parts.append(cnn)
+    if ANAT_BIO:
+        parts.append(bf_nodes)
+    nodes = np.vstack(parts)
 
     # ---- element connectivity (global, 0-based) ----
     bt_g = bt
@@ -139,11 +188,14 @@ def main():
     r23 = np.hypot(bcent[:, 0] - T23_AXIS[0], bcent[:, 1] - T23_AXIS[1])
     band = (bcent[:, 2] >= CREST_Z - 2.0) & (bcent[:, 2] <= CREST_Z + 1.5)
     coll = band & ((r24 <= 2.6) | (r23 <= 2.6))
-    print(f"biofilm collar tets: {coll.sum()}")
+    if ANAT_BIO:
+        coll = np.zeros(len(bt), bool)   # bone stays intact; biofilm = supracrestal sulcular sleeves
+    print(f"biofilm collar tets (bone-carved): {coll.sum()}  ANAT_BIO={ANAT_BIO}")
 
     # ---- two-layer bone (level-up): cortical shell / lamina dura vs cancellous core ----
     # only for the generic-implant job; tier2b_real stays single-layer (preserved original).
     bone_block = bt_g[~coll]
+    biofilm_block = bf_tets if ANAT_BIO else bt_g[coll]   # sulcular sleeve vs old bone-carved collar
     if job != "tier2b_real":
         from scipy.spatial import cKDTree
         planes = [(0, X0), (0, X1), (1, Y0), (1, Y1), (2, Z0)]   # artificial crop faces to ignore
@@ -153,9 +205,9 @@ def main():
         is_cort = dist < CORTICAL_THICK
         print(f"two-layer bone: cortical={int(is_cort.sum())} cancellous={int((~is_cort).sum())}")
         blocks = [("CORTICAL", bone_block[is_cort]), ("CANCELLOUS", bone_block[~is_cort]),
-                  ("BIOFILM", bt_g[coll]), ("DENTIN", dt_g), ("TI", it_g), ("PDL", pdl_tets)]
+                  ("BIOFILM", biofilm_block), ("DENTIN", dt_g), ("TI", it_g), ("PDL", pdl_tets)]
     else:
-        blocks = [("BONE", bone_block), ("BIOFILM", bt_g[coll]),
+        blocks = [("BONE", bone_block), ("BIOFILM", biofilm_block),
                   ("DENTIN", dt_g), ("TI", it_g), ("PDL", pdl_tets)]
     if WITH_CROWN:
         blocks.append(("CROWN", ct_g))
@@ -177,8 +229,10 @@ def main():
     # 0.25 mm PDL compliance), so they are dropped.
     pdl_free = {k: v for k, v in pdl_free_all.items() if min(k) >= off_p}
     imp_free = free_faces(it_g, eid["TI"][0])
-    # master: BONE boundary faces near either socket wall (over all bone elsets: single or two-layer)
-    bone_sets = [s for s in ("BONE", "CORTICAL", "CANCELLOUS", "BIOFILM") if s in eid]
+    # master: BONE boundary faces near either socket wall (over all bone elsets: single or two-layer).
+    # The old bone-carved BIOFILM collar was part of the socket; the anatomical sulcular sleeve is NOT.
+    _bset = ("BONE", "CORTICAL", "CANCELLOUS") if ANAT_BIO else ("BONE", "CORTICAL", "CANCELLOUS", "BIOFILM")
+    bone_sets = [s for s in _bset if s in eid]
     bone_all = np.vstack([eid[s][1] for s in bone_sets])
     bone_gids = np.concatenate([eid[s][0] for s in bone_sets])
     bone_free = free_faces(bone_all, bone_gids)
@@ -215,6 +269,28 @@ def main():
                 abut_top[k] = v
         print(f"crown TIE: slave_seat={len(crown_seat)} master_abut_top={len(abut_top)} "
               f"(z_abut={z_abut:.2f})")
+
+    # ---- anatomical biofilm sleeve TIE (sulcular biofilm adheres to the implant / tooth neck) ----
+    # The sleeve is a free body; its INNER shell faces are tied to the neck surface so it is anchored
+    # (and physically adherent). Implant sleeve -> IMP_OUT; tooth sleeve -> the dentin neck faces.
+    bio_imp_inner, bio_too_inner, dent_neck = {}, {}, {}
+    if ANAT_BIO and "BIOFILM" in eid:
+        bf_free = free_faces(eid["BIOFILM"][1], eid["BIOFILM"][0])
+        for k, v in bf_free.items():
+            fc = nodes[list(k)].mean(axis=0)
+            r23 = np.hypot(fc[0] - T23_AXIS[0], fc[1] - T23_AXIS[1])
+            r24 = np.hypot(fc[0] - T24_AXIS[0], fc[1] - T24_AXIS[1])
+            if r23 < 2.25:                          # implant sleeve inner shell (r_in=2.10)
+                bio_imp_inner[k] = v
+            elif r24 < 3.65:                        # tooth sleeve inner shell (r_in=3.50)
+                bio_too_inner[k] = v
+        dt_free = free_faces(dt_g, eid["DENTIN"][0])
+        for k, v in dt_free.items():
+            fc = nodes[list(k)].mean(axis=0)
+            if SULC_Z0 - 0.4 <= fc[2] <= SULC_Z1 + 0.4 and np.hypot(fc[0] - T24_AXIS[0], fc[1] - T24_AXIS[1]) < 3.8:
+                dent_neck[k] = v
+        print(f"biofilm sleeve TIE: imp_inner={len(bio_imp_inner)} too_inner={len(bio_too_inner)} "
+              f"dent_neck(master)={len(dent_neck)}")
 
     # ---- node sets ----
     nx, ny, nz = nodes[:, 0], nodes[:, 1], nodes[:, 2]
@@ -276,6 +352,17 @@ def main():
         surf("ABUT_TOP", abut_top)
         ap("*TIE, NAME=T_CROWN, ADJUST=NO, POSITION TOLERANCE=0.5")
         ap(" CROWN_SEAT, ABUT_TOP")
+    if ANAT_BIO and bio_imp_inner:
+        surf("BIO_IMP_IN", bio_imp_inner)
+        # ADJUST=NO: do not pull the thin (0.3 mm) sleeve inner nodes onto the neck (that flattens the
+        # sleeve tets); the small gap is absorbed into the tie. Biofilm adheres to the Ti neck.
+        ap("*TIE, NAME=T_BIO_IMP, ADJUST=NO, POSITION TOLERANCE=0.6")
+        ap(" BIO_IMP_IN, IMP_OUT")
+    if ANAT_BIO and bio_too_inner and dent_neck:
+        surf("BIO_TOO_IN", bio_too_inner)
+        surf("DENT_NECK", dent_neck)
+        ap("*TIE, NAME=T_BIO_TOO, ADJUST=NO, POSITION TOLERANCE=0.6")    # biofilm adheres to the tooth neck
+        ap(" BIO_TOO_IN, DENT_NECK")
 
     def nset(nm, ids):
         ids = np.unique(np.asarray(ids)) + 1
