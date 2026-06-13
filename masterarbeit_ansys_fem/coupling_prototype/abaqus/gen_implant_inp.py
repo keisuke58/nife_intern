@@ -35,6 +35,9 @@ AMP = float(sys.argv[7]) if len(sys.argv) > 7 else (0.0 if profile == "flat" els
 # growth mode: "iso" = isotropic volume-matched (matches the thesis column fem_residual);
 #              "aniso" = substratum-normal only (calibrate_beta's literal anisotropic law).
 MODE = sys.argv[8] if len(sys.argv) > 8 else "iso"
+# two-scale roughness: superimpose a finer micro-thread (amplitude, micro-periods per main period).
+MICRO_AMP = float(sys.argv[9]) if len(sys.argv) > 9 else 0.0
+MICRO_N = int(sys.argv[10]) if len(sys.argv) > 10 else 6
 
 E, NU = 5000.0, 0.45
 W = float(PERIODS)               # width = PERIODS thread periods (period = 1.0)
@@ -55,10 +58,13 @@ def eps_g(zfrac):
 
 
 def y_thread(x):
-    """Smooth (sinusoidal) thread surface, period 1.0, peak-to-valley amplitude AMP.
-    Smooth (C-infinity) -> finite root/crest curvature, no sharp-corner stress singularity,
-    so the interface stress is mesh-convergent (cf. a triangular sawtooth, which is not)."""
-    return AMP * 0.5 * (1.0 - np.cos(2.0 * np.pi * x))   # 0 at roots (x=int), AMP at crests
+    """Smooth (sinusoidal) thread surface, period 1.0, peak-to-valley amplitude AMP, plus an optional
+    superimposed micro-thread (two-scale roughness): MICRO_AMP at MICRO_N periods per main period.
+    Smooth (C-infinity) -> finite root/crest curvature, no sharp-corner stress singularity."""
+    y = AMP * 0.5 * (1.0 - np.cos(2.0 * np.pi * x))
+    if MICRO_AMP > 0.0:
+        y = y + MICRO_AMP * 0.5 * (1.0 - np.cos(2.0 * np.pi * MICRO_N * x))
+    return y
 
 
 def nid(i, j):
