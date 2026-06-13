@@ -111,7 +111,7 @@ Cohesive-interface FEM with **identical** interface strength:
 
 ## 3D hero: full peri-implant assembly
 
-![](masterarbeit_ansys_fem/figures/fem_implant_voxel3d.pdf){ height=50% }
+![](masterarbeit_ansys_fem/figures/fem_implant_screw3d.pdf){ height=50% }
 
 Implant + neighbouring tooth + shared alveolar bone. The occlusal load
 concentrates at the **crestal peri-implant bone** (marginal-bone-loss

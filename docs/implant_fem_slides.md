@@ -110,7 +110,7 @@ $\Rightarrow$ 材料則は外部 FEM ソルバへそのまま差し込める（�
 
 ## 3D ヒーロー：ペリインプラント全アセンブリ
 
-![](masterarbeit_ansys_fem/figures/fem_implant_voxel3d.pdf){ height=50% }
+![](masterarbeit_ansys_fem/figures/fem_implant_screw3d.pdf){ height=50% }
 
 インプラント＋隣接歯＋共有歯槽骨。咬合荷重は**歯頸部のペリインプラント骨**に
 集中（marginal-bone-loss シグネチャ）。組成メカニズムは**現実の解剖学へ
