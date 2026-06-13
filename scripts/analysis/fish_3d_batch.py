@@ -70,6 +70,7 @@ def main():
     s = args.dds
 
     rows = []
+    zrows = []                                  # per-FOV depth profiles phi_sp(z) (the A-track extension)
     ic_saved = set()
     files = sorted(glob.glob(str(HERE / "HOBIC FISH" / "*.lif")))
     for path in files:
@@ -102,6 +103,17 @@ def main():
             rec["FnPg_3d_M1"] = manders_m1(dec["P.gingivalis"], dec["F.nucleatum"])    # 3D
             rows.append(rec)
 
+            # --- per-FOV depth profile: xy-mean occupancy per z slice, per species (A-track) ---
+            zprof = {sp: np.clip(dec[sp], 0, None).mean(axis=(1, 2)) for sp in SPECIES_ORDER}  # each (Z,)
+            tot_z = np.sum([zprof[sp] for sp in SPECIES_ORDER], axis=0) + 1e-12
+            nz = len(tot_z)
+            for zi in range(nz):
+                zr = {"cond": cond, "day": int(day), "file": Path(path).stem, "fov": fi,
+                      "z_idx": zi, "z_frac": zi / max(1, nz - 1)}
+                for sp in SPECIES_ORDER:
+                    zr[SHORT[sp]] = float(zprof[sp][zi] / tot_z[zi])      # occupancy fraction at depth z
+                zrows.append(zr)
+
             key = (cond, int(day))
             if key not in ic_saved:                # save one IC per (cond,day)
                 d2 = max(1, args.ic_ds // max(1, s))
@@ -115,6 +127,11 @@ def main():
     df = pd.DataFrame(rows).sort_values(["cond", "day", "fov"]).reset_index(drop=True)
     df.to_csv(OUT / "fish_3d_lateral_metrics.csv", index=False)
     print(f"\nwrote {OUT/'fish_3d_lateral_metrics.csv'}  ({len(df)} FOVs)")
+
+    zdf = pd.DataFrame(zrows).sort_values(["cond", "day", "fov", "z_idx"]).reset_index(drop=True)
+    zdf.to_csv(OUT / "zprofiles_per_fov.csv", index=False)
+    print(f"wrote {OUT/'zprofiles_per_fov.csv'}  ({zdf['fov'].count()} z-rows, "
+          f"{len(zdf.groupby(['cond','day','file','fov']))} FOV profiles)")
     print(df.groupby(["cond", "day"]).size().to_string())
 
     # ---- pooled (cond,day) means ----
