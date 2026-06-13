@@ -47,22 +47,48 @@ def main():
 
     fig, (axA, axB) = plt.subplots(1, 2, figsize=use(width_frac=1.0, aspect=0.5))
 
-    # ---- Panel A: real multi-material anatomy ----
+    # ---- shared raster via nearest-neighbour fill: solid fields (the coarse implant/dentin
+    #      meshes fill in), with true white only OUTSIDE the anatomy (distance mask).
+    from scipy.spatial import cKDTree
+    x0, x1, z0, z1 = -74.0, -60.0, 16.5, 31.5
+    cell = 0.10
+    NX = int(round((x1 - x0) / cell)); NZ = int(round((z1 - z0) / cell))
     code = np.array([MAT_ORDER.index(mm) if mm in MAT_ORDER else 0 for mm in mat])
-    cmap = ListedColormap([MAT_COL[k] for k in MAT_ORDER])
-    norm = BoundaryNorm(np.arange(-0.5, len(MAT_ORDER)), cmap.N)
-    axA.scatter(x[m], z[m], c=code[m], cmap=cmap, norm=norm, s=6, marker="s", linewidths=0)
+    inb = m & (x >= x0 - 1) & (x < x1 + 1) & (z >= z0 - 1) & (z < z1 + 1)
+    xb, zb, vb, cb_, mb = x[inb], z[inb], vmo[inb], code[inb], mat[inb]
+    tree = cKDTree(np.column_stack([xb, zb]))
+    gx = x0 + (np.arange(NX) + 0.5) * (x1 - x0) / NX
+    gz = z0 + (np.arange(NZ) + 0.5) * (z1 - z0) / NZ
+    GX, GZ = np.meshgrid(gx, gz)
+    dist, idx = tree.query(np.column_stack([GX.ravel(), GZ.ravel()]), k=1)
+    dist = dist.reshape(NZ, NX); idx = idx.reshape(NZ, NX)
+    # adaptive fill radius = a few median nearest-neighbour spacings (fills coarse meshes,
+    # masks the genuine exterior so it stays white)
+    sub = np.random.default_rng(0).choice(len(xb), size=min(3000, len(xb)), replace=False)
+    dnn, _ = tree.query(np.column_stack([xb[sub], zb[sub]]), k=2)
+    thr = max(0.45, 3.0 * float(np.median(dnn[:, 1])))
+    masked = dist > thr
+
+    # ---- Panel A: real multi-material anatomy ----
+    A = np.where(masked, np.nan, cb_[idx].astype(float))
+    cmapA = ListedColormap([MAT_COL[k] for k in MAT_ORDER]); cmapA.set_bad((1, 1, 1, 0))
+    norm = BoundaryNorm(np.arange(-0.5, len(MAT_ORDER)), cmapA.N)
+    axA.imshow(np.ma.masked_invalid(A), origin="lower", extent=[x0, x1, z0, z1],
+               cmap=cmapA, norm=norm, interpolation="nearest", aspect="equal")
     axA.set_title(TITLE_A, fontsize=7.0)
-    present = [k for k in MAT_ORDER if (mat[m] == k).any()]
+    present = [k for k in MAT_ORDER if (mb == k).any()]
     handles = [plt.Line2D([], [], marker="s", ls="", mfc=MAT_COL[k], mec="none", label=MAT_LAB[k])
                for k in present]
     axA.legend(handles=handles, fontsize=5.0, loc="lower center", ncol=3,
                handletextpad=0.2, columnspacing=0.7, framealpha=0.9)
 
     # ---- Panel B: occlusal von Mises ----
-    vclip = float(np.ceil(np.percentile(vmo[m], 97)))   # adaptive (oblique load -> higher range)
-    sc = axB.scatter(x[m], z[m], c=np.clip(vmo[m], 0, vclip), cmap="inferno",
-                     s=6, marker="s", vmin=0, vmax=vclip, linewidths=0)
+    Bv = vb[idx]
+    vclip = float(np.ceil(np.nanpercentile(Bv[~masked], 98)))   # adaptive (oblique load)
+    B = np.where(masked, np.nan, np.clip(Bv, 0, vclip))
+    cmapB = plt.get_cmap("inferno").copy(); cmapB.set_bad((1, 1, 1, 0))
+    sc = axB.imshow(np.ma.masked_invalid(B), origin="lower", extent=[x0, x1, z0, z1],
+                    cmap=cmapB, vmin=0, vmax=vclip, interpolation="nearest", aspect="equal")
     axB.set_title(r"(B) occlusal load: shared-bone coupling", fontsize=7.5)
     cb = fig.colorbar(sc, ax=axB, fraction=0.046, pad=0.03)
     cb.set_label(r"von Mises $\sigma_\mathrm{vM}$ (MPa)", fontsize=6.5)
