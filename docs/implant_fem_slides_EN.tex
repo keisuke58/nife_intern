@@ -1,0 +1,355 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{Implant FEM: Composition-Resolved Mechanics of the Peri-Implant
+Biofilm}
+\subtitle{Composition \(\varphi_{Pg} \rightarrow\) growth eigenstrain
+\(\rightarrow\) implant-interface residual stress \(\rightarrow\)
+detachment}
+\author{Keisuke Nishioka --- NIFE / SFB TRR-298}
+\date{2026-06-13}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[Path=/home/nishioka/texlive/2025/texmf-dist/fonts/opentype/public/stix2-otf/, BoldFont=STIXTwoText-Bold.otf, ItalicFont=STIXTwoText-Italic.otf, BoldItalicFont=STIXTwoText-BoldItalic.otf]{STIXTwoText-Regular.otf}
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Implant FEM: Composition-Resolved Mechanics of the Peri-Implant Biofilm},
+  pdfauthor={Keisuke Nishioka --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% EN builds use a Times-family text font (STIX Two Text) that lacks a few set /
+% relation glyphs. Route those Unicode symbols through math mode so they always
+% render (regardless of the text/mono font), keeping clean Times for the prose.
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{↑}{\ensuremath{\uparrow}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{Where this deck sits}
+\protect\hypertarget{where-this-deck-sits}{}
+\textbf{Implant FEM} --- composition-resolved mechanics of the
+peri-implant biofilm.
+
+Data flow:
+
+raw 16S → guild \(\varphi\) → gLV/Hamilton (+ sign prior) → spatial PDE
+→ \textbf{FEM mechanics}
+
+Supervisor context:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Soleimani} (IKM, FEM) --- continuum-mechanics / finite-element
+  framework
+\item
+  \textbf{Junker} (IKM, Hamilton principle) --- variational
+  material-model formulation
+\item
+  \textbf{Szafrański} (MHH / NIFE) --- oral biofilm / clinical
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{One-line thesis:} dysbiosis is read out as a \emph{mechanical}
+implant-interface risk.
+\end{frame}
+
+\begin{frame}{Clinical problem: peri-implantitis}
+\protect\hypertarget{clinical-problem-peri-implantitis}{}
+Peri-implantitis is biofilm-driven inflammation that drives loss of the
+bone supporting the implant.
+
+\begin{itemize}
+\tightlist
+\item
+  Affects \textbf{20−35\%} of implant patients --- leading cause of
+  implant failure.
+\item
+  \textbf{NIFE} = implant R\&D centre. The substratum is
+  \textbf{titanium}.
+\item
+  \textbf{Dieckow cohort} = abutment biofilm followed longitudinally.
+\end{itemize}
+
+\vspace{0.4em}
+
+Mechanically: the biofilm grows at the Ti interface, generates interface
+\textbf{stress}, and eventually \textbf{detaches}. We quantify this with
+continuum mechanics.
+\end{frame}
+
+\begin{frame}{The idea: a composition-to-mechanics chain}
+\protect\hypertarget{the-idea-a-composition-to-mechanics-chain}{}
+The central causal chain:
+
+\[\varphi_{Pg}\;\rightarrow\;\text{eigenstrain}\;\rightarrow\;\text{interface stress}\;\rightarrow\;\text{detachment}\;\rightarrow\;\text{peri-implantitis}\]
+
+\includegraphics[width=\textwidth,height=0.44\textheight]{masterarbeit_ansys_fem/figures/fem_clinical_schematic.pdf}
+
+Ti implant thread under CH (commensal) vs DH (dysbiotic) biofilm:
+growth-induced interface stress and delamination.
+\end{frame}
+
+\begin{frame}{Method: a Hamilton-principle material model}
+\protect\hypertarget{method-a-hamilton-principle-material-model}{}
+At each Gauss point we invoke a Python Hamilton-principle material model
+\textbf{instead of the phenomenological law}.
+
+\begin{itemize}
+\tightlist
+\item
+  Multiplicative growth split \(F = F_e\,F_g\) + neo-Hookean elasticity.
+\item
+  Growth \(F_g\) is driven by a composition-(\(\varphi_{Pg}\))-dependent
+  eigenstrain.
+\item
+  The elastic response \(F_e\) carries the stress, stored as residual
+  stress at the interface.
+\end{itemize}
+
+\vspace{0.3em}
+
+\textbf{Verification (Abaqus):}
+
+\begin{itemize}
+\tightlist
+\item
+  Small strain: matches \(\sigma = E\,\varepsilon\).
+\item
+  Finite strain (NLGEOM): matches the neo-Hookean solution.
+\end{itemize}
+
+\vspace{0.3em}
+
+\(\Rightarrow\) the material law drops unchanged into an external FEM
+solver (verified as a kernel).
+\end{frame}
+
+\begin{frame}{Growth calibration}
+\protect\hypertarget{growth-calibration}{}
+The growth eigenstrain is calibrated from \textbf{CLSM depth profiles}.
+
+\includegraphics[width=\textwidth,height=0.52\textheight]{masterarbeit_ansys_fem/figures/F2_growth_calibration.pdf}
+
+\begin{itemize}
+\tightlist
+\item
+  DH: depth correlation \(0.88\), \(\beta_{\text{depth}} \approx 17.2\).
+\item
+  The commensal control has the \textbf{opposite sign} --- not mere
+  volumetric swelling.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Result: residual-stress column \(S_{11}(z)\)}
+\protect\hypertarget{result-residual-stress-column-s_11z}{}
+\includegraphics[width=\textwidth,height=0.54\textheight]{masterarbeit_ansys_fem/figures/F4_residual_stress_DHvsCH.pdf}
+
+\begin{itemize}
+\tightlist
+\item
+  Stress concentrates at the \textbf{substratum} (implant-abutment
+  wall); the free top \(\approx 0\).
+\item
+  \(S_{11}(z)\) \textbf{tracks} \(\varphi_{Pg}(z)\) --- deep Pg load
+  builds the interface stress.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Result: delamination (cohesive interface)}
+\protect\hypertarget{result-delamination-cohesive-interface}{}
+\includegraphics[width=\textwidth,height=0.52\textheight]{masterarbeit_ansys_fem/figures/F6_delamination_DHvsCH.pdf}
+
+Cohesive-interface FEM with \textbf{identical} interface strength:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{dysbiotic 83\%} vs \textbf{commensal 25\%} of interface
+  delaminated (\textbf{3.3×}).
+\item
+  Sole cause = the \textbf{Pg depth profile} (strength and load held
+  identical).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{3D hero: full peri-implant assembly}
+\protect\hypertarget{d-hero-full-peri-implant-assembly}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{masterarbeit_ansys_fem/figures/fem_implant_voxel3d.pdf}
+
+Implant + neighbouring tooth + shared alveolar bone. The occlusal load
+concentrates at the \textbf{crestal peri-implant bone}
+(marginal-bone-loss signature). The composition mechanism
+\textbf{transfers unchanged} into realistic anatomy.
+\end{frame}
+
+\begin{frame}{2D coupled section (supporting)}
+\protect\hypertarget{d-coupled-section-supporting}{}
+\includegraphics[width=\textwidth,height=0.52\textheight]{masterarbeit_ansys_fem/figures/fem_tier2b_real.pdf}
+
+Coupled implant+tooth+bone mesiodistal section. (A) multi-material
+anatomy, (B) occlusal von Mises shared-bone coupling --- \textbf{crestal
+stress = peri-implant marginal-bone-loss signature}.
+\end{frame}
+
+\begin{frame}{Patient bridge}
+\protect\hypertarget{patient-bridge}{}
+\includegraphics[width=\textwidth,height=0.48\textheight]{masterarbeit_ansys_fem/figures/F1c_patient_bridge_validation.pdf}
+
+Projecting the 10 Dieckow patients through the verified detachment
+kernel \(J\):
+
+\begin{itemize}
+\tightlist
+\item
+  Inter-patient spread \textbf{\(CV = 0.86\)} is set by the
+  \emph{measured} Pg load.
+\item
+  The borrowed in-vitro depth shape is a \textbf{34× weaker lever}
+  (\(\pm 8\%\)).
+\end{itemize}
+
+\vspace{0.2em}
+
+\(\Rightarrow\) a \textbf{0-D clinical Pg readout} is an adequate
+ordinal detachment-risk surrogate.
+\end{frame}
+
+\begin{frame}{Validation, limits \& outlook}
+\protect\hypertarget{validation-limits-outlook}{}
+\textbf{Honest assessment:}
+
+\begin{itemize}
+\tightlist
+\item
+  The growth \textbf{shape} is calibrated from CLSM.
+\item
+  The stress \textbf{magnitude} is parametric (biofilm modulus spans
+  \(\approx 7\) orders → reported as \(\sigma/\mu\)).
+\item
+  The claim is \textbf{ordinal / mechanistic}, not predictive. The
+  differentiation is the \emph{biofilm coupling}, not generic implant
+  biomechanics.
+\end{itemize}
+
+\textbf{Validating experiment:} depth-resolved AFM / shear-flow
+detachment vs Pg load.
+
+\vspace{0.3em}
+
+\textbf{Outlook:} the growth-eigenstrain → interface-stress →
+delamination competency transfers to Keio / Muramatsu computational
+solid mechanics and to semiconductor thin-film stress / dicing-street
+delamination (DISCO).
+\end{frame}
+
+\end{document}

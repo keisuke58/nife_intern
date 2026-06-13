@@ -1,0 +1,340 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{space}{xeCJK}
+%
+\documentclass[
+  ignorenonframetext,
+  aspectratio=169,
+]{beamer}
+\title{インプラント FEM：ペリインプラント・バイオフィルムの組成分解力学}
+\subtitle{組成 \(\varphi_{Pg}\) → 成長固有ひずみ →
+インプラント界面残留応力 → 剥離}
+\author{西岡佳祐 --- NIFE / SFB TRR-298}
+\date{2026-06-13}
+
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \setmainfont[]{Noto Serif CJK JP}
+  \setmonofont[]{Noto Sans Mono CJK JP}
+  \ifXeTeX
+    \usepackage{xeCJK}
+    \setCJKmainfont[]{Noto Serif CJK JP}
+  \fi
+  \ifLuaTeX
+    \usepackage[]{luatexja-fontspec}
+    \setmainjfont[]{Noto Serif CJK JP}
+  \fi
+\fi
+\usetheme[]{Madrid}
+\usecolortheme{whale}
+\usefonttheme{serif} % use mainfont rather than sansfont for slide text
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={インプラント FEM：ペリインプラント・バイオフィルムの組成分解力学},
+  pdfauthor={西岡佳祐 --- NIFE / SFB TRR-298},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\newif\ifbibliography
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{amsmath,amssymb}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\relu}[1]{\left[#1\right]_{+}}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{本デッキの位置づけ}
+\protect\hypertarget{ux672cux30c7ux30c3ux30adux306eux4f4dux7f6eux3065ux3051}{}
+\textbf{Implant FEM} ---
+ペリインプラント・バイオフィルムの力学を組成分解で扱う。
+
+データの流れ：
+
+raw 16S → guild \(\varphi\) → gLV/Hamilton（＋符号 prior）→ 空間 PDE →
+\textbf{FEM 力学}
+
+体制（supervisor context）：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Soleimani}（IKM, FEM）--- 連続体力学・有限要素の枠組み
+\item
+  \textbf{Junker}（IKM, Hamilton 原理）--- 材料モデルの変分定式化
+\item
+  \textbf{Szafrański}（MHH / NIFE）--- 口腔バイオフィルム・臨床
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{一行命題：} dysbiosis を
+\emph{力学的な}インプラント界面リスクとして読み出す。
+\end{frame}
+
+\begin{frame}{臨床的問題：ペリインプラント炎}
+\protect\hypertarget{ux81e8ux5e8aux7684ux554fux984cux30daux30eaux30a4ux30f3ux30d7ux30e9ux30f3ux30c8ux708e}{}
+ペリインプラント炎はバイオフィルム駆動の炎症であり、インプラント周囲の
+\textbf{支持骨喪失}を引き起こす。
+
+\begin{itemize}
+\tightlist
+\item
+  インプラント患者の \textbf{20--35\%} に発症 ---
+  インプラント失敗の主因。
+\item
+  \textbf{NIFE} =
+  インプラント研究開発拠点。基材（substratum）は\textbf{チタン}。
+\item
+  \textbf{Dieckow コホート} =
+  アバットメント上のバイオフィルムを縦断観察。
+\end{itemize}
+
+\vspace{0.4em}
+
+力学的に何が起きているか：バイオフィルムが Ti 界面で成長し、界面に
+\textbf{応力}を生み、やがて\textbf{剥離}する。これを連続体力学で定量化する。
+\end{frame}
+
+\begin{frame}{アイデア：組成から力学への連鎖}
+\protect\hypertarget{ux30a2ux30a4ux30c7ux30a2ux7d44ux6210ux304bux3089ux529bux5b66ux3078ux306eux9023ux9396}{}
+中心となる因果連鎖：
+
+\[\varphi_{Pg}\;\rightarrow\;\text{成長固有ひずみ}\;\rightarrow\;\text{界面残留応力}\;\rightarrow\;\text{剥離}\;\rightarrow\;\text{ペリインプラント炎}\]
+
+\includegraphics[width=\textwidth,height=0.46\textheight]{masterarbeit_ansys_fem/figures/fem_clinical_schematic.pdf}
+
+CH（常在）対 DH（dysbiotic）バイオフィルム下の Ti
+ねじ山：成長誘起の界面応力と剥離。
+\end{frame}
+
+\begin{frame}{方法：Hamilton 原理の材料モデル}
+\protect\hypertarget{ux65b9ux6cd5hamilton-ux539fux7406ux306eux6750ux6599ux30e2ux30c7ux30eb}{}
+各 Gauss 点で\textbf{現象論則の代わりに} Python の Hamilton
+原理材料モデルを呼ぶ。
+
+\begin{itemize}
+\tightlist
+\item
+  乗法的な成長分解 \(F = F_e\,F_g\) ＋ neo-Hookean 弾性。
+\item
+  成長 \(F_g\) は組成 \(\varphi_{Pg}\) の固有ひずみで駆動。
+\item
+  弾性応答 \(F_e\) が応力を担い、界面で残留応力として蓄積。
+\end{itemize}
+
+\vspace{0.3em}
+
+\textbf{検証（Abaqus）：}
+
+\begin{itemize}
+\tightlist
+\item
+  微小ひずみ：\(\sigma = E\,\varepsilon\) と一致。
+\item
+  有限ひずみ（NLGEOM）：neo-Hookean 解と一致。
+\end{itemize}
+
+\vspace{0.3em}
+
+\(\Rightarrow\) 材料則は外部 FEM
+ソルバへそのまま差し込める（カーネルとして検証済み）。
+\end{frame}
+
+\begin{frame}{成長キャリブレーション}
+\protect\hypertarget{ux6210ux9577ux30adux30e3ux30eaux30d6ux30ecux30fcux30b7ux30e7ux30f3}{}
+成長固有ひずみを \textbf{CLSM 深さプロファイル}からキャリブレーション。
+
+\includegraphics[width=\textwidth,height=0.52\textheight]{masterarbeit_ansys_fem/figures/F2_growth_calibration.pdf}
+
+\begin{itemize}
+\tightlist
+\item
+  DH：深さ相関 \(0.88\)、\(\beta_{\text{depth}} \approx 17.2\)。
+\item
+  常在（commensal）コントロールは\textbf{逆符号} ---
+  単なる体積膨張ではない。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{結果：残留応力カラム \(S_{11}(z)\)}
+\protect\hypertarget{ux7d50ux679cux6b8bux7559ux5fdcux529bux30abux30e9ux30e0-s_11z}{}
+\includegraphics[width=\textwidth,height=0.54\textheight]{masterarbeit_ansys_fem/figures/F4_residual_stress_DHvsCH.pdf}
+
+\begin{itemize}
+\tightlist
+\item
+  応力は\textbf{基材}（インプラント--アバットメント壁）に集中、自由な上端
+  \(\approx 0\)。
+\item
+  \(S_{11}(z)\) は \(\varphi_{Pg}(z)\) を\textbf{追従} --- 深部 Pg
+  負荷が界面応力を作る。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{結果：剥離（cohesive 界面）}
+\protect\hypertarget{ux7d50ux679cux5265ux96e2cohesive-ux754cux9762}{}
+\includegraphics[width=\textwidth,height=0.52\textheight]{masterarbeit_ansys_fem/figures/F6_delamination_DHvsCH.pdf}
+
+同一の界面強度で cohesive-interface FEM を回す：
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{dysbiotic 83\%} 対 \textbf{commensal 25\%}
+  が剥離（\textbf{3.3×}）。
+\item
+  唯一の原因 = \textbf{Pg 深さプロファイル}（強度・荷重は同一）。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{3D ヒーロー：ペリインプラント全アセンブリ}
+\protect\hypertarget{d-ux30d2ux30fcux30edux30fcux30daux30eaux30a4ux30f3ux30d7ux30e9ux30f3ux30c8ux5168ux30a2ux30bbux30f3ux30d6ux30ea}{}
+\includegraphics[width=\textwidth,height=0.5\textheight]{masterarbeit_ansys_fem/figures/fem_implant_voxel3d.pdf}
+
+インプラント＋隣接歯＋共有歯槽骨。咬合荷重は\textbf{歯頸部のペリインプラント骨}に
+集中（marginal-bone-loss
+シグネチャ）。組成メカニズムは\textbf{現実の解剖学へ そのまま転移}する。
+\end{frame}
+
+\begin{frame}{2D 連成セクション（補助）}
+\protect\hypertarget{d-ux9023ux6210ux30bbux30afux30b7ux30e7ux30f3ux88dcux52a9}{}
+\includegraphics[width=\textwidth,height=0.52\textheight]{masterarbeit_ansys_fem/figures/fem_tier2b_real.pdf}
+
+連成 implant＋tooth＋bone の近遠心断面。(A) 多材料解剖、(B) 咬合 von
+Mises の 共有骨連成 --- \textbf{歯頸部応力 =
+ペリインプラント辺縁骨喪失のシグネチャ}。
+\end{frame}
+
+\begin{frame}{患者ブリッジ}
+\protect\hypertarget{ux60a3ux8005ux30d6ux30eaux30c3ux30b8}{}
+\includegraphics[width=\textwidth,height=0.48\textheight]{masterarbeit_ansys_fem/figures/F1c_patient_bridge_validation.pdf}
+
+Dieckow 10 患者を検証済みの剥離カーネル \(J\) へ射影：
+
+\begin{itemize}
+\tightlist
+\item
+  患者間ばらつき \textbf{\(CV = 0.86\)} は\textbf{測定された} Pg
+  負荷が決める。
+\item
+  借用した in-vitro 深さ形状は \textbf{34× 弱いレバー}（\(\pm 8\%\)）。
+\end{itemize}
+
+\vspace{0.2em}
+
+\(\Rightarrow\) \textbf{0-D の臨床 Pg
+読み値}が順序的な剥離リスクの代理として十分。
+\end{frame}
+
+\begin{frame}{検証・限界・展望}
+\protect\hypertarget{ux691cux8a3cux9650ux754cux5c55ux671b}{}
+\textbf{正直な評価：}
+
+\begin{itemize}
+\tightlist
+\item
+  成長の\textbf{形状}は CLSM から較正済み。
+\item
+  応力\textbf{絶対値}はパラメトリック（バイオフィルム弾性率は約 7 桁の幅
+  → \(\sigma/\mu\) で報告）。
+\item
+  主張は\textbf{順序的・機構的}であり予測的ではない。差別化は\emph{バイオフィルム連成}
+  であって汎用インプラント力学ではない。
+\end{itemize}
+
+\textbf{検証実験：} 深さ分解 AFM／剪断流剥離 対 Pg 負荷。
+
+\vspace{0.3em}
+
+\textbf{展望：}
+成長固有ひずみ→界面応力→剥離の能力は、慶應・村松研の計算固体力学
+および半導体薄膜応力・ダイシングストリート剥離（DISCO）へ転移する。
+\end{frame}
+
+\end{document}
