@@ -151,6 +151,18 @@ A(loss)=crest(loss)/crest(2mm). Resorption ODE: d(loss)/dt = k·severity·A(loss
 (limited disease range); Joshi = real disease range + validated DI but cross-sectional (no time).
 Best driver = GDI; ideal = Dieckow/Botelho dynamics × Joshi absolute severity.
 
+## Host INFLAMMATORY response layer (the biologically complete cascade)
+`fig_periimplantitis_inflammation.py` -> `fem_periimplantitis_inflammation.pdf`. Inserts the immune
+stage the direct GDI->loss model omitted: coupled ODEs
+   dysbiosis B -> inflammation I (cytokines) -> osteoclast C (RANKL/OPG sigmoidal switch) -> bone loss L,
+with mechanical-overload synergy A(loss) from study (1), driven per-patient by the real Botelho GDI.
+The cytokine **threshold** turns the disease into a **tipping-point / bistable** process (clinically
+episodic, not gradual): sub-threshold patients stay stable (~0.3 mm), supra-threshold patients run away
+(3–4 mm at 36 mo). Panel A shows the time-lagged cascade (inflammation in weeks, osteoclast lag, bone
+loss in months); panel B the threshold-gated outcome. Pure ODE, no FEM solves. NB: it is a host-response
+*bone-loss* model — inflammation enters as the driver stage; rate constants are physiologically ordered
+but illustrative (relative progressor/stable split is the robust claim).
+
 ## Result (honest, root-analog `tier2b_real`)
 The fully real-geometry coupled model **solves successfully** — the methodological goal. With a
 literature-standard linear PDL (50 MPa) the peri-implant vs peri-tooth crestal-bone contrast is
