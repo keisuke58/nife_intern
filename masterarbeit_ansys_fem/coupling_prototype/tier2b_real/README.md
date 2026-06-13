@@ -163,6 +163,20 @@ loss in months); panel B the threshold-gated outcome. Pure ODE, no FEM solves. N
 *bone-loss* model — inflammation enters as the driver stage; rate constants are physiologically ordered
 but illustrative (relative progressor/stable split is the robust claim).
 
+## Accuracy upgrade: calibrated priors + Monte-Carlo UQ + sensitivity
+`fig_periimplantitis_uq.py` -> `fem_periimplantitis_uq.pdf`. Turns the deterministic illustrative
+cascade into a probabilistic one (on-brand with the thesis's Bayesian core):
+- **literature-anchored priors** (lognormal): cytokine resolution gI~0.5-2/wk, osteoclast turnover
+  gC~1/(2-4 wk), Hill n 4-10, mechanical synergy lam 0.5-3, resorption kL calibrated to clinical
+  peri-implantitis progression;
+- **Monte-Carlo (N=600)** over priors + per-patient GDI timepoint scatter -> per-patient 36-mo bone-loss
+  **median + 90% credible interval** (panel A) and **P(crossing the point-of-no-return ≤36 mo)** as a
+  probability (panel B);
+- **global sensitivity** (panel C): osteoclast activation/turnover (kC, gC) and resorption gain (kL)
+  dominate the outcome variance — the quantities to measure next; Hill n and mechanical-synergy lam are
+  nearly irrelevant. (For the moderate Botelho cohort P(progress) stays ≤0.12 — honest: none is likely
+  to reach the mechanical point-of-no-return within 36 mo.)
+
 ## Result (honest, root-analog `tier2b_real`)
 The fully real-geometry coupled model **solves successfully** — the methodological goal. With a
 literature-standard linear PDL (50 MPa) the peri-implant vs peri-tooth crestal-bone contrast is
