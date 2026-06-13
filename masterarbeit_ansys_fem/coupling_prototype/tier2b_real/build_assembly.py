@@ -152,14 +152,27 @@ def main():
     # supracrestal sulcular biofilm sleeves on the implant (r_in just outside the Ø4.1 crest 2.05)
     # and the tooth-24 neck (just outside dentin ~3.43); inner shells tie to the necks.
     if ANAT_BIO:
-        sb_i, st_i = biofilm_sleeve(T23_AXIS, 2.10, 2.40)      # peri-implant
-        sb_t, st_t = biofilm_sleeve(T24_AXIS, 3.50, 3.80)      # peri-tooth
+        # auto-align each sleeve to the ACTUAL neck axis+radius of the body in the sulcus band (the
+        # natural tooth is irregular/tilted, so its neck centroid != the nominal T24 axis).
+        def neck(npts, tets):
+            # measure centre + radius at the CERVICAL slice (~bone crest = CEJ, the narrowest neck),
+            # not over the whole band -- the natural crown flares coronally and would oversize the ring.
+            ec = npts[tets].mean(1); s = (ec[:, 2] >= SULC_Z0 - 0.3) & (ec[:, 2] <= SULC_Z0 + 0.8)
+            ctr = ec[s, :2].mean(0)
+            vv = npts[tets[s]].reshape(-1, 3)
+            return ctr, float(np.hypot(vv[:, 0] - ctr[0], vv[:, 1] - ctr[1]).max())
+        ic, ir = neck(inn, it); tc, tr = neck(dn, dt)
+        sb_i, st_i = biofilm_sleeve(ic, ir + 0.05, ir + 0.35)      # peri-implant (concentric, hugging)
+        sb_t, st_t = biofilm_sleeve(tc, tr + 0.05, tr + 0.35)      # peri-tooth   (concentric, hugging)
         Nbi = len(sb_i)
         bf_nodes = np.vstack([sb_i, sb_t])
         bf_tets = np.vstack([st_i + off_bf, st_t + off_bf + Nbi])
-        bf_rin = {"imp": (T23_AXIS, 2.10, 2.40), "too": (T24_AXIS, 3.50, 3.80)}
+        bf_ctr = {"imp": (ic, ir), "too": (tc, tr)}
+        print(f"biofilm sleeve centres: implant ({ic[0]:.2f},{ic[1]:.2f}) r={ir:.2f} ; "
+              f"tooth ({tc[0]:.2f},{tc[1]:.2f}) r={tr:.2f}")
     else:
         bf_nodes = np.zeros((0, 3)); bf_tets = np.zeros((0, 4), np.int64)
+        bf_ctr = {"imp": (T23_AXIS, 2.10), "too": (T24_AXIS, 3.50)}
 
     parts = [bn, dn, inn, pdl_outer_xyz]
     if WITH_CROWN:
@@ -275,19 +288,20 @@ def main():
     # (and physically adherent). Implant sleeve -> IMP_OUT; tooth sleeve -> the dentin neck faces.
     bio_imp_inner, bio_too_inner, dent_neck = {}, {}, {}
     if ANAT_BIO and "BIOFILM" in eid:
+        (ic, ir), (tc, tr) = bf_ctr["imp"], bf_ctr["too"]
         bf_free = free_faces(eid["BIOFILM"][1], eid["BIOFILM"][0])
         for k, v in bf_free.items():
             fc = nodes[list(k)].mean(axis=0)
-            r23 = np.hypot(fc[0] - T23_AXIS[0], fc[1] - T23_AXIS[1])
-            r24 = np.hypot(fc[0] - T24_AXIS[0], fc[1] - T24_AXIS[1])
-            if r23 < 2.25:                          # implant sleeve inner shell (r_in=2.10)
+            ri = np.hypot(fc[0] - ic[0], fc[1] - ic[1])
+            rt = np.hypot(fc[0] - tc[0], fc[1] - tc[1])
+            if ri < ir + 0.20:                      # implant sleeve inner shell (r_in = ir+0.05)
                 bio_imp_inner[k] = v
-            elif r24 < 3.65:                        # tooth sleeve inner shell (r_in=3.50)
+            elif rt < tr + 0.20:                    # tooth sleeve inner shell (r_in = tr+0.05)
                 bio_too_inner[k] = v
         dt_free = free_faces(dt_g, eid["DENTIN"][0])
         for k, v in dt_free.items():
             fc = nodes[list(k)].mean(axis=0)
-            if SULC_Z0 - 0.4 <= fc[2] <= SULC_Z1 + 0.4 and np.hypot(fc[0] - T24_AXIS[0], fc[1] - T24_AXIS[1]) < 3.8:
+            if SULC_Z0 - 0.4 <= fc[2] <= SULC_Z1 + 0.4 and np.hypot(fc[0] - tc[0], fc[1] - tc[1]) < tr + 0.4:
                 dent_neck[k] = v
         print(f"biofilm sleeve TIE: imp_inner={len(bio_imp_inner)} too_inner={len(bio_too_inner)} "
               f"dent_neck(master)={len(dent_neck)}")
