@@ -24,6 +24,9 @@ TAG = sys.argv[4] if len(sys.argv) > 4 else "e3"
 # above the platform-top, kinematically tied to the abutment-top nodes (ISO 14801 offset load). 0 =
 # original behaviour (load directly on the abutment top). >0 lengthens the crown-to-implant moment arm.
 CROWN_H = float(sys.argv[5]) if len(sys.argv) > 5 else 0.0
+# eccentric occlusal contact: lateral (+x) offset of the bite point on the crown (mm).  Models a
+# functional-cusp / off-axis contact -> an extra bending moment toward +x (study (3), saucerisation).
+ECC = float(sys.argv[6]) if len(sys.argv) > 6 else 0.0
 
 D, L, PITCH, THREAD_DEPTH = 4.1, 10.0, 0.8, 0.40
 RB, HAB, FORCE, ANGLE = 4.5, 8.0, 100.0, 30.0
@@ -136,7 +139,7 @@ def main():
     for i, (px, py, pz) in enumerate(ncoords, 1):
         ap(" %d, %.5f, %.5f, %.5f" % (i, px, py, pz))
     if CROWN_H > 0:
-        ap(" %d, 0.0, 0.0, %.5f" % (rp, L + HAB + CROWN_H))   # crown occlusal load point, on axis
+        ap(" %d, %.5f, 0.0, %.5f" % (rp, ECC, L + HAB + CROWN_H))   # crown occlusal load point (+ECC lateral)
     gid = 1
     for name, conn in (("TI", imp_e), ("BONE", bon_e)):
         ap("*ELEMENT, TYPE=%s, ELSET=%s" % (ETET, name))
@@ -192,7 +195,7 @@ def main():
     import json
     open(f"{OUT}/pimp_params.jsonl", "a").write(
         json.dumps({"tag": TAG, "expose": EXPOSE, "iface": IFACE, "order": ORDER,
-                    "z_bone_top": z_bone_top, "crown_h": CROWN_H}) + "\n")
+                    "z_bone_top": z_bone_top, "crown_h": CROWN_H, "ecc": ECC}) + "\n")
     print("wrote pimp_%s.inp" % TAG)
 
 

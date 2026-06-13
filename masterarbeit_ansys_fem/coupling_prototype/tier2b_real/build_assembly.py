@@ -85,6 +85,8 @@ def main():
     imp_cache = sys.argv[1] if len(sys.argv) > 1 else "cache_implant.npz"
     job = sys.argv[2] if len(sys.argv) > 2 else "tier2b_real"
     WITH_CROWN = "crown" in job          # ceramic crown seated on the abutment -> occlusal moment arm
+    if len(sys.argv) > 3:                 # optional crown Young's modulus override (MPa), design sweep
+        MATS["CROWN"] = (float(sys.argv[3]), 0.30)
     bone = np.load(f"{OUT}/cache_bone.npz")
     dent = np.load(f"{OUT}/cache_dentin.npz")
     imp = np.load(f"{OUT}/{imp_cache}")
