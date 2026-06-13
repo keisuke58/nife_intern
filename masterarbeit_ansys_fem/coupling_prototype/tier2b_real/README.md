@@ -127,6 +127,25 @@ mechanical instability appears only at near-total loss / parafunction. Fig
 `fem_periimplantitis_micromotion.pdf`. (general contact, `STABILIZE`; micromotion = implant-vs-socket
 nodal $\Delta U$; contact-output CSLIP/CPRESS dropped — invalid for this option.)
 
+## Time-series coupling: ecology(t) -> predicted bone-loss trajectory (no new solves)
+Closes the loop with existing longitudinal data, reusing the study-(1) stress-feedback response
+A(loss)=crest(loss)/crest(2mm). Resorption ODE: d(loss)/dt = k·severity·A(loss).
+- `fig_periimplantitis_invivo.py` -> `fem_periimplantitis_invivo.pdf` **(preferred, in-vivo)**: the
+  clinically-validated guild dysbiosis index GDI=log(Fuso+Bact+Clos)−log(Bac+Act+Neg) computed
+  per-patient from REAL Dieckow 2024 abundances (10 pt × 3 wk) drives a **per-patient bone-loss
+  trajectory + risk ranking** (extends the thesis per-patient J ranking). Honest caveat: Dieckow is a
+  longitudinal *development* cohort (all GDI<0, sub-clinical) -> the result is RELATIVE per-patient
+  stratification; the absolute disease range comes from the Joshi-validated DI–severity link (ρ=0.46).
+- `fig_periimplantitis_timeseries.py` -> `fem_periimplantitis_timeseries.pdf` (in-vitro, secondary):
+  the gLV/Hamilton-fitted 5-species attractor trajectories φ_Pg(t) (CS/CH/DS/DH). **Driver caveat**:
+  raw φ_Pg mis-ranks severity here — Pg is a minor member and the dysbiotic states differ partly by Pg
+  STRAIN virulence (W83 vs ATCC), not abundance; so GDI (not φ_Pg) is the sound severity metric.
+
+**Data-choice summary**: gLV-fit (in-vitro) = best dynamics + time + dysbiosis states but φ_Pg mis-ranks
+(strain virulence); in-vivo Dieckow = real patients + longitudinal + validated GDI but healthy cohort
+(limited disease range); Joshi = real disease range + validated DI but cross-sectional (no time).
+Best driver = GDI; ideal = Dieckow/Botelho dynamics × Joshi absolute severity.
+
 ## Result (honest, root-analog `tier2b_real`)
 The fully real-geometry coupled model **solves successfully** — the methodological goal. With a
 literature-standard linear PDL (50 MPa) the peri-implant vs peri-tooth crestal-bone contrast is
