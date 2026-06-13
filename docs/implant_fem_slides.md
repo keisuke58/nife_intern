@@ -118,6 +118,17 @@ $\Rightarrow$ 材料則は外部 FEM ソルバへそのまま差し込める（�
 
 ---
 
+## クラウン荷重伝達：モーメントアーム効果
+
+![](masterarbeit_ansys_fem/figures/fem_implant_crown_fem.pdf){ height=50% }
+
+実歯クラウンをアバットメントに装着し、荷重を**咬合面（z≈38, 隣在歯と同一平面）**
+で受けると、首部まわりの**曲げモーメントが約3.4倍**に。生理的咬合（100 N, 30°,
+ISO 14801）でも**ペリインプラント歯槽頂骨のピーク応力が ×1.6（55→88 MPa）**。
+$\Rightarrow$ 補綴設計（クラウン高・荷重位置）が**辺縁骨リスクに直接効く**。
+
+---
+
 ## 2D 連成セクション（補助）
 
 ![](masterarbeit_ansys_fem/figures/fem_tier2b_real.pdf){ height=52% }

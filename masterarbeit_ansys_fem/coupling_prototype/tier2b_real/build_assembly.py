@@ -29,7 +29,8 @@ EPS_GROWTH = 0.19
 # crop-box (must match prep_meshes.py)
 X0, X1, Y0, Y1, Z0, Z1 = -76.0, -59.0, -47.0, -37.5, 15.0, 31.0
 MATS = {"BONE": (13700., 0.30), "CORTICAL": (13700., 0.30), "CANCELLOUS": (1000., 0.30),
-        "TI": (110000., 0.34), "DENTIN": (18000., 0.31), "PDL": (50., 0.45), "BIOFILM": (1.0, 0.45)}
+        "TI": (110000., 0.34), "DENTIN": (18000., 0.31), "PDL": (50., 0.45), "BIOFILM": (1.0, 0.45),
+        "CROWN": (95000., 0.30)}   # monolithic lithium-disilicate-class ceramic crown
 CORTICAL_THICK = 1.8          # cortical shell / lamina-dura thickness (mm) for the two-layer bone
 # C3D4 face -> local node triple (Abaqus 1-based)
 FACE_NODES = {1: (0, 1, 2), 2: (0, 3, 1), 3: (1, 3, 2), 4: (2, 3, 0)}
@@ -83,6 +84,7 @@ def main():
     # optional argv: <implant_cache.npz> <job_basename>  (defaults = original root-analog model)
     imp_cache = sys.argv[1] if len(sys.argv) > 1 else "cache_implant.npz"
     job = sys.argv[2] if len(sys.argv) > 2 else "tier2b_real"
+    WITH_CROWN = "crown" in job          # ceramic crown seated on the abutment -> occlusal moment arm
     bone = np.load(f"{OUT}/cache_bone.npz")
     dent = np.load(f"{OUT}/cache_dentin.npz")
     imp = np.load(f"{OUT}/{imp_cache}")
@@ -90,6 +92,9 @@ def main():
     dn, dt = dent["nodes"], dent["tets"]
     sverts, sfaces = dent["sverts"], dent["sfaces"]
     inn, it = imp["nodes"], imp["tets"]
+    if WITH_CROWN:
+        crw = np.load(f"{OUT}/cache_crown.npz")
+        cnn, ct = crw["nodes"], crw["tets"]
 
     # PDL: offset tooth-24 surface outward along vertex normals
     vn = compute_vertex_normals(sverts, sfaces)
@@ -105,12 +110,17 @@ def main():
     off_d = Nb
     off_i = Nb + Nd
     off_p = Nb + Nd + Ni                 # pdl OUTER nodes (inner reuse dentin ids)
-    nodes = np.vstack([bn, dn, inn, pdl_outer_xyz])
+    off_c = off_p + V                    # crown nodes (after pdl-outer); 0 of them if no crown
+    if WITH_CROWN:
+        nodes = np.vstack([bn, dn, inn, pdl_outer_xyz, cnn])
+    else:
+        nodes = np.vstack([bn, dn, inn, pdl_outer_xyz])
 
     # ---- element connectivity (global, 0-based) ----
     bt_g = bt
     dt_g = dt + off_d
     it_g = it + off_i
+    ct_g = (ct + off_c) if WITH_CROWN else None
     # pdl tets: inner idx<V -> dentin global; outer idx>=V -> pdl-outer global
     pdl_tris = sfaces
     pdl_tets = []
@@ -144,6 +154,8 @@ def main():
     else:
         blocks = [("BONE", bone_block), ("BIOFILM", bt_g[coll]),
                   ("DENTIN", dt_g), ("TI", it_g), ("PDL", pdl_tets)]
+    if WITH_CROWN:
+        blocks.append(("CROWN", ct_g))
     eid = {}; gid = 1; elem_rows = []
     for name, conn in blocks:
         conn, ndrop, nflip = clean_tets(conn, nodes)
@@ -181,6 +193,26 @@ def main():
             master[k] = v
     print(f"TIE faces: master(bone socket)={len(master)} slave_pdl={len(pdl_free)} slave_imp={len(imp_free)}")
 
+    # ---- crown <-> abutment TIE ----
+    # The ceramic crown is seated on the abutment top: tie the crown intaglio (seat) faces to the
+    # abutment-top faces. Crown = slave (finer, more compliant), abutment top = master (stiff Ti).
+    # The crown is a hollow cap sheathing the abutment: the load-transfer seat is the bore-roof disk
+    # at the abutment-top plane (z_abut, r<RBORE), NOT the crown's lowest faces (the cervical margin).
+    crown_seat, abut_top = {}, {}
+    if WITH_CROWN:
+        z_abut = nodes[off_i:off_i + Ni, 2].max()              # abutment platform top z (= 32.5)
+        crown_free = free_faces(ct_g, eid["CROWN"][0])
+        for k, v in crown_free.items():
+            fc = nodes[list(k)].mean(axis=0)
+            r = np.hypot(fc[0] - T23_AXIS[0], fc[1] - T23_AXIS[1])
+            if abs(fc[2] - z_abut) < 0.4 and r < 2.0:          # bore-roof seat disk only
+                crown_seat[k] = v
+        for k, v in imp_free.items():
+            if nodes[list(k)][:, 2].min() >= z_abut - 0.4:     # abutment-top disk faces only
+                abut_top[k] = v
+        print(f"crown TIE: slave_seat={len(crown_seat)} master_abut_top={len(abut_top)} "
+              f"(z_abut={z_abut:.2f})")
+
     # ---- node sets ----
     nx, ny, nz = nodes[:, 0], nodes[:, 1], nodes[:, 2]
     tol = 0.6
@@ -192,7 +224,16 @@ def main():
     i_ids = np.arange(off_i, off_i + Ni)
     too_top = d_ids[nz[d_ids] >= nz[d_ids].max() - 1.5]
     imp_top = i_ids[nz[i_ids] >= nz[i_ids].max() - 1.5]
-    print(f"fixed={len(fixed)} tooth_top={len(too_top)} imp_top={len(imp_top)}")
+    # with a crown, the occlusal load is applied at the crown occlusal table (z~40.8), NOT the
+    # abutment top (z=32.5) -> the bite force now acts through the crown-height moment arm.
+    if WITH_CROWN:
+        c_ids = np.arange(off_c, off_c + len(cnn))
+        crown_top = c_ids[nz[c_ids] >= nz[c_ids].max() - 1.0]
+        load_top = crown_top
+    else:
+        load_top = imp_top
+    print(f"fixed={len(fixed)} tooth_top={len(too_top)} imp_top={len(imp_top)} "
+          f"load_top={len(load_top)} (crown={WITH_CROWN})")
 
     # ---- write INP ----
     L = []; ap = L.append
@@ -227,6 +268,11 @@ def main():
     ap(" PDL_OUT, BONE_SOCKET")
     ap("*TIE, NAME=T_IMP, ADJUST=NO, POSITION TOLERANCE=%.1f" % imp_tol)
     ap(" IMP_OUT, BONE_SOCKET")
+    if WITH_CROWN:
+        surf("CROWN_SEAT", crown_seat)
+        surf("ABUT_TOP", abut_top)
+        ap("*TIE, NAME=T_CROWN, ADJUST=NO, POSITION TOLERANCE=0.5")
+        ap(" CROWN_SEAT, ABUT_TOP")
 
     def nset(nm, ids):
         ids = np.unique(np.asarray(ids)) + 1
@@ -248,7 +294,7 @@ def main():
     ang = "30deg oblique (ISO 14801)" if job != "tier2b_real" else "near-axial"
     ap("*STEP, NLGEOM=NO"); ap(" 2) occlusal load on both crowns (%s)" % ang); ap("*STATIC")
     ap("*CLOAD")
-    for ids in (too_top, imp_top):
+    for ids in (too_top, load_top):
         if len(ids):
             f = 100.0 / len(ids)            # ~100 N occlusal resultant per crown
             for n in np.unique(ids) + 1:

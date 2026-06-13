@@ -119,6 +119,18 @@ signature). The composition mechanism **transfers unchanged** into realistic ana
 
 ---
 
+## Crown load transfer: the moment-arm effect
+
+![](masterarbeit_ansys_fem/figures/fem_implant_crown_fem.pdf){ height=50% }
+
+A real-tooth ceramic crown on the abutment carries the bite at the **occlusal
+table (z≈38, the neighbour's plane)**, raising the bending moment at the implant
+neck **~3.4×**. Even under physiological occlusion (100 N, 30°, ISO 14801) the
+**crestal peri-implant bone peak rises ×1.6 (55→88 MPa)**.
+$\Rightarrow$ prosthetic design (crown height, load position) **directly drives marginal-bone risk**.
+
+---
+
 ## 2D coupled section (supporting)
 
 ![](masterarbeit_ansys_fem/figures/fem_tier2b_real.pdf){ height=52% }
