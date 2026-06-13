@@ -189,6 +189,21 @@ gingiva change the bone stress little (their role is biological, carried by the 
 the model's value is the explicit anatomy + the descent path linking sulcus colonisation to the
 bone-loss studies.
 
+## Intervention: tooth-brushing / professional debridement
+`fig_periimplantitis_brushing.py` -> `fem_periimplantitis_brushing.pdf`. Adds mechanical biofilm removal
+to the tipping-point cascade. A toothbrush only reaches ~1-2 mm subgingivally, so its efficacy fades as
+the pocket deepens (reachable fraction = clip(1 - L/2mm)); professional debridement reaches the pocket.
+For the most-dysbiotic Botelho patient (36-mo bone loss): **no hygiene 2.98 mm; brushing from the start
+0.58 mm (controlled); brushing started late (18 mo) 2.94 mm (fails - pocket too deep for the brush);
+brushing + professional debridement 0.30 mm (rescued)**. Clinical message: early biofilm control keeps
+the system in the stable basin (reversible peri-mucositis), but once the pocket deepens brushing alone
+cannot reach the subgingival biofilm -> professional debridement is required. Pure ODE intervention,
+no FEM solves.
+
+A polished publication-grade graphical abstract is `fig_graphical_abstract_polished.py` ->
+`fem_graphical_abstract_polished.pdf/.png` (numbered stage badges, stage cards, threaded-implant
+anatomy schematic).
+
 ## Result (honest, root-analog `tier2b_real`)
 The fully real-geometry coupled model **solves successfully** — the methodological goal. With a
 literature-standard linear PDL (50 MPa) the peri-implant vs peri-tooth crestal-bone contrast is
