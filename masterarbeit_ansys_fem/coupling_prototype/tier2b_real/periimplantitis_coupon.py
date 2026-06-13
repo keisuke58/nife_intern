@@ -20,6 +20,10 @@ EXPOSE = float(sys.argv[1]) if len(sys.argv) > 1 else 3.0
 IFACE = sys.argv[2] if len(sys.argv) > 2 else "bond"
 ORDER = int(sys.argv[3]) if len(sys.argv) > 3 else 2
 TAG = sys.argv[4] if len(sys.argv) > 4 else "e3"
+# crown lever arm (mm) ABOVE the abutment top: the 30deg bite is applied at a reference point this far
+# above the platform-top, kinematically tied to the abutment-top nodes (ISO 14801 offset load). 0 =
+# original behaviour (load directly on the abutment top). >0 lengthens the crown-to-implant moment arm.
+CROWN_H = float(sys.argv[5]) if len(sys.argv) > 5 else 0.0
 
 D, L, PITCH, THREAD_DEPTH = 4.1, 10.0, 0.8, 0.40
 RB, HAB, FORCE, ANGLE = 4.5, 8.0, 100.0, 30.0
@@ -125,11 +129,14 @@ def main():
     clamp = np.where(used & ((z <= -0.6) | (r >= RB - 0.4)))[0]
     load = np.where(used & (z >= L + HAB - 0.4))[0]
 
+    rp = len(ncoords) + 1                       # reference node for the offset crown load (if any)
     Lout = []; ap = Lout.append
-    ap("*HEADING"); ap(" peri-implantitis coupon %s expose=%g" % (TAG, EXPOSE))
+    ap("*HEADING"); ap(" peri-implantitis coupon %s expose=%g crown_h=%g" % (TAG, EXPOSE, CROWN_H))
     ap("*NODE")
     for i, (px, py, pz) in enumerate(ncoords, 1):
         ap(" %d, %.5f, %.5f, %.5f" % (i, px, py, pz))
+    if CROWN_H > 0:
+        ap(" %d, 0.0, 0.0, %.5f" % (rp, L + HAB + CROWN_H))   # crown occlusal load point, on axis
     gid = 1
     for name, conn in (("TI", imp_e), ("BONE", bon_e)):
         ap("*ELEMENT, TYPE=%s, ELSET=%s" % (ETET, name))
@@ -146,6 +153,13 @@ def main():
         for k in range(0, len(idx), 16):
             ap(" " + ",".join(str(int(v)) for v in idx[k:k + 16]))
     nset("CLAMP", clamp); nset("LOAD", load)
+
+    # offset crown load: rigidly tie the abutment-top nodes to the reference point at the crown
+    # occlusal height, so the bite is transmitted with the crown-height moment arm (ISO 14801).
+    if CROWN_H > 0:
+        ap("*SURFACE, TYPE=NODE, NAME=LOADSURF"); ap(" LOAD,")
+        ap("*COUPLING, REF NODE=%d, SURFACE=LOADSURF, CONSTRAINT NAME=CROWNLOAD" % rp)
+        ap("*KINEMATIC")
 
     # general contact (Standard): all exterior faces, frictional -- robust, no manual pairing.
     if IFACE == "contact":
@@ -164,8 +178,11 @@ def main():
     else:
         ap("*STATIC")
     ap("*CLOAD")
-    for n in np.unique(load) + 1:
-        ap(" %d, 1, %.5f" % (n, fx / nl)); ap(" %d, 3, %.5f" % (n, fz / nl))
+    if CROWN_H > 0:                              # whole bite at the offset crown reference point
+        ap(" %d, 1, %.5f" % (rp, fx)); ap(" %d, 3, %.5f" % (rp, fz))
+    else:
+        for n in np.unique(load) + 1:
+            ap(" %d, 1, %.5f" % (n, fx / nl)); ap(" %d, 3, %.5f" % (n, fz / nl))
     ap("*OUTPUT, FIELD"); ap("*NODE OUTPUT"); ap(" U")
     ap("*ELEMENT OUTPUT, POSITION=CENTROID"); ap(" S, COORD")
     if IFACE == "contact":
@@ -175,7 +192,7 @@ def main():
     import json
     open(f"{OUT}/pimp_params.jsonl", "a").write(
         json.dumps({"tag": TAG, "expose": EXPOSE, "iface": IFACE, "order": ORDER,
-                    "z_bone_top": z_bone_top}) + "\n")
+                    "z_bone_top": z_bone_top, "crown_h": CROWN_H}) + "\n")
     print("wrote pimp_%s.inp" % TAG)
 
 
