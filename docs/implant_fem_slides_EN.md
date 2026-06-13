@@ -171,3 +171,21 @@ $\Rightarrow$ a **0-D clinical Pg readout** is an adequate ordinal detachment-ri
 **Outlook:** the growth-eigenstrain → interface-stress → delamination competency
 transfers to Keio / Muramatsu computational solid mechanics and to semiconductor
 thin-film stress / dicing-street delamination (DISCO).
+
+---
+
+## Appendix: FEM conditions (materials, BCs, loads)
+
+| Material | $E$ (MPa) | $\nu$ |
+|---|---:|---:|
+| Titanium (Ti-6Al-4V) | 110 000 | 0.34 |
+| Cortical / cancellous bone | 13 700 / 1 000 | 0.30 |
+| Dentin | 18 000 | 0.31 |
+| PDL (0.25 mm, linear idealisation) | 50 | 0.45 |
+| Crown (lithium-disilicate / zirconia) | 95 000 / 210 000 | 0.30 |
+| Gingiva (mucosa) | 3 | 0.45 |
+| Biofilm (+ growth $\varepsilon_g=0.19$) | 1.0 | 0.45 |
+
+**BCs:** bone fully fixed on the crop faces ($U_{1,2,3}=0$). **Interfaces:** osseointegration = \*TIE, crown tied to abutment top, frictional contact $\mu=0.3$ only for the de-integrated variant.
+**Load:** ISO 14801, 100 N at 30$^\circ$ (lat/ax = 0.577). Step 1 = growth eigenstrain, Step 2 = occlusal (with crown: at the **occlusal table z=38** = moment arm).
+**Elements:** assembly = C3D4 (${\sim}270$k), ISO-14801 coupon = C3D10 (linear under-predicts the concentration by 9–15%), convergence $\pm7\%$. Units mm-N-MPa. Full spec in `FEM_CONDITIONS.md`.

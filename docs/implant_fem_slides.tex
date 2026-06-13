@@ -102,6 +102,13 @@
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
 \newif\ifbibliography
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{caption}
+% Make caption package work with longtable
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
 \usepackage{graphicx}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
@@ -347,6 +354,33 @@ Dieckow 10 患者を検証済みの剥離カーネル \(J\) へ射影：
 \textbf{展望：}
 成長固有ひずみ→界面応力→剥離の能力は、慶應・村松研の計算固体力学
 および半導体薄膜応力・ダイシングストリート剥離（DISCO）へ転移する。
+\end{frame}
+
+\begin{frame}[fragile]{付録：FEM 条件（材料・境界・荷重）}
+\protect\hypertarget{ux4ed8ux9332fem-ux6761ux4ef6ux6750ux6599ux5883ux754cux8377ux91cd}{}
+\begin{longtable}[]{@{}lrr@{}}
+\toprule
+材料 & \(E\) (MPa) & \(\nu\) \\
+\midrule
+\endhead
+チタン (Ti-6Al-4V) & 110 000 & 0.34 \\
+皮質骨 / 海綿骨 & 13 700 / 1 000 & 0.30 \\
+象牙質 & 18 000 & 0.31 \\
+PDL（0.25 mm, 線形理想化） & 50 & 0.45 \\
+クラウン（リチウムジシリケート / ジルコニア） & 95 000 / 210 000 &
+0.30 \\
+歯肉（粘膜） & 3 & 0.45 \\
+バイオフィルム（＋成長 \(\varepsilon_g=0.19\)） & 1.0 & 0.45 \\
+\bottomrule
+\end{longtable}
+
+\textbf{境界}：骨の crop
+面で完全固定（\(U_{1,2,3}=0\)）。\textbf{界面}：オッセオ＝*TIE、クラウン＝アバットメント天面に
+*TIE、脱統合変種のみ接触 \(\mu=0.3\)。 \textbf{荷重}：ISO 14801、100
+N・30°斜め（lat/ax=0.577）。Step1=成長固有ひずみ、Step2=咬合（クラウンありは\textbf{咬合面
+z=38}＝モーメントアーム）。 \textbf{要素}：連成=C3D4（〜27万）、ISO14801
+クーポン=C3D10（線形は集中を 9--15\% 過小）、収束 ±7\%。単位
+mm-N-MPa。詳細は \texttt{FEM\_CONDITIONS.md}。
 \end{frame}
 
 \end{document}
