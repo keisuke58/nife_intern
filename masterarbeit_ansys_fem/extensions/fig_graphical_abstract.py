@@ -37,14 +37,15 @@ def cascade(B, A, NT=520, WK=156.0):
 
 def main():
     use()
-    fig = plt.figure(figsize=(7.4, 2.55))
-    gs = fig.add_gridspec(1, 5, wspace=0.55, left=0.04, right=0.985, top=0.74, bottom=0.17)
+    fig = plt.figure(figsize=(11.0, 3.8))
+    gs = fig.add_gridspec(1, 5, wspace=0.62, left=0.045, right=0.99, top=0.78, bottom=0.20)
     ax = [fig.add_subplot(gs[0, i]) for i in range(5)]
     titles = ["1  Microbial ecology", "2  Biofilm anatomy", "3  Host inflammation",
               "4  Biomechanics", "5  Patient prediction"]
     for a, t in zip(ax, titles):
-        a.set_title(t, fontsize=7.0, pad=3)
-        a.tick_params(labelsize=5, length=2)
+        a.set_title(t, fontsize=10.5, pad=5)
+        a.tick_params(labelsize=8, length=2.5)
+    LB = 9       # axis-label fontsize
 
     # 1 ecology: Botelho GDI(t)
     phi = np.load(DATA / "phi_guild.npy"); meta = json.load(open(DATA / "metadata.json"))
@@ -53,9 +54,9 @@ def main():
     gm = gdi.mean(1); odr = np.argsort(gm)
     for i in list(odr[:3]) + list(odr[-3:]):
         c = RED if gm[i] > np.median(gm) else GREEN
-        ax[0].plot(wk, gdi[i], "-", color=c, lw=0.9, alpha=0.85)
+        ax[0].plot(wk, gdi[i], "-", color=c, lw=1.7, alpha=0.9)
     ax[0].axhline(0, color="0.5", lw=0.6, ls=":")
-    ax[0].set_xlabel("weeks", fontsize=6); ax[0].set_ylabel("dysbiosis GDI", fontsize=6)
+    ax[0].set_xlabel("weeks", fontsize=LB); ax[0].set_ylabel("dysbiosis GDI", fontsize=LB)
 
     # 2 anatomy schematic (patches)
     a = ax[1]
@@ -66,27 +67,27 @@ def main():
     a.add_patch(Rectangle((1.0, 1.0), 2.0, 2.2, fc=PINK, ec="none"))         # gingiva R
     for sx in (-0.85, 0.6):                                                   # biofilm strips on Ti
         a.add_patch(Rectangle((sx, -0.6), 0.25, 3.6, fc=RED, ec="none"))
-    a.annotate("biofilm", xy=(0.75, 0.2), xytext=(1.6, -0.8), fontsize=5.4, color=RED,
+    a.annotate("biofilm", xy=(0.75, 0.2), xytext=(1.6, -0.8), fontsize=8, color=RED,
                arrowprops=dict(arrowstyle="->", color=RED, lw=0.6))
-    a.axhline(1.0, color="0.45", lw=0.5, ls="--"); a.text(-2.9, 1.15, "crest", fontsize=4.8, color="0.4")
+    a.axhline(1.0, color="0.45", lw=0.5, ls="--"); a.text(-2.9, 1.2, "crest", fontsize=7, color="0.4")
     a.set_xlim(-3, 3); a.set_ylim(-1, 3.4); a.set_aspect("auto"); a.set_xticks([]); a.set_yticks([])
-    a.set_xlabel("Ti | sulcus | gingiva", fontsize=5.6)
+    a.set_xlabel("Ti | sulcus | gingiva", fontsize=8.5)
 
     # 3 inflammation tipping point
     B = np.linspace(0, 2.2, 60); thr = 1.1
     y = 7.5 * B**8 / (B**8 + thr**8)
-    ax[2].plot(B, y, "-", color=RED, lw=1.4)
+    ax[2].plot(B, y, "-", color=RED, lw=2.4)
     ax[2].axvline(thr, color="0.5", lw=0.7, ls=":"); ax[2].axhspan(0, 0.7, color="0.88")
-    ax[2].text(0.1, 0.9, "stable", fontsize=5, color="0.4")
-    ax[2].set_xlabel("dysbiosis drive", fontsize=6); ax[2].set_ylabel("bone loss (mm)", fontsize=6)
-    ax[2].set_title("3  Host inflammation", fontsize=7.0, pad=3)
+    ax[2].text(0.1, 0.9, "stable", fontsize=7.5, color="0.4")
+    ax[2].set_xlabel("dysbiosis drive", fontsize=LB); ax[2].set_ylabel("bone loss (mm)", fontsize=LB)
+    ax[2].set_title("3  Host inflammation", fontsize=10.5, pad=5)
 
     # 4 biomechanics feedback
     loss, crest = feedback()
-    ax[3].plot(loss, crest, "o-", color=BLUE, lw=1.3, ms=3)
-    ax[3].set_xlabel("bone loss (mm)", fontsize=6); ax[3].set_ylabel(r"crestal $\sigma$ (MPa)", fontsize=6)
+    ax[3].plot(loss, crest, "o-", color=BLUE, lw=2.2, ms=5)
+    ax[3].set_xlabel("bone loss (mm)", fontsize=LB); ax[3].set_ylabel(r"crestal $\sigma$ (MPa)", fontsize=LB)
     ax[3].annotate("vicious\ncycle", xy=(loss[-1], crest[-1]), xytext=(loss[0] + 0.5, crest[-1] * 0.8),
-                   fontsize=5.2, color=BLUE, arrowprops=dict(arrowstyle="->", color=BLUE, lw=0.6))
+                   fontsize=8, color=BLUE, arrowprops=dict(arrowstyle="->", color=BLUE, lw=0.6))
 
     # 5 per-patient prediction
     A = np.interp; lv, cv = loss, crest / crest[0]
@@ -95,9 +96,9 @@ def main():
     Bvals = np.maximum(0.0, gm - gm.min())
     for i in list(odr[-3:]) + [odr[0]]:
         c = RED if gm[i] > np.median(gm) else GREEN
-        ax[4].plot(t, cascade(Bvals[i], Af), "-", color=c, lw=1.0)
-    ax[4].axhline(6.0, color="0.4", lw=0.7, ls="--"); ax[4].text(1, 6.2, "critical", fontsize=4.8, color="0.4")
-    ax[4].set_xlabel("months", fontsize=6); ax[4].set_ylabel("predicted loss (mm)", fontsize=6)
+        ax[4].plot(t, cascade(Bvals[i], Af), "-", color=c, lw=1.9)
+    ax[4].axhline(6.0, color="0.4", lw=0.7, ls="--"); ax[4].text(1, 6.2, "critical", fontsize=7, color="0.4")
+    ax[4].set_xlabel("months", fontsize=LB); ax[4].set_ylabel("predicted loss (mm)", fontsize=LB)
     ax[4].set_ylim(0, 7)
 
     # arrows between panels (figure coords)
@@ -105,17 +106,18 @@ def main():
     for i in range(4):
         x0 = ax[i].get_position().x1; x1 = ax[i + 1].get_position().x0; yc = 0.45
         fig.patches.append(FancyArrowPatch((x0 + 0.004, yc), (x1 - 0.004, yc),
-                           transform=fig.transFigure, arrowstyle="-|>", mutation_scale=9,
-                           lw=1.2, color="0.35"))
+                           transform=fig.transFigure, arrowstyle="-|>", mutation_scale=15,
+                           lw=1.6, color="0.35"))
     fig.suptitle("From the patient's microbiome to peri-implant bone-loss risk: one mechanistic chain",
-                 fontsize=8.2, y=0.95, fontweight="bold")
+                 fontsize=11.5, y=0.97, fontweight="bold")
     fig.text(0.5, 0.025, "real longitudinal ecology  $\\to$  biofilm in the sulcus  $\\to$  inflammation "
              "(tipping point)  $\\to$  mechanical feedback  $\\to$  per-patient prediction (Bayesian UQ)",
-             ha="center", fontsize=6.0, color="0.3")
+             ha="center", fontsize=8.5, color="0.3")
     OUT.mkdir(exist_ok=True)
     fig.savefig(OUT / "fem_graphical_abstract.pdf", bbox_inches="tight")
+    fig.savefig(OUT / "fem_graphical_abstract.png", bbox_inches="tight", dpi=300)
     plt.close(fig)
-    print("wrote", OUT / "fem_graphical_abstract.pdf")
+    print("wrote", OUT / "fem_graphical_abstract.pdf", "+ .png (300 dpi)")
 
 
 if __name__ == "__main__":
