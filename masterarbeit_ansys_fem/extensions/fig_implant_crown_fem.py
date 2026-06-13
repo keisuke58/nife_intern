@@ -209,8 +209,11 @@ def main():
         if M == "CROWN" and REALCROWN:
             continue                              # replaced by the real-tooth overlay below
         tris, _ = surf[M]
-        axA.add_collection3d(Poly3DCollection(tris, facecolors=shade(tris, to_rgb(COL[M]), *SH[M]),
-                                              edgecolors=(0, 0, 0, 0.10), linewidths=0.05, rasterized=True))
+        al = 0.55 if M == "BIOFILM" else 1.0      # biofilm is a thin sulcular film -> translucent
+        pc = Poly3DCollection(tris, facecolors=shade(tris, to_rgb(COL[M]), *SH[M]),
+                              edgecolors=(0, 0, 0, 0.10), linewidths=0.05, rasterized=True)
+        pc.set_alpha(al)
+        axA.add_collection3d(pc)
     # illustrative peri-implant mucosa cuff (transmucosal-consistent: bone crest -> margin)
     if GINGIVA:
         gum = gingiva_cuff()
@@ -224,6 +227,8 @@ def main():
                                               edgecolors=(0, 0, 0, 0.12), linewidths=0.04, rasterized=True))
     label3d(axA, *imp_xyz, "IMPLANT (screw + crown)", "#222222")
     label3d(axA, *too_xyz, "natural tooth", "#b35806")
+    if "BIOFILM" in surf:
+        label3d(axA, T23[0] - 3.2, yf, CREST + 1.6, "biofilm (sulcus)", "#b30000")
     axA.text(crown_cx, yf, cr_c[:, 2].max() + 3.0, r"$\downarrow$ 100 N, 30$^\circ$ (ISO 14801)",
              fontsize=5.4, ha="center", color="#b30000", fontweight="bold")
     axA.set_title(r"(A) restored implant: load-bearing ceramic crown", fontsize=6.6, pad=1)

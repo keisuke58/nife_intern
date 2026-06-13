@@ -156,7 +156,7 @@ screw (Ø4.1) is narrower than the natural socket (buccolingual ≈ 8.5 mm) → 
 |---|---|---|
 | Dysbiosis stress ratio (DH/CH) | every growth model | **2.3 – 3.3×** (robust across plane-strain/axisym/3D/RVE) |
 | Crown moment arm → crestal bone p95 | tier2b_crown (intact bone), 100 N/30°, load z 32.5 → 38 | 18 → 27 MPa (**×1.5**, p95; abs. max is a crown-insensitive neck singularity) |
-| Real-molar crown validation | tier2b_crownreal vs tier2b_crown | 79 vs 88 MPa (**−10%** → parametric crown adequate) |
+| Real-molar crown validation | tier2b_crownreal vs tier2b_crown (both anatomical biofilm) | 24.7 vs 27.0 MPa p95 (**−9%** → parametric crown adequate) |
 | C/I-ratio feedback | coupon sweep + resorption ODE, same severity | crowned reaches point-of-no-return **34 mo vs 55 mo** (38% sooner) |
 | Marginal-bone-loss → stress | coupon, bone 2 → 8 mm | crest 14 → 35 MPa; stiffness 2.7 → 0.7 N/µm |
 | Micromotion (de-integrated) | general contact, 100 N | ~7–8 µm ≪ Brunski 150 µm threshold |
