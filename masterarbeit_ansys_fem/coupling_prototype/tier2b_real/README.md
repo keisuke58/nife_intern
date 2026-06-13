@@ -204,6 +204,67 @@ A polished publication-grade graphical abstract is `fig_graphical_abstract_polis
 `fem_graphical_abstract_polished.pdf/.png` (numbered stage badges, stage cards, threaded-implant
 anatomy schematic).
 
+## Disease-dynamics extensions (5 new figures, ODE/post-processing, no FEM solves)
+All five reinforce the cascade with literature-anchored mechanism. Citations are in each script docstring;
+anchors summarised under "Literature anchors" below.
+
+1. **Bistability / hysteresis** `fig_periimplantitis_bistability.py` -> `fem_periimplantitis_bistability`.
+   Closes the loop the one-way cascade left open: dysbiosis B -> inflammation I, and inflammation FEEDS
+   the dysbiotic anaerobes back (bleeding/GCF heme-iron; P. gingivalis is inflammophilic & heme-auxotroph
+   -- Hajishengallis keystone-pathogen; FEMS heme review). Mutual Hill activation makes the system
+   **bistable**: a healthy and a diseased attractor with a **hysteresis** window (b0 in [0.03, 0.41]).
+   Panels: (A) bistable phase plane (two stable fixed points), (B) RANKL/OPG vs plaque burden traced up
+   then down -> hysteresis loop ("prevention << cure"), (C) a transient insult locks the patient into the
+   diseased basin permanently. This is the deepest upgrade: explains WHY peri-implantitis resists hygiene.
+2. **Window of reversibility** `fig_periimplantitis_reversibility.py` -> `..._reversibility`. Heatmap of
+   final bone loss over (therapy start time) x (residual dysbiosis), worst-case Botelho patient, with the
+   **2 mm peri-implantitis diagnostic contour** separating rescued from lost. Home brushing (residual
+   ~0.40, reach-limited) closes its window by ~13-19 mo; professional debridement (residual ~0.15) stays
+   sub-threshold even if started ~22 mo. Clinically actionable "how soon / how aggressive".
+3. **Host-modulation therapy** `fig_periimplantitis_hostmod.py` -> `..._hostmod`. Same disease attacked at
+   three nodes: biofilm control (cuts drive B), anti-cytokine/anti-TNF (raises inflammation resolution),
+   anti-RANKL/denosumab (blocks RANKL->osteoclast coupling, downstream). 36-mo loss: none 2.98, anti-TNF
+   1.85, anti-RANKL 1.70, biofilm 1.25, **combo 1.20**. Panel B: anti-RANKL arrests bone loss while
+   inflammation stays high -- a rescue, not a cure; only biofilm control removes the cause.
+4. **Literature calibration & face validity** `fig_periimplantitis_calibration.py` -> `..._calibration`.
+   Every rate from literature EXCEPT the single bone-loss gain kL, pinned by least-squares to the
+   active-phase peri-implantitis progression anchor (~3 mm @ 36 mo). **Fitted kL = 0.022 wk-1.** The
+   calibrated worst-case sits in the peri-implantitis band; the stable site stays inside the healthy
+   remodelling envelope. (The non-pathological early-MBL plateau 0.93->1.04 mm is biologic-width
+   remodelling -- a different mechanism we deliberately do NOT fit.)
+5. **Design buys time** `fig_periimplantitis_design_time.py` -> `..._design_time`. Couples the FEM coupon
+   diameter sweep (crestal sigma_p95: O3.5 = 22.2, O4.1 = 14.4, O4.8 = 10.1 MPa) to progression by scaling
+   the mechanical-feedback term by crest-stress ratio. Time-to-critical: **O3.5 = 61, O4.1 = 65, O4.8 = 68
+   months**. Honest framing: design is a **secondary** modifier (~7 mo over 5+ yr); biofilm control
+   dominates -- consistent with overload-needs-inflammation synergy (Chambrone 2010; Naert 2012).
+
+## Literature anchors (for thesis citations; full report in the session log)
+- Bone loss: healthy remodelling <=1.5 mm yr1 then <=0.2 mm/yr (Albrektsson 1986; Schwarz 2018 JCP
+  doi:10.1111/jcpe.12954); progression in ~64% over ~6.4 yr (PMC9253284); early MBL 0.93/1.04 mm @ 12/36 mo
+  (Int J Implant Dent 2025, doi:10.1186/s40729-025-00613-x).
+- Mechanostat: 2000/4000 ue remodel/overload thresholds (Frost 2003 Anat Rec 275A:1081); peri-implant FEA
+  resorption switch PMC9621276.
+- RANKL/OPG elevated in peri-implantitis PICF (Clin Oral Investig 2021, PMID 34264378); OC functional
+  lifespan ~2 wk (Parfitt/Jaworski); osteomorph recycling caveat (McDonald 2021 Cell).
+- Host modulation: denosumab FREEDOM +5% hip BMD / -68% vertebral fx (Cummings 2009 NEJM 361:756);
+  anti-RANKL inhibits alveolar bone destruction (PMID 29607937; Valverde 2025 JPR); anti-TNF reduces
+  alveolar bone loss, time-dependent (Kobayashi & Yoshie 2020 Front Immunol 11:591365).
+- Ecology<->host feedback: inflammophilic dysbiosis / keystone pathogen (Hajishengallis 2014, PMC4071223);
+  P. gingivalis heme-auxotrophy HmuY/gingipains (FEMS Microbiol Rev 2025, doi:10.1093/femsre/fuaf019).
+- Overload x biofilm synergy: overload alone insufficient, aggravates only with inflammation (Chambrone
+  2010 JP doi:10.1902/jop.2010.100176; Naert 2012 PMID 23062133).
+- Bone-remodelling ODE templates: Komarova 2003 Bone 33:206; Lemaire 2004 JTB 229:293 (explicit
+  RANK-RANKL-OPG); Pivonka 2008 Bone 43:249. Dysbiosis bistability: Microbiome 2023
+  doi:10.1186/s40168-023-01474-5.
+- Toothbrush subgingival reach/efficacy collapses at PD>=5 mm (PMC8327450).
+
+## Candidate calibration dataset (NEW, for a future per-timepoint Bayesian fit)
+**PRJNA1215005** (Anuntakarun 2025, Int Dent J 75(5):100951, doi:10.1016/j.identj.2025.100951) -- 7 patients,
+42 samples, **longitudinal 16S + radiographic bone loss + PD/BOP at baseline/3 mo/6 mo**. Closest open
+dataset pairing microbiome with bone-loss over time; the practical longitudinal triad is
+Dieckow PRJEB71108 + Botelho PRJNA725874 + PRJNA1215005. No open dataset pairs longitudinal 16S with
+longitudinal RANKL/OPG/cytokine in the same subjects (gap flagged).
+
 ## Result (honest, root-analog `tier2b_real`)
 The fully real-geometry coupled model **solves successfully** — the methodological goal. With a
 literature-standard linear PDL (50 MPa) the peri-implant vs peri-tooth crestal-bone contrast is
