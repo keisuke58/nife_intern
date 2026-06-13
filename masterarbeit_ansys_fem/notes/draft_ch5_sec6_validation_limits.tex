@@ -1,0 +1,94 @@
+% =====================================================================
+% DRAFT — additional paragraphs for ch5 §"Relation to prior art, validation, and limits"
+% (\subsection{Relation to prior art, validation, and limits}, label sec:fem_validation)
+% Thesis body (30_Masterarbeit) is FROZEN — this is a draft to be slotted in on approval.
+%
+% Focus: the honest DATA-LAYER SEPARATION (patient composition is 0D; depth shape is in-vitro)
+% and the bridge-assumption validation (load is the lever, borrowed shape is a thin band).
+%
+% New assets referenced (already built):
+%   figures/F1b_data_bridge.pdf                  -> \label{fig:fem_databridge}
+%   figures/F1c_patient_bridge_validation.pdf    -> \label{fig:fem_patientbridge}
+% Generators: masterarbeit_ansys_fem/gen_bridge_fig.py ; extensions/c4_patient_bridge_validation.py
+% Existing labels reused: sec:fem_residual, sec:fem_validation, sec:fem_tooth
+% =====================================================================
+
+\paragraph{Two real datasets, two different layers.} The framework is driven by real
+data at two layers that must not be conflated. The patient cohort
+(Dieckow~\textit{et al.}~peri-implant 16S~\cite{dieckow2024}) is real but
+\emph{composition-only}: it resolves \emph{how much} of each guild is present, with no
+depth axis, and it drives the ecological model of Chapters~\ref{ch:heine}--\ref{ch:dieckow},
+not the finite-element model. The \emph{depth structure} the mechanics needs --- the
+profile $\phi_\mathrm{Pg}(z)$ that sets the eigenstrain --- comes instead from the
+in-vitro HOBIC confocal imaging~\cite{Heine2025PeriImplant}, where the
+\textit{P.~gingivalis} channel is recovered by the colocalisation decode of
+Section~\ref{sec:fem_growth} ($\mathrm{Fn}=\mathrm{blue}\cap\mathrm{red}$,
+$\mathrm{Pg}=\mathrm{red}-\mathrm{Fn}$), not a one-to-one channel map. The two layers and
+their join are shown in Figure~\ref{fig:fem_databridge}: a measured patient composition
+(0D) supplies a Pg \emph{load}, the in-vitro confocal biofilm supplies a depth
+\emph{shape}, and their product is the assumed patient profile
+$\phi_\mathrm{Pg}(z)=\text{load}\times\text{shape}$. This is an explicit assumption, not a
+per-patient measurement: no patient in the cohort was imaged in depth, so the depth shape
+is \emph{borrowed} from the in-vitro model.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.98\textwidth]{F1b_data_bridge.pdf}
+  \caption[Data-provenance bridge: composition to depth to stress]{The two real datasets
+  enter at different layers. \textbf{(A)}~real patient 16S (Dieckow, ten peri-implant
+  patients) is composition-only --- a Pg-guild abundance with no depth.
+  \textbf{(B)}~the depth \emph{shape} $\phi_\mathrm{Pg}(z)$ is measured on the in-vitro
+  HOBIC biofilm (corrected confocal decode) and scaled by the patient load.
+  \textbf{(C)}~the material model turns the assumed profile into a residual-stress column
+  $S_{11}(z)/\mu$. The join in (B), $\text{load}\times\text{shape}$, is the bridge
+  assumption examined below.}
+  \label{fig:fem_databridge}
+\end{figure}
+
+\paragraph{The borrowed shape is a weak lever; the measured load is the strong one.}
+Because the depth shape is borrowed rather than measured, the decisive question is how
+much it matters --- and projecting the real cohort through the verified mechanics answers
+it. Using the boundary-layer detachment driver
+$J=\langle e^{-z/z_0}\,\phi_\mathrm{Pg}(z)\rangle_z$ ($z_0=0.25$), the verified reduced
+form of the interface stress (only near-substratum growth loads the interface;
+Section~\ref{sec:fem_residual}, where $S_{11}$ is depth-dominated rather than a local-$\phi$
+law), each of the ten Dieckow patients maps to a detachment risk
+(Figure~\ref{fig:fem_patientbridge}). The inter-patient spread is large --- a coefficient
+of variation of $0.86$ across $J\in[0,\,0.028]$ --- and it is set entirely by the
+\emph{measured} Pg load. The unmeasured depth shape, by contrast, is a thin band:
+substituting the \emph{entire} measured commensal (CH) shape for the dysbiotic (DH) shape
+at fixed load changes $J$ by only $8\%$, so that the inter-patient spread is
+\emph{$34\times$ wider than the shape-uncertainty band}. The borrowing on which the bridge
+rests is therefore low-risk: per-patient mechanical risk is governed by the quantity the
+clinic can actually measure (the 0D Pg load), not by the per-patient depth structure the
+model cannot see.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.98\textwidth]{F1c_patient_bridge_validation.pdf}
+  \caption[Patient-bridge validation: load is the lever, not shape]{Projecting the real
+  Dieckow cohort through the verified detachment kernel
+  $J=\langle e^{-z/z_0}\phi_\mathrm{Pg}(z)\rangle$. \textbf{(A)}~per-patient risk spans a
+  factor that the measured Pg load alone explains (CV~$=0.86$); the error bars are the
+  shape-uncertainty band obtained by swapping the measured CH and DH depth shapes.
+  \textbf{(B)}~the bridge law $J=\text{load}\times\text{shape}$ is linear; the grey wedge
+  is the $\pm8\%$ shape band. The inter-patient spread is $34\times$ the shape band, so the
+  borrowed in-vitro shape is a weak lever relative to the measured load.}
+  \label{fig:fem_patientbridge}
+\end{figure}
+
+\paragraph{What this does and does not license.} Two boundaries keep the claim honest.
+The low shape-leverage is established for the boundary-layer \emph{driver} $J$, which ranks
+detachment risk; it does \emph{not} extend to the absolute stress \emph{scale}, which
+remains parametric in the biofilm modulus for the reasons given above (the
+shape-calibrated, scale-parametric reading of Section~\ref{sec:fem_validation}). And the
+result says the per-patient depth \emph{redistribution} is a small correction within a
+unit-mean envelope --- not that depth is irrelevant: the depth \emph{kernel} itself, which
+concentrates the interface stress near the substratum, is what makes the mechanism
+composition-resolved in the first place (Section~\ref{sec:fem_residual}), and the
+geometry-portable real-tooth run of Section~\ref{sec:fem_tooth} likewise still relies on
+the in-vitro depth shape. The validation that would remove the borrowing altogether is the
+same experiment identified above, now sharpened: \emph{depth-resolved imaging of a patient
+biofilm} would replace the assumed shape with a measured one, and per-patient
+\emph{shear-flow detachment onset versus Pg load} would test the linear $J$--load law that
+the cohort projection predicts.
