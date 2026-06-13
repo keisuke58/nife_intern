@@ -67,6 +67,38 @@ concentration. The standard Ø4.1 screw is narrower than the natural (buccolingu
 so it is bonded to the socket walls (immediate-placement-like partial engagement — an explicit
 idealisation). Figure `figures/fem_tier2b_generic.pdf`.
 
+## Implant DESIGN study — ISO 14801-style coupon (`implant_coupon.py`)
+The thread-dimension sweep, C3D4-vs-C3D10 accuracy and axial-vs-oblique comparison are implant-LOCAL
+properties, best isolated on a standard coupon rather than re-running the full mandible. A parametric
+Ti screw is osseointegrated (conforming via OCC `fragment`) in a bone holder cylinder, embedded 3 mm
+below the platform, clamped, and loaded ~100 N at a chosen angle (ISO 14801).
+
+```
+bash run_coupons.sh        # builds 10 coupons (gmsh_env), solves + extracts (Abaqus) -> coupon_results.jsonl
+python ../../extensions/fig_implant_design.py   # -> figures/fem_implant_design.pdf (4 panels)
+```
+- `implant_coupon.py D L pitch taper order angle tag` — body-of-revolution screw + bone cylinder,
+  fragmented to a conforming bonded mesh; `order` 1=C3D4 / 2=C3D10. **C3D10 note**: gmsh tet10 node
+  order differs from Abaqus C3D10 in the last two mid-edge nodes (swap cols 8,9), and
+  `Mesh.SecondOrderLinear=1` is required (straight-edge quadratic) to avoid curved-edge negative
+  Jacobians; sliver tets (<1e-4 mm³) are dropped.
+- `extract_coupon.py tag L` (abaqus python) → thread-root p99 vM, max-Ti vM, bone/crestal p95, tip
+  displacement (→ stiffness).
+
+**Results** (Ø4.1×10 mm, 0.8 pitch, cylindrical baseline; thread-root p99 vM):
+| study | finding |
+|---|---|
+| **diameter (dominant)** | Ø3.5→4.1→4.8: thread **171→104→60 MPa**, stiffness 1.2→2.2→4.1 N/µm — wider implant strongly lowers stress & raises stiffness |
+| length 8→12 mm | thread 101→98 MPa — negligible (diminishing returns past ~8 mm) |
+| pitch 0.6→1.0 mm | 100→101 MPa — secondary |
+| taper 0→0.3 | 104→119 MPa — narrower apex concentrates more |
+| **load angle (ISO 14801)** | axial→30° oblique: thread **×9** (12→104 MPa), crestal bone ×7, displacement ×27 — oblique loading dominates |
+| **mesh order** | C3D4→C3D10: thread-root **+9 %**, max-Ti **+15 %** — linear tets under-predict the concentration; C3D10 used |
+
+Figure `figures/fem_implant_design.pdf` (4 panels). Peak Ti stresses (60–230 MPa) stay well within
+Ti-6Al-4V yield (~800 MPa). The coupon isolates implant design; the full-mandible `tier2b_generic`
+provides the anatomical-coupling context.
+
 ## Result (honest, root-analog `tier2b_real`)
 The fully real-geometry coupled model **solves successfully** — the methodological goal. With a
 literature-standard linear PDL (50 MPa) the peri-implant vs peri-tooth crestal-bone contrast is
