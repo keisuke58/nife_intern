@@ -38,32 +38,40 @@ def panel(ax, meta, title, restored):
     surfB = nodes[fbB]
     ax.add_collection3d(Poly3DCollection(surfB, facecolors=cf.shade(surfB, to_rgb(cf.COL["BONE"])),
                                          edgecolors="none", alpha=0.26, rasterized=True))
-    for M in ["DENTIN", "PDL", "TI", "BIOFILM", "CROWN"]:
+    # biofilm + gingiva = full sulcus ring -> draw far half, then solids, then near half (encircles)
+    bfi = np.where(mat == "BIOFILM")[0]
+    bf_tris = nodes[cf.boundary_faces(conn[bfi])[0]] if len(bfi) else np.zeros((0, 3, 3))
+
+    def sulcus(near):
+        sub = (lambda t: t[t.mean(1)[:, 1] < ymid]) if near else (lambda t: t[t.mean(1)[:, 1] >= ymid])
+        tb = sub(bf_tris)
+        if len(tb):
+            pc = Poly3DCollection(tb, facecolors=cf.shade(tb, to_rgb(cf.COL["BIOFILM"]), 0.6, 0.42, 0.12),
+                                  edgecolors=(0.5, 0, 0, 0.35), linewidths=0.08, rasterized=True)
+            pc.set_alpha(0.72); ax.add_collection3d(pc)
+        if restored:
+            g = sub(cf.gingiva_cuff())
+            if len(g):
+                pc = Poly3DCollection(g, facecolors=cf.shade(g, to_rgb(cf.COL["GINGIVA"]), 0.6, 0.35),
+                                      edgecolors=(0.6, 0.2, 0.3, 0.25), linewidths=0.05, rasterized=True)
+                pc.set_alpha(0.5); ax.add_collection3d(pc)
+    sulcus(near=False)
+    for M in ["DENTIN", "PDL", "TI", "CROWN"]:
         idx = np.where(mat == M)[0]
-        if not len(idx) or (M == "CROWN" and restored):     # restored crown drawn as real-tooth overlay
+        if not len(idx) or (M == "CROWN" and restored):
             continue
-        fb, _ = cf.boundary_faces(conn[idx])
-        tris = nodes[fb]
-        if M == "BIOFILM":                               # back half (like the bone) -> no front-floating ring
-            tris = tris[tris.mean(axis=1)[:, 1] >= ymid]
-            if not len(tris):
-                continue
-        pc = Poly3DCollection(tris, facecolors=cf.shade(tris, to_rgb(cf.COL[M]), *cf.SH[M]),
-                              edgecolors=(0, 0, 0, 0.10), linewidths=0.05, rasterized=True)
-        pc.set_alpha(0.55 if M == "BIOFILM" else 1.0)    # biofilm = thin sulcular film
-        ax.add_collection3d(pc)
+        tris = nodes[cf.boundary_faces(conn[idx])[0]]
+        ax.add_collection3d(Poly3DCollection(tris, facecolors=cf.shade(tris, to_rgb(cf.COL[M]), *cf.SH[M]),
+                                             edgecolors=(0, 0, 0, 0.10), linewidths=0.05, rasterized=True))
     if restored:
         cr_top = nodes[conn[mat == "CROWN"]].reshape(-1, 3)[:, 2].max()
-        gum = cf.gingiva_cuff(); gum = gum[gum.mean(axis=1)[:, 1] >= ymid]   # back half
-        ax.add_collection3d(Poly3DCollection(gum, facecolors=cf.shade(gum, to_rgb(cf.COL["GINGIVA"]), 0.6, 0.35),
-                                             edgecolors=(0.6, 0.2, 0.3, 0.25), linewidths=0.05,
-                                             alpha=0.55, rasterized=True))
         cm = cf.real_tooth_crown(cf.STL_TOOTH, h_target=cr_top - 31.0, base_z=31.0)
         ax.add_collection3d(Poly3DCollection(cm, facecolors=cf.shade(cm, to_rgb(cf.COL["CROWN"]), 0.62, 0.34, 0.30),
                                              edgecolors=(0, 0, 0, 0.12), linewidths=0.04, rasterized=True))
         ztop = cr_top + 3.0
     else:
         ztop = nodes[conn[mat == "TI"]].reshape(-1, 3)[:, 2].max() + 2.6
+    sulcus(near=True)                                    # near half in front -> biofilm encircles
     yf = b[2] + 0.18 * (b[3] - b[2])
     ax.text(cf.T23[0], yf, ztop, r"$\downarrow$ 100 N, 30$^\circ$", fontsize=5.4, ha="center",
             color="#b30000", fontweight="bold")

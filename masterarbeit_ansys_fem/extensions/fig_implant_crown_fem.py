@@ -203,33 +203,36 @@ def main():
     axA = fig.add_subplot(1, 2, 1, projection="3d")
     axA.add_collection3d(Poly3DCollection(surfB, facecolors=shade(surfB, to_rgb(COL["BONE"])),
                                           edgecolors="none", alpha=0.20, rasterized=True))
-    for M in STRUCT:
-        if M not in surf:
+    # The sulcus (biofilm + gingiva) is a full ring around the neck. To make it read as ENCIRCLING
+    # (not floating in front), draw its FAR half first -- behind the implant -- then the solid bodies,
+    # then its NEAR half on top: the near arc occludes the implant front, the far arc is occluded by it.
+    def sulcus(near):
+        msk = (lambda t: t[t.mean(axis=1)[:, 1] < ymid]) if near else (lambda t: t[t.mean(axis=1)[:, 1] >= ymid])
+        if "BIOFILM" in surf:
+            tb = msk(surf["BIOFILM"][0])
+            if len(tb):
+                pc = Poly3DCollection(tb, facecolors=shade(tb, to_rgb(COL["BIOFILM"]), 0.6, 0.42, 0.12),
+                                      edgecolors=(0.5, 0, 0, 0.35), linewidths=0.08, rasterized=True)
+                pc.set_alpha(0.72); axA.add_collection3d(pc)
+        if GINGIVA:
+            g = msk(gingiva_cuff())
+            if len(g):
+                pc = Poly3DCollection(g, facecolors=shade(g, to_rgb(COL["GINGIVA"]), 0.6, 0.35),
+                                      edgecolors=(0.6, 0.2, 0.3, 0.25), linewidths=0.05, rasterized=True)
+                pc.set_alpha(0.5); axA.add_collection3d(pc)
+    sulcus(near=False)                            # far half -- behind the implant
+    for M in ["DENTIN", "PDL", "TI", "CROWN"]:    # the solid bodies, between the two sulcus halves
+        if M not in surf or (M == "CROWN" and REALCROWN):
             continue
-        if M == "CROWN" and REALCROWN:
-            continue                              # replaced by the real-tooth overlay below
         tris, _ = surf[M]
-        if M == "BIOFILM":                        # clip to the back half (like the bone) so the full
-            tris = tris[tris.mean(axis=1)[:, 1] >= ymid]   # ring's near arc doesn't float in front
-        al = 0.7 if M == "BIOFILM" else 1.0       # biofilm = defined translucent sulcular collar
-        sh = (0.6, 0.42, 0.12) if M == "BIOFILM" else SH[M]
-        ec = (0.5, 0.0, 0.0, 0.35) if M == "BIOFILM" else (0, 0, 0, 0.10)
-        pc = Poly3DCollection(tris, facecolors=shade(tris, to_rgb(COL[M]), *sh),
-                              edgecolors=ec, linewidths=0.08 if M == "BIOFILM" else 0.05, rasterized=True)
-        pc.set_alpha(al)
-        axA.add_collection3d(pc)
-    # illustrative peri-implant mucosa cuff (transmucosal-consistent: bone crest -> margin)
-    if GINGIVA:
-        gum = gingiva_cuff()
-        gum = gum[gum.mean(axis=1)[:, 1] >= ymid]          # back half, consistent with the cut bone
-        axA.add_collection3d(Poly3DCollection(gum, facecolors=shade(gum, to_rgb(COL["GINGIVA"]), 0.6, 0.35),
-                                              edgecolors=(0.6, 0.2, 0.3, 0.25), linewidths=0.05,
-                                              alpha=0.55, rasterized=True))
+        axA.add_collection3d(Poly3DCollection(tris, facecolors=shade(tris, to_rgb(COL[M]), *SH[M]),
+                                              edgecolors=(0, 0, 0, 0.10), linewidths=0.05, rasterized=True))
     # illustrative REAL molar crown (cusps/grooves) seated on the abutment (z 31->38)
     if REALCROWN:
         cm = real_tooth_crown(STL_TOOTH, h_target=cr_c[:, 2].max() - 31.0, base_z=31.0)
         axA.add_collection3d(Poly3DCollection(cm, facecolors=shade(cm, to_rgb(COL["CROWN"]), 0.62, 0.34, 0.30),
                                               edgecolors=(0, 0, 0, 0.12), linewidths=0.04, rasterized=True))
+    sulcus(near=True)                             # near half -- in front of the implant -> encircles
     label3d(axA, *imp_xyz, "IMPLANT (screw + crown)", "#222222")
     label3d(axA, *too_xyz, "natural tooth", "#b35806")
     if "BIOFILM" in surf:
