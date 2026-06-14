@@ -106,7 +106,7 @@ fem_implant_mesh3d / voxel3d / screw3d / crown3d / crown_section、`figures/fem_
 ## 4. データの流れ（誰が誰を食べさせているか）
 
 ```
-実16S（Botelho/Dieckow）  ──GDI──►  疾患ODE（柱2）
+実16S（Botelho/Dieckow）  ──GDI──→  疾患ODE（柱2）
                                         │  loss(t)
                                         ▼
                             A(L)=FEMの crest応力比（柱1のpimp掃引）
