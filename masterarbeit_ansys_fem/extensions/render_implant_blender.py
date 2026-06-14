@@ -23,8 +23,8 @@ MAT = {
     "implant": ((0.46, 0.48, 0.52, 1), 1.0, 0.26, 0.0, 0.0, 0.0, 1.0),
     "dentin":  ((0.90, 0.82, 0.64, 1), 0.0, 0.40, 0.30, 0.9, 0.0, 1.0),   # natural ivory tooth, SSS
     "pdl":     ((0.80, 0.62, 0.58, 1), 0.0, 0.62, 0.30, 0.5, 0.0, 1.0),   # pale ligament (not orange)
-    "biofilm": ((0.83, 0.13, 0.14, 1), 0.0, 0.42, 0.35, 0.4, 0.25, 0.93),
-    "crown":   ((0.95, 0.93, 0.88, 1), 0.0, 0.18, 0.12, 0.4, 0.05, 1.0),
+    "biofilm": ((0.82, 0.12, 0.13, 1), 0.0, 0.30, 0.32, 0.4, 0.18, 0.95),    # wet sulcular film
+    "crown":   ((0.95, 0.93, 0.88, 1), 0.0, 0.16, 0.14, 0.4, 0.05, 1.0),
     "gingiva": ((0.93, 0.55, 0.60, 1), 0.0, 0.46, 0.55, 1.2, 0.0, 0.92),
 }
 
@@ -49,7 +49,7 @@ def make_mat(name, spec):
     return m
 
 
-FEM_BODIES = {"bone", "implant", "dentin", "pdl", "biofilm", "crown"}   # closed -> boolean-cut at y_mid
+FEM_BODIES = {"bone", "implant", "dentin", "pdl", "crown", "biofilm"}   # closed -> boolean-cut at y_mid
 
 
 def main():
@@ -66,9 +66,8 @@ def main():
         bpy.ops.wm.ply_import(filepath=str(p))
         ob = bpy.context.selected_objects[0]; ob.name = name
         ob.data.materials.clear(); ob.data.materials.append(make_mat(name, MAT[name]))
-        # smooth the coarse tet facets with vertex-normal smooth shading + a light laplacian relax
-        sm = ob.modifiers.new("smooth", "SMOOTH")
-        sm.iterations = 8 if name == "crown" else (2 if name in ("biofilm", "pdl") else 5)
+        sm = ob.modifiers.new("smooth", "SMOOTH")         # relax coarse tet facets
+        sm.iterations = 8 if name == "crown" else (2 if name in ("pdl", "biofilm") else 5)
         sm.factor = 0.5
         if name in FEM_BODIES:                              # clean flat hemisection cut
             bm = ob.modifiers.new("cut", "BOOLEAN"); bm.operation = "INTERSECT"
