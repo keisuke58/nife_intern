@@ -59,7 +59,7 @@ def main():
     # the cut shows a flat cross-section, not the porous tet interior. Bone = cortical+cancellous outer
     # shell (the internal cancellous faces are shared, so only the clean outer + socket walls remain).
     groups = {"bone": ["CORTICAL", "CANCELLOUS"], "implant": ["TI"], "dentin": ["DENTIN"],
-              "pdl": ["PDL"], "biofilm": ["BIOFILM"]}
+              "pdl": ["PDL"], "biofilm": ["BIOFILM"], "gingiva": ["GINGIVA"], "enamel": ["ENAMEL"]}
     for name, mats in groups.items():
         idx = np.where(np.isin(mat, mats))[0]
         fb, _ = cf.boundary_faces(conn[idx])
@@ -72,18 +72,6 @@ def main():
     crw = np.load(FEMDIR / "cache_crown_real.npz")
     cfb, _ = cf.boundary_faces(crw["tets"])
     print("  crown   %6d faces (voxel solid)" % write_ply(crw["nodes"][cfb], OUT / "crown.ply"))
-
-    # gingiva mantle, back half
-    def neck_c(M, zl):
-        c = nodes[conn[mat == M]].reshape(-1, 3); s = (c[:, 2] >= zl - 0.6) & (c[:, 2] <= zl + 0.6)
-        ct = c[s, :2].mean(0)
-        return ct, float(np.percentile(np.hypot(c[s, 0] - ct[0], c[s, 1] - ct[1]), 99))
-    ic, ir = neck_c("TI", 31.0); tc, tr = neck_c("DENTIN", 31.0)
-    gm = cf.gingiva_mound(ic, ir, tc, tr, ymid)
-    gm = gm[gm.mean(1)[:, 1] >= ymid]
-    # quads -> tris for PLY
-    gt = np.concatenate([gm[:, [0, 1, 2]], gm[:, [0, 2, 3]]], axis=0) if gm.ndim == 3 and gm.shape[1] == 4 else gm
-    print("  gingiva %6d faces" % write_ply(gt, OUT / "gingiva.ply"))
 
     json.dump({"ymid": float(ymid), "bbox": [float(nodes[:, k].min()) for k in range(3)] +
                [float(nodes[:, k].max()) for k in range(3)]}, open(OUT / "scene.json", "w"))

@@ -30,7 +30,11 @@ EPS_GROWTH = 0.19
 X0, X1, Y0, Y1, Z0, Z1 = -76.0, -59.0, -47.0, -37.5, 15.0, 31.0
 MATS = {"BONE": (13700., 0.30), "CORTICAL": (13700., 0.30), "CANCELLOUS": (1000., 0.30),
         "TI": (110000., 0.34), "DENTIN": (18000., 0.31), "PDL": (50., 0.45), "BIOFILM": (1.0, 0.45),
-        "CROWN": (95000., 0.30)}   # monolithic lithium-disilicate-class ceramic crown
+        "CROWN": (95000., 0.30),   # monolithic lithium-disilicate-class ceramic crown
+        "GINGIVA": (3.0, 0.45),    # peri-implant mucosa (conformal cuff, mechanically negligible)
+        "ENAMEL": (84000., 0.30)}  # enamel cap on the natural neighbour-tooth clinical crown
+GUM_Z1 = 31.9                 # gingival margin height (gum cuff top); biofilm SULC_Z1 = 31.3
+ENAM_Z0 = 31.5                # enamel covers the supragingival clinical crown (CEJ -> occlusal)
 CORTICAL_THICK = 1.8          # cortical shell / lamina-dura thickness (mm) for the two-layer bone
 # C3D4 face -> local node triple (Abaqus 1-based)
 FACE_NODES = {1: (0, 1, 2), 2: (0, 3, 1), 3: (1, 3, 2), 4: (2, 3, 0)}
@@ -67,6 +71,38 @@ def biofilm_sleeve(ax, r_in, r_out, z0=SULC_Z0, z1=SULC_Z1, nth=56, nz=8):
             for a, b, c, d in _HEX6:
                 tets.append([n[a], n[b], n[c], n[d]])
     return nd, np.array(tets, dtype=np.int64)
+
+
+def offset_shell(bn, bt, axis, z0=SULC_Z0, z1=SULC_Z1, r0=0.0, r1=0.15):
+    """CONFORMAL layer on a neck: the body's lateral surface in [z0,z1], radially offset to [r0,r1], as
+    a thin prism shell that HUGS the (irregular) surface exactly -- the same construction as the PDL, so
+    an irregular natural tooth gets a perfectly-fitting layer (no circular over/under-shoot). r0=0 puts
+    the inner shell ON the surface (biofilm); r0>0 stacks an outer layer (gingiva over the biofilm).
+    Returns (nodes, tets, n_inner); nodes[:n_inner] = inner shell."""
+    ff = free_faces(bt, np.arange(len(bt)))     # free_faces is module-level (resolved at call time)
+    faces = []
+    for key in ff:
+        tri = list(key); p = bn[tri]; c = p.mean(0)
+        if not (z0 <= c[2] <= z1):
+            continue
+        n = np.cross(p[1] - p[0], p[2] - p[0]); nn = np.linalg.norm(n)
+        if nn == 0 or abs(n[2] / nn) > 0.6:        # keep the lateral wall, drop top/bottom caps
+            continue
+        faces.append(tri)
+    if not faces:
+        return np.zeros((0, 3)), np.zeros((0, 4), np.int64), 0
+    used = np.unique(np.array(faces).ravel())
+    remap = -np.ones(len(bn), np.int64); remap[used] = np.arange(len(used))
+    surf = bn[used].astype(float)
+    rxy = surf[:, :2] - axis; rl = np.hypot(rxy[:, 0], rxy[:, 1]); rl[rl == 0] = 1.0
+    u = rxy / rl[:, None]
+    inner = surf.copy(); inner[:, 0] += r0 * u[:, 0]; inner[:, 1] += r0 * u[:, 1]
+    outer = surf.copy(); outer[:, 0] += r1 * u[:, 0]; outer[:, 1] += r1 * u[:, 1]
+    N = len(used); nodes = np.vstack([inner, outer]); tets = []
+    for tri in faces:
+        a, b, c = (int(remap[t]) for t in tri); a2, b2, c2 = a + N, b + N, c + N
+        tets += [[a, b, c, c2], [a, b, c2, b2], [a, b2, c2, a2]]   # triangular prism -> 3 tets
+    return nodes, np.array(tets, np.int64), N
 
 
 def clean_tets(conn, nodes, vol_min=2.5e-4):
@@ -151,48 +187,46 @@ def main():
     off_p = Nb + Nd + Ni                 # pdl OUTER nodes (inner reuse dentin ids)
     off_c = off_p + V                    # crown nodes (after pdl-outer); 0 of them if no crown
     Nc = len(cnn) if WITH_CROWN else 0
-    off_bf = off_c + Nc                  # anatomical-biofilm sleeve nodes (after crown)
-    # supracrestal sulcular biofilm sleeves on the implant (r_in just outside the Ø4.1 crest 2.05)
-    # and the tooth-24 neck (just outside dentin ~3.43); inner shells tie to the necks.
+    off_bf = off_c + Nc                  # anatomical-biofilm shell nodes (after crown)
+    # CONFORMAL sulcular biofilm: a thin radial-offset shell of each neck surface (PDL-style), so it
+    # hugs the irregular natural tooth exactly -- no circular sleeve over/under-shoot.
     if ANAT_BIO:
-        # auto-align each sleeve to the ACTUAL neck axis+radius of the body in the sulcus band (the
-        # natural tooth is irregular/tilted, so its neck centroid != the nominal T24 axis).
-        NZB = 8
-
-        def neck_profile(npts, tets):
-            # centre at the CERVICAL slice (CEJ), then the body's surface radius at EACH z-level so the
-            # sleeve follows a coronally flaring profile (natural crown) and stays in contact -- no gap.
+        def neck_ctr(npts, tets):
             ec = npts[tets].mean(1); s0 = (ec[:, 2] >= SULC_Z0 - 0.3) & (ec[:, 2] <= SULC_Z0 + 0.8)
-            ctr = ec[s0, :2].mean(0)
-            rad = np.hypot(npts[:, 0] - ctr[0], npts[:, 1] - ctr[1])
-            zs = np.linspace(SULC_Z0, SULC_Z1, NZB + 1); dz = (SULC_Z1 - SULC_Z0) / NZB
-            prof = np.full(NZB + 1, np.nan)
-            for k, z in enumerate(zs):
-                m = np.abs(npts[:, 2] - z) <= dz * 0.9
-                if m.any():
-                    prof[k] = np.percentile(rad[m], 99)        # surface radius (robust max) at this z
-            for k in range(NZB + 1):                           # fill empty levels from below
-                if np.isnan(prof[k]):
-                    prof[k] = prof[k - 1] if k > 0 else np.nanmin(prof)
-            return ctr, np.maximum.accumulate(prof) if False else prof
-        ic, iprof = neck_profile(inn, it); tc, tprof = neck_profile(dn, dt)
-        sb_i, st_i = biofilm_sleeve(ic, iprof + 0.05, iprof + 0.35, nz=NZB)   # peri-implant, hugging
-        sb_t, st_t = biofilm_sleeve(tc, tprof + 0.05, tprof + 0.35, nz=NZB)   # peri-tooth, hugging
+            return ec[s0, :2].mean(0)
+        ic, tc = neck_ctr(inn, it), neck_ctr(dn, dt)
+        # biofilm = inner film ON the surface (r 0->0.15); gingiva = conformal cuff STACKED outside it
+        # (r 0.18->1.1, up to the higher gum margin) -- both hug the irregular tooth exactly.
+        sb_i, st_i, ni_in = offset_shell(inn, it, ic, r0=0.0, r1=0.15)
+        sb_t, st_t, nt_in = offset_shell(dn, dt, tc, r0=0.0, r1=0.15)
         Nbi = len(sb_i)
-        bf_nodes = np.vstack([sb_i, sb_t])
-        bf_tets = np.vstack([st_i + off_bf, st_t + off_bf + Nbi])
-        bf_ctr = {"imp": (ic, iprof), "too": (tc, tprof)}
-        print(f"biofilm sleeve profiles: implant r {iprof.min():.2f}-{iprof.max():.2f} ; "
-              f"tooth r {tprof.min():.2f}-{tprof.max():.2f} (follows flare)")
+        bf_nodes = np.vstack([sb_i, sb_t]); bf_tets = np.vstack([st_i + off_bf, st_t + off_bf + Nbi])
+        bf_inner_imp = set(range(off_bf, off_bf + ni_in))
+        bf_inner_too = set(range(off_bf + Nbi, off_bf + Nbi + nt_in))
+        off_gum = off_bf + len(bf_nodes)
+        gi_i, gtt_i, gii = offset_shell(inn, it, ic, z1=GUM_Z1, r0=0.18, r1=1.1)
+        gi_t, gtt_t, gti = offset_shell(dn, dt, tc, z1=GUM_Z1, r0=0.18, r1=1.1)
+        Ngi = len(gi_i)
+        gum_nodes = np.vstack([gi_i, gi_t]); gum_tets = np.vstack([gtt_i + off_gum, gtt_t + off_gum + Ngi])
+        gum_inner_imp = set(range(off_gum, off_gum + gii))
+        gum_inner_too = set(range(off_gum + Ngi, off_gum + Ngi + gti))
+        # enamel cap on the natural neighbour-tooth clinical crown (CEJ -> occlusal), a conformal shell
+        off_en = off_gum + len(gum_nodes)
+        enam_nodes, en_t, en_in = offset_shell(dn, dt, tc, z0=ENAM_Z0, z1=38.6, r0=0.0, r1=0.45)
+        enam_tets = en_t + off_en
+        enam_inner = set(range(off_en, off_en + en_in))
+        print(f"conformal shells: biofilm {len(bf_tets)} / gingiva {len(gum_tets)} / enamel {len(enam_tets)} tets")
     else:
         bf_nodes = np.zeros((0, 3)); bf_tets = np.zeros((0, 4), np.int64)
-        bf_ctr = {"imp": (T23_AXIS, 2.10), "too": (T24_AXIS, 3.50)}
+        gum_nodes = np.zeros((0, 3)); gum_tets = np.zeros((0, 4), np.int64)
+        enam_nodes = np.zeros((0, 3)); enam_tets = np.zeros((0, 4), np.int64)
+        bf_inner_imp = set(); bf_inner_too = set(); gum_inner_imp = set(); gum_inner_too = set(); enam_inner = set()
 
     parts = [bn, dn, inn, pdl_outer_xyz]
     if WITH_CROWN:
         parts.append(cnn)
     if ANAT_BIO:
-        parts.append(bf_nodes)
+        parts.append(bf_nodes); parts.append(gum_nodes); parts.append(enam_nodes)
     nodes = np.vstack(parts)
 
     # ---- element connectivity (global, 0-based) ----
@@ -238,6 +272,10 @@ def main():
                   ("DENTIN", dt_g), ("TI", it_g), ("PDL", pdl_tets)]
     if WITH_CROWN:
         blocks.append(("CROWN", ct_g))
+    if ANAT_BIO and len(gum_tets):
+        blocks.append(("GINGIVA", gum_tets))
+    if ANAT_BIO and len(enam_tets):
+        blocks.append(("ENAMEL", enam_tets))
     eid = {}; gid = 1; elem_rows = []
     for name, conn in blocks:
         conn, ndrop, nflip = clean_tets(conn, nodes)
@@ -302,25 +340,45 @@ def main():
     # (and physically adherent). Implant sleeve -> IMP_OUT; tooth sleeve -> the dentin neck faces.
     bio_imp_inner, bio_too_inner, dent_neck = {}, {}, {}
     if ANAT_BIO and "BIOFILM" in eid:
-        (ic, iprof), (tc, tprof) = bf_ctr["imp"], bf_ctr["too"]
-        zsb = np.linspace(SULC_Z0, SULC_Z1, len(iprof))
+        # the conformal shell's INNER faces are exactly on the body surface -> identify them by node
+        # membership (all 3 nodes are inner-shell nodes), then tie them to the implant / tooth surface.
         bf_free = free_faces(eid["BIOFILM"][1], eid["BIOFILM"][0])
         for k, v in bf_free.items():
-            fc = nodes[list(k)].mean(axis=0)
-            ri = np.hypot(fc[0] - ic[0], fc[1] - ic[1])
-            rt = np.hypot(fc[0] - tc[0], fc[1] - tc[1])
-            if ri < np.interp(fc[2], zsb, iprof) + 0.20:        # implant sleeve inner shell
+            ks = set(k)
+            if ks <= bf_inner_imp:
                 bio_imp_inner[k] = v
-            elif rt < np.interp(fc[2], zsb, tprof) + 0.20:      # tooth sleeve inner shell
+            elif ks <= bf_inner_too:
                 bio_too_inner[k] = v
         dt_free = free_faces(dt_g, eid["DENTIN"][0])
         for k, v in dt_free.items():
             fc = nodes[list(k)].mean(axis=0)
-            if SULC_Z0 - 0.4 <= fc[2] <= SULC_Z1 + 0.4 and \
-               np.hypot(fc[0] - tc[0], fc[1] - tc[1]) < np.interp(fc[2], zsb, tprof) + 0.4:
+            if SULC_Z0 - 0.4 <= fc[2] <= GUM_Z1 + 0.4 and np.hypot(fc[0] - tc[0], fc[1] - tc[1]) < 4.5:
                 dent_neck[k] = v
-        print(f"biofilm sleeve TIE: imp_inner={len(bio_imp_inner)} too_inner={len(bio_too_inner)} "
+        print(f"biofilm conformal TIE: imp_inner={len(bio_imp_inner)} too_inner={len(bio_too_inner)} "
               f"dent_neck(master)={len(dent_neck)}")
+
+    # ---- gingiva conformal cuff TIE (mucosa adheres to the neck, outside the biofilm) ----
+    gum_imp_inner, gum_too_inner = {}, {}
+    if ANAT_BIO and "GINGIVA" in eid:
+        for k, v in free_faces(eid["GINGIVA"][1], eid["GINGIVA"][0]).items():
+            ks = set(k)
+            if ks <= gum_inner_imp:
+                gum_imp_inner[k] = v
+            elif ks <= gum_inner_too:
+                gum_too_inner[k] = v
+        print(f"gingiva conformal TIE: imp_inner={len(gum_imp_inner)} too_inner={len(gum_too_inner)}")
+
+    # ---- enamel cap TIE (enamel adheres to the dentin clinical crown) ----
+    enam_inner_f, dent_crown = {}, {}
+    if ANAT_BIO and "ENAMEL" in eid:
+        for k, v in free_faces(eid["ENAMEL"][1], eid["ENAMEL"][0]).items():
+            if set(k) <= enam_inner:
+                enam_inner_f[k] = v
+        for k, v in free_faces(dt_g, eid["DENTIN"][0]).items():
+            fc = nodes[list(k)].mean(axis=0)
+            if ENAM_Z0 - 0.5 <= fc[2] <= 38.6 and np.hypot(fc[0] - tc[0], fc[1] - tc[1]) < 4.6:
+                dent_crown[k] = v
+        print(f"enamel TIE: inner={len(enam_inner_f)} dent_crown(master)={len(dent_crown)}")
 
     # ---- node sets ----
     nx, ny, nz = nodes[:, 0], nodes[:, 1], nodes[:, 2]
@@ -393,6 +451,18 @@ def main():
         surf("DENT_NECK", dent_neck)
         ap("*TIE, NAME=T_BIO_TOO, ADJUST=NO, POSITION TOLERANCE=0.6")    # biofilm adheres to the tooth neck
         ap(" BIO_TOO_IN, DENT_NECK")
+    if ANAT_BIO and gum_imp_inner:                                      # gingiva cuff adheres to the necks
+        surf("GUM_IMP_IN", gum_imp_inner)
+        ap("*TIE, NAME=T_GUM_IMP, ADJUST=NO, POSITION TOLERANCE=1.4")
+        ap(" GUM_IMP_IN, IMP_OUT")
+    if ANAT_BIO and gum_too_inner and dent_neck:
+        surf("GUM_TOO_IN", gum_too_inner)
+        ap("*TIE, NAME=T_GUM_TOO, ADJUST=NO, POSITION TOLERANCE=1.4")
+        ap(" GUM_TOO_IN, DENT_NECK")
+    if ANAT_BIO and enam_inner_f and dent_crown:                       # enamel adheres to the dentin crown
+        surf("ENAM_IN", enam_inner_f); surf("DENT_CROWN", dent_crown)
+        ap("*TIE, NAME=T_ENAM, ADJUST=NO, POSITION TOLERANCE=0.6")
+        ap(" ENAM_IN, DENT_CROWN")
 
     def nset(nm, ids):
         ids = np.unique(np.asarray(ids)) + 1
