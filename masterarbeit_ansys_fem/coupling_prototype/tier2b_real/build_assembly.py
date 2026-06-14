@@ -32,7 +32,10 @@ MATS = {"BONE": (13700., 0.30), "CORTICAL": (13700., 0.30), "CANCELLOUS": (1000.
         "TI": (110000., 0.34), "DENTIN": (18000., 0.31), "PDL": (50., 0.45), "BIOFILM": (1.0, 0.45),
         "CROWN": (95000., 0.30),   # monolithic lithium-disilicate-class ceramic crown
         "GINGIVA": (3.0, 0.45),    # peri-implant mucosa (conformal cuff, mechanically negligible)
-        "ENAMEL": (84000., 0.30)}  # enamel cap on the natural neighbour-tooth clinical crown
+        "ENAMEL": (84000., 0.30),  # enamel cap on the natural neighbour-tooth clinical crown
+        "CEMENTUM": (15000., 0.31),   # thin layer on the tooth root (over the dentin, under the PDL)
+        "PULP": (2.0, 0.45),          # tooth pulp (root canal + chamber), embedded in dentin
+        "ABUTSCREW": (110000., 0.34)} # abutment screw down the implant axis, embedded in TI
 GUM_Z1 = 31.9                 # gingival margin height (gum cuff top); biofilm SULC_Z1 = 31.3
 ENAM_Z0 = 31.5                # enamel covers the supragingival clinical crown (CEJ -> occlusal)
 CORTICAL_THICK = 1.8          # cortical shell / lamina-dura thickness (mm) for the two-layer bone
@@ -103,6 +106,37 @@ def offset_shell(bn, bt, axis, z0=SULC_Z0, z1=SULC_Z1, r0=0.0, r1=0.15):
         a, b, c = (int(remap[t]) for t in tri); a2, b2, c2 = a + N, b + N, c + N
         tets += [[a, b, c, c2], [a, b, c2, b2], [a, b2, c2, a2]]   # triangular prism -> 3 tets
     return nodes, np.array(tets, np.int64), N
+
+
+def solid_revolve(zs, radii, centers, nth=20):
+    """Solid body of revolution: at each z-level a centre + a ring of radius `radii[k]` about
+    `centers[k]` (a 2-D point, so the axis may bend to follow a tooth). Cone/cylinder tet fill.
+    Used for the pulp (along the dentin centre-line), the abutment screw, and the papilla."""
+    th = np.linspace(0, 2 * np.pi, nth, endpoint=False); nz = len(zs)
+    nd = []
+    def cid(k): return k * (nth + 1)
+    def rid(k, i): return k * (nth + 1) + 1 + i
+    for k in range(nz):
+        nd.append([centers[k][0], centers[k][1], zs[k]])
+        for i in range(nth):
+            nd.append([centers[k][0] + radii[k] * np.cos(th[i]),
+                       centers[k][1] + radii[k] * np.sin(th[i]), zs[k]])
+    tets = []
+    for k in range(nz - 1):
+        for i in range(nth):
+            j = (i + 1) % nth
+            c0, c1 = cid(k), cid(k + 1); a, b = rid(k, i), rid(k, j); a2, b2 = rid(k + 1, i), rid(k + 1, j)
+            tets += [[c0, a, b, c1], [a, b, c1, b2], [a, c1, b2, a2]]
+    return np.array(nd, float), np.array(tets, np.int64)
+
+
+def dentin_centerline(npts, tets, zs):
+    """Centre (x,y) of a body at each z-level -> follows a tilted natural-tooth axis."""
+    ec = npts[tets].mean(1); out = []
+    for z in zs:
+        m = np.abs(ec[:, 2] - z) <= (zs[1] - zs[0]) * 0.9
+        out.append(ec[m, :2].mean(0) if m.any() else (out[-1] if out else npts[:, :2].mean(0)))
+    return out
 
 
 def clean_tets(conn, nodes, vol_min=2.5e-4):
@@ -215,18 +249,39 @@ def main():
         enam_nodes, en_t, en_in = offset_shell(dn, dt, tc, z0=ENAM_Z0, z1=38.6, r0=0.0, r1=0.45)
         enam_tets = en_t + off_en
         enam_inner = set(range(off_en, off_en + en_in))
-        print(f"conformal shells: biofilm {len(bf_tets)} / gingiva {len(gum_tets)} / enamel {len(enam_tets)} tets")
+        # cementum: a very thin layer on the dentin root (subgingival, between dentin and PDL)
+        off_cem = off_en + len(enam_nodes)
+        cem_nodes, cm_t, cm_in = offset_shell(dn, dt, tc, z0=19.0, z1=ENAM_Z0, r0=0.0, r1=0.08)
+        cem_tets = cm_t + off_cem; cem_inner = set(range(off_cem, off_cem + cm_in))
+        # pulp: solid body of revolution along the dentin centre-line, embedded in the dentin
+        off_pulp = off_cem + len(cem_nodes)
+        zp = np.linspace(20.5, 36.0, 10); cp = dentin_centerline(dn, dt, zp)
+        rp = np.array([0.16, 0.20, 0.24, 0.30, 0.42, 0.58, 0.66, 0.55, 0.30, 0.08])
+        pulp_nodes, pl_t = solid_revolve(zp, rp, cp); pulp_tets = pl_t + off_pulp
+        # abutment screw: solid down the implant axis, embedded in the Ti
+        off_scr = off_pulp + len(pulp_nodes)
+        zss = np.linspace(25.0, 32.4, 8); css = [ic] * len(zss); rss = np.full(len(zss), 0.8)
+        scr_nodes, sc_t = solid_revolve(zss, rss, css); scr_tets = sc_t + off_scr
+        # interdental papilla: a gum dome between the necks (GINGIVA mat); base on the bone crest,
+        # tied to it so the connected dome is anchored.
+        off_pap = off_scr + len(scr_nodes)
+        mid = (np.asarray(ic) + np.asarray(tc)) / 2.0
+        zpa = np.linspace(CREST_Z, GUM_Z1 + 0.4, 6); cpa = [mid] * len(zpa)
+        rpa = np.array([1.25, 1.35, 1.20, 0.95, 0.55, 0.10])
+        pap_nodes, pp_t = solid_revolve(zpa, rpa, cpa); pap_tets = pp_t + off_pap
+        print(f"conformal shells: biofilm {len(bf_tets)} / gingiva {len(gum_tets)} / enamel {len(enam_tets)} "
+              f"/ cementum {len(cem_tets)} / pulp {len(pulp_tets)} / screw {len(scr_tets)} / papilla {len(pap_tets)}")
     else:
-        bf_nodes = np.zeros((0, 3)); bf_tets = np.zeros((0, 4), np.int64)
-        gum_nodes = np.zeros((0, 3)); gum_tets = np.zeros((0, 4), np.int64)
-        enam_nodes = np.zeros((0, 3)); enam_tets = np.zeros((0, 4), np.int64)
-        bf_inner_imp = set(); bf_inner_too = set(); gum_inner_imp = set(); gum_inner_too = set(); enam_inner = set()
+        z0 = np.zeros((0, 3)); z4 = np.zeros((0, 4), np.int64)
+        bf_nodes = gum_nodes = enam_nodes = cem_nodes = pulp_nodes = scr_nodes = pap_nodes = z0
+        bf_tets = gum_tets = enam_tets = cem_tets = pulp_tets = scr_tets = pap_tets = z4
+        bf_inner_imp = bf_inner_too = gum_inner_imp = gum_inner_too = enam_inner = cem_inner = set()
 
     parts = [bn, dn, inn, pdl_outer_xyz]
     if WITH_CROWN:
         parts.append(cnn)
     if ANAT_BIO:
-        parts.append(bf_nodes); parts.append(gum_nodes); parts.append(enam_nodes)
+        parts += [bf_nodes, gum_nodes, enam_nodes, cem_nodes, pulp_nodes, scr_nodes, pap_nodes]
     nodes = np.vstack(parts)
 
     # ---- element connectivity (global, 0-based) ----
@@ -275,7 +330,8 @@ def main():
     if ANAT_BIO and len(gum_tets):
         blocks.append(("GINGIVA", gum_tets))
     if ANAT_BIO and len(enam_tets):
-        blocks.append(("ENAMEL", enam_tets))
+        blocks += [("ENAMEL", enam_tets), ("CEMENTUM", cem_tets), ("PULP", pulp_tets),
+                   ("ABUTSCREW", scr_tets), ("PAPILLA", pap_tets)]
     eid = {}; gid = 1; elem_rows = []
     for name, conn in blocks:
         conn, ndrop, nflip = clean_tets(conn, nodes)
@@ -380,6 +436,30 @@ def main():
                 dent_crown[k] = v
         print(f"enamel TIE: inner={len(enam_inner_f)} dent_crown(master)={len(dent_crown)}")
 
+    # ---- cementum TIE (thin root layer adheres to the dentin root) ----
+    cem_inner_f, dent_root = {}, {}
+    if ANAT_BIO and "CEMENTUM" in eid:
+        for k, v in free_faces(eid["CEMENTUM"][1], eid["CEMENTUM"][0]).items():
+            if set(k) <= cem_inner:
+                cem_inner_f[k] = v
+        for k, v in free_faces(dt_g, eid["DENTIN"][0]).items():
+            fc = nodes[list(k)].mean(axis=0)
+            if 18.5 <= fc[2] <= ENAM_Z0 + 0.3 and np.hypot(fc[0] - tc[0], fc[1] - tc[1]) < 4.0:
+                dent_root[k] = v
+        print(f"cementum TIE: inner={len(cem_inner_f)} dent_root(master)={len(dent_root)}")
+
+    # ---- papilla base TIE (interdental gum dome anchored to the bone crest) ----
+    pap_base, bone_crest = {}, {}
+    if ANAT_BIO and "PAPILLA" in eid:
+        for k, v in free_faces(eid["PAPILLA"][1], eid["PAPILLA"][0]).items():
+            if nodes[list(k)].mean(axis=0)[2] < CREST_Z + 0.4:
+                pap_base[k] = v
+        for k, v in bone_free.items():
+            fc = nodes[list(k)].mean(axis=0)
+            if abs(fc[2] - CREST_Z) < 0.9 and np.hypot(fc[0] - mid[0], fc[1] - mid[1]) < 1.9:
+                bone_crest[k] = v
+        print(f"papilla TIE: base={len(pap_base)} bone_crest(master)={len(bone_crest)}")
+
     # ---- node sets ----
     nx, ny, nz = nodes[:, 0], nodes[:, 1], nodes[:, 2]
     tol = 0.6
@@ -420,6 +500,14 @@ def main():
         ap("*ELASTIC"); ap(" %.1f, %.3f" % (E, nu))
         if m == "BIOFILM":
             ap("*EXPANSION"); ap(" %.6f" % EPS_GROWTH)
+    if "PAPILLA" in eid:                          # interdental papilla uses the gingiva material
+        ap("*SOLID SECTION, ELSET=PAPILLA, MATERIAL=GINGIVA")
+    # embedded internal bodies (no overlap meshing needed): pulp in dentin, abutment screw in Ti,
+    # papilla base in bone -- each embedded element's response is constrained to its host.
+    if ANAT_BIO and "PULP" in eid:
+        ap("*EMBEDDED ELEMENT, HOST ELSET=DENTIN"); ap(" PULP")
+    if ANAT_BIO and "ABUTSCREW" in eid:
+        ap("*EMBEDDED ELEMENT, HOST ELSET=TI"); ap(" ABUTSCREW")
 
     def surf(name, faces):
         ap("*SURFACE, NAME=%s, TYPE=ELEMENT" % name)
@@ -463,6 +551,14 @@ def main():
         surf("ENAM_IN", enam_inner_f); surf("DENT_CROWN", dent_crown)
         ap("*TIE, NAME=T_ENAM, ADJUST=NO, POSITION TOLERANCE=0.6")
         ap(" ENAM_IN, DENT_CROWN")
+    if ANAT_BIO and cem_inner_f and dent_root:                         # cementum adheres to the dentin root
+        surf("CEM_IN", cem_inner_f); surf("DENT_ROOT", dent_root)
+        ap("*TIE, NAME=T_CEM, ADJUST=NO, POSITION TOLERANCE=0.6")
+        ap(" CEM_IN, DENT_ROOT")
+    if ANAT_BIO and pap_base and bone_crest:                           # papilla anchored to the bone crest
+        surf("PAP_BASE", pap_base); surf("BONE_CREST", bone_crest)
+        ap("*TIE, NAME=T_PAP, ADJUST=NO, POSITION TOLERANCE=0.8")
+        ap(" PAP_BASE, BONE_CREST")
 
     def nset(nm, ids):
         ids = np.unique(np.asarray(ids)) + 1

@@ -59,7 +59,8 @@ def main():
     # the cut shows a flat cross-section, not the porous tet interior. Bone = cortical+cancellous outer
     # shell (the internal cancellous faces are shared, so only the clean outer + socket walls remain).
     groups = {"bone": ["CORTICAL", "CANCELLOUS"], "implant": ["TI"], "dentin": ["DENTIN"],
-              "pdl": ["PDL"], "biofilm": ["BIOFILM"], "gingiva": ["GINGIVA"], "enamel": ["ENAMEL"]}
+              "pdl": ["PDL"], "biofilm": ["BIOFILM"], "gingiva": ["GINGIVA", "PAPILLA"],
+              "enamel": ["ENAMEL"], "cementum": ["CEMENTUM"], "pulp": ["PULP"], "abutscrew": ["ABUTSCREW"]}
     for name, mats in groups.items():
         idx = np.where(np.isin(mat, mats))[0]
         fb, _ = cf.boundary_faces(conn[idx])
