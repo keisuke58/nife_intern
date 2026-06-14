@@ -210,10 +210,14 @@ def main():
         surf[M] = (nodes[fb], vmo[idx[par]])
     bidx = np.where(np.isin(mat, BONE_MATS))[0]
     by = nodes[conn[bidx]][:, :, 1].mean(axis=1)
-    bk = bidx[by >= ymid]
+    bz = nodes[conn[bidx]][:, :, 2].mean(axis=1)
+    # back half for the cut-away interior view, PLUS a full-width crestal cap (z~27-30) under the
+    # gingiva footprint so the gingiva rests on the alveolar crest instead of floating.
+    cap = (bz >= 27.0) & (bz <= 30.2) & (np.abs(by - ymid) <= 4.4)
+    bk = bidx[(by >= ymid) | cap]
     fbB, _ = boundary_faces(conn[bk])
-    if len(fbB) > 14000:
-        fbB = fbB[np.random.default_rng(0).choice(len(fbB), 14000, replace=False)]
+    if len(fbB) > 16000:
+        fbB = fbB[np.random.default_rng(0).choice(len(fbB), 16000, replace=False)]
     surfB = nodes[fbB]
 
     yf = b[2] + 0.18 * (b[3] - b[2])
@@ -227,7 +231,7 @@ def main():
     # ---------- Panel A: labelled restored anatomy ----------
     axA = fig.add_subplot(1, 2, 1, projection="3d")
     axA.add_collection3d(Poly3DCollection(surfB, facecolors=shade(surfB, to_rgb(COL["BONE"])),
-                                          edgecolors="none", alpha=0.20, rasterized=True))
+                                          edgecolors="none", alpha=0.34, rasterized=True))
     # The sulcus (biofilm + gingiva) is a full ring around the neck. To make it read as ENCIRCLING
     # (not floating in front), draw its FAR half first -- behind the implant -- then the solid bodies,
     # then its NEAR half on top: the near arc occludes the implant front, the far arc is occluded by it.

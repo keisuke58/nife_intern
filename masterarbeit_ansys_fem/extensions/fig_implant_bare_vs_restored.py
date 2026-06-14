@@ -29,15 +29,17 @@ def panel(ax, meta, title, restored):
     b = (nodes[:, 0].min(), nodes[:, 0].max(), nodes[:, 1].min(), nodes[:, 1].max(),
          nodes[:, 2].min(), nodes[:, 2].max())
     ymid = (b[2] + b[3]) / 2
-    # bone (back half only)
+    # bone: back half (cut-away) + full-width crestal cap so the gingiva rests on the ridge
     bidx = np.where(np.isin(mat, cf.BONE_MATS))[0]
     by = nodes[conn[bidx]][:, :, 1].mean(axis=1)
-    fbB, _ = cf.boundary_faces(conn[bidx[by >= ymid]])
-    if len(fbB) > 12000:
-        fbB = fbB[np.random.default_rng(0).choice(len(fbB), 12000, replace=False)]
+    bz = nodes[conn[bidx]][:, :, 2].mean(axis=1)
+    cap = (bz >= 27.0) & (bz <= 30.2) & (np.abs(by - ymid) <= 4.4)
+    fbB, _ = cf.boundary_faces(conn[bidx[(by >= ymid) | cap]])
+    if len(fbB) > 13000:
+        fbB = fbB[np.random.default_rng(0).choice(len(fbB), 13000, replace=False)]
     surfB = nodes[fbB]
     ax.add_collection3d(Poly3DCollection(surfB, facecolors=cf.shade(surfB, to_rgb(cf.COL["BONE"])),
-                                         edgecolors="none", alpha=0.26, rasterized=True))
+                                         edgecolors="none", alpha=0.32, rasterized=True))
     # biofilm + gingiva = full sulcus ring -> draw far half, then solids, then near half (encircles)
     bfi = np.where(mat == "BIOFILM")[0]
     bf_tris = nodes[cf.boundary_faces(conn[bfi])[0]] if len(bfi) else np.zeros((0, 3, 3))
@@ -49,12 +51,6 @@ def panel(ax, meta, title, restored):
             pc = Poly3DCollection(tb, facecolors=cf.shade(tb, to_rgb(cf.COL["BIOFILM"]), 0.6, 0.42, 0.12),
                                   edgecolors=(0.5, 0, 0, 0.35), linewidths=0.08, rasterized=True)
             pc.set_alpha(0.72); ax.add_collection3d(pc)
-        if restored:
-            g = sub(cf.gingiva_cuff())
-            if len(g):
-                pc = Poly3DCollection(g, facecolors=cf.shade(g, to_rgb(cf.COL["GINGIVA"]), 0.6, 0.35),
-                                      edgecolors=(0.6, 0.2, 0.3, 0.25), linewidths=0.05, rasterized=True)
-                pc.set_alpha(0.5); ax.add_collection3d(pc)
     sulcus(near=False)
     for M in ["DENTIN", "PDL", "TI", "CROWN"]:
         idx = np.where(mat == M)[0]
@@ -72,6 +68,16 @@ def panel(ax, meta, title, restored):
     else:
         ztop = nodes[conn[mat == "TI"]].reshape(-1, 3)[:, 2].max() + 2.6
     sulcus(near=True)                                    # near half in front -> biofilm encircles
+    if restored:                                         # realistic gingiva mantle over the crest
+        def neck_c(M, zl):
+            c = nodes[conn[mat == M]].reshape(-1, 3); s = (c[:, 2] >= zl - 0.6) & (c[:, 2] <= zl + 0.6)
+            ct = c[s, :2].mean(0)
+            return ct, float(np.percentile(np.hypot(c[s, 0] - ct[0], c[s, 1] - ct[1]), 99))
+        ic, ir = neck_c("TI", 31.0); tc, tr = neck_c("DENTIN", 31.0)
+        gm = cf.gingiva_mound(ic, ir, tc, tr, ymid)
+        pc = Poly3DCollection(gm, facecolors=cf.shade(gm, to_rgb(cf.COL["GINGIVA"]), 0.62, 0.34, 0.10),
+                              edgecolors=(0.6, 0.25, 0.35, 0.15), linewidths=0.03, rasterized=True)
+        pc.set_alpha(0.55); ax.add_collection3d(pc)
     yf = b[2] + 0.18 * (b[3] - b[2])
     ax.text(cf.T23[0], yf, ztop, r"$\downarrow$ 100 N, 30$^\circ$", fontsize=5.4, ha="center",
             color="#b30000", fontweight="bold")

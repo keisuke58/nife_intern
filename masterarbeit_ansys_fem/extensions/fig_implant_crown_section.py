@@ -89,10 +89,15 @@ def main():
     cm = half(cf.real_tooth_crown(cf.STL_TOOTH, h_target=cr_top - 31.0, base_z=31.0), ymid)
     axA.add_collection3d(Poly3DCollection(cm, facecolors=cf.shade(cm, to_rgb(cf.COL["CROWN"]), 0.62, 0.34, 0.30),
                                           edgecolors=(0, 0, 0, 0.15), linewidths=0.05, rasterized=True))
-    gum = half(cf.gingiva_cuff(), ymid)
+    def neck_c(M, zl):
+        c = nodes[conn[mat == M]].reshape(-1, 3); s = (c[:, 2] >= zl - 0.6) & (c[:, 2] <= zl + 0.6)
+        ct = c[s, :2].mean(0)
+        return ct, float(np.percentile(np.hypot(c[s, 0] - ct[0], c[s, 1] - ct[1]), 99))
+    ic, ir = neck_c("TI", 31.0); tc, tr = neck_c("DENTIN", 31.0)
+    gum = half(cf.gingiva_mound(ic, ir, tc, tr, ymid), ymid)
     pg = Poly3DCollection(gum, facecolors=cf.shade(gum, to_rgb(cf.COL["GINGIVA"]), 0.6, 0.35),
                           edgecolors=(0.6, 0.2, 0.3, 0.3), linewidths=0.06, rasterized=True)
-    pg.set_alpha(0.8); axA.add_collection3d(pg)
+    pg.set_alpha(0.85); axA.add_collection3d(pg)
     sec_style(axA, b)
     axA.set_title("(A) restored-implant hemisection (anatomy)", fontsize=7.2, pad=-2)
     labels = [("crown (ceramic)", cf.COL["CROWN"], 39), ("gingiva", cf.COL["GINGIVA"], 32.2),
