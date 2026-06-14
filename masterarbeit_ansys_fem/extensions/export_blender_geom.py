@@ -66,12 +66,12 @@ def main():
         n = write_ply(nodes[fb], OUT / ("%s.ply" % name))
         print("  %-8s %6d faces (full)" % (name, n))
 
-    # real-tooth ceramic crown as a CLOSED (watertight) solid so the section cut shows a solid crown
-    # cross-section, not a hollow half-shell. Reuse the capped crown surface from mesh_crown_real.
-    sys.path.insert(0, str(FEMDIR))
-    import mesh_crown_real as mcr  # noqa: E402
-    cm = mcr.crown_tris()                               # side band + cervical cap -> watertight
-    print("  crown   %6d faces (solid)" % write_ply(cm, OUT / "crown.ply"))
+    # real-tooth ceramic crown as a fully SOLID body: use the VOXELISED real crown (cache_crown_real),
+    # not the raw STL (medical STLs self-intersect and break the boolean -> hollow). Its boundary is a
+    # clean closed surface, so the section cut shows a solid crown cross-section.
+    crw = np.load(FEMDIR / "cache_crown_real.npz")
+    cfb, _ = cf.boundary_faces(crw["tets"])
+    print("  crown   %6d faces (voxel solid)" % write_ply(crw["nodes"][cfb], OUT / "crown.ply"))
 
     # gingiva mantle, back half
     def neck_c(M, zl):

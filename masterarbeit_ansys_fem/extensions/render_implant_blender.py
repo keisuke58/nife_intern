@@ -68,7 +68,7 @@ def main():
         ob.data.materials.clear(); ob.data.materials.append(make_mat(name, MAT[name]))
         # smooth the coarse tet facets with vertex-normal smooth shading + a light laplacian relax
         sm = ob.modifiers.new("smooth", "SMOOTH")
-        sm.iterations = 2 if name in ("biofilm", "pdl", "crown") else 5
+        sm.iterations = 8 if name == "crown" else (2 if name in ("biofilm", "pdl") else 5)
         sm.factor = 0.5
         if name in FEM_BODIES:                              # clean flat hemisection cut
             bm = ob.modifiers.new("cut", "BOOLEAN"); bm.operation = "INTERSECT"
