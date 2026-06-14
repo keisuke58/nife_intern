@@ -48,8 +48,10 @@ DYS, COM = [2, 4, 6], [0, 1, 8]                # Botelho GUILD_ORDER dysbiotic /
 # Osteoclast lifespan ~2 wk, osteoblast active life longer; RANKL/OPG is the master regulator.
 kI, gI = 1.0, 1.0          # inflammation rise / resolution (~1 wk)
 r0, o0 = 1.0, 1.0          # basal RANKL / OPG-per-osteoblast scales
-aI, aM = 2.2, 1.6          # inflammation, mechanical overload -> RANKL up
-bI = 1.6                   # inflammation -> OPG down
+aI, aM = 1.3, 1.6          # inflammation, mechanical overload -> RANKL up (aI/bI clinically calibrated:
+bI = 0.9                   # inflammation -> OPG down -- RANKL/OPG fold-change health->disease now ~17x
+#                            (median) / ~38x (severe), matching periodontitis GCF (Bostanci 2007 consensus
+#                            ~10x, up to ~190x); ratio<->bone-loss r=0.99 vs clinical r=0.81. See *_calib.py
 kOPG, kap = 1.0, 0.12      # OPG decoy strength / basal RANK availability
 eta = 1.0                  # TGF-beta released per active osteoclast
 Doc, aoc, gT = 0.85, 0.5, 1.0   # OC differentiation / clearance (~2 wk) / TGF restraint
