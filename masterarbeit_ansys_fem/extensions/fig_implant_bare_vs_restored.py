@@ -44,13 +44,17 @@ def panel(ax, meta, title, restored):
             continue
         fb, _ = cf.boundary_faces(conn[idx])
         tris = nodes[fb]
+        if M == "BIOFILM":                               # back half (like the bone) -> no front-floating ring
+            tris = tris[tris.mean(axis=1)[:, 1] >= ymid]
+            if not len(tris):
+                continue
         pc = Poly3DCollection(tris, facecolors=cf.shade(tris, to_rgb(cf.COL[M]), *cf.SH[M]),
                               edgecolors=(0, 0, 0, 0.10), linewidths=0.05, rasterized=True)
         pc.set_alpha(0.55 if M == "BIOFILM" else 1.0)    # biofilm = thin sulcular film
         ax.add_collection3d(pc)
     if restored:
         cr_top = nodes[conn[mat == "CROWN"]].reshape(-1, 3)[:, 2].max()
-        gum = cf.gingiva_cuff()
+        gum = cf.gingiva_cuff(); gum = gum[gum.mean(axis=1)[:, 1] >= ymid]   # back half
         ax.add_collection3d(Poly3DCollection(gum, facecolors=cf.shade(gum, to_rgb(cf.COL["GINGIVA"]), 0.6, 0.35),
                                              edgecolors=(0.6, 0.2, 0.3, 0.25), linewidths=0.05,
                                              alpha=0.55, rasterized=True))
