@@ -27,6 +27,8 @@ MAT = {
     "crown":   ((0.95, 0.93, 0.88, 1), 0.0, 0.16, 0.14, 0.4, 0.05, 1.0),
     "gingiva": ((0.93, 0.55, 0.60, 1), 0.0, 0.46, 0.55, 1.2, 0.0, 0.92),
     "enamel":  ((0.93, 0.94, 0.93, 1), 0.0, 0.10, 0.20, 0.6, 0.12, 1.0),   # glossy translucent enamel
+    "pulp":    ((0.78, 0.30, 0.32, 1), 0.0, 0.55, 0.40, 0.6, 0.0, 1.0),    # vascular pulp (reddish)
+    "abutscrew":((0.60, 0.52, 0.36, 1), 1.0, 0.32, 0.0, 0.0, 0.0, 1.0),    # abutment screw (gold-ish Ti)
 }
 
 
@@ -50,7 +52,9 @@ def make_mat(name, spec):
     return m
 
 
-FEM_BODIES = {"bone", "implant", "dentin", "pdl", "crown", "biofilm", "enamel"}   # boolean-cut at y_mid
+FEM_BODIES = {"bone", "implant", "dentin", "pdl", "crown", "biofilm", "enamel",
+              "pulp", "abutscrew"}   # boolean-cut at y_mid
+CARVE = {"dentin": "pulp", "implant": "abutscrew"}   # host -> internal body carved out of it (no z-fight)
 
 
 def main():
@@ -60,22 +64,26 @@ def main():
     cutter = bpy.context.object; cutter.name = "cutter"
     cutter.scale = (big, big, big); cutter.location = (ctr.x, ymid + big * 0.5, ctr.z)
     cutter.hide_render = True
-    for name in MAT:
+    objs = {}
+    for name in MAT:                                        # pass 1: import + material
         p = GEO / ("%s.ply" % name)
         if not p.exists():
             continue
         bpy.ops.wm.ply_import(filepath=str(p))
         ob = bpy.context.selected_objects[0]; ob.name = name
         ob.data.materials.clear(); ob.data.materials.append(make_mat(name, MAT[name]))
-        sm = ob.modifiers.new("smooth", "SMOOTH")         # relax coarse tet facets
-        sm.iterations = 8 if name == "crown" else (2 if name in ("pdl", "biofilm") else 5)
-        sm.factor = 0.5
+        for poly in ob.data.polygons:
+            poly.use_smooth = True
+        objs[name] = ob
+    for name, ob in objs.items():                          # pass 2: modifiers (carve hosts, then cut)
+        sm = ob.modifiers.new("smooth", "SMOOTH"); sm.factor = 0.5
+        sm.iterations = 8 if name == "crown" else (2 if name in ("pdl", "biofilm", "pulp", "abutscrew") else 5)
+        if name in CARVE and CARVE[name] in objs:          # carve the internal body out of its host
+            cv = ob.modifiers.new("carve", "BOOLEAN"); cv.operation = "DIFFERENCE"
+            cv.object = objs[CARVE[name]]; cv.solver = "EXACT"
         if name in FEM_BODIES:                              # clean flat hemisection cut
             bm = ob.modifiers.new("cut", "BOOLEAN"); bm.operation = "INTERSECT"
             bm.object = cutter; bm.solver = "EXACT"
-        bpy.ops.object.shade_smooth()
-        if hasattr(ob.data, "use_auto_smooth"):
-            ob.data.use_auto_smooth = False
 
     # camera: 3/4 oblique, looking at the centre from the front (-y), above and to the side
     cam_data = bpy.data.cameras.new("cam"); cam = bpy.data.objects.new("cam", cam_data)
