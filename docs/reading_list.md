@@ -24,6 +24,15 @@ by hand.
   replicator form (composition sums to 1) used by both the gLV and Hamilton models.
 - **Junker & Balzani 2021; Klempt et al. 2024–2025** — Hamilton-principle formulation of dissipative/ecological
   dynamics; basis of the symmetric-A JAX Hamilton model used alongside the asymmetric gLV.
+- **van den Berg et al. 2022, *Nat Ecol Evol*** (Patil group) — review of ecological modelling approaches
+  (gLV / consumer-resource / trait- / individual-based / genome-scale metabolic). Argues for the *complementarity*
+  of ecological and metabolic models — the citable framing for the gLV + AGORA sign-prior design; also covers gLV
+  structural identifiability and why co-occurrence ≠ interaction. *(sent by Szafranski 2026-06-14)*
+- **Oña, Shreekar & Kost 2025, *Trends Microbiol*** — comparative review of interaction-inference methods
+  (co-occurrence, causal/Granger, pairwise coculture, FBA/community/dynamic FBA); "a combination of methods is
+  needed". Positions our time-series gLV × FBA-constraint as exactly such a combination; source of network-topology
+  terminology and the honest FBA caveats (genome-annotation quality, biomass-maximisation assumption).
+  *(sent by Szafranski 2026-06-14)*
 
 ### Spatial reaction-diffusion / cross-diffusion / PINN (the spatial PDE pillar)
 - **Painter & Hillen 2002, *Can Appl Math Q*** — volume-filling chemotaxis / cross-diffusion; the mechanism for
