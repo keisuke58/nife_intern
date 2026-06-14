@@ -26,6 +26,7 @@ MAT = {
     "biofilm": ((0.82, 0.12, 0.13, 1), 0.0, 0.30, 0.32, 0.4, 0.18, 0.95),    # wet sulcular film
     "crown":   ((0.95, 0.93, 0.88, 1), 0.0, 0.16, 0.14, 0.4, 0.05, 1.0),
     "gingiva": ((0.93, 0.55, 0.60, 1), 0.0, 0.46, 0.55, 1.2, 0.0, 0.92),
+    "enamel":  ((0.93, 0.94, 0.93, 1), 0.0, 0.10, 0.20, 0.6, 0.12, 1.0),   # glossy translucent enamel
 }
 
 
@@ -49,7 +50,7 @@ def make_mat(name, spec):
     return m
 
 
-FEM_BODIES = {"bone", "implant", "dentin", "pdl", "crown", "biofilm"}   # closed -> boolean-cut at y_mid
+FEM_BODIES = {"bone", "implant", "dentin", "pdl", "crown", "biofilm", "enamel"}   # boolean-cut at y_mid
 
 
 def main():
@@ -103,7 +104,9 @@ def main():
     s.render.engine = "CYCLES"; s.cycles.device = "CPU"; s.cycles.samples = 200
     s.cycles.use_denoising = True
     s.render.resolution_x = 1700; s.render.resolution_y = 1350
-    s.render.film_transparent = True
+    s.render.film_transparent = True       # transparent bg; composite over WHITE afterwards (PIL):
+    #   im=Image.open(OUT).convert("RGBA"); bg=Image.new("RGBA",im.size,(255,)*4)
+    #   Image.alpha_composite(bg,im).convert("RGB").save(OUT)
     try:
         s.view_settings.view_transform = "AgX"; s.view_settings.look = "AgX - Medium High Contrast"
     except Exception:
