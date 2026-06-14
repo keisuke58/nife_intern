@@ -154,6 +154,31 @@ def gingiva_cuff(cx=T23[0], cy=T23[1], prof=None, nth=64):
     return np.array(f)
 
 
+def gingiva_mound(ic, ir, tc, tr, ymid, z_crest=CREST, z_marg=32.1, spanx=4.4, spany=3.4, nx=58, ny=34):
+    """Realistic illustrative gingiva: a soft-tissue mantle covering the alveolar crest, mounding up
+    along the ridge (domed, narrower buccolingually) and rounding down to the bone at the periphery,
+    the implant and tooth necks EMERGING through it. Returns grid quad faces for a translucent pink
+    surface."""
+    x0, x1 = min(ic[0], tc[0]) - spanx, max(ic[0], tc[0]) + spanx
+    xs = np.linspace(x0, x1, nx); ys = np.linspace(ymid - spany, ymid + spany, ny)
+    X, Y = np.meshgrid(xs, ys)
+    ri = np.hypot(X - ic[0], Y - ic[1]); rt = np.hypot(X - tc[0], Y - tc[1])
+    prox = np.minimum(ri, rt)                                   # distance to the nearer neck axis
+    edge = np.hypot((X - 0.5 * (ic[0] + tc[0])) / (spanx + 2.6), (Y - ymid) / (spany + 0.4))
+    bump = np.clip(1 - edge ** 2, 0, 1) ** 0.5                  # rounded dome over the ridge
+    bump *= np.clip(1 - (prox / (spanx * 1.3)) ** 2, 0.25, 1)
+    Z = z_crest + (z_marg - z_crest) * bump                     # mounds over the ridge, rounds at edges
+    inside = (ri < ir + 0.20) | (rt < tr + 0.20)               # necks poke through -> no gum there
+    faces = []
+    for j in range(ny - 1):
+        for i in range(nx - 1):
+            if inside[j, i] or inside[j, i + 1] or inside[j + 1, i] or inside[j + 1, i + 1]:
+                continue
+            faces.append([[X[j, i], Y[j, i], Z[j, i]], [X[j, i + 1], Y[j, i + 1], Z[j, i + 1]],
+                          [X[j + 1, i + 1], Y[j + 1, i + 1], Z[j + 1, i + 1]], [X[j + 1, i], Y[j + 1, i], Z[j + 1, i]]])
+    return np.array(faces)
+
+
 def peri_implant_bone_peak(field_json):
     """Robust (p95) occlusal vM in the crestal peri-implant bone (cortical/cancellous, r<3 mm, near
     crest). p95 not max: with anatomically intact crestal bone the absolute max is a neck/TIE-edge
@@ -214,12 +239,6 @@ def main():
                 pc = Poly3DCollection(tb, facecolors=shade(tb, to_rgb(COL["BIOFILM"]), 0.6, 0.42, 0.12),
                                       edgecolors=(0.5, 0, 0, 0.35), linewidths=0.08, rasterized=True)
                 pc.set_alpha(0.72); axA.add_collection3d(pc)
-        if GINGIVA:
-            g = msk(gingiva_cuff())
-            if len(g):
-                pc = Poly3DCollection(g, facecolors=shade(g, to_rgb(COL["GINGIVA"]), 0.6, 0.35),
-                                      edgecolors=(0.6, 0.2, 0.3, 0.25), linewidths=0.05, rasterized=True)
-                pc.set_alpha(0.5); axA.add_collection3d(pc)
     sulcus(near=False)                            # far half -- behind the implant
     for M in ["DENTIN", "PDL", "TI", "CROWN"]:    # the solid bodies, between the two sulcus halves
         if M not in surf or (M == "CROWN" and REALCROWN):
@@ -233,6 +252,19 @@ def main():
         axA.add_collection3d(Poly3DCollection(cm, facecolors=shade(cm, to_rgb(COL["CROWN"]), 0.62, 0.34, 0.30),
                                               edgecolors=(0, 0, 0, 0.12), linewidths=0.04, rasterized=True))
     sulcus(near=True)                             # near half -- in front of the implant -> encircles
+    # realistic gingiva: a translucent soft-tissue mantle over the alveolar crest, the implant and
+    # tooth emerging through it (the biofilm sits in the sulcus just under its margin, faintly visible).
+    if GINGIVA:
+        def neck_c(M, zlev):
+            c = nodes[conn[mat == M]].reshape(-1, 3)
+            s = (c[:, 2] >= zlev - 0.6) & (c[:, 2] <= zlev + 0.6)
+            ct = c[s, :2].mean(0)
+            return ct, float(np.percentile(np.hypot(c[s, 0] - ct[0], c[s, 1] - ct[1]), 99))
+        ic, ir = neck_c("TI", 31.0); tc, tr = neck_c("DENTIN", 31.0)
+        gm = gingiva_mound(ic, ir, tc, tr, ymid)
+        pc = Poly3DCollection(gm, facecolors=shade(gm, to_rgb(COL["GINGIVA"]), 0.62, 0.34, 0.10),
+                              edgecolors=(0.6, 0.25, 0.35, 0.15), linewidths=0.03, rasterized=True)
+        pc.set_alpha(0.55); axA.add_collection3d(pc)
     label3d(axA, *imp_xyz, "IMPLANT (screw + crown)", "#222222")
     label3d(axA, *too_xyz, "natural tooth", "#b35806")
     if "BIOFILM" in surf:
