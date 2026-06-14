@@ -26,10 +26,6 @@ MAT = {
     "biofilm": ((0.82, 0.12, 0.13, 1), 0.0, 0.30, 0.32, 0.4, 0.18, 0.95),    # wet sulcular film
     "crown":   ((0.95, 0.93, 0.88, 1), 0.0, 0.16, 0.14, 0.4, 0.05, 1.0),
     "gingiva": ((0.93, 0.55, 0.60, 1), 0.0, 0.46, 0.55, 1.2, 0.0, 0.92),
-    "enamel":  ((0.93, 0.94, 0.93, 1), 0.0, 0.10, 0.20, 0.6, 0.12, 1.0),   # glossy translucent enamel
-    "cementum":((0.88, 0.82, 0.66, 1), 0.0, 0.55, 0.20, 0.5, 0.0, 1.0),    # thin root layer (~dentin)
-    "pulp":    ((0.78, 0.30, 0.32, 1), 0.0, 0.55, 0.40, 0.6, 0.0, 1.0),    # vascular pulp (reddish)
-    "abutscrew":((0.55, 0.50, 0.40, 1), 1.0, 0.30, 0.0, 0.0, 0.0, 1.0),    # abutment screw (gold-ish Ti)
 }
 
 
@@ -53,8 +49,7 @@ def make_mat(name, spec):
     return m
 
 
-FEM_BODIES = {"bone", "implant", "dentin", "pdl", "crown", "biofilm", "gingiva", "enamel",
-              "cementum", "pulp", "abutscrew"}   # all boolean-cut at y_mid (clean section)
+FEM_BODIES = {"bone", "implant", "dentin", "pdl", "crown", "biofilm"}   # closed -> boolean-cut at y_mid
 
 
 def main():
@@ -105,7 +100,7 @@ def main():
         bpy.context.scene.collection.objects.link(lo)
 
     s = bpy.context.scene
-    s.render.engine = "CYCLES"; s.cycles.device = "CPU"; s.cycles.samples = 160
+    s.render.engine = "CYCLES"; s.cycles.device = "CPU"; s.cycles.samples = 200
     s.cycles.use_denoising = True
     s.render.resolution_x = 1700; s.render.resolution_y = 1350
     s.render.film_transparent = True
