@@ -140,3 +140,9 @@ results/fit_stochastic_glv_moments.json
 # pytest
 .pytest_cache/
 *.egg-info/
+
+# ParaView intermediate volumes (regenerable from phi_xyz_*.npy)
+results/**/*.vti
+
+# Blender render intermediates (regenerable)
+masterarbeit_ansys_fem/figures/blender_geom/
