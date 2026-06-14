@@ -43,18 +43,21 @@ _HEX6 = [(0, 1, 2, 6), (0, 2, 3, 6), (0, 3, 7, 6), (0, 7, 4, 6), (0, 4, 5, 6), (
 
 
 def biofilm_sleeve(ax, r_in, r_out, z0=SULC_Z0, z1=SULC_Z1, nth=56, nz=8):
-    """Thin annular biofilm sleeve (body of revolution) hugging a neck in the sulcus. Returns
-    (nodes, tets) with tets 0-based into the returned nodes; inner shell = r_in (tied to the neck)."""
+    """Thin annular biofilm sleeve (body of revolution) hugging a neck in the sulcus. r_in / r_out may
+    be scalars OR per-z-level arrays (length nz+1) so the sleeve FOLLOWS a flaring profile (e.g. a tooth
+    crown widening coronally) and stays in contact. Inner shell = r_in (tied to the neck)."""
     th = np.linspace(0, 2 * np.pi, nth, endpoint=False)
     zs = np.linspace(z0, z1, nz + 1)
+    rin = np.full(nz + 1, r_in, float) if np.isscalar(r_in) else np.asarray(r_in, float)
+    rout = np.full(nz + 1, r_out, float) if np.isscalar(r_out) else np.asarray(r_out, float)
     nd = np.empty(((nz + 1) * nth * 2, 3))
 
     def nid(it, jz, sh):
         return (it * (nz + 1) + jz) * 2 + sh
     for it in range(nth):
         for jz in range(nz + 1):
-            for sh, r in enumerate((r_in, r_out)):
-                nd[nid(it, jz, sh)] = (ax[0] + r * np.cos(th[it]), ax[1] + r * np.sin(th[it]), zs[jz])
+            for sh, rr in enumerate((rin[jz], rout[jz])):
+                nd[nid(it, jz, sh)] = (ax[0] + rr * np.cos(th[it]), ax[1] + rr * np.sin(th[it]), zs[jz])
     tets = []
     for it in range(nth):
         j2 = (it + 1) % nth
@@ -154,22 +157,33 @@ def main():
     if ANAT_BIO:
         # auto-align each sleeve to the ACTUAL neck axis+radius of the body in the sulcus band (the
         # natural tooth is irregular/tilted, so its neck centroid != the nominal T24 axis).
-        def neck(npts, tets):
-            # measure centre + radius at the CERVICAL slice (~bone crest = CEJ, the narrowest neck),
-            # not over the whole band -- the natural crown flares coronally and would oversize the ring.
-            ec = npts[tets].mean(1); s = (ec[:, 2] >= SULC_Z0 - 0.3) & (ec[:, 2] <= SULC_Z0 + 0.8)
-            ctr = ec[s, :2].mean(0)
-            vv = npts[tets[s]].reshape(-1, 3)
-            return ctr, float(np.hypot(vv[:, 0] - ctr[0], vv[:, 1] - ctr[1]).max())
-        ic, ir = neck(inn, it); tc, tr = neck(dn, dt)
-        sb_i, st_i = biofilm_sleeve(ic, ir + 0.05, ir + 0.35)      # peri-implant (concentric, hugging)
-        sb_t, st_t = biofilm_sleeve(tc, tr + 0.05, tr + 0.35)      # peri-tooth   (concentric, hugging)
+        NZB = 8
+
+        def neck_profile(npts, tets):
+            # centre at the CERVICAL slice (CEJ), then the body's surface radius at EACH z-level so the
+            # sleeve follows a coronally flaring profile (natural crown) and stays in contact -- no gap.
+            ec = npts[tets].mean(1); s0 = (ec[:, 2] >= SULC_Z0 - 0.3) & (ec[:, 2] <= SULC_Z0 + 0.8)
+            ctr = ec[s0, :2].mean(0)
+            rad = np.hypot(npts[:, 0] - ctr[0], npts[:, 1] - ctr[1])
+            zs = np.linspace(SULC_Z0, SULC_Z1, NZB + 1); dz = (SULC_Z1 - SULC_Z0) / NZB
+            prof = np.full(NZB + 1, np.nan)
+            for k, z in enumerate(zs):
+                m = np.abs(npts[:, 2] - z) <= dz * 0.9
+                if m.any():
+                    prof[k] = np.percentile(rad[m], 99)        # surface radius (robust max) at this z
+            for k in range(NZB + 1):                           # fill empty levels from below
+                if np.isnan(prof[k]):
+                    prof[k] = prof[k - 1] if k > 0 else np.nanmin(prof)
+            return ctr, np.maximum.accumulate(prof) if False else prof
+        ic, iprof = neck_profile(inn, it); tc, tprof = neck_profile(dn, dt)
+        sb_i, st_i = biofilm_sleeve(ic, iprof + 0.05, iprof + 0.35, nz=NZB)   # peri-implant, hugging
+        sb_t, st_t = biofilm_sleeve(tc, tprof + 0.05, tprof + 0.35, nz=NZB)   # peri-tooth, hugging
         Nbi = len(sb_i)
         bf_nodes = np.vstack([sb_i, sb_t])
         bf_tets = np.vstack([st_i + off_bf, st_t + off_bf + Nbi])
-        bf_ctr = {"imp": (ic, ir), "too": (tc, tr)}
-        print(f"biofilm sleeve centres: implant ({ic[0]:.2f},{ic[1]:.2f}) r={ir:.2f} ; "
-              f"tooth ({tc[0]:.2f},{tc[1]:.2f}) r={tr:.2f}")
+        bf_ctr = {"imp": (ic, iprof), "too": (tc, tprof)}
+        print(f"biofilm sleeve profiles: implant r {iprof.min():.2f}-{iprof.max():.2f} ; "
+              f"tooth r {tprof.min():.2f}-{tprof.max():.2f} (follows flare)")
     else:
         bf_nodes = np.zeros((0, 3)); bf_tets = np.zeros((0, 4), np.int64)
         bf_ctr = {"imp": (T23_AXIS, 2.10), "too": (T24_AXIS, 3.50)}
@@ -288,20 +302,22 @@ def main():
     # (and physically adherent). Implant sleeve -> IMP_OUT; tooth sleeve -> the dentin neck faces.
     bio_imp_inner, bio_too_inner, dent_neck = {}, {}, {}
     if ANAT_BIO and "BIOFILM" in eid:
-        (ic, ir), (tc, tr) = bf_ctr["imp"], bf_ctr["too"]
+        (ic, iprof), (tc, tprof) = bf_ctr["imp"], bf_ctr["too"]
+        zsb = np.linspace(SULC_Z0, SULC_Z1, len(iprof))
         bf_free = free_faces(eid["BIOFILM"][1], eid["BIOFILM"][0])
         for k, v in bf_free.items():
             fc = nodes[list(k)].mean(axis=0)
             ri = np.hypot(fc[0] - ic[0], fc[1] - ic[1])
             rt = np.hypot(fc[0] - tc[0], fc[1] - tc[1])
-            if ri < ir + 0.20:                      # implant sleeve inner shell (r_in = ir+0.05)
+            if ri < np.interp(fc[2], zsb, iprof) + 0.20:        # implant sleeve inner shell
                 bio_imp_inner[k] = v
-            elif rt < tr + 0.20:                    # tooth sleeve inner shell (r_in = tr+0.05)
+            elif rt < np.interp(fc[2], zsb, tprof) + 0.20:      # tooth sleeve inner shell
                 bio_too_inner[k] = v
         dt_free = free_faces(dt_g, eid["DENTIN"][0])
         for k, v in dt_free.items():
             fc = nodes[list(k)].mean(axis=0)
-            if SULC_Z0 - 0.4 <= fc[2] <= SULC_Z1 + 0.4 and np.hypot(fc[0] - tc[0], fc[1] - tc[1]) < tr + 0.4:
+            if SULC_Z0 - 0.4 <= fc[2] <= SULC_Z1 + 0.4 and \
+               np.hypot(fc[0] - tc[0], fc[1] - tc[1]) < np.interp(fc[2], zsb, tprof) + 0.4:
                 dent_neck[k] = v
         print(f"biofilm sleeve TIE: imp_inner={len(bio_imp_inner)} too_inner={len(bio_too_inner)} "
               f"dent_neck(master)={len(dent_neck)}")
