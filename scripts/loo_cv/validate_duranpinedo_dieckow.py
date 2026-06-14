@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-validate_botelho_dieckow.py — External validation of Dieckow A matrix on Botelho 2021.
+validate_duranpinedo_dieckow.py — External validation of Dieckow A matrix on Duran-Pinedo 2021.
 
 Strategy:
   - A matrix: fixed from Dieckow AGORA W=1.0 fit (10 patients, 3 weeks)
-  - For each of 15 Botelho patients:
+  - For each of 15 Duran-Pinedo patients:
       * Fit patient-specific b̂ using T00→T02 only (A fixed)
       * Predict T04..T12 (5 steps) from T02
   - Compare vs: (a) random A permutation, (b) no-A baseline (b only, A=0)
   - Metrics: RMSE, Bray-Curtis per timepoint
 
 Usage:
-    python validate_botelho_dieckow.py [--gpu 2]
+    python validate_duranpinedo_dieckow.py [--gpu 2]
 """
 import sys as _sys, pathlib as _pathlib  # noqa: E402  [nife-pathshim]
 _sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[2]))  # repo root: bare sibling imports
@@ -35,7 +35,7 @@ from guild_replicator_dieckow import GUILD_ORDER, N_G
 
 DATA = _here / 'data' / 'prjna725874'
 CR   = _here / 'results' / 'dieckow_cr'
-OUT  = _here / 'results' / 'botelho_validation'
+OUT  = _here / 'results' / 'duranpinedo_validation'
 OUT.mkdir(parents=True, exist_ok=True)
 
 # ── Load data ─────────────────────────────────────────────────────────────────
@@ -45,11 +45,11 @@ PATIENTS   = meta['patients']       # ['1',...,'15']
 TIMEPOINTS = meta['timepoints']     # ['00','02','04','06','08','10','12']  months
 N_P, N_T   = phi_all.shape[:2]     # 15, 7
 
-# Botelho months → time in years
+# Duran-Pinedo months → time in years
 T_MONTHS = np.array([int(t) for t in TIMEPOINTS], dtype=float)
 T_YEARS  = T_MONTHS / 12.0
 
-print(f'Botelho 2021: {N_P} patients × {N_T} timepoints × {N_G} guilds')
+print(f'Duran-Pinedo 2021: {N_P} patients × {N_T} timepoints × {N_G} guilds')
 print(f'Timepoints: {TIMEPOINTS} months')
 
 # ── Load Dieckow A matrix ──────────────────────────────────────────────────────
@@ -174,7 +174,7 @@ print(f'  Dieckow BC  ={bc_dk.mean():.4f}  perm mean={perm_bcs.mean():.4f} ± {p
 
 # ── Save ──────────────────────────────────────────────────────────────────────
 results = {
-    'dataset': 'Botelho 2021 PRJNA725874',
+    'dataset': 'Duran-Pinedo 2021 PRJNA725874',
     'n_patients': N_P, 'n_timepoints': N_T, 'n_guilds': N_G,
     'train_timepoints': [TIMEPOINTS[i] for i in TRAIN_IDX],
     'pred_timepoints':  [TIMEPOINTS[i] for i in PRED_IDX],
@@ -255,9 +255,9 @@ ax3.set_ylabel('Mean Bray-Curtis')
 ax3.set_title('(C) Prediction accuracy over time\n(BC from observed)', fontsize=10)
 ax3.legend(fontsize=8)
 
-fig.suptitle('External validation: Dieckow $A$ matrix predicts Botelho 2021 (n=15 patients)',
+fig.suptitle('External validation: Dieckow $A$ matrix predicts Duran-Pinedo 2021 (n=15 patients)',
              fontsize=11, y=1.02)
 fig.tight_layout()
 for ext in ('png', 'pdf'):
-    fig.savefig(OUT / f'fig_botelho_validation.{ext}', dpi=150, bbox_inches='tight')
-    print(f'Saved {OUT}/fig_botelho_validation.{ext}')
+    fig.savefig(OUT / f'fig_duranpinedo_validation.{ext}', dpi=150, bbox_inches='tight')
+    print(f'Saved {OUT}/fig_duranpinedo_validation.{ext}')

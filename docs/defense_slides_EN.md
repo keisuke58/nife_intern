@@ -110,7 +110,7 @@ permutation test:
 - Only the **cross-feeding direction** is independently validated:
   $$p=4\times10^{-4}\quad(z=+3.79,\ n_\pi=10^4).$$
 - The **competition direction is NOT validated** (chance level).
-- Across **two cohorts** (Dieckow × Botelho), prior-free, strong-pair signs
+- Across **two cohorts** (Dieckow × Duran-Pinedo), prior-free, strong-pair signs
   agree at **89%** ($p\approx0.02$).
 
 \vspace{0.3em}
@@ -194,7 +194,7 @@ independent $R^2=0.78$, RMSE $0.13$, LOO $R^2=0.92$.
    ($P_{ij}=\sgn(F_{ij})$; magnitude is not used).
 2. Dysbiosis is a **rewiring + spatial reorganisation**, with
    *P. gingivalis* sinking deep (+30 µm).
-3. That claim reproduces across **two cohorts** (Dieckow × Botelho, 89%,
+3. That claim reproduces across **two cohorts** (Dieckow × Duran-Pinedo, 89%,
    $p\approx0.02$) and an **independent mechanistic route** (COMETS dFBA).
 4. The original 5-species ODE predicts pH independently
    ($R^2=0.78$, LOO $R^2=0.92$).

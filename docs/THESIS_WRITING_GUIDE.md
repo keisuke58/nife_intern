@@ -22,7 +22,7 @@ Mensh & Kording の Rule 1：**論文は1つの貢献に絞る**。修論全体�
 
 > **「口腔バイオフィルムの commensal→dysbiotic 転移は、再現可能なネットワークの
 > *位相的再編成*（Pg の中心化・Veillonella の代謝シンク化）であり、それは
-> in-vitro（Heine 5菌種, GPU-Bayesian）と in-vivo（Dieckow/Botelho）で符号一致し、
+> in-vitro（Heine 5菌種, GPU-Bayesian）と in-vivo（Dieckow/Duran-Pinedo）で符号一致し、
 > 代謝（AGORA）と整合し、深さ方向に空間構造化されている。」**
 
 - ①は「**推定法と再現性**」（GPU-TMCMC で 10000p posterior、pH を独立予測 R²=0.78）。
@@ -47,7 +47,7 @@ Whitesides の主張は「**図（と1文の仮説）を先に作れ。論文＝
 | **pH 予測** | モデルが**独立変数**を当てる（R²=0.78, LOO 0.92） | `fig_ph_validation.pdf` | ch3 |
 | AGORA pipeline | 代謝→符号 prior の構築 | `fig2_agora_pipeline` | ch4 |
 | no-prior 符号一致 | prior 抜きでも交差検証（perm p=4e-4） | `dieckow_cr` | ch4 |
-| Botelho 2コホート | 強ペア符号 89%（別コホート） | `botelho_validation` | ch4 |
+| Duran-Pinedo 2コホート | 強ペア符号 89%（別コホート） | `duranpinedo_validation` | ch4 |
 | Network 再編成 | Pg 中心化・Veillonella sink・ρ(DH−CS)=−0.49 | `guild_network` | ch4 |
 | 深さプロファイル | Fn–Pg 深さ分離（3D M1 0.22–0.33） | `zprofiles_all_ti*`, `fish_3d` | ch5 |
 | 横均一化 | DH は CV~0.33（均一）、CH はパッチ | `fish_3d_lateral_*` | ch5 |

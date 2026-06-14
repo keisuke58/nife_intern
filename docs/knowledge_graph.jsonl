@@ -8,7 +8,7 @@
 {"type":"entity","name":"ch5_integration","entityType":"thesis_chapter","observations":["spatial PDE + FISH + integration of stage 1 and 2"]}
 {"type":"entity","name":"ch6_conclusion","entityType":"thesis_chapter","observations":["summary + outlook, write last"]}
 {"type":"entity","name":"Dieckow2024","entityType":"dataset","observations":["ENA PRJEB71108","10 patients x 3 weeks x 10 guilds","primary in-vivo longitudinal fit/LOO"]}
-{"type":"entity","name":"Botelho2021","entityType":"dataset","observations":["PRJNA725874","15 patients x 7 timepoints","independent cohort for cross-validation"]}
+{"type":"entity","name":"DuranPinedo2021","entityType":"dataset","observations":["PRJNA725874","15 patients x 7 timepoints","independent cohort for cross-validation"]}
 {"type":"entity","name":"Szafranski2025","entityType":"dataset","observations":["mSystems 16S, 127 cross-sectional, 5 genera","source of the L1/L2 metabolic sign priors"]}
 {"type":"entity","name":"Heine2025_HOBIC_FISH","entityType":"dataset","observations":["in-vitro flow-chamber FISH .lif, 5 species","11 files, CH/DH, days 1/6/10/15/21, Ti","4-channel FISH, Fn = blue∩red dual label"]}
 {"type":"entity","name":"Joshi2025","entityType":"dataset","observations":["PRJNA1192962","clinical GDI validation cohort","awaiting metadata"]}
@@ -21,7 +21,7 @@
 {"type":"entity","name":"PINN_3D","entityType":"method","observations":["phi_theta(x,y,z,t)->5sp, data + PDE-residual loss","infers D_i,u via autodiff; pinn_3d_inverse.py","run on vancouver01 GPU"]}
 {"type":"entity","name":"COMETS_dFBA","entityType":"method","observations":["5-species dynamic FBA, AGORA GEMs","forward simulation, DI 0.15 (healthy) vs 0.70 (diseased)"]}
 {"type":"entity","name":"F_crossfeeding_validated","entityType":"finding","observations":["no-prior Hamilton cross-feeding direction validated","78.6% vs random 37.7%, permutation p=4e-4, z=+3.79","competition direction NOT validated; gLV null"]}
-{"type":"entity","name":"F_botelho_2cohort","entityType":"finding","observations":["Dieckow x Botelho prior-free strong-pair signs agree 89%","p~0.02; Actinobacteria axis consistent"]}
+{"type":"entity","name":"F_duranpinedo_2cohort","entityType":"finding","observations":["Dieckow x Duran-Pinedo prior-free strong-pair signs agree 89%","p~0.02; cross-design (not matched); Actinobacteria axis suggestive"]}
 {"type":"entity","name":"F_veillonella_sink","entityType":"finding","observations":["concordant backbone 11 edges all positive p=4e-4","Negativicutes/Veillonella = main lactate sink","strongest network result"]}
 {"type":"entity","name":"F_pg_centralises","entityType":"finding","observations":["Pg eigen-centrality CS 0.32 -> DH 0.51","keystone-like only in dynamic dysbiotic state","So-Veillonella mutualism flips to competition"]}
 {"type":"entity","name":"F_pg_sinks_deep","entityType":"finding","observations":["P. gingivalis centre-of-mass +30um deeper in DH from day6","sedimentation into deep anaerobic niche"]}
@@ -150,8 +150,8 @@
 {"type":"relation","from":"COMETS_dFBA","to":"MICOM","relationType":"uses_same_GEMs_as"}
 {"type":"relation","from":"F_crossfeeding_validated","to":"AGORA_sign_prior","relationType":"validates"}
 {"type":"relation","from":"F_crossfeeding_validated","to":"Dieckow2024","relationType":"supported_by"}
-{"type":"relation","from":"F_botelho_2cohort","to":"Botelho2021","relationType":"supported_by"}
-{"type":"relation","from":"F_botelho_2cohort","to":"Dieckow2024","relationType":"supported_by"}
+{"type":"relation","from":"F_duranpinedo_2cohort","to":"DuranPinedo2021","relationType":"supported_by"}
+{"type":"relation","from":"F_duranpinedo_2cohort","to":"Dieckow2024","relationType":"supported_by"}
 {"type":"relation","from":"F_veillonella_sink","to":"AGORA_sign_prior","relationType":"supported_by"}
 {"type":"relation","from":"F_pg_centralises","to":"TMCMC","relationType":"supported_by"}
 {"type":"relation","from":"F_pg_sinks_deep","to":"Heine2025_HOBIC_FISH","relationType":"supported_by"}
@@ -166,7 +166,7 @@
 {"type":"relation","from":"F_no_turing_patterns","to":"F_dh_lateral_homogenisation","relationType":"consistent_with"}
 {"type":"relation","from":"ch3_heine","to":"F_ph_prediction","relationType":"presents"}
 {"type":"relation","from":"ch4_dieckow","to":"F_crossfeeding_validated","relationType":"presents"}
-{"type":"relation","from":"ch4_dieckow","to":"F_botelho_2cohort","relationType":"presents"}
+{"type":"relation","from":"ch4_dieckow","to":"F_duranpinedo_2cohort","relationType":"presents"}
 {"type":"relation","from":"ch4_dieckow","to":"F_veillonella_sink","relationType":"presents"}
 {"type":"relation","from":"ch4_dieckow","to":"F_pg_centralises","relationType":"presents"}
 {"type":"relation","from":"ch5_integration","to":"F_pg_sinks_deep","relationType":"presents"}

@@ -17,8 +17,8 @@ Criterion: **only clean results enter the thesis** — verify numbers against re
 | DH diffusion fitting | floor ≈0.091, 8 jobs running ⏳ | Pending |
 | CH diffusion fitting | loss 0.014–0.030, xdiff=D[An] pegged | Illustrative only |
 | 3D FISH data findings | Fn-Pg z-separation, DH lateral homog, p=2e-4 ✅ | Yes (data pillar) |
-| Botelho cross-cohort | 80–89% strong pairs, but fragile (n=9, p variable) | ⛔ exclude |
-| Botelho trajectory prediction | fails (p=0.22) | ⛔ exclude |
+| Duran-Pinedo cross-cohort | 80–89% strong pairs, but fragile (n=9, p variable) | ⛔ exclude |
+| Duran-Pinedo trajectory prediction | fails (p=0.22) | ⛔ exclude |
 | PINN 3D inverse (D_i GPU) | illustrative D=[.02,.01,.01,.01,.01] | Appendix/method only |
 
 ---
@@ -101,9 +101,9 @@ Target thesis figure set (8 main + 2 supplementary):
 | Supp A | A-matrix stability heatmap (10 LOO folds) | `loo_stability_analysis` | ⬜ |
 | Supp B | AGORA FBA cross-feeding network | `agora_slides` figures | 🔧 |
 
-#### 3-B — Botelho: archive, not thesis
-- Keep all Botelho scripts and results in `results/botelho_validation/`.  
-- Write a 3-paragraph `docs/botelho_validation_summary.md` (internal) so the finding is documented.  
+#### 3-B — Duran-Pinedo: archive, not thesis
+- Keep all Duran-Pinedo scripts and results in `results/duranpinedo_validation/`.  
+- Write a 3-paragraph `docs/duranpinedo_validation_summary.md` (internal) so the finding is documented.  
 - Do not include in thesis main text. Mention in Discussion as "preliminary cross-cohort evidence" if at all.
 
 #### 3-C — Code/data handover prep (August)
@@ -120,7 +120,7 @@ Target thesis figure set (8 main + 2 supplementary):
 | **Jun 1–15** | 2-A DH diagnostic collect; 1-A neutral-init LOO submit | DH indeterminacy confirmed/denied |
 | **Jun 15–30** | 1-B stability analysis; 1-C prior asymmetry fig; 1-D network fig | 0D story complete with figs |
 | **Jul 1–20** | 2-B multi-day FISH fitting (CH); 2-C 3D FISH figures style pass | Spatial data pillar figures done |
-| **Jul 20–Aug 10** | 3-A figure freeze; 3-B Botelho archive | Canonical fig set locked |
+| **Jul 20–Aug 10** | 3-A figure freeze; 3-B Duran-Pinedo archive | Canonical fig set locked |
 | **Aug 10–31** | Buffer: clean runs, reproducibility check, handover prep | All results reproducible from repo |
 | **Sep 1 →** | Thesis writing begins | — |
 
@@ -132,7 +132,7 @@ Target thesis figure set (8 main + 2 supplementary):
 2. **p-value required for any "significant" claim** — report n and test alongside.  
 3. **Illustrative = labeled as illustrative** — D_i from single-day or weak-constraint fits get explicit "illustrative, not calibrated" caption language.  
 4. **Negative result = result** — DH diffusion floor is a finding (reaction-dominated regime), not a failure to fix.  
-5. **No Botelho in main text** unless the trajectory prediction story becomes clean (currently p=0.22, excluded).
+5. **No Duran-Pinedo in main text** unless the trajectory prediction story becomes clean (currently p=0.22, excluded).
 
 ---
 

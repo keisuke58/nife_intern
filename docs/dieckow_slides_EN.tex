@@ -227,13 +227,51 @@ one-sided hinge penalises \textbf{sign violations only}:
 \tightlist
 \item
   \(P_{ij}=\operatorname{sgn}(F_{ij})\) comes from AGORA cross-feeding
-  flux (derived in the AGORA deck).
+  flux (derived in the AGORA deck) (explicit AGORA-output example on the
+  next slide).
 \item
   \(\left[-P_{ij}A_{ij}\right]_{+}\) is \(0\) when
   \(\operatorname{sgn}(A_{ij})=P_{ij}\) --- \textbf{magnitude is free}.
 \item
-  Posterior sampled by \textbf{TMCMC} (\(10^{4}\) particles).
+  Posterior sampled by \textbf{TMCMC} (transitional MCMC): \(10^{4}\)
+  \textbf{particles} (parameter draws) are advanced through tempered
+  stages from prior \(\to\) posterior, reweighted and resampled each
+  stage. The final particle cloud \emph{is} the posterior over
+  \((A,b)\); \(10^{4}\) sets its resolution.
 \end{itemize}
+\end{frame}
+
+\begin{frame}{From AGORA output to the sign prior \(P_{ij}\)}
+\protect\hypertarget{from-agora-output-to-the-sign-prior-p_ij}{}
+\textbf{What AGORA produces.} For each guild, an AGORA2 pFBA solution
+gives a \textbf{secretion/uptake flux profile}
+(mmol,gDW\(^{-1}\)h\(^{-1}\)). Example (real pFBA output):
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Guild & pFBA secretion (mmol\,gDW$^{-1}$h$^{-1}$) \\
+\midrule
+Actinobacteria & secretes acetate 49.8, formate 53.7, succinate 39.2 \\
+Bacilli & secretes acetate 921, lactate 982, propionate 1000, succinate 18 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Net directed flow.} Donor \(i\) secretes a metabolite that
+acceptor \(j\) consumes \(\Rightarrow\) directed cross-feeding flux
+\(F_{ij}>0\); competition for a shared resource
+\(\Rightarrow F_{ij}<0\).
+
+\textbf{Derivation.} \(P_{ij}=\operatorname{sgn}(F_{ij})\) --- only the
+\emph{sign} enters the penalty (FBA flux units \(\neq\) ecological
+units, so magnitude is discarded by design).
+
+\textbf{Worked example.} Actinobacteria secretes
+acetate/formate/succinate, which Bacilli consume
+\(\Rightarrow F>0 \Rightarrow P=+1\) (facilitation), matching the fitted
+\(\hat A=+1.62\). Key literature pairs confirmed 2/3; inhibitory links
+(H\(_2\)O\(_2\), competition) need community-level modelling.
 \end{frame}
 
 \begin{frame}{Fitted interaction matrix \(A\)}
@@ -278,7 +316,10 @@ and averaged.
 \protect\hypertarget{loo-model-comparison}{}
 \begin{center}\includegraphics[width=0.50\textwidth,keepaspectratio]{dieckow_paper/figures/fig2_loo_comparison.png}\hfill\includegraphics[width=0.48\textwidth,keepaspectratio]{dieckow_paper/figures/fig8_all_models_rmse_bc.png}\end{center}
 
-\begin{center}\small LOO-RMSE / LOO-BC across prior layers, model forms, and prior stiffness $W$.\end{center}
+\small \textbf{Left:} adding the AGORA layer (L1+L2+AGORA) lowers LOO
+error vs L1-only. \textbf{Right:} every model variant ranked by LOO-RMSE
+/ LOO-BC --- \emph{lower is better}. Take-away: the metabolic prior
+helps; magnitude priors do not.
 \end{frame}
 
 \begin{frame}{Performance summary}
@@ -319,16 +360,26 @@ interpretability} rather than raw accuracy.
 \protect\hypertarget{loo-stability-of-the-a-matrix}{}
 \begin{center}\includegraphics[width=0.92\textwidth,keepaspectratio]{dieckow_paper/figures/fig7_loo_stability.png}\end{center}
 
-Across the 10 hold-out re-fits, every pair has \textbf{sign-consistency
-\(\geq 0.70\)}. The inferred sign structure is robust to leaving out any
-single patient.
+\textbf{How to read.} Each cell = one guild pair; its value = the
+fraction of the 10 leave-one-patient-out re-fits that kept the
+\emph{same interaction sign} (1.0 = identical sign in all 10). Every
+pair is \(\geq 0.70\) \(\Rightarrow\) the inferred sign structure does
+not hinge on any single patient.
 \end{frame}
 
-\begin{frame}{Critical validation}
-\protect\hypertarget{critical-validation}{}
-With the prior \textbf{OFF} (\(\alpha=0\)) the prior is
-\textbf{all-positive}, so naive sign-agreement is inflated. A
-\textbf{label permutation test} (\(n=10^{4}\)) controls for this:
+\begin{frame}{Critical validation --- is the sign structure real?}
+\protect\hypertarget{critical-validation-is-the-sign-structure-real}{}
+\small
+
+\textbf{Question.} Could random guild labels score as high a
+sign-agreement as the fitted model? (With the prior \emph{on} it is
+all-positive, so a naive agreement count is inflated.)
+
+\textbf{Test.} \textbf{Label-permutation null}: shuffle the guild labels
+\(10^{4}\) times, recompute agreement each time, compare the real score
+to that null.
+
+\textbf{Result.}
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.33}}
@@ -344,33 +395,42 @@ competition
 \end{minipage} \\
 \midrule
 \endhead
-\textbf{Hamilton \(\alpha=0\)} & \(\mathbf{78.6\%}\) (11/14) vs random
+\textbf{Hamilton \(\alpha=0\)} & \(\mathbf{78.6\%}\) (11/14) vs null
 \(37.7\%\), \(p=4\times10^{-4}\), \(z=+3.79\) & \(\approx\) chance \\
 gLV & \(41\%\) (null) & null \\
 \bottomrule
 \end{longtable}
 
-\begin{center}\includegraphics[height=0.34\textheight,keepaspectratio]{results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png}\end{center}
+\begin{center}\includegraphics[height=0.18\textheight,keepaspectratio]{results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png}\end{center}
 
-\textbf{Only the cross-feeding direction is validated. Competition is
-not.}
+\textbf{Read.} Only the \textbf{cross-feeding direction} beats the null.
+\textbf{Competition is not validated.}
 \end{frame}
 
-\begin{frame}{Two-cohort replication}
-\protect\hypertarget{two-cohort-replication}{}
-Botelho 2021 (\textbf{PRJNA725874}, 15 patients \(\times\) 7 timepoints)
-is fit \textbf{prior-free} and independently, then strong-pair signs are
-compared to Dieckow:
+\begin{frame}{Two-cohort replication (cross-design check)}
+\protect\hypertarget{two-cohort-replication-cross-design-check}{}
+Duran-Pinedo et al.~2021 (\textbf{BMC Biol 19:240}; ENA
+\textbf{PRJNA725874}, 15 patients \(\times\) 7 timepoints) is fit
+\textbf{prior-free} and independently; strong-pair signs are then
+compared to Dieckow.
 
-\begin{center}\includegraphics[width=0.94\textwidth,keepaspectratio]{results/botelho_validation/fig_botelho_A_comparison_noprior.png}\end{center}
+\begin{center}\includegraphics[height=0.36\textheight,keepaspectratio]{results/duranpinedo_validation/fig_duranpinedo_A_comparison_noprior.png}\end{center}
 
 Strong-pair directed signs agree at \textbf{\(89\%\)} (\(8/9\)
-upper-triangular, \(p\approx0.02\)). The \textbf{Actinobacteria axis} is
-consistent across cohorts.
+upper-triangular, \(p\approx0.02\)).
+\textcolor{red}{\textbf{Caveat --- not a like-for-like replication.}}
+The cohorts differ in \textbf{timescale and clinical state}: Dieckow =
+early peri-implant colonization (weeks; health \(\to\) colonization);
+Duran-Pinedo = long-term \textbf{periodontitis} progression (disease).
+The 89\% is a coarse \emph{strong-pair sign} agreement across designs,
+not a matched replication. The Actinobacteria-axis correspondence is
+\textbf{suggestive} and needs a matched-design cohort to confirm.
 \end{frame}
 
 \begin{frame}{Interpretation and limitations}
 \protect\hypertarget{interpretation-and-limitations}{}
+\small
+
 \begin{itemize}
 \tightlist
 \item
@@ -386,8 +446,8 @@ consistent across cohorts.
     the \textbf{cross-feeding direction} (Hamilton,
     \(p=4\times10^{-4}\)),
   \item
-    \textbf{two-cohort strong-pair} signs (Dieckow \(\times\) Botelho,
-    \(89\%\)).
+    \textbf{two-cohort strong-pair} signs (Dieckow \(\times\)
+    Duran-Pinedo, \(89\%\); cross-design --- see caveat).
   \end{enumerate}
 \item
   Competition direction, prior magnitude, and the full matrix are not

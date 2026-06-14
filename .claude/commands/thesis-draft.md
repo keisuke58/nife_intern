@@ -21,8 +21,8 @@ Thesis repo: `/home/nishioka/LUHsummer26/30_Masterarbeit` (chapters in
    topic sentence first, important number in the stress position, limitations as a
    finding, reverse-outline at the end.
 2. **The knowledge graph** — query the memory MCP for the entities/relations
-   relevant to `$ARGUMENTS` (e.g. for `ch4`: `AGORA_sign_prior`, `F_botelho_2cohort`,
-   `F_pg_centralises`, `F_veillonella_sink`, the Dieckow/Botelho datasets). Use
+   relevant to `$ARGUMENTS` (e.g. for `ch4`: `AGORA_sign_prior`, `F_duranpinedo_2cohort`,
+   `F_pg_centralises`, `F_veillonella_sink`, the Dieckow/Duran-Pinedo datasets). Use
    `mcp__memory__search_nodes` / `open_nodes` / `read_graph`. The graph is the map
    of which findings/methods/figures belong to which chapter.
 3. **The source manuscript** for that chapter (README `Quellen` table):

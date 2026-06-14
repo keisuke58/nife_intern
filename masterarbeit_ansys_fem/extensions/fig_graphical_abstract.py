@@ -1,7 +1,7 @@
 """Graphical abstract: the end-to-end peri-implantitis chain in one clean figure.
   1 microbial ecology (real GDI(t))  ->  2 biofilm anatomy (sulcus, on Ti)  ->  3 host inflammation
   (tipping point)  ->  4 biomechanics (resorption->stress feedback)  ->  5 per-patient prediction.
-All panels reconstructed from the project data/results (Botelho GDI, pimp_results FEM feedback, the
+All panels reconstructed from the project data/results (Duran-Pinedo GDI, pimp_results FEM feedback, the
 inflammation ODE). Run: python masterarbeit_ansys_fem/extensions/fig_graphical_abstract.py
 """
 import sys, json
@@ -47,7 +47,7 @@ def main():
         a.tick_params(labelsize=8, length=2.5)
     LB = 9       # axis-label fontsize
 
-    # 1 ecology: Botelho GDI(t)
+    # 1 ecology: Duran-Pinedo GDI(t)
     phi = np.load(DATA / "phi_guild.npy"); meta = json.load(open(DATA / "metadata.json"))
     wk = np.array([int(x) for x in meta["timepoints"]])
     gdi = np.log(phi[:, :, DYS].sum(2) + 1e-6) - np.log(phi[:, :, COM].sum(2) + 1e-6)

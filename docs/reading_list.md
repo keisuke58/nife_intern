@@ -38,7 +38,7 @@ by hand.
   comparison and source of the L1/L2 experimental + predicted interaction signs.
 - **Dieckow 2024 (PRJEB71108)** — 10 patients × 3 weeks longitudinal 16S; the primary fit/LOO-CV dataset.
 - **Heine 2025** — in-vitro ODE system; the four community attractors (CS/CH/DS/DH) and the HOBIC spatial data.
-- **Botelho 2021 (PRJNA725874)** — 15 patients × 7 timepoints longitudinal 16S; longer time-series validation.
+- **Duran-Pinedo 2021 (PRJNA725874)** — 15 patients × 7 timepoints longitudinal 16S; longer time-series validation.
 - **Joshi 2025** — oral microbiome dysbiosis / peri-implantitis reference for the clinical framing.
 
 ## New (auto-appended by /litwatch)

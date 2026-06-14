@@ -3,12 +3,12 @@
 fit_dieckow_A_noprior.py — Fit gLV on Dieckow 2024 (10 patients × 3 weeks) WITHOUT
 the AGORA sign prior, to test whether the prior is data-consistent or data-overwriting.
 
-Mirrors fit_botelho_A.py exactly (same gLV RHS, same scipy L-BFGS-B, same AGORA
-reference prior) so the resulting A is directly comparable to the no-prior Botelho A.
+Mirrors fit_duranpinedo_A.py exactly (same gLV RHS, same scipy L-BFGS-B, same AGORA
+reference prior) so the resulting A is directly comparable to the no-prior Duran-Pinedo A.
 
 Produces three sign-agreement numbers:
   (1) Dieckow(no-prior) A  vs  AGORA sign prior      → is the prior data-consistent?
-  (2) Dieckow(no-prior) A  vs  Botelho(no-prior) A   → prior-free cross-dataset test
+  (2) Dieckow(no-prior) A  vs  Duran-Pinedo(no-prior) A   → prior-free cross-dataset test
   (3) Dieckow(no-prior) A  vs  Dieckow(prior, w1.0) A → how much did the prior move A?
 
 Usage:
@@ -30,7 +30,7 @@ from build_net_flow_expanded import build_net_flow_expanded
 
 DATA = _here / 'results' / 'dieckow_otu'
 CR   = _here / 'results' / 'dieckow_cr'
-OUT  = _here / 'results' / 'botelho_validation'
+OUT  = _here / 'results' / 'duranpinedo_validation'
 OUT.mkdir(parents=True, exist_ok=True)
 
 # ── Load Dieckow data ─────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ LAM     = 1e-4
 n_pairs = int(mask.sum() // 2)
 print(f'AGORA constrained pairs (for comparison only): {n_pairs}  PRIOR PENALTY = OFF', flush=True)
 
-# ── gLV helpers (identical to fit_botelho_A.py) ───────────────────────────────
+# ── gLV helpers (identical to fit_duranpinedo_A.py) ───────────────────────────────
 def rhs(t, phi, b, A):
     f = b + A @ phi
     return phi * (f - phi @ f)
@@ -102,7 +102,7 @@ b_dk_np = res.x[N_G * N_G:].reshape(N_P, N_G)
 
 # ── Comparison matrices ───────────────────────────────────────────────────────
 A_prior = np.array(json.load(open(CR / 'fit_glv_hamilton_kegg_expanded_agora_w1p0.json'))['A'])
-A_bot_np = np.array(json.load(open(OUT / 'botelho_A_comparison_noprior.json'))['A_botelho'])
+A_bot_np = np.array(json.load(open(OUT / 'duranpinedo_A_comparison_noprior.json'))['A_duranpinedo'])
 
 pairs_all = [(i, j) for i in range(N_G) for j in range(i+1, N_G)]
 pairs_con = [(i, j) for i, j in pairs_all if mask[i, j]]
@@ -126,7 +126,7 @@ print('\n── (1) Dieckow(no-prior) A  vs  AGORA sign prior ──────
 print('     [does the data independently agree with the prior?]')
 m1c, n1c = sign_agree_vs_prior(pairs_con, A_dk_np, f'Constrained ({n_pairs} pairs)')
 
-print('\n── (2) Dieckow(no-prior)  vs  Botelho(no-prior)  [PRIOR-FREE CROSS-DATASET] ──')
+print('\n── (2) Dieckow(no-prior)  vs  Duran-Pinedo(no-prior)  [PRIOR-FREE CROSS-DATASET] ──')
 m2a, n2a = sign_agree(pairs_all, A_dk_np, A_bot_np, 'All 45 pairs')
 m2c, n2c = sign_agree(pairs_con, A_dk_np, A_bot_np, f'Constrained ({n_pairs})')
 strong2 = [(i, j) for i, j in pairs_all
@@ -153,8 +153,8 @@ result = {
     'dieckow_noprior_rmse': rmse,
     'sign_agreement': {
         'vs_agora_prior_constrained': {'agree': m1c, 'n': n1c, 'pct': round(m1c/n1c*100, 1)},
-        'vs_botelho_noprior_all':     {'agree': m2a, 'n': n2a, 'pct': round(m2a/n2a*100, 1)},
-        'vs_botelho_noprior_constrained': {'agree': m2c, 'n': n2c, 'pct': round(m2c/n2c*100, 1)},
+        'vs_duranpinedo_noprior_all':     {'agree': m2a, 'n': n2a, 'pct': round(m2a/n2a*100, 1)},
+        'vs_duranpinedo_noprior_constrained': {'agree': m2c, 'n': n2c, 'pct': round(m2c/n2c*100, 1)},
         'vs_dieckow_prior_all':       {'agree': m3a, 'n': n3a, 'pct': round(m3a/n3a*100, 1)},
         'vs_dieckow_prior_constrained': {'agree': m3c, 'n': n3c, 'pct': round(m3c/n3c*100, 1)},
     },

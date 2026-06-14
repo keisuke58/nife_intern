@@ -102,7 +102,7 @@ naive 92% は prior の符号縮退による過大評価。正しい対照は pe
 - **cross-feeding 方向のみ**が独立に検証される：
   $$p=4\times10^{-4}\quad(z=+3.79,\ n_\pi=10^4).$$
 - **競争方向は検証されない**（chance レベル）。
-- **2 コホート**（Dieckow $\times$ Botelho）を prior 抜きで比べ、
+- **2 コホート**（Dieckow $\times$ Duran-Pinedo）を prior 抜きで比べ、
   強ペア符号が **89%** 一致（$p\approx0.02$）。
 
 \vspace{0.3em}
@@ -182,7 +182,7 @@ $D_i$（拡散）と $u$（移流）のみを深さプロファイルから推�
    （$P_{ij}=\sgn(F_{ij})$；大きさは使わない）。
 2. dysbiosis は**リワイヤリング + 空間的再編成**であり、
    *P. gingivalis* の深部沈降（+30 µm）を伴う。
-3. その主張は **2 コホート**（Dieckow $\times$ Botelho, 89%, $p\approx0.02$）と
+3. その主張は **2 コホート**（Dieckow $\times$ Duran-Pinedo, 89%, $p\approx0.02$）と
    **独立な機械論経路**（COMETS dFBA）で再現される。
 4. オリジナルの 5 種 ODE は pH を独立に予測（$R^2=0.78$, LOO $R^2=0.92$）。
 

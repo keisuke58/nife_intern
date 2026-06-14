@@ -2,7 +2,7 @@
 Adds mechanical biofilm removal to the inflammatory tipping-point cascade. Brushing knocks down the
 SUPRAGINGIVAL biofilm but a toothbrush only reaches ~1-2 mm subgingivally, so its efficacy FADES as the
 pocket deepens (bone loss grows). Professional debridement reaches the pocket. For a progressing
-patient (top Botelho dysbiosis) we compare: no care / regular brushing / brushing+debridement, and
+patient (top Duran-Pinedo dysbiosis) we compare: no care / regular brushing / brushing+debridement, and
 brushing started early vs late.
 Run: python masterarbeit_ansys_fem/extensions/fig_periimplantitis_brushing.py
 """

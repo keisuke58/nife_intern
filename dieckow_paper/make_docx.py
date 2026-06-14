@@ -645,7 +645,7 @@ limitations = [
      'resolution. Within-guild species interactions may cancel or reinforce at guild level '
      'in ways not captured by the model.'),
     ('Prior mismatch', 'The sign prior derives from caries-context metabolic data. '
-     'Applied to the periodontitis dataset (Botelho et al. 2021, PRJNA725874), '
+     'Applied to the periodontitis dataset (Duran-Pinedo et al. 2021, PRJNA725874), '
      'competition weight alpha shows no effect (<0.1% RMSE difference), consistent '
      'with either disease-state mismatch or longer-interval (2-month) dynamics '
      'dominated by environmental variables.'),

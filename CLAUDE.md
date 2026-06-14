@@ -64,7 +64,7 @@ raw 16S reads (ENA/SRA)
 | Name | Accession | Shape | Role |
 |------|-----------|-------|------|
 | Dieckow 2024 | PRJEB71108 | 10 patients × 3 weeks | primary longitudinal fit/LOO |
-| Botelho 2021 | PRJNA725874 | 15 patients × 7 timepoints | longer time-series validation |
+| Duran-Pinedo 2021 | PRJNA725874 | 15 patients × 7 timepoints | longer time-series validation |
 | Szafrański 2025 | mSystems 16S | 127 cross-sectional samples, 5 genera | attractor / community-type comparison |
 | Heine 2025 | — | in vitro ODE | the four ODE attractors |
 

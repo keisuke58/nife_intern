@@ -2,7 +2,7 @@
 Inserts the immune layer between dysbiosis and bone loss --
    dysbiosis B -> inflammation I (cytokines) -> osteoclast C (RANKL/OPG switch) -> bone loss L,
 with a mechanical-overload synergy A(loss) from study (1). Coupled ODEs (per-patient, driven by the
-real Botelho GDI):
+real Duran-Pinedo GDI):
    dI/dt = kI*B - gI*I
    Cdrive = I^n/(I^n + Ithr^n)                         # sigmoidal RANKL/OPG threshold switch
    dC/dt = kC*Cdrive*(1 + lam*(A(L)-1)) - gC*C         # osteoclast, amplified by mechanical overload

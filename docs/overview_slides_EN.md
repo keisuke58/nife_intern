@@ -101,12 +101,12 @@ constraining only the **sign** of $A$ (magnitude discarded by design).
 | Name | Accession | Shape | Role |
 |---|---|---|---|
 | Dieckow 2024 | PRJEB71108 | 10 patients $\times$ 3 weeks | primary longitudinal fit / LOO |
-| Botelho 2021 | PRJNA725874 | 15 patients $\times$ 7 timepoints | longer time-series validation |
+| Duran-Pinedo 2021 | PRJNA725874 | 15 patients $\times$ 7 timepoints | longer time-series validation |
 | Szafrański 2025 | mSystems 16S | 127 cross-sectional, 5 genera | attractor / community-type |
 | Heine 2025 | in vitro ODE | — | the four ODE attractors |
 
 \vspace{0.3em}
-Dieckow gives the primary fit, Botelho an independent cohort, Szafrański the
+Dieckow gives the primary fit, Duran-Pinedo an independent cohort, Szafrański the
 cross-sectional community types, Heine the in-vitro dynamical reference.
 
 ---
@@ -149,7 +149,7 @@ Two models compared: **gLV** (asymmetric $A$, RMSE 0.012–0.032) and **Hamilton
 
 - Best model **LOO-RMSE $= 0.0504$**.
 - Cross-feeding direction independently validated: **$p=4\times10^{-4}$**.
-- Two cohorts (Dieckow $\times$ Botelho) agree, prior-free, on strong-pair signs
+- Two cohorts (Dieckow $\times$ Duran-Pinedo) agree, prior-free, on strong-pair signs
   at **89%** ($p\approx0.02$).
 
 \textcolor{red}{The prior buys interpretability, not raw accuracy — stated honestly.}
@@ -237,6 +237,6 @@ integration.
    ($P_{ij}=\sgn(F_{ij})$; magnitude is not used).
 2. Dysbiosis is a **rewiring + spatial reorganisation**, with
    *P. gingivalis* sinking into the deep anaerobic niche.
-3. That claim reproduces across **two cohorts** (Dieckow $\times$ Botelho, 89%,
+3. That claim reproduces across **two cohorts** (Dieckow $\times$ Duran-Pinedo, 89%,
    $p\approx0.02$) and an **independent mechanistic route** (COMETS dFBA).
 4. One **10-guild taxonomy** and the **`fit_*.json`** format tie it all together.

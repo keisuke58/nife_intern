@@ -77,9 +77,39 @@ $A$ の符号は識別不能 $\Rightarrow$ 片側ヒンジで**符号違反の�
 $$\mathcal{L}(A,b)=\frac{1}{2\sigma^{2}}\sum_{t}\big\lVert\varphi^{\text{obs}}_{t}-\varphi^{\text{pred}}_{t}\big\rVert^{2}
 \;+\; W\!\!\sum_{(i,j)\in\mathcal{M}}\!\!\relu{-\,P_{ij}\,A_{ij}} .$$
 
-- $P_{ij}=\sgn(F_{ij})$ は AGORA cross-feeding フラックス由来（別デッキで導出）。
+- $P_{ij}=\sgn(F_{ij})$ は AGORA cross-feeding フラックス由来（別デッキで導出。AGORA 出力からの具体例は次スライド）。
 - $\relu{-P_{ij}A_{ij}}$ は $\sgn(A_{ij})=P_{ij}$ のとき $0$ — **大きさは不問**。
-- posterior は **TMCMC**（$10^{4}$ 粒子）でサンプリング。
+- posterior は **TMCMC**（transitional MCMC）でサンプリング：$10^{4}$ 個の**粒子**（パラメータの引き）を、prior $\to$ posterior へと温度づけされた段階を通して進め、各段階で重み付け・再サンプリングする。最終的な粒子群が $(A,b)$ の posterior **そのもの**であり、$10^{4}$ がその分解能を決める。
+
+---
+
+## AGORA 出力から符号 prior $P_{ij}$ へ
+
+**AGORA が出力するもの。** 各ギルドについて、AGORA2 の pFBA 解が
+**分泌／取り込みフラックスのプロファイル**（mmol\,gDW$^{-1}$h$^{-1}$）を与える。例（実際の pFBA 出力）：
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+ギルド & pFBA 分泌（mmol\,gDW$^{-1}$h$^{-1}$） \\
+\midrule
+Actinobacteria & acetate 49.8, formate 53.7, succinate 39.2 を分泌 \\
+Bacilli & acetate 921, lactate 982, propionate 1000, succinate 18 を分泌 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+**正味の有向フロー。** ドナー $i$ が分泌した代謝物をアクセプター $j$ が消費する
+$\Rightarrow$ 有向 cross-feeding フラックス $F_{ij}>0$；共有資源をめぐる競争
+$\Rightarrow F_{ij}<0$。
+
+**導出。** $P_{ij}=\sgn(F_{ij})$ — penalty に入るのは*符号*のみ
+（FBA フラックスの単位 $\neq$ 生態的単位なので、大きさは設計上捨てる）。
+
+**具体例。** Actinobacteria は acetate/formate/succinate を分泌し、Bacilli が
+これらを消費する $\Rightarrow F>0 \Rightarrow P=+1$（促進）。これは推定された
+$\hat A=+1.62$ と一致。主要な文献ペアは 2/3 で確認；阻害的リンク
+（H$_2$O$_2$、競争）は群集レベルのモデリングを要する。
 
 ---
 
@@ -122,11 +152,11 @@ $$\mathrm{BC}=\frac{\sum_i\lvert\varphi^{\text{obs}}_i-\varphi^{\text{pred}}_i\r
 
 ## LOO モデル比較
 
-![](dieckow_paper/figures/fig2_loo_comparison.png){ height=44% }
+![](dieckow_paper/figures/fig2_loo_comparison.png){ height=40% }
 
-![](dieckow_paper/figures/fig8_all_models_rmse_bc.png){ height=30% }
+![](dieckow_paper/figures/fig8_all_models_rmse_bc.png){ height=27% }
 
-prior 層・モデル形・$W$ を変えて LOO-RMSE / LOO-BC を比較。
+\small **左：** AGORA 層を加える（L1+L2+AGORA）と L1 のみより LOO 誤差が下がる。**右：** 全モデル変種を LOO-RMSE / LOO-BC で順位づけ — *低いほど良い*。要点：代謝 prior は効くが、量の prior は効かない。
 
 ---
 
@@ -155,36 +185,49 @@ $\Rightarrow$ prior の価値は予測精度ではなく**符号整合性・解�
 
 ![](dieckow_paper/figures/fig7_loo_stability.png){ height=60% }
 
-10 個の hold-out で再推定した行列間で、全ペアの**符号一致率 $\geq 0.70$**。
-推定された符号構造は患者の入れ替えに対して頑健。
+**読み方。** 各セル = 1 つのギルドペア；その値 = 10 回の leave-one-patient-out
+再推定のうち*同じ相互作用符号*を保った割合（1.0 = 10 回すべてで同符号）。
+全ペアが $\geq 0.70$ $\Rightarrow$ 推定された符号構造はどの 1 患者にも依存しない。
 
 ---
 
-## 批判的検証（誠実に）
+## 批判的検証 — 符号構造は本物か？
 
-prior を **OFF**（$\alpha=0$）にすると prior は**全正**になり、naive な
-sign-agreement は過大評価される。**ラベル permutation 検定**（$n=10^{4}$）で対照：
+\small
+
+**問い。** ランダムなギルドラベルでも、フィット済みモデルと同じくらい高い
+符号一致を出せるのか？（prior を *on* にすると全正になり、素朴な一致数は水増しされる。）
+
+**検定。** **ラベル permutation null**：ギルドラベルを $10^{4}$ 回シャッフルし、
+そのたびに一致を再計算し、実際のスコアをその null と比較する。
+
+**結果。**
 
 | モデル | cross-feeding 方向 | 競争方向 |
 |---|---|---|
-| **Hamilton $\alpha=0$** | $\mathbf{78.6\%}$ (11/14) vs random $37.7\%$, $p=4\times10^{-4}$, $z=+3.79$ | $\approx$ chance |
+| **Hamilton $\alpha=0$** | $\mathbf{78.6\%}$ (11/14) vs null $37.7\%$, $p=4\times10^{-4}$, $z=+3.79$ | $\approx$ chance |
 | gLV | $41\%$（null） | null |
 
-![](results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png){ height=30% }
+![](results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png){ height=18% }
 
-**検証されるのは cross-feeding 方向のみ。競争方向は支持されない。**
+**読み。** **cross-feeding 方向**だけが null を上回る。**競争方向は検証されない。**
 
 ---
 
-## 2 コホート再現
+## 2 コホート再現（設計をまたぐ確認）
 
-Botelho 2021（**PRJNA725874**、15 患者 $\times$ 7 時点）を **prior 抜き**で
-独立にフィットし、Dieckow と強ペアの符号を比較：
+Duran-Pinedo et al. 2021（**BMC Biol 19:240**；ENA **PRJNA725874**、15 患者
+$\times$ 7 時点）を **prior 抜き**で独立にフィットし、そのうえで強ペアの符号を
+Dieckow と比較する。
 
-![](results/botelho_validation/fig_botelho_A_comparison_noprior.png){ height=46% }
+![](results/duranpinedo_validation/fig_duranpinedo_A_comparison_noprior.png){ height=40% }
 
 強ペアの有向符号が **$89\%$**（$8/9$ 上三角）で一致（$p\approx0.02$）。
-特に **Actinobacteria 軸**が両コホートで整合。
+\textcolor{red}{\textbf{留意 — 厳密な同型再現ではない。}} 両コホートは
+**時間スケールと臨床状態**が異なる：Dieckow = ペリインプラント生着初期（週単位；
+健常 $\to$ 生着）、Duran-Pinedo = 長期的な**歯周炎**進行（疾患）。この 89\% は
+設計をまたいだ粗い*強ペア符号*の一致であり、同型の再現ではない。
+Actinobacteria 軸の対応は**示唆的**であり、確証には設計を揃えたコホートを要する。
 
 ---
 
@@ -194,7 +237,7 @@ Botelho 2021（**PRJNA725874**、15 患者 $\times$ 7 時点）を **prior 抜�
   **モデリング選択**であり、データ確認済みの事実ではない。
 - データから独立に裏づくのは：
   1. **cross-feeding 方向**（Hamilton, $p=4\times10^{-4}$）、
-  2. **2 コホート強ペア**符号（Dieckow $\times$ Botelho, $89\%$）。
+  2. **2 コホート強ペア**符号（Dieckow $\times$ Duran-Pinedo, $89\%$；設計をまたぐ — 留意参照）。
 - 競争方向・prior の大きさ・全体行列は検証されていない。
 
 \vspace{0.3em}

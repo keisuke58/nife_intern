@@ -72,7 +72,7 @@ on whether that prior is doing real work:
   *modelling choice* that is independent of the abundance dynamics, not something
   the 16S data confirms on its own. I think this is the correct, reviewer-proof
   framing.
-- **Two independent cohorts agree prior-free.** Fitting Dieckow and Botelho 2021
+- **Two independent cohorts agree prior-free.** Fitting Dieckow and Duran-Pinedo 2021
   separately with no prior, the signs of the **strong** directed interactions
   match at **≈ 89 % (p ≈ 0.02)**, with a consistent Actinobacteria axis. This —
   not the prior — is the credible cross-validation of the ecological signal.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 compute_rmse_bc_noprior.py — RMSE and Bray-Curtis (repo convention) for the
-prior-free gLV fits, with the prior gLV Botelho fit as a reference.
+prior-free gLV fits, with the prior gLV Duran-Pinedo fit as a reference.
 
 A is loaded from the saved fits; per-patient b is re-fit holding A fixed (at the
 joint optimum b is already optimal given A, so this reproduces the in-sample fit
@@ -22,7 +22,7 @@ _here = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_here))
 from guild_replicator_dieckow import GUILD_ORDER, N_G
 
-OUT = _here / 'results' / 'botelho_validation'
+OUT = _here / 'results' / 'duranpinedo_validation'
 
 def bray_curtis(x, y):                       # repo convention (compute_bc_metrics.py:29)
     return 1.0 - 2.0 * np.minimum(x, y).sum() / (x.sum() + y.sum())
@@ -72,16 +72,16 @@ phi_dk  = np.load(_here / 'results' / 'dieckow_otu' / 'phi_guild.npy')   # (10,3
 phi_bot = np.load(_here / 'data' / 'prjna725874' / 'phi_guild.npy')      # (15,7,10)
 
 A_dk_np  = np.array(json.load(open(OUT / 'dieckow_A_noprior_comparison.json'))['A_dieckow_noprior'])
-A_bot_np = np.array(json.load(open(OUT / 'botelho_A_comparison_noprior.json'))['A_botelho'])
-A_bot_pr = np.array(json.load(open(OUT / 'botelho_A_comparison.json'))['A_botelho'])
+A_bot_np = np.array(json.load(open(OUT / 'duranpinedo_A_comparison_noprior.json'))['A_duranpinedo'])
+A_bot_pr = np.array(json.load(open(OUT / 'duranpinedo_A_comparison.json'))['A_duranpinedo'])
 
 print('Training (in-sample) RMSE & Bray-Curtis — rollout from t0, repo BC convention\n')
 print('Dieckow 2024 (10 pat × 3 wk):')
 r1 = metrics(phi_dk,  A_dk_np,  'gLV no-prior')
-print('\nBotelho 2021 (15 pat × 7 tp):')
+print('\nDuran-Pinedo 2021 (15 pat × 7 tp):')
 r2 = metrics(phi_bot, A_bot_np, 'gLV no-prior')
 r3 = metrics(phi_bot, A_bot_pr, 'gLV AGORA prior (w=1.0)')
 
-json.dump({'dieckow_noprior': r1, 'botelho_noprior': r2, 'botelho_prior_w1p0': r3},
+json.dump({'dieckow_noprior': r1, 'duranpinedo_noprior': r2, 'duranpinedo_prior_w1p0': r3},
           open(OUT / 'rmse_bc_noprior.json', 'w'), indent=2)
 print(f'\nSaved → {OUT}/rmse_bc_noprior.json')

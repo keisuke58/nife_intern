@@ -2,19 +2,19 @@
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parents[2]))
 
-"""fig_botelho_network.py — Cross-cohort eigenvector centrality comparison.
+"""fig_duranpinedo_network.py — Cross-cohort eigenvector centrality comparison.
 
-Compare guild-level eigenvector centrality of the Botelho A matrix (5 seeds,
+Compare guild-level eigenvector centrality of the Duran-Pinedo A matrix (5 seeds,
 prior-free gLV) vs the Dieckow A matrix (LOO consensus, no prior).
 
 Panels:
-  Left  — side-by-side bar chart per guild (Dieckow vs Botelho)
-  Right — scatter: Dieckow centrality vs Botelho centrality, with Spearman r
+  Left  — side-by-side bar chart per guild (Dieckow vs Duran-Pinedo)
+  Right — scatter: Dieckow centrality vs Duran-Pinedo centrality, with Spearman r
 
 Also prints the centrality rank correlation and top-3 concordant guilds.
 
 Run from repo root:
-    python scripts/figures/fig_botelho_network.py
+    python scripts/figures/fig_duranpinedo_network.py
 """
 
 import glob
@@ -31,9 +31,9 @@ from guild_replicator_dieckow import GUILD_ORDER, GUILD_COLORS, GUILD_SHORT
 
 _ROOT = Path(__file__).resolve().parents[2]
 RES_DK  = _ROOT / "results" / "dieckow_cr"
-RES_BOT = _ROOT / "results" / "botelho_validation"
-OUT_PDF = _ROOT / "results" / "fig_botelho_network.pdf"
-OUT_PNG = _ROOT / "results" / "fig_botelho_network.png"
+RES_BOT = _ROOT / "results" / "duranpinedo_validation"
+OUT_PDF = _ROOT / "results" / "fig_duranpinedo_network.pdf"
+OUT_PNG = _ROOT / "results" / "fig_duranpinedo_network.png"
 
 
 def eigenvector_centrality(A):
@@ -55,7 +55,7 @@ def load_dieckow_centrality():
     return np.array(net["A_centrality_symmetric"]["eigenvector"])
 
 
-def load_botelho_centrality():
+def load_duranpinedo_centrality():
     seed_files = sorted(glob.glob(str(RES_BOT / "A_dk_noprior_seed*.npy")))
     As = np.stack([np.load(f) for f in seed_files])   # (5, 10, 10)
     A_mean = As.mean(axis=0)
@@ -67,7 +67,7 @@ def main():
     _mpl.rcParams["text.usetex"] = False
 
     eig_dk  = load_dieckow_centrality()
-    eig_bot, As_bot = load_botelho_centrality()
+    eig_bot, As_bot = load_duranpinedo_centrality()
 
     # per-seed centralities for error bars
     eig_bot_seeds = np.array([eigenvector_centrality(A) for A in As_bot])
@@ -92,7 +92,7 @@ def main():
     bars_dk  = ax.bar(x - w/2, eig_dk[order],  w, color=[colors[i] for i in order],
                       alpha=0.85, label="Dieckow", edgecolor="k", linewidth=0.4)
     bars_bot = ax.bar(x + w/2, eig_bot[order], w, color=[colors[i] for i in order],
-                      alpha=0.40, hatch="//", label="Botelho",
+                      alpha=0.40, hatch="//", label="Duran-Pinedo",
                       edgecolor="k", linewidth=0.4,
                       yerr=eig_bot_sd[order], error_kw=dict(elinewidth=0.8, capsize=2))
 
@@ -118,14 +118,14 @@ def main():
     lim_max = max(eig_dk.max(), eig_bot.max()) * 1.1
     ax2.plot([0, lim_max], [0, lim_max], "k--", lw=0.7, alpha=0.4, label="y = x")
     ax2.set_xlabel("Dieckow centrality", fontsize=9)
-    ax2.set_ylabel("Botelho centrality", fontsize=9)
+    ax2.set_ylabel("Duran-Pinedo centrality", fontsize=9)
     ax2.set_title(f"Cross-cohort centrality\n$\\rho={rho:.2f}$, $p={pval:.3f}$",
                   fontsize=9, pad=4)
     ax2.tick_params(labelsize=7)
     ax2.set_xlim(-0.02, lim_max)
     ax2.set_ylim(-0.02, lim_max)
 
-    fig.suptitle("Botelho vs Dieckow: eigenvector centrality (prior-free gLV)",
+    fig.suptitle("Duran-Pinedo vs Dieckow: eigenvector centrality (prior-free gLV)",
                  fontsize=9, y=0.97)
 
     fig.savefig(OUT_PDF, dpi=150)
@@ -134,7 +134,7 @@ def main():
 
     # ── console summary ───────────────────────────────────────────────────────
     print(f"\nSpearman rho={rho:.3f}  p={pval:.4f}")
-    print(f"\n{'Guild':22s}  {'Dieckow':>8s}  {'Botelho':>8s}  {'rank-DK':>7s}  {'rank-BOT':>8s}")
+    print(f"\n{'Guild':22s}  {'Dieckow':>8s}  {'Duran-Pinedo':>8s}  {'rank-DK':>7s}  {'rank-BOT':>8s}")
     rk_dk  = (eig_dk.argsort()[::-1].argsort() + 1)
     rk_bot = (eig_bot.argsort()[::-1].argsort() + 1)
     for i, g in enumerate(GUILD_ORDER):

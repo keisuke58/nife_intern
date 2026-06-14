@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 robustness_strong_pairs.py — Robustness of the prior-free cross-dataset sign agreement
-between Dieckow(no-prior) and Botelho(no-prior) gLV A matrices.
+between Dieckow(no-prior) and Duran-Pinedo(no-prior) gLV A matrices.
 
 Tests whether the "strong pairs agree 89%" result is an artifact of the |A|>0.1 cutoff
 and whether it survives a proper null (guild-label permutation), not just a binomial-0.5.
@@ -28,9 +28,9 @@ _here = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_here))
 from guild_replicator_dieckow import GUILD_ORDER, N_G
 
-OUT = _here / 'results' / 'botelho_validation'
+OUT = _here / 'results' / 'duranpinedo_validation'
 A_dk  = np.array(json.load(open(OUT / 'dieckow_A_noprior_comparison.json'))['A_dieckow_noprior'])
-A_bot = np.array(json.load(open(OUT / 'botelho_A_comparison_noprior.json'))['A_botelho'])
+A_bot = np.array(json.load(open(OUT / 'duranpinedo_A_comparison_noprior.json'))['A_duranpinedo'])
 
 rng = np.random.default_rng(0)
 N_PERM = 20000
@@ -63,7 +63,7 @@ def weighted_concordance(a, b):
     return float((w * np.sign(a) * np.sign(b)).sum() / denom)
 
 # ── guild-label permutation null ─────────────────────────────────────────────
-# Apply a random permutation pi to the guild indices of the Botelho MATRIX
+# Apply a random permutation pi to the guild indices of the Duran-Pinedo MATRIX
 # (symmetric relabel of rows+cols), recompute the statistic. This breaks the
 # cross-dataset guild alignment while preserving each matrix's internal structure.
 def permuted_bot_vals(Bmat, mode):

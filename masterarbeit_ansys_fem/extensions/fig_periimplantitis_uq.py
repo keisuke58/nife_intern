@@ -1,6 +1,6 @@
 """Accuracy upgrade of the end-to-end peri-implantitis cascade: literature-anchored parameter PRIORS +
 Monte-Carlo UNCERTAINTY propagation + clinical absolute-scale calibration + sensitivity.
-Pipeline: real Botelho GDI(t) -> dysbiosis B -> inflammation I -> osteoclast C (RANKL/OPG switch)
+Pipeline: real Duran-Pinedo GDI(t) -> dysbiosis B -> inflammation I -> osteoclast C (RANKL/OPG switch)
 -> bone loss L, with mechanical-overload synergy A(loss) from study (1).
 
 Upgrades over the deterministic version:

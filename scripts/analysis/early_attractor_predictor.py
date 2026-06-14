@@ -35,7 +35,7 @@ from pub_style import apply as apply_pub_style
 _here = Path(__file__).resolve().parents[2]
 FIT_FILE = _here / 'results' / 'dieckow_cr' / 'fit_glv_hamilton_kegg_prior.json'
 PHI_NPY  = _here / 'results' / 'dieckow_otu' / 'phi_guild.npy'
-BOTELHO_NPY = _here / 'data' / 'prjna725874' / 'phi_guild.npy'
+DURANPINEDO_NPY = _here / 'data' / 'prjna725874' / 'phi_guild.npy'
 OUT_DIR  = _here / 'results' / 'attractor_predictor'
 
 T_CONV   = 150.0  # weeks to integrate for convergence

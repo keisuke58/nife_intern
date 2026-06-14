@@ -70,12 +70,12 @@ fem_implant_mesh3d / voxel3d / screw3d / crown3d / crown_section、`figures/fem_
 ## 3. 柱2 — 生物（疾患 ODE）
 
 **問い**: 細菌叢の悪化 → 時間とともにどれだけ骨が減るか、誰が高リスクか。
-**道具**: 常微分方程式（純Python、FEM再solveなし）。実16Sコホート（Botelho/Dieckow）の GDI で駆動。
+**道具**: 常微分方程式（純Python、FEM再solveなし）。実16Sコホート（Duran-Pinedo/Dieckow）の GDI で駆動。
 
 ### 3a. 重症度の駆動（実データ）
 | 図 | 中身 | 種別 |
 |----|------|------|
-| [fem_periimplantitis_botelho.pdf](figures/fem_periimplantitis_botelho.pdf) | 実歯周炎コホート（15患者×7時点）の GDI(t)→患者別軌道 | ○ |
+| [fem_periimplantitis_duranpinedo.pdf](figures/fem_periimplantitis_duranpinedo.pdf) | 実歯周炎コホート（15患者×7時点）の GDI(t)→患者別軌道 | ○ |
 | [fem_periimplantitis_invivo.pdf](figures/fem_periimplantitis_invivo.pdf) | Dieckow 健常コホートの GDI（相対層別） | ◇ |
 | [fem_periimplantitis_timeseries.pdf](figures/fem_periimplantitis_timeseries.pdf) | in-vitro 5菌種版（φ_Pg driver、副） | ◇ |
 
@@ -106,7 +106,7 @@ fem_implant_mesh3d / voxel3d / screw3d / crown3d / crown_section、`figures/fem_
 ## 4. データの流れ（誰が誰を食べさせているか）
 
 ```
-実16S（Botelho/Dieckow）  ──GDI──→  疾患ODE（柱2）
+実16S（Duran-Pinedo/Dieckow）  ──GDI──→  疾患ODE（柱2）
                                         │  loss(t)
                                         ▼
                             A(L)=FEMの crest応力比（柱1のpimp掃引）

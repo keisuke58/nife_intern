@@ -1,6 +1,6 @@
 """The window of reversibility: how SOON and how AGGRESSIVELY must you intervene to still rescue a
 progressing peri-implant? We sweep (intervention time t_int) x (therapy efficacy = residual dysbiosis
-fraction) for the worst-case (most dysbiotic) Botelho patient and map the final marginal bone loss.
+fraction) for the worst-case (most dysbiotic) Duran-Pinedo patient and map the final marginal bone loss.
 A clinical "point of no return" contour (>=2 mm beyond the healthy remodelling envelope, here 6 mm
 absolute critical) separates RESCUED from LOST. Reach-limited home care (toothbrush, residual ~0.4)
 vs professional debridement (residual ~0.15) are marked, showing why deep pockets need the clinician.

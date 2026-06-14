@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 fit_dieckow_seed.py --seed N — Dieckow gLV no-prior fit from a given random init seed.
-Saves the fitted A to results/botelho_validation/A_dk_noprior_seed{N}.npy
+Saves the fitted A to results/duranpinedo_validation/A_dk_noprior_seed{N}.npy
 
-Used to test whether the Dieckow vs Botelho strong-pair sign agreement is an artifact
+Used to test whether the Dieckow vs Duran-Pinedo strong-pair sign agreement is an artifact
 of both fits sharing the same default_rng(0) warm-start, or a genuine data signal.
 """
 import sys as _sys, pathlib as _pathlib  # noqa: E402  [nife-pathshim]
@@ -22,7 +22,7 @@ sys.path.insert(0, str(_here))
 from guild_replicator_dieckow import GUILD_ORDER, N_G
 
 DATA = _here / 'results' / 'dieckow_otu'
-OUT  = _here / 'results' / 'botelho_validation'
+OUT  = _here / 'results' / 'duranpinedo_validation'
 phi_all = np.load(DATA / 'phi_guild.npy')
 N_P, N_T = phi_all.shape[:2]
 LAM = 1e-4

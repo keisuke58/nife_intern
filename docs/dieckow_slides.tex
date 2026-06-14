@@ -232,14 +232,51 @@ Dieckow et al.~2024（ENA \textbf{PRJEB71108}）：\textbf{10 患者
 \tightlist
 \item
   \(P_{ij}=\operatorname{sgn}(F_{ij})\) は AGORA cross-feeding
-  フラックス由来（別デッキで導出）。
+  フラックス由来（別デッキで導出。AGORA 出力からの具体例は次スライド）。
 \item
   \(\left[-P_{ij}A_{ij}\right]_{+}\) は
   \(\operatorname{sgn}(A_{ij})=P_{ij}\) のとき \(0\) ---
   \textbf{大きさは不問}。
 \item
-  posterior は \textbf{TMCMC}（\(10^{4}\) 粒子）でサンプリング。
+  posterior は \textbf{TMCMC}（transitional
+  MCMC）でサンプリング：\(10^{4}\)
+  個の\textbf{粒子}（パラメータの引き）を、prior \(\to\) posterior
+  へと温度づけされた段階を通して進め、各段階で重み付け・再サンプリングする。最終的な粒子群が
+  \((A,b)\) の posterior \textbf{そのもの}であり、\(10^{4}\)
+  がその分解能を決める。
 \end{itemize}
+\end{frame}
+
+\begin{frame}{AGORA 出力から符号 prior \(P_{ij}\) へ}
+\protect\hypertarget{agora-ux51faux529bux304bux3089ux7b26ux53f7-prior-p_ij-ux3078}{}
+\textbf{AGORA が出力するもの。} 各ギルドについて、AGORA2 の pFBA 解が
+\textbf{分泌／取り込みフラックスのプロファイル}（mmol,gDW\(^{-1}\)h\(^{-1}\)）を与える。例（実際の
+pFBA 出力）：
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+ギルド & pFBA 分泌（mmol\,gDW$^{-1}$h$^{-1}$） \\
+\midrule
+Actinobacteria & acetate 49.8, formate 53.7, succinate 39.2 を分泌 \\
+Bacilli & acetate 921, lactate 982, propionate 1000, succinate 18 を分泌 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{正味の有向フロー。} ドナー \(i\) が分泌した代謝物をアクセプター
+\(j\) が消費する \(\Rightarrow\) 有向 cross-feeding フラックス
+\(F_{ij}>0\)；共有資源をめぐる競争 \(\Rightarrow F_{ij}<0\)。
+
+\textbf{導出。} \(P_{ij}=\operatorname{sgn}(F_{ij})\) --- penalty
+に入るのは\emph{符号}のみ （FBA フラックスの単位 \(\neq\)
+生態的単位なので、大きさは設計上捨てる）。
+
+\textbf{具体例。} Actinobacteria は acetate/formate/succinate
+を分泌し、Bacilli が これらを消費する
+\(\Rightarrow F>0 \Rightarrow P=+1\)（促進）。これは推定された
+\(\hat A=+1.62\) と一致。主要な文献ペアは 2/3 で確認；阻害的リンク
+（H\(_2\)O\(_2\)、競争）は群集レベルのモデリングを要する。
 \end{frame}
 
 \begin{frame}{フィットした相互作用行列 \(A\)}
@@ -279,11 +316,13 @@ Actinobacteria \(\leftrightarrow\) Bacilli の\textbf{促進}が現れる。
 
 \begin{frame}{LOO モデル比較}
 \protect\hypertarget{loo-ux30e2ux30c7ux30ebux6bd4ux8f03}{}
-\includegraphics[width=\textwidth,height=0.44\textheight]{dieckow_paper/figures/fig2_loo_comparison.png}
+\includegraphics[width=\textwidth,height=0.4\textheight]{dieckow_paper/figures/fig2_loo_comparison.png}
 
-\includegraphics[width=\textwidth,height=0.3\textheight]{dieckow_paper/figures/fig8_all_models_rmse_bc.png}
+\includegraphics[width=\textwidth,height=0.27\textheight]{dieckow_paper/figures/fig8_all_models_rmse_bc.png}
 
-prior 層・モデル形・\(W\) を変えて LOO-RMSE / LOO-BC を比較。
+\small **左：\textbf{ AGORA 層を加える（L1+L2+AGORA）と L1 のみより LOO
+誤差が下がる。}右：** 全モデル変種を LOO-RMSE / LOO-BC で順位づけ ---
+\emph{低いほど良い}。要点：代謝 prior は効くが、量の prior は効かない。
 \end{frame}
 
 \begin{frame}{主要な性能指標}
@@ -324,16 +363,27 @@ LOO-BC & \(0.1468\) \\
 \protect\hypertarget{loo-ux3067ux306e-a-ux884cux5217ux306eux5b89ux5b9aux6027}{}
 \includegraphics[width=\textwidth,height=0.6\textheight]{dieckow_paper/figures/fig7_loo_stability.png}
 
-10 個の hold-out で再推定した行列間で、全ペアの\textbf{符号一致率
-\(\geq 0.70\)}。 推定された符号構造は患者の入れ替えに対して頑健。
+\textbf{読み方。} 各セル = 1 つのギルドペア；その値 = 10 回の
+leave-one-patient-out
+再推定のうち\emph{同じ相互作用符号}を保った割合（1.0 = 10
+回すべてで同符号）。 全ペアが \(\geq 0.70\) \(\Rightarrow\)
+推定された符号構造はどの 1 患者にも依存しない。
 \end{frame}
 
-\begin{frame}{批判的検証（誠実に）}
-\protect\hypertarget{ux6279ux5224ux7684ux691cux8a3cux8aa0ux5b9fux306b}{}
-prior を \textbf{OFF}（\(\alpha=0\)）にすると prior
-は\textbf{全正}になり、naive な sign-agreement
-は過大評価される。\textbf{ラベル permutation
-検定}（\(n=10^{4}\)）で対照：
+\begin{frame}{批判的検証 --- 符号構造は本物か？}
+\protect\hypertarget{ux6279ux5224ux7684ux691cux8a3c-ux7b26ux53f7ux69cbux9020ux306fux672cux7269ux304b}{}
+\small
+
+\textbf{問い。}
+ランダムなギルドラベルでも、フィット済みモデルと同じくらい高い
+符号一致を出せるのか？（prior を \emph{on}
+にすると全正になり、素朴な一致数は水増しされる。）
+
+\textbf{検定。} \textbf{ラベル permutation null}：ギルドラベルを
+\(10^{4}\) 回シャッフルし、 そのたびに一致を再計算し、実際のスコアをその
+null と比較する。
+
+\textbf{結果。}
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.33}}
@@ -349,27 +399,35 @@ cross-feeding 方向
 \end{minipage} \\
 \midrule
 \endhead
-\textbf{Hamilton \(\alpha=0\)} & \(\mathbf{78.6\%}\) (11/14) vs random
+\textbf{Hamilton \(\alpha=0\)} & \(\mathbf{78.6\%}\) (11/14) vs null
 \(37.7\%\), \(p=4\times10^{-4}\), \(z=+3.79\) & \(\approx\) chance \\
 gLV & \(41\%\)（null） & null \\
 \bottomrule
 \end{longtable}
 
-\includegraphics[width=\textwidth,height=0.3\textheight]{results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png}
+\includegraphics[width=\textwidth,height=0.18\textheight]{results/dieckow_cr/loo_alpha_comparison_hamilton_noagora_glv_noagora.png}
 
-\textbf{検証されるのは cross-feeding 方向のみ。競争方向は支持されない。}
+\textbf{読み。} \textbf{cross-feeding 方向}だけが null
+を上回る。\textbf{競争方向は検証されない。}
 \end{frame}
 
-\begin{frame}{2 コホート再現}
-\protect\hypertarget{ux30b3ux30dbux30fcux30c8ux518dux73fe}{}
-Botelho 2021（\textbf{PRJNA725874}、15 患者 \(\times\) 7 時点）を
-\textbf{prior 抜き}で 独立にフィットし、Dieckow と強ペアの符号を比較：
+\begin{frame}{2 コホート再現（設計をまたぐ確認）}
+\protect\hypertarget{ux30b3ux30dbux30fcux30c8ux518dux73feux8a2dux8a08ux3092ux307eux305fux3050ux78baux8a8d}{}
+Duran-Pinedo et al.~2021（\textbf{BMC Biol 19:240}；ENA
+\textbf{PRJNA725874}、15 患者 \(\times\) 7 時点）を \textbf{prior
+抜き}で独立にフィットし、そのうえで強ペアの符号を Dieckow と比較する。
 
-\includegraphics[width=\textwidth,height=0.46\textheight]{results/botelho_validation/fig_botelho_A_comparison_noprior.png}
+\includegraphics[width=\textwidth,height=0.4\textheight]{results/duranpinedo_validation/fig_duranpinedo_A_comparison_noprior.png}
 
 強ペアの有向符号が \textbf{\(89\%\)}（\(8/9\)
-上三角）で一致（\(p\approx0.02\)）。 特に \textbf{Actinobacteria
-軸}が両コホートで整合。
+上三角）で一致（\(p\approx0.02\)）。
+\textcolor{red}{\textbf{留意 — 厳密な同型再現ではない。}} 両コホートは
+\textbf{時間スケールと臨床状態}が異なる：Dieckow =
+ペリインプラント生着初期（週単位； 健常 \(\to\) 生着）、Duran-Pinedo =
+長期的な\textbf{歯周炎}進行（疾患）。この 89\% は
+設計をまたいだ粗い\emph{強ペア符号}の一致であり、同型の再現ではない。
+Actinobacteria
+軸の対応は\textbf{示唆的}であり、確証には設計を揃えたコホートを要する。
 \end{frame}
 
 \begin{frame}{誠実な解釈}
@@ -387,8 +445,8 @@ Botelho 2021（\textbf{PRJNA725874}、15 患者 \(\times\) 7 時点）を
   \item
     \textbf{cross-feeding 方向}（Hamilton, \(p=4\times10^{-4}\)）、
   \item
-    \textbf{2 コホート強ペア}符号（Dieckow \(\times\) Botelho,
-    \(89\%\)）。
+    \textbf{2 コホート強ペア}符号（Dieckow \(\times\) Duran-Pinedo,
+    \(89\%\)；設計をまたぐ --- 留意参照）。
   \end{enumerate}
 \item
   競争方向・prior の大きさ・全体行列は検証されていない。

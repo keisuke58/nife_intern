@@ -132,7 +132,7 @@ meta = {
     'patients': PATIENTS,
     'timepoints': TIMEPOINTS,
     'guilds': GUILD_ORDER,
-    'source': 'PRJNA725874 — Botelho et al. 2021 BMC Biology',
+    'source': 'PRJNA725874 — Duran-Pinedo et al. 2021 BMC Biology',
     'disease': 'periodontitis (subgingival plaque)',
     'interval_months': 2,
     'notes': 'Aggregated across all teeth and site types (Stable/Progressing/Fluctuant).',

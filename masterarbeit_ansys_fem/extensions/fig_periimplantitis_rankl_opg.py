@@ -42,7 +42,7 @@ from thesis_style import use  # noqa: E402
 DATA = ROOT / "data" / "prjna725874"
 FEM = Path("/home/nishioka/IKM_Hiwi/FEM/tier2b_real")
 OUT = ROOT / "masterarbeit_ansys_fem" / "figures"
-DYS, COM = [2, 4, 6], [0, 1, 8]                # Botelho GUILD_ORDER dysbiotic / commensal indices
+DYS, COM = [2, 4, 6], [0, 1, 8]                # Duran-Pinedo GUILD_ORDER dysbiotic / commensal indices
 
 # --- rate constants (time unit = weeks); literature-ORDERED, illustrative magnitudes -----------------
 # Osteoclast lifespan ~2 wk, osteoblast active life longer; RANKL/OPG is the master regulator.
@@ -169,7 +169,7 @@ def main():
     c.bar(range(len(B)), Lp[order], color=cols, edgecolor="0.3", lw=0.3)
     c.axhline(2.0, color="0.3", ls=":", lw=0.9); c.text(len(B) - 4.5, 2.1, "2 mm", fontsize=5.2, color="0.3")
     c.set_xticks(range(len(B))); c.set_xticklabels([pats[i] for i in order], fontsize=4.2, rotation=90)
-    c.set_ylabel("36-month bone loss (mm)", fontsize=7); c.set_xlabel("Botelho patient", fontsize=7)
+    c.set_ylabel("36-month bone loss (mm)", fontsize=7); c.set_xlabel("Duran-Pinedo patient", fontsize=7)
     sm = plt.cm.ScalarMappable(cmap="inferno_r",
                                norm=plt.Normalize(np.log10(Rp.min() + 1), np.log10(Rp.max() + 1)))
     cb = fig.colorbar(sm, ax=c, fraction=0.045, pad=0.02)

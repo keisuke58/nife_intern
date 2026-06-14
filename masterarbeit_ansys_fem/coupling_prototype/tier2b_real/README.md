@@ -136,8 +136,8 @@ A(loss)=crest(loss)/crest(2mm). Resorption ODE: d(loss)/dt = k·severity·A(loss
   trajectory + risk ranking** (extends the thesis per-patient J ranking). Honest caveat: Dieckow is a
   longitudinal *development* cohort (all GDI<0, sub-clinical) -> the result is RELATIVE per-patient
   stratification; the absolute disease range comes from the Joshi-validated DI–severity link (ρ=0.46).
-- `fig_periimplantitis_botelho.py` -> `fem_periimplantitis_botelho.pdf` **(strongest in-vivo)**: same
-  GDI driver on Botelho 2021 (PRJNA725874, `data/prjna725874/phi_guild.npy`, 15 pt × 7 tp / 12 wk) --
+- `fig_periimplantitis_duranpinedo.py` -> `fem_periimplantitis_duranpinedo.pdf` **(strongest in-vivo)**: same
+  GDI driver on Duran-Pinedo 2021 (PRJNA725874, `data/prjna725874/phi_guild.npy`, 15 pt × 7 tp / 12 wk) --
   a genuine **periodontitis** longitudinal cohort (dysbiotic bone-loss disease, peri-implantitis
   analogue), so more disease signal + a longer window than Dieckow. Per-patient GDI(t) → bone-loss
   trajectory + ranking (P8/P2/P13 highest-risk).
@@ -149,13 +149,13 @@ A(loss)=crest(loss)/crest(2mm). Resorption ODE: d(loss)/dt = k·severity·A(loss
 **Data-choice summary**: gLV-fit (in-vitro) = best dynamics + time + dysbiosis states but φ_Pg mis-ranks
 (strain virulence); in-vivo Dieckow = real patients + longitudinal + validated GDI but healthy cohort
 (limited disease range); Joshi = real disease range + validated DI but cross-sectional (no time).
-Best driver = GDI; ideal = Dieckow/Botelho dynamics × Joshi absolute severity.
+Best driver = GDI; ideal = Dieckow/Duran-Pinedo dynamics × Joshi absolute severity.
 
 ## Host INFLAMMATORY response layer (the biologically complete cascade)
 `fig_periimplantitis_inflammation.py` -> `fem_periimplantitis_inflammation.pdf`. Inserts the immune
 stage the direct GDI->loss model omitted: coupled ODEs
    dysbiosis B -> inflammation I (cytokines) -> osteoclast C (RANKL/OPG sigmoidal switch) -> bone loss L,
-with mechanical-overload synergy A(loss) from study (1), driven per-patient by the real Botelho GDI.
+with mechanical-overload synergy A(loss) from study (1), driven per-patient by the real Duran-Pinedo GDI.
 The cytokine **threshold** turns the disease into a **tipping-point / bistable** process (clinically
 episodic, not gradual): sub-threshold patients stay stable (~0.3 mm), supra-threshold patients run away
 (3–4 mm at 36 mo). Panel A shows the time-lagged cascade (inflammation in weeks, osteoclast lag, bone
@@ -174,7 +174,7 @@ cascade into a probabilistic one (on-brand with the thesis's Bayesian core):
   probability (panel B);
 - **global sensitivity** (panel C): osteoclast activation/turnover (kC, gC) and resorption gain (kL)
   dominate the outcome variance — the quantities to measure next; Hill n and mechanical-synergy lam are
-  nearly irrelevant. (For the moderate Botelho cohort P(progress) stays ≤0.12 — honest: none is likely
+  nearly irrelevant. (For the moderate Duran-Pinedo cohort P(progress) stays ≤0.12 — honest: none is likely
   to reach the mechanical point-of-no-return within 36 mo.)
 
 ## Anatomically faithful transmucosal model (where the biofilm sits)
@@ -193,7 +193,7 @@ bone-loss studies.
 `fig_periimplantitis_brushing.py` -> `fem_periimplantitis_brushing.pdf`. Adds mechanical biofilm removal
 to the tipping-point cascade. A toothbrush only reaches ~1-2 mm subgingivally, so its efficacy fades as
 the pocket deepens (reachable fraction = clip(1 - L/2mm)); professional debridement reaches the pocket.
-For the most-dysbiotic Botelho patient (36-mo bone loss): **no hygiene 2.98 mm; brushing from the start
+For the most-dysbiotic Duran-Pinedo patient (36-mo bone loss): **no hygiene 2.98 mm; brushing from the start
 0.58 mm (controlled); brushing started late (18 mo) 2.94 mm (fails - pocket too deep for the brush);
 brushing + professional debridement 0.30 mm (rescued)**. Clinical message: early biofilm control keeps
 the system in the stable basin (reversible peri-mucositis), but once the pocket deepens brushing alone
@@ -217,7 +217,7 @@ anchors summarised under "Literature anchors" below.
    then down -> hysteresis loop ("prevention << cure"), (C) a transient insult locks the patient into the
    diseased basin permanently. This is the deepest upgrade: explains WHY peri-implantitis resists hygiene.
 2. **Window of reversibility** `fig_periimplantitis_reversibility.py` -> `..._reversibility`. Heatmap of
-   final bone loss over (therapy start time) x (residual dysbiosis), worst-case Botelho patient, with the
+   final bone loss over (therapy start time) x (residual dysbiosis), worst-case Duran-Pinedo patient, with the
    **2 mm peri-implantitis diagnostic contour** separating rescued from lost. Home brushing (residual
    ~0.40, reach-limited) closes its window by ~13-19 mo; professional debridement (residual ~0.15) stays
    sub-threshold even if started ~22 mo. Clinically actionable "how soon / how aggressive".
@@ -262,7 +262,7 @@ anchors summarised under "Literature anchors" below.
 **PRJNA1215005** (Anuntakarun 2025, Int Dent J 75(5):100951, doi:10.1016/j.identj.2025.100951) -- 7 patients,
 42 samples, **longitudinal 16S + radiographic bone loss + PD/BOP at baseline/3 mo/6 mo**. Closest open
 dataset pairing microbiome with bone-loss over time; the practical longitudinal triad is
-Dieckow PRJEB71108 + Botelho PRJNA725874 + PRJNA1215005. No open dataset pairs longitudinal 16S with
+Dieckow PRJEB71108 + Duran-Pinedo PRJNA725874 + PRJNA1215005. No open dataset pairs longitudinal 16S with
 longitudinal RANKL/OPG/cytokine in the same subjects (gap flagged).
 
 ## Result (honest, root-analog `tier2b_real`)

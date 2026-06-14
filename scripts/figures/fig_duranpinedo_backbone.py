@@ -2,7 +2,7 @@
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parents[2]))
 
-"""fig_botelho_backbone.py — Cross-cohort concordant backbone network.
+"""fig_duranpinedo_backbone.py — Cross-cohort concordant backbone network.
 
 Strong pairs (|A_dk| > 0.1 AND |A_bot| > 0.1, upper triangle):
   green solid  = both cohorts same sign   (8/9)
@@ -10,7 +10,7 @@ Strong pairs (|A_dk| > 0.1 AND |A_bot| > 0.1, upper triangle):
   blue = facilitation (+), red = competition (-)
 
 Run from repo root:
-    python scripts/figures/fig_botelho_backbone.py
+    python scripts/figures/fig_duranpinedo_backbone.py
 """
 
 import json
@@ -25,9 +25,9 @@ import thesis_style
 from guild_replicator_dieckow import GUILD_ORDER, GUILD_COLORS, GUILD_SHORT
 
 _ROOT = Path(__file__).resolve().parents[2]
-RES   = _ROOT / "results" / "botelho_validation"
-OUT_PDF = _ROOT / "results" / "fig_botelho_backbone.pdf"
-OUT_PNG = _ROOT / "results" / "fig_botelho_backbone.png"
+RES   = _ROOT / "results" / "duranpinedo_validation"
+OUT_PDF = _ROOT / "results" / "fig_duranpinedo_backbone.pdf"
+OUT_PNG = _ROOT / "results" / "fig_duranpinedo_backbone.png"
 
 THETA = 0.1
 FAC   = "#2166ac"   # facilitation blue
@@ -41,7 +41,7 @@ def main():
     _mpl.rcParams["text.usetex"] = False
 
     A_dk  = np.array(json.load(open(RES / "dieckow_A_noprior_comparison.json"))["A_dieckow_noprior"])
-    A_bot = np.array(json.load(open(RES / "botelho_A_comparison_noprior.json"))["A_botelho"])
+    A_bot = np.array(json.load(open(RES / "duranpinedo_A_comparison_noprior.json"))["A_duranpinedo"])
 
     N = len(GUILD_ORDER)
     pairs = [(i, j) for i in range(N) for j in range(i + 1, N)]
@@ -124,7 +124,7 @@ def main():
         ax2.scatter(adk,  y, marker="o", s=30, color=FAC if adk > 0 else COMP,
                     zorder=3, label="Dieckow" if k == 0 else "")
         ax2.scatter(abot, y, marker="s", s=30, color=FAC if abot > 0 else COMP,
-                    zorder=3, label="Botelho" if k == 0 else "", alpha=0.7)
+                    zorder=3, label="Duran-Pinedo" if k == 0 else "", alpha=0.7)
 
     ax2.axvline(0, color="k", lw=0.6, ls="--", alpha=0.4)
     ax2.set_yticks(range(len(strong)))
@@ -136,12 +136,12 @@ def main():
         Line2D([0], [0], marker="o", color="w", markerfacecolor="gray",
                markersize=5, label="Dieckow"),
         Line2D([0], [0], marker="s", color="w", markerfacecolor="gray",
-               markersize=5, label="Botelho"),
+               markersize=5, label="Duran-Pinedo"),
     ]
     ax2.legend(handles=dot_legend, fontsize=6.5, loc="lower right")
 
     fig.suptitle(
-        f"Dieckow × Botelho concordant backbone  (8/9 strong pairs agree, $p\\approx0.02$)",
+        f"Dieckow × Duran-Pinedo concordant backbone  (8/9 strong pairs agree, $p\\approx0.02$)",
         fontsize=9, y=0.97)
 
     fig.savefig(OUT_PDF, dpi=150)

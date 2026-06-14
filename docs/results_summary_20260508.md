@@ -6,7 +6,7 @@
 
 ## データセット概要
 
-| | Dieckow et al. | Botelho et al. 2021 |
+| | Dieckow et al. | Duran-Pinedo et al. 2021 |
 |--|---|---|
 | アクセッション | 社内データ | PRJNA725874 (BMC Biology) |
 | 疾患 | 初期う蝕（回復後） | 慢性歯周炎 |

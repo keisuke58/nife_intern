@@ -49,7 +49,7 @@
     ],
     "n_pred": 20
   },
-  "botelho_noprior": {
+  "duranpinedo_noprior": {
     "label": "gLV no-prior",
     "rmse_mean": 0.05707147487660185,
     "bc_mean": 0.18419080019773154,
@@ -239,7 +239,7 @@
     ],
     "n_pred": 90
   },
-  "botelho_prior_w1p0": {
+  "duranpinedo_prior_w1p0": {
     "label": "gLV AGORA prior (w=1.0)",
     "rmse_mean": 0.05899048846512196,
     "bc_mean": 0.1893220024222266,

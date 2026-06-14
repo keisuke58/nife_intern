@@ -215,7 +215,7 @@ $$z=\frac{\mathrm{SA}-\mathbb{E}_\pi[\mathrm{SA}]}{\sqrt{\operatorname{Var}_\pi[
 
 - **検証されるのは協調(cross-feeding)方向のみ**。競争方向は支持されない。
 - AGORA prior は 16S 力学で**再現されない** $\Rightarrow$ モデリング選択（データ確認済みではない）。
-- **2 コホート**（Dieckow $\times$ Botelho）を prior 抜きで比べ、強ペア符号が
+- **2 コホート**（Dieckow $\times$ Duran-Pinedo）を prior 抜きで比べ、強ペア符号が
   $\mathbf{89\%}$ 一致（$p\approx0.02$）。
 
 ---

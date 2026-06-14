@@ -147,7 +147,7 @@ def main():
                                 boxstyle="round,pad=0.0,rounding_size=0.06",
                                 fc=NAVY, ec="none", zorder=2))
     ax.text(7.45, 0.24, "validated:  cross-feeding direction $p=4\\times10^{-4}$   ·   "
-                        "two cohorts (Dieckow × Botelho) 89% prior-free   ·   "
+                        "two cohorts (Dieckow × Duran-Pinedo) 89% prior-free   ·   "
                         "mechanistic COMETS dFBA reproduces the split",
             ha="center", va="center", color="white", fontsize=10.0, zorder=3)
 

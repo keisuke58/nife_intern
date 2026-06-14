@@ -227,7 +227,7 @@ $$z=\frac{\mathrm{SA}-\mathbb{E}_\pi[\mathrm{SA}]}{\sqrt{\operatorname{Var}_\pi[
 - **Only the cross-feeding direction is validated**; competition is not.
 - The AGORA prior is **not reproduced** by the 16S dynamics $\Rightarrow$ it is a
   modelling choice, not a data-confirmed fact.
-- **Two cohorts** (Dieckow $\times$ Botelho), prior-free, agree on strong-pair
+- **Two cohorts** (Dieckow $\times$ Duran-Pinedo), prior-free, agree on strong-pair
   signs at $\mathbf{89\%}$ ($p\approx0.02$).
 
 ---

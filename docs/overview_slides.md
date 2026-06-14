@@ -96,12 +96,12 @@ $$P_{ij}=\sgn(F_{ij})\in\{-1,0,+1\}$$
 | 名称 | Accession | 形 | 役割 |
 |---|---|---|---|
 | Dieckow 2024 | PRJEB71108 | 10 患者 $\times$ 3 週 | 主要な縦断 fit / LOO |
-| Botelho 2021 | PRJNA725874 | 15 患者 $\times$ 7 時点 | 長期時系列の検証 |
+| Duran-Pinedo 2021 | PRJNA725874 | 15 患者 $\times$ 7 時点 | 長期時系列の検証 |
 | Szafrański 2025 | mSystems 16S | 127 横断サンプル, 5 属 | アトラクター / 群集型 |
 | Heine 2025 | in vitro ODE | — | 4 つの ODE アトラクター |
 
 \vspace{0.3em}
-Dieckow が一次フィット、Botelho が独立コホート、Szafrański が横断的群集型、
+Dieckow が一次フィット、Duran-Pinedo が独立コホート、Szafrański が横断的群集型、
 Heine が in vitro の力学的基準を与える。
 
 ---
@@ -143,7 +143,7 @@ Heine 2025 の in-vitro 5 菌種（So/An/Vd-Vp/Fn/Pg）時系列に対し ODE �
 
 - ベストモデルの **LOO-RMSE $= 0.0504$**。
 - cross-feeding 方向は独立に検証：**$p=4\times10^{-4}$**。
-- 2 コホート（Dieckow $\times$ Botelho）が prior 抜きで強ペア符号
+- 2 コホート（Dieckow $\times$ Duran-Pinedo）が prior 抜きで強ペア符号
   **89% 一致**（$p\approx0.02$）。
 
 \textcolor{red}{prior の価値は予測精度でなく解釈可能性 — 誠実に位置づける。}
@@ -227,6 +227,6 @@ $z$ 方向の拡散項付き PDE に拡張する。
    （$P_{ij}=\sgn(F_{ij})$；大きさは使わない）。
 2. dysbiosis は**リワイヤリング + 空間的再編成**であり、
    *P. gingivalis* の深部への沈降を伴う。
-3. その主張は **2 コホート**（Dieckow $\times$ Botelho, 89%, $p\approx0.02$）と
+3. その主張は **2 コホート**（Dieckow $\times$ Duran-Pinedo, 89%, $p\approx0.02$）と
    **独立な機械論経路**（COMETS dFBA）で再現される。
 4. すべてを 1 つの **10 ギルド分類**と **`fit_*.json`** が束ねる。

@@ -12,7 +12,7 @@ pg vs ng) -- so calibration uses RATIOS and FOLD-CHANGES, per the literature's o
 Clinical anchors (extracted from the literature):
   - Periodontitis GCF (Bostanci 2007, J Clin Periodontol, PMID 17355365): RANKL/OPG ratio
     Health 0.017 -> Gingivitis 0.053 -> Chronic periodontitis 3.19 (RANKL up ~55x, OPG down ~3.4x);
-    ratio vs probing depth r=0.809, vs attachment loss r=0.841. Botelho is a periodontitis cohort, so
+    ratio vs probing depth r=0.809, vs attachment loss r=0.841. Duran-Pinedo is a periodontitis cohort, so
     this oppositely-regulated (RANKL up + OPG down) pattern is the appropriate reference.
   - Peri-implantitis PICF (Rakic 2015): RANKL 0.40 -> 1.51 (~3.8x), OPG ~flat -> ratio fold ~2-4x;
     two meta-analyses (Clin Oral Investig 2021 PMID 34264378; BMC Oral Health 2023 PMC10290807) find
@@ -82,7 +82,7 @@ def main():
     b_ = ax[0, 1]
     bs = np.linspace(0, 2.1, 80)
     rn = np.array([ratio(run(x)) for x in bs]) / rh
-    b_.plot(bs / 2.1, rn, color=cM, lw=2.0, label="model (Botelho-driven)", zorder=5)
+    b_.plot(bs / 2.1, rn, color=cM, lw=2.0, label="model (Duran-Pinedo-driven)", zorder=5)
     for d, mk, col in [(BOSTANCI, "o", cP), (RAKIC15, "s", cI), (RAKIC14, "^", "#16a085")]:
         b_.plot(d["stage"], d["ratio"] / d["ratio"][0], mk, color=col, ms=4.2, mec="0.3", mew=0.4,
                 ls=":", lw=0.7, label=d["label"])

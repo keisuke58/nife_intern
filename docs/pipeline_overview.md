@@ -160,7 +160,7 @@ penalty = w × max(0, -sign(net)[i,j] × A[i,j])² / (2σ²)
 | Hamilton+AGORA | 0.00 | 0.0562 | — |
 | gLV | 0.25 | **0.0490** | 0.163 |
 
-### 4.2 Botelho et al. 2021 (PRJNA725874, BMC Biology)
+### 4.2 Duran-Pinedo et al. 2021 (PRJNA725874, BMC Biology)
 | 項目 | 値 |
 |------|-----|
 | 患者数 N | 15 |
@@ -212,7 +212,7 @@ nife/
 
 ### 前処理に関して
 - vsearch の `--id 0.80` (80% identity) は genus レベル分類に適切。species levelには 97% が必要だが、guild (class) レベルには十分。
-- 元論文 (Botelho 2021) は Kraken2 + 専用口腔マイクロバイオームDBを使用。vsearch+SILVAによる再解析は近似値。
+- 元論文 (Duran-Pinedo 2021) は Kraken2 + 専用口腔マイクロバイオームDBを使用。vsearch+SILVAによる再解析は近似値。
 - プライマー情報不明のため、プライマートリミングをスキップ。末端配列が多少ノイズになる可能性あり。
 
 ### モデルに関して

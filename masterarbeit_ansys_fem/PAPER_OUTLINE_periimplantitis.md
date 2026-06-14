@@ -54,13 +54,13 @@ window, therapy-node comparison, implant-design effect).
 | § | Content | Figure / data asset | Key numbers |
 |---|---|---|---|
 | 1 Intro | peri-implantitis burden; gap = no quantitative chain microbiome→bone; aim | graphical abstract | — |
-| 2.1 Ecology | guild dysbiosis index GDI from longitudinal 16S | Dieckow PRJEB71108, Botelho PRJNA725874 | GDI = log(Bact+Clos+Fuso)−log(Bac+Act+Neg) |
+| 2.1 Ecology | guild dysbiosis index GDI from longitudinal 16S | Dieckow PRJEB71108, Duran-Pinedo PRJNA725874 | GDI = log(Bact+Clos+Fuso)−log(Bac+Act+Neg) |
 | 2.2 Anatomy | submucosal biofilm between Ti and gingiva; descent path | `fem_transmucosal.pdf` | sulcus→infrabony |
 | 2.3 Host cascade | dysbiosis→inflammation→RANKL/OPG→osteoclast→loss; mech. synergy | `fem_periimplantitis_inflammation.pdf` | Hill threshold; OC ~2 wk |
 | 2.4 Mechanics | FEM crestal-stress vs bone level; coupon design sweep | `fem_periimplantitis_progression.pdf`, coupon results | crest 14→35 MPa @ 2→8 mm loss |
 | 3.1 Calibration | one free k_L pinned to clinical progression; face validity | `fem_periimplantitis_calibration.pdf` | k_L=0.022 wk⁻¹; worst-case 3 mm@36mo |
 | 3.2 Bistability | close ecology↔host loop → two attractors + hysteresis | `fem_periimplantitis_bistability.pdf` | hysteresis window b₀∈[0.03,0.41] |
-| 3.3 Prediction + UQ | per-patient trajectories; Monte-Carlo CI; sensitivity | `fem_periimplantitis_botelho.pdf`, `..._uq.pdf` | kC/gC/kL dominate; P(progress)≤0.12 |
+| 3.3 Prediction + UQ | per-patient trajectories; Monte-Carlo CI; sensitivity | `fem_periimplantitis_duranpinedo.pdf`, `..._uq.pdf` | kC/gC/kL dominate; P(progress)≤0.12 |
 | 3.4 Reversibility | when/how aggressively to intervene | `fem_periimplantitis_reversibility.pdf` | brushing window ~13–19 mo; debride ~22 mo |
 | 3.5 Therapy nodes | biofilm vs anti-TNF vs anti-RANKL vs combo | `fem_periimplantitis_hostmod.pdf` | 36-mo loss 2.98→1.20 mm |
 | 3.6 Design buys time | diameter→time-to-critical | `fem_periimplantitis_design_time.pdf` | Ø3.5/4.1/4.8 = 61/65/68 mo |
@@ -74,7 +74,7 @@ window, therapy-node comparison, implant-design effect).
   reproduced by design.
 - Mechanical feedback is a **secondary** modifier (design buys ~7 mo over 5+ yr); biofilm control dominates
   — consistent with overload-needs-inflammation synergy.
-- Cohorts available are sub-clinical/periodontitis (Dieckow/Botelho), not longitudinal peri-implantitis
+- Cohorts available are sub-clinical/periodontitis (Dieckow/Duran-Pinedo), not longitudinal peri-implantitis
   with bone loss; absolute risk numbers are illustrative, relative stratification is the robust claim.
 - bistability parameters are dimensionless and tuned to the bistable regime; the *qualitative* existence
   of two attractors + hysteresis is the claim, not the exact window.
@@ -105,4 +105,4 @@ This is also the WCCM/IWSHM-presentable multiscale story and the cleanest seed f
 - Figures + scripts: `masterarbeit_ansys_fem/figures/`, `masterarbeit_ansys_fem/extensions/fig_periimplantitis_*.py`
 - FEM results: `/home/nishioka/IKM_Hiwi/FEM/tier2b_real/*.jsonl` (coupon/pimp/contact)
 - Running record + literature anchors: `masterarbeit_ansys_fem/coupling_prototype/tier2b_real/README.md`
-- Data: `data/prjna725874/` (Botelho), Dieckow guild abundances under `results/dieckow_cr/`
+- Data: `data/prjna725874/` (Duran-Pinedo), Dieckow guild abundances under `results/dieckow_cr/`
