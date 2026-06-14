@@ -26,8 +26,16 @@ The **single canonical material set** (defined in `coupling_prototype/tier2b_rea
 | **DENTIN** | 18 000 | 0.31 | natural neighbour tooth (tooth-24) | human coronal dentin (Lin 2010) |
 | **PDL** | 50 | 0.45 | 0.25 mm periodontal ligament, neighbour tooth | linear-elastic PDL idealisation (Cattaneo 2005 use 50–69 MPa; real PDL is nonlinear → **idealisation, noted**) |
 | **CROWN** (ceramic) | 95 000 | 0.30 | load-bearing restoration | lithium-disilicate-class glass-ceramic (e.max ≈ 95 GPa). Zirconia variant = 210 GPa (design sweep) |
-| **GINGIVA** (mucosa) | 3 | 0.45 | peri-implant soft-tissue cuff (transmucosal model only) | oral mucosa, ~MPa-scale, near-incompressible |
-| **BIOFILM** | 1.0 | 0.45 | supracrestal **sulcular** sleeve on the Ti/tooth neck (+ growth eigenstrain) | soft hydrogel-like; modulus is **uncertain (Pa–MPa, 6 orders)** → results given as *ratios*, not absolutes |
+| **GINGIVA** (mucosa) | 3 | 0.45 | conformal peri-implant/peri-tooth mucosa cuff (radial offset shell over the biofilm) | oral mucosa, ~MPa-scale, near-incompressible |
+| **ENAMEL** | 84 000 | 0.30 | conformal cap on the natural neighbour-tooth clinical crown (CEJ→occlusal) | human enamel |
+| **BIOFILM** | 1.0 | 0.45 | **conformal** sulcular shell, radial-offset of the Ti/tooth neck surface (+ growth eigenstrain) | soft hydrogel-like; modulus is **uncertain (Pa–MPa, 6 orders)** → results given as *ratios*, not absolutes |
+
+**Conformal soft layers (`offset_shell`, PDL-style):** the biofilm, gingiva and enamel are built as
+thin radial-offset prism shells of each neck/crown surface, so they HUG the irregular natural tooth
+exactly (no circular sleeve over/under-shoot). Stacking: biofilm r 0→0.15 mm (on the surface), gingiva
+r 0.18→1.1 mm (cuff over the biofilm), enamel r 0→0.45 mm (cap on the dentin crown). Each is tied
+(`*TIE`, ADJUST=NO) to its underlying hard tissue. **Complete restored-implant anatomy:** cortical &
+cancellous bone, Ti screw+abutment, ceramic crown, dentin, enamel, PDL, sulcular biofilm, mucosal gingiva.
 
 **Notes that matter for the defence**
 - **PDL and biofilm are deliberate linear-elastic idealisations.** Real PDL is hyperelastic/viscoelastic
