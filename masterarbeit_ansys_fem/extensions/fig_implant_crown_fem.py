@@ -28,15 +28,18 @@ FIELD = FEMDIR / "tier2b_crown_field.json"
 GEN_FIELD = FEMDIR / "tier2b_generic_field.json"   # no-crown baseline (for the moment-arm delta)
 OUT = ROOT / "masterarbeit_ansys_fem" / "figures"
 COL = {"BONE": "#d6c193", "TI": "#7c8893", "DENTIN": "#9ecae1", "PDL": "#ff8c00",
-       "BIOFILM": "#d62728", "CROWN": "#f6f1e7"}   # bright tooth-coloured ceramic
+       "BIOFILM": "#d62728", "CROWN": "#f6f1e7", "ENAMEL": "#eef1ec", "PAPILLA": "#f2a0ad"}
 LAB = {"TI": "implant (Ti)", "DENTIN": "tooth (dentin)", "PDL": "PDL", "BIOFILM": "biofilm",
-       "BONE": "bone", "CROWN": "crown (ceramic)"}
-STRUCT = ["DENTIN", "PDL", "TI", "BIOFILM", "CROWN"]
+       "BONE": "bone", "CROWN": "crown (ceramic)", "ENAMEL": "enamel"}
+STRUCT = ["DENTIN", "PDL", "TI", "BIOFILM", "CROWN"]   # load-bearing bodies with von Mises (Panel B)
+GEO_ONLY = ["GINGIVA", "PAPILLA", "ENAMEL"]            # anatomy drawn from FEM mesh, Panel A only (no stress)
 BONE_MATS = ("CORTICAL", "CANCELLOUS")
 ELEV, AZIM = 11, -50
 LIGHT = np.array([0.32, 0.5, 0.8]); LIGHT = LIGHT / np.linalg.norm(LIGHT)
 SH = {"TI": (0.32, 0.80, 0.55), "DENTIN": (0.5, 0.5, 0.0), "PDL": (0.5, 0.5, 0.0),
-      "BIOFILM": (0.5, 0.5, 0.0), "BONE": (0.5, 0.5, 0.0), "CROWN": (0.66, 0.32, 0.35)}  # bright + glossy
+      "BIOFILM": (0.5, 0.5, 0.0), "BONE": (0.5, 0.5, 0.0), "CROWN": (0.66, 0.32, 0.35),
+      "ENAMEL": (0.66, 0.30, 0.34), "GINGIVA": (0.62, 0.34, 0.10),
+      "PAPILLA": (0.62, 0.34, 0.10)}  # bright + glossy
 T23 = np.array([-69.4, -41.0]); CREST = 29.0
 # --- illustrative overlays (toggle on/off; default ON, disable per-flag) ---
 ARGS = set(sys.argv[1:])
@@ -208,6 +211,12 @@ def main():
             continue
         fb, par = boundary_faces(conn[idx])
         surf[M] = (nodes[fb], vmo[idx[par]])
+    surf_geo = {}                                  # FEM anatomy geometry, Panel A only (field has no stress here)
+    for M in GEO_ONLY:
+        idx = np.where(mat == M)[0]
+        if len(idx):
+            fb, _ = boundary_faces(conn[idx])
+            surf_geo[M] = nodes[fb]
     bidx = np.where(np.isin(mat, BONE_MATS))[0]
     by = nodes[conn[bidx]][:, :, 1].mean(axis=1)
     bz = nodes[conn[bidx]][:, :, 2].mean(axis=1)
@@ -255,20 +264,24 @@ def main():
         cm = real_tooth_crown(STL_TOOTH, h_target=cr_c[:, 2].max() - 31.0, base_z=31.0)
         axA.add_collection3d(Poly3DCollection(cm, facecolors=shade(cm, to_rgb(COL["CROWN"]), 0.62, 0.34, 0.30),
                                               edgecolors=(0, 0, 0, 0.12), linewidths=0.04, rasterized=True))
+    # FEM enamel: the actual meshed enamel shell sheathing the natural-tooth clinical crown
+    # (translucent glossy white over the upper dentin), drawn from the FEM ENAMEL elements.
+    if "ENAMEL" in surf_geo:
+        et = surf_geo["ENAMEL"]
+        pc = Poly3DCollection(et, facecolors=shade(et, to_rgb(COL["ENAMEL"]), *SH["ENAMEL"]),
+                              edgecolors=(0, 0, 0, 0.08), linewidths=0.03, rasterized=True)
+        pc.set_alpha(0.88); axA.add_collection3d(pc)
     sulcus(near=True)                             # near half -- in front of the implant -> encircles
-    # realistic gingiva: a translucent soft-tissue mantle over the alveolar crest, the implant and
-    # tooth emerging through it (the biofilm sits in the sulcus just under its margin, faintly visible).
+    # FEM-derived gingiva: the actual meshed soft-tissue cuff (GINGIVA) + interdental papilla (PAPILLA),
+    # encircling the implant/tooth necks at the gumline -- replaces the earlier illustrative mound.
     if GINGIVA:
-        def neck_c(M, zlev):
-            c = nodes[conn[mat == M]].reshape(-1, 3)
-            s = (c[:, 2] >= zlev - 0.6) & (c[:, 2] <= zlev + 0.6)
-            ct = c[s, :2].mean(0)
-            return ct, float(np.percentile(np.hypot(c[s, 0] - ct[0], c[s, 1] - ct[1]), 99))
-        ic, ir = neck_c("TI", 31.0); tc, tr = neck_c("DENTIN", 31.0)
-        gm = gingiva_mound(ic, ir, tc, tr, ymid)
-        pc = Poly3DCollection(gm, facecolors=shade(gm, to_rgb(COL["GINGIVA"]), 0.62, 0.34, 0.10),
-                              edgecolors=(0.6, 0.25, 0.35, 0.15), linewidths=0.03, rasterized=True)
-        pc.set_alpha(0.55); axA.add_collection3d(pc)
+        for M in ["GINGIVA", "PAPILLA"]:
+            if M not in surf_geo:
+                continue
+            gt = surf_geo[M]
+            pc = Poly3DCollection(gt, facecolors=shade(gt, to_rgb(COL[M]), *SH[M]),
+                                  edgecolors=(0.6, 0.25, 0.35, 0.12), linewidths=0.03, rasterized=True)
+            pc.set_alpha(0.62); axA.add_collection3d(pc)
     label3d(axA, *imp_xyz, "IMPLANT (screw + crown)", "#222222")
     label3d(axA, *too_xyz, "natural tooth", "#b35806")
     if "BIOFILM" in surf:
@@ -277,10 +290,10 @@ def main():
              fontsize=5.4, ha="center", color="#b30000", fontweight="bold")
     axA.set_title(r"(A) restored implant: load-bearing ceramic crown", fontsize=6.6, pad=1)
     style3d(axA, b)
-    LAB["GINGIVA"] = "gingiva (illustr.)"
+    LAB["GINGIVA"] = "gingiva (FEM)"
     if REALCROWN:
         LAB["CROWN"] = "crown (real tooth, illustr.)"
-    present = [k for k in ["CROWN", "GINGIVA", "TI", "DENTIN", "PDL", "BIOFILM", "BONE"]
+    present = [k for k in ["CROWN", "ENAMEL", "GINGIVA", "TI", "DENTIN", "PDL", "BIOFILM", "BONE"]
                if (k == "BONE" or (k == "GINGIVA" and GINGIVA) or (mat == k).any())]
     handles = [plt.Line2D([], [], marker="s", ls="", mfc=COL[k], mec="0.5", mew=0.3, label=LAB[k])
                for k in present]
