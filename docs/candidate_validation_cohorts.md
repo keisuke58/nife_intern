@@ -13,7 +13,7 @@ ENA/SRA (so `vsearch+SILVA → 10-guild class-level phi array` works), oral
 
 | # | Accession | Design (subjects × timepoints) | Site / condition | 16S | Status |
 |---|-----------|-------------------------------|------------------|-----|--------|
-| **1** | **PRJNA1215005** | 7 × 3 (baseline / 3mo / 6mo), healthy+diseased paired | subgingival, **peri-implantitis** | V3–V4 | ✅ stated in paper PMC12361765 (verbatim). ⚠ confirm SRA release (esearch returned 0 runs — may be embargoed/just released). Already named in `masterarbeit_ansys_fem/.../README`. **Best fully-actionable match.** |
+| **1** | **PRJNA1215005** (Anuntakarun et al. 2025, Int Dent J 75(5):100951) | 7 × 3 (baseline / 3mo / 6mo), healthy+diseased paired | subgingival, **peri-implantitis** | V3–V4 | **Best design match (peri-implant, longitudinal).** ⛔ **NOT public yet (2026-06-16): SRA *and* ENA both return 0 runs — embargoed/unreleased.** Paper's summary numbers already feed the FEM clinical calibration, but raw reads can't be pulled. Infra ready: `jobs/download_prjna1215005.sh` + `scripts/preprocessing/build_guild_phi_1215005.py` (manifest-driven). |
 | **2** | *Vílchez 2026* — **accession TBD** | 27 / 64 implants × 3 (**1wk / 4wk / 3yr**) | submucosal, **peri-implant** | 16S | ⚠ accession is in the **paywalled** Data Availability Statement (not on EPMC/PMC). Clin Oral Implants Res 2026;37:558–574, doi:10.1111/clr.70101. **Best design match** (1wk/4wk ≈ Dieckow early colonization). Get accession via institutional access. |
 | 3 | **PRJNA255922** | 12 × 2 (pre / post treatment; 3 subj a 3rd) | subgingival, periodontitis | — | ✅ verified NCBI ("Oral microbiome Metagenome", 95 runs). ⚠ only 2 tp; **same Frías-López group as Duran-Pinedo → not independent**. Low priority. |
 | 4 | **PRJNA786436** | paired responder / non-responder sites, pre/post | subgingival, periodontitis | — | ✅ verified NCBI. Only ~2 tp. |
@@ -23,20 +23,27 @@ ENA/SRA (so `vsearch+SILVA → 10-guild class-level phi array` works), oral
 
 ## TODO — tomorrow on the school/university wifi (2026-06-17)
 
-1. **Vílchez accession** — open the paper via **MHH / LUH institutional Wiley access**
-   (https://onlinelibrary.wiley.com/doi/10.1111/clr.70101), read the *Data
-   Availability Statement*, copy the BioProject/SRA accession here. (Or email the
-   corresponding author.) Do **not** guess it.
-2. **PRJNA1215005** — check it is actually downloadable:
-   - ENA: https://www.ebi.ac.uk/ena/browser/view/PRJNA1215005 (look for FASTQ run links)
-   - or SRA: `prefetch PRJNA1215005` / check on https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA1215005
-   - if embargoed, note the release date.
-3. If reads are available → mirror the Duran-Pinedo path: raw reads → `vsearch+SILVA`
-   → `data/<accession>/phi_guild.npy` (N×T×10, `GUILD_ORDER`), analogous to
-   `data/prjna725874/`. Template: `scripts/preprocessing/build_guild_phi_725874.py`.
-4. Then it drops straight into the existing prior-free gLV cross-cohort comparison
-   (`fit_duranpinedo_A.py` analogue) and the verification battery
-   (`scripts/analysis/verify_*.py`).
+**Reality check (2026-06-16):** the two matched-design peri-implant cohorts are both
+blocked right now — PRJNA1215005 is embargoed (SRA+ENA empty) and Vílchez's accession
+is paywalled. So tomorrow is mostly *unblocking*, not yet processing.
+
+1. **PRJNA1215005 release status** — re-check ENA https://www.ebi.ac.uk/ena/browser/view/PRJNA1215005
+   and SRA https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA1215005%5BBioProject%5D . If still
+   empty: the paper is published (Anuntakarun 2025), so email the corresponding author for
+   the release date / the reads. If released → `bash jobs/download_prjna1215005.sh`.
+2. **Vílchez accession** — open the paper via **MHH / LUH institutional Wiley access**
+   (https://onlinelibrary.wiley.com/doi/10.1111/clr.70101), read the *Data Availability
+   Statement*, copy the accession here, then check it is actually released on ENA/SRA. Do
+   **not** guess it.
+3. **Once reads exist** for either: build the manifest `data/<acc>/runs_parsed.tsv`
+   (run⇥patient⇥timepoint⇥site, from the SRA runinfo), run `vsearch+SILVA` → blast6, then
+   `python scripts/preprocessing/build_guild_phi_1215005.py --blast6 …` (already written;
+   manifest-driven) → `data/prjna1215005/phi_guild.npy` (N×3×10, `GUILD_ORDER`).
+4. Then it drops straight into the prior-free gLV cross-cohort comparison
+   (`fit_duranpinedo_A.py` analogue) and the verification battery (`scripts/analysis/verify_*.py`).
+5. **Fallback if both stay blocked:** the only verified *available* longitudinal oral
+   cohorts are periodontitis (PRJNA786436, ~2 tp) and ECC (PRJNA622300 / SRP040945, saliva).
+   None is peri-implant — so a matched-design cross-cohort stays pending on data release.
 
 ## Why this matters
 PRJNA1215005 / Vílchez would be the **first independent cohort that matches Dieckow's
