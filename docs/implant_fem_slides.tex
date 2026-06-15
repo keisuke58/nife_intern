@@ -280,13 +280,31 @@ CH（常在）対 DH（dysbiotic）バイオフィルム下の Ti
 \end{itemize}
 \end{frame}
 
+\begin{frame}{界面力学：応力を生むのはねじ山}
+\protect\hypertarget{ux754cux9762ux529bux5b66}{}
+\begin{center}
+\includegraphics[height=0.62\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_thread.pdf}
+\end{center}
+
+\small 連成 implant--thread 界面モデル（CPE4、実 V ねじ山プロファイル）。(A)
+von Mises 場は接着したねじ山フランクに集中。(B)
+内部ピークの界面応力はメッシュ収束済み（自由端コーナーの特異点は除外 ---
+細分化で発散するが、内部プラトーは発散しない）。(C)
+ねじ山の幾何そのものが応力を生む --- 平坦界面はベースライン付近に留まる。(D)
+dysbiotic（DH）対 commensal（CH）バイオフィルムがそれをスケールする。内部ピーク
+\(\sigma_\mathrm{vM} \approx 0.6\)--\(0.7\) GPa（収束済み）。 \normalsize
+\end{frame}
+
 \begin{frame}{3D ヒーロー：ペリインプラント全アセンブリ}
 \protect\hypertarget{d-ux30d2ux30fcux30edux30fcux30daux30eaux30a4ux30f3ux30d7ux30e9ux30f3ux30c8ux5168ux30a2ux30bbux30f3ux30d6ux30ea}{}
-\includegraphics[width=\textwidth,height=0.5\textheight]{masterarbeit_ansys_fem/figures/fem_implant_screw3d.pdf}
+\begin{center}
+\includegraphics[height=0.5\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_paraview_oblique_annot.png}\hfill
+\includegraphics[height=0.5\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_crown_section.pdf}
+\end{center}
 
-インプラント＋隣接歯＋共有歯槽骨。咬合荷重は\textbf{歯頸部のペリインプラント骨}に
-集中（marginal-bone-loss
-シグネチャ）。組成メカニズムは\textbf{現実の解剖学へ そのまま転移}する。
+\footnotesize 左：ペリインプラント全アセンブリ（インプラント＋クラウン＋歯槽骨）の物理ベース（PBR）ParaView
+レンダ、斜視・注釈付き。右：更新したクラウン--インプラント断面（アバットメントを通る荷重経路）。咬合荷重は\textbf{歯頸部のペリインプラント骨}に集中（marginal-bone-loss
+シグネチャ）。組成メカニズムは\textbf{現実の解剖学へ そのまま転移}する。 \normalsize
 \end{frame}
 
 \begin{frame}{クラウン荷重伝達：モーメントアーム効果}
@@ -329,6 +347,20 @@ Dieckow 10 患者を検証済みの剥離カーネル \(J\) へ射影：
 
 \(\Rightarrow\) \textbf{0-D の臨床 Pg
 読み値}が順序的な剥離リスクの代理として十分。
+\end{frame}
+
+\begin{frame}{疾患モデルの較正：RANKL/OPG 対 臨床 GCF}
+\protect\hypertarget{ux75beux60a3ux30e2ux30c7ux30ebux306eux8f03ux6b63}{}
+\begin{center}
+\includegraphics[height=0.6\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_periimplantitis_rankl_opg_calib.pdf}
+\end{center}
+
+\small 生物学\(\rightarrow\)骨喪失のリンクを臨床データに固定する。RANKL/OPG
+の炎症スイッチを再較正し、その dysbiotic
+倍率変化が歯周炎の歯肉溝滲出液（GCF）測定値（中央値 \(\approx 17×\)；Bostanci／コンセンサス帯）に一致するようにした。モデルの
+RANKL/OPG 比 \(\leftrightarrow\) 辺縁骨喪失の相関（\(r=0.99\)）は臨床値（\(r=0.81\)）を挟み込み、dysbiosis
+を反転（治療）すると比が回復する ---
+すなわち力学的ドライバは今や臨床的に較正されており、仮定ではない。 \normalsize
 \end{frame}
 
 \begin{frame}{検証・限界・展望}

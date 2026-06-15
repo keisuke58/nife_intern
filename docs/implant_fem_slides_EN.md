@@ -109,13 +109,35 @@ Cohesive-interface FEM with **identical** interface strength:
 
 ---
 
+## Interface mechanics: the thread generates the stress
+
+\begin{center}
+\includegraphics[height=0.62\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_thread.pdf}
+\end{center}
+
+\small Coupled implant–thread interface model (CPE4, real V-thread profile). (A) the
+von Mises field concentrates at the bonded thread flanks; (B) the interior-peak
+interface stress is mesh-converged (the free-edge corner singularity is
+excluded — it diverges with refinement, the interior plateau does not); (C) the
+thread geometry itself generates the stress — a flat interface stays near
+baseline; (D) dysbiotic (DH) vs commensal (CH) biofilm scales it. Interior peak
+$\sigma_\mathrm{vM} \approx 0.6$–$0.7$ GPa (converged). \normalsize
+
+---
+
 ## 3D hero: full peri-implant assembly
 
-![](masterarbeit_ansys_fem/figures/fem_implant_screw3d.pdf){ height=50% }
+\begin{center}
+\includegraphics[height=0.5\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_paraview_oblique_annot.png}\hfill
+\includegraphics[height=0.5\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_crown_section.pdf}
+\end{center}
 
-Implant + neighbouring tooth + shared alveolar bone. The occlusal load
-concentrates at the **crestal peri-implant bone** (marginal-bone-loss
-signature). The composition mechanism **transfers unchanged** into realistic anatomy.
+\footnotesize Left: physically-based (PBR) ParaView render of the full
+peri-implant assembly (implant + crown + alveolar bone), oblique view,
+annotated. Right: updated crown–implant cross-section (load path through the
+abutment). The occlusal load concentrates at the **crestal peri-implant bone**
+(marginal-bone-loss signature). The composition mechanism **transfers
+unchanged** into realistic anatomy. \normalsize
 
 ---
 
@@ -152,6 +174,22 @@ Projecting the 10 Dieckow patients through the verified detachment kernel $J$:
 
 \vspace{0.2em}
 $\Rightarrow$ a **0-D clinical Pg readout** is an adequate ordinal detachment-risk surrogate.
+
+---
+
+## Disease-model calibration: RANKL/OPG vs clinical GCF
+
+\begin{center}
+\includegraphics[height=0.6\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_periimplantitis_rankl_opg_calib.pdf}
+\end{center}
+
+\small The biology$\rightarrow$bone-loss link is anchored to clinical data. The
+RANKL/OPG inflammatory switch is recalibrated so its dysbiotic fold-change
+matches periodontitis crevicular-fluid (GCF) measurements (median $\approx 17×$;
+Bostanci / consensus band). The model's RANKL/OPG-ratio $\leftrightarrow$
+marginal-bone-loss correlation ($r=0.99$) brackets the clinical value
+($r=0.81$), and reversing the dysbiosis (treatment) restores the ratio — so the
+mechanical driver is now clinically calibrated, not assumed. \normalsize
 
 ---
 

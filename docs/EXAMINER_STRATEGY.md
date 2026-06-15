@@ -1,4 +1,8 @@
-# 審査対策 — Junker（主査）/ Soleimani（副査）に刺す修論・口頭試問
+# 審査対策 — Soleimani（主査）/ Geisler（副査）に刺す修論・口頭試問
+
+> **⚠️ 審査体制変更（2026-06-13・ほぼ確定）:** **主査＝Soleimani（Erstprüfer）**、**副査＝Geisler（Zweitprüfer）**、**Junker は PI のみ（多忙で審査外）**。
+> → **重心が逆転**: 主査が「数値計算・FEM・収束/保存則」の Soleimani になったので、**§2（数値）が最重要・第一レンズ**。修論が FEM/Abaqus 方向になったこととも完全整合。
+> Junker の変分・Hamilton レンズ（§1）は理論章の土台として依然有効だが、**審査では PI 視点（二次）**。Geisler（副査）対策は別途要追記。以下本文は旧体制（Junker主査）時の記述なので、重みづけを読み替えること。
 
 > **Canonical = `nife/docs/EXAMINER_STRATEGY.md`**、`30_Masterarbeit/notes/examiner_strategy.md` はミラー（`/thesis-sync` が同期）。
 > [[THESIS_WRITING_GUIDE]] の姉妹文書。出典＝examiner-strategy ワークフロー（Junker 高確度／Soleimani 中確度、実コードと IKM 群論文を照合）。最終更新 2026-06-04。
