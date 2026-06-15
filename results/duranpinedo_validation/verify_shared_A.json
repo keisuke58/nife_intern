@@ -1,0 +1,21 @@
+{
+  "settings": {
+    "maxiter": 150,
+    "rk4_substeps": 8,
+    "dp_seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "v3_dp_sign_identifiability_strong": 1.0,
+  "v4": {
+    "rmse_dieckow_separate": 0.0497027134295304,
+    "rmse_dieckow_shared": 0.05584595052263144,
+    "rmse_dp_separate": 0.06323943750690077,
+    "rmse_dp_shared": 0.06338877520433096,
+    "shared_penalty_pct_dieckow": 12.35996320766483,
+    "shared_penalty_pct_dp": 0.2361464670110331
+  },
+  "note": "Fixed-step RK4 integration (speed); internally consistent across all fits here. Compare shared-vs-separate RMSE for the common-backbone claim."
+}
