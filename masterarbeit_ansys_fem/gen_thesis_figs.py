@@ -21,15 +21,46 @@ CP = ROOT / "masterarbeit_ansys_fem" / "coupling_prototype"   # data CSVs / JSON
 OUT.mkdir(exist_ok=True)
 RED, BLUE = "#d62728", "#1f77b4"
 
-# ---- F2: growth calibration (thickness-derived growth strain vs phi_Pg, DH fit corr 0.88) ----
-DH = np.array([[0.081, 22.458], [0.184, 67.876], [0.197, 76.621], [0.205, 52.968], [0.206, 78.953]])
-h0 = DH[:, 1].min(); eps = (DH[:, 1] - h0) / h0
-fig, ax = plt.subplots(figsize=use(width_frac=0.62, aspect=0.78))
-ax.scatter(DH[:, 0], eps, color=RED, zorder=3, s=18)
-xs = np.linspace(DH[:, 0].min(), DH[:, 0].max(), 50)
-ax.plot(xs, 17.18 * xs - 1.34, color="0.4", lw=1.0)
-ax.set_xlabel(r"$\phi_{Pg}$"); ax.set_ylabel(r"depth growth strain $\varepsilon_{zz}=(h-h_0)/h_0$")
-ax.set_title(r"CLSM calibration (DH): $r=0.88$, $\beta_{\mathrm{depth}}\approx17$", fontsize=8)
+# ---- F2: growth calibration — DH vs CH, with 95% CI + provenance (replaces the bare 5-pt fit) ----
+# DH: paired (phi_Pg from FISH, biofilm thickness h_um from confocal z-stacks), one point per imaging day.
+_cal = json.load(open(CP / "beta_calibration.json"))
+days  = np.array([1, 6, 10, 15, 21])
+DH_phi = np.array([0.081, 0.184, 0.197, 0.205, 0.206])
+DH_h   = np.array([22.458, 67.876, 76.621, 52.968, 78.953])
+CH_h   = np.array([43.44, 63.96, 28.38, 52.72, 41.85])            # same z-stack pipeline, CH discs
+DH_eps = (DH_h - DH_h.min()) / DH_h.min()
+CH_eps = (CH_h - CH_h.min()) / CH_h.min()
+bD, aD, rD = _cal["DH"]["beta_depth"], _cal["DH"]["intercept"], _cal["DH"]["corr"]
+bC, aC, rC = _cal["CH"]["beta_depth"], _cal["CH"]["intercept"], _cal["CH"]["corr"]
+
+fig, (axA, axB) = plt.subplots(1, 2, figsize=use(width_frac=0.96, aspect=0.46))
+
+# (A) calibration with 95% CI band on the DH fit; CH fit line for the biological contrast
+xf = np.linspace(0.07, 0.21, 60); yf = bD * xf + aD
+n = len(DH_phi); s_err = np.sqrt(np.sum((DH_eps - (bD * DH_phi + aD))**2) / (n - 2))
+xm = DH_phi.mean(); sxx = np.sum((DH_phi - xm)**2)
+ci = 3.182 * s_err * np.sqrt(1.0/n + (xf - xm)**2 / sxx)   # t_{0.975, df=3}=3.182
+axA.fill_between(xf, yf - ci, yf + ci, color=RED, alpha=0.15, lw=0, label=r"95\% CI")
+axA.plot(xf, yf, color=RED, lw=1.2)
+axA.scatter(DH_phi, DH_eps, color=RED, s=22, zorder=3, label=r"DH (dysbiotic), $n{=}5$")
+phiC = _cal["CH"]["phi_Pg_range"]; xc = np.linspace(phiC[0], phiC[1], 30)
+axA.plot(xc, bC * xc + aC, color=BLUE, lw=1.2, ls="--", label=r"CH (commensal), $n{=}5$")
+axA.axvline(0.19, ls=":", color="0.5", lw=0.8)
+axA.text(0.195, 0.1, r"DH $\phi_{Pg}\!\approx\!0.19$", fontsize=6, rotation=90, va="bottom")
+axA.text(0.075, 2.45, r"$\beta_{\mathrm{DH}}{=}{+}17.2,\,r{=}0.88$" + "\n" + r"$\beta_{\mathrm{CH}}{=}{-}10.4,\,r{=}{-}0.76$",
+         fontsize=6, va="top",
+         bbox=dict(boxstyle="round,pad=0.25", fc="white", ec="0.7", lw=0.5))
+axA.set_xlabel(r"$\phi_{Pg}$ (FISH)"); axA.set_ylabel(r"depth growth strain $\varepsilon_{zz}{=}(h-h_0)/h_0$")
+axA.set_title(r"(A) Calibration: dysbiosis swells, commensal does not", fontsize=7.2)
+axA.legend(fontsize=5.6, loc="lower right")
+
+# (B) provenance: the raw confocal biofilm thickness over time that feeds (A)
+axB.plot(days, DH_h, "o-", color=RED, ms=4, lw=1.0, label="DH")
+axB.plot(days, CH_h, "s--", color=BLUE, ms=4, lw=1.0, label="CH")
+axB.set_xlabel(r"imaging day"); axB.set_ylabel(r"biofilm thickness $h$ ($\mu$m)")
+axB.set_title(r"(B) Source data: CLSM Ti-disc $z$-stacks", fontsize=7.2)
+axB.set_xticks(days); axB.legend(fontsize=6, loc="upper left")
+fig.suptitle(r"Growth calibration: anisotropic depth strain $\varepsilon_{zz}=\beta\,\phi_{Pg}$ from CLSM", fontsize=8)
 fig.savefig(OUT / "F2_growth_calibration.pdf", bbox_inches="tight"); plt.close(fig)
 
 # ---- F3: finite-strain free-swelling verification (U3_top -> lambda_z-1) ----

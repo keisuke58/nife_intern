@@ -81,10 +81,11 @@ $\Rightarrow$ 材料則は外部 FEM ソルバへそのまま差し込める（�
 
 成長固有ひずみを **CLSM 深さプロファイル**からキャリブレーション。
 
-![](masterarbeit_ansys_fem/figures/F2_growth_calibration.pdf){ height=52% }
+\begin{center}
+\includegraphics[width=0.78\textwidth,height=0.5\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/F2_growth_calibration.pdf}
+\end{center}
 
-- DH：深さ相関 $0.88$、$\beta_{\text{depth}} \approx 17.2$。
-- 常在（commensal）コントロールは**逆符号** — 単なる体積膨張ではない。
+\footnotesize CLSM からの異方的な深さ成長ひずみ $\varepsilon_{zz}=\beta\,\phi_{Pg}$ の較正：dysbiotic バイオフィルムは P. gingivalis とともに膨張（DH $\beta\approx+17$, $r=0.88$）、常在は膨張しない（CH $\beta\approx-10$）。(B) は元となる z スタック厚み。 \normalsize
 
 ---
 
@@ -111,15 +112,15 @@ $\Rightarrow$ 材料則は外部 FEM ソルバへそのまま差し込める（�
 ## 界面力学：応力を生むのはねじ山
 
 \begin{center}
-\includegraphics[height=0.62\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_thread.pdf}
+\includegraphics[height=0.56\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_thread.pdf}
 \end{center}
 
-\small 連成 implant–thread 界面モデル（CPE4、実 V ねじ山プロファイル）。(A) von Mises 場は
+\footnotesize 連成 implant–thread 界面モデル（CPE4、実 V ねじ山プロファイル）。(A) von Mises 場は
 接着したねじ山フランクに集中。(B) 内部ピークの界面応力はメッシュ収束済み
 （自由端コーナーの特異点は除外 — 細分化で発散するが、内部プラトーは発散しない）。
 (C) ねじ山の幾何そのものが応力を生む — 平坦界面はベースライン付近に留まる。
 (D) dysbiotic（DH）対 commensal（CH）バイオフィルムがそれをスケールする。
-内部ピーク $\sigma_\mathrm{vM} \approx 0.6$–$0.7$ GPa（収束済み）。 \normalsize
+内部ピーク $\sigma_\mathrm{vM} \approx 0.6$–$0.7$ GPa。 \normalsize
 
 ---
 
@@ -175,15 +176,15 @@ $\Rightarrow$ **0-D の臨床 Pg 読み値**が順序的な剥離リスクの代
 ## 疾患モデルの較正：RANKL/OPG 対 臨床 GCF
 
 \begin{center}
-\includegraphics[height=0.6\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_periimplantitis_rankl_opg_calib.pdf}
+\includegraphics[height=0.54\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_periimplantitis_rankl_opg_calib.pdf}
 \end{center}
 
-\small 生物学$\rightarrow$骨喪失のリンクを臨床データに固定する。RANKL/OPG の炎症スイッチを
+\footnotesize 生物学$\rightarrow$骨喪失のリンクを臨床データに固定する。RANKL/OPG の炎症スイッチを
 再較正し、その dysbiotic 倍率変化が歯周炎の歯肉溝滲出液（GCF）測定値
 （中央値 $\approx 17×$；Bostanci／コンセンサス帯）に一致するようにした。
 モデルの RANKL/OPG 比 $\leftrightarrow$ 辺縁骨喪失の相関（$r=0.99$）は臨床値
-（$r=0.81$）を挟み込み、dysbiosis を反転（治療）すると比が回復する — すなわち
-力学的ドライバは今や臨床的に較正されており、仮定ではない。 \normalsize
+（$r=0.81$）を挟み込み、dysbiosis を反転（治療）すると比が回復する —
+力学的ドライバは今や臨床的に較正されている。 \normalsize
 
 ---
 

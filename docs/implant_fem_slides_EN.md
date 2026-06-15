@@ -82,10 +82,11 @@ $\Rightarrow$ the material law drops unchanged into an external FEM solver (veri
 
 The growth eigenstrain is calibrated from **CLSM depth profiles**.
 
-![](masterarbeit_ansys_fem/figures/F2_growth_calibration.pdf){ height=52% }
+\begin{center}
+\includegraphics[width=0.78\textwidth,height=0.5\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/F2_growth_calibration.pdf}
+\end{center}
 
-- DH: depth correlation $0.88$, $\beta_{\text{depth}} \approx 17.2$.
-- The commensal control has the **opposite sign** — not mere volumetric swelling.
+\footnotesize Calibration of the anisotropic depth-growth strain $\varepsilon_{zz}=\beta\,\phi_{Pg}$ from CLSM: dysbiotic biofilm swells with P. gingivalis (DH $\beta\approx+17$, $r=0.88$); commensal does not (CH $\beta\approx-10$). (B) shows the source z-stack thicknesses. \normalsize
 
 ---
 
@@ -112,16 +113,16 @@ Cohesive-interface FEM with **identical** interface strength:
 ## Interface mechanics: the thread generates the stress
 
 \begin{center}
-\includegraphics[height=0.62\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_thread.pdf}
+\includegraphics[height=0.54\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_thread.pdf}
 \end{center}
 
-\small Coupled implant–thread interface model (CPE4, real V-thread profile). (A) the
+\footnotesize Coupled implant–thread interface model (CPE4, real V-thread profile). (A) the
 von Mises field concentrates at the bonded thread flanks; (B) the interior-peak
 interface stress is mesh-converged (the free-edge corner singularity is
 excluded — it diverges with refinement, the interior plateau does not); (C) the
 thread geometry itself generates the stress — a flat interface stays near
 baseline; (D) dysbiotic (DH) vs commensal (CH) biofilm scales it. Interior peak
-$\sigma_\mathrm{vM} \approx 0.6$–$0.7$ GPa (converged). \normalsize
+$\sigma_\mathrm{vM} \approx 0.6$–$0.7$ GPa. \normalsize
 
 ---
 
@@ -180,16 +181,16 @@ $\Rightarrow$ a **0-D clinical Pg readout** is an adequate ordinal detachment-ri
 ## Disease-model calibration: RANKL/OPG vs clinical GCF
 
 \begin{center}
-\includegraphics[height=0.6\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_periimplantitis_rankl_opg_calib.pdf}
+\includegraphics[height=0.54\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_periimplantitis_rankl_opg_calib.pdf}
 \end{center}
 
-\small The biology$\rightarrow$bone-loss link is anchored to clinical data. The
+\footnotesize The biology$\rightarrow$bone-loss link is anchored to clinical data. The
 RANKL/OPG inflammatory switch is recalibrated so its dysbiotic fold-change
 matches periodontitis crevicular-fluid (GCF) measurements (median $\approx 17×$;
 Bostanci / consensus band). The model's RANKL/OPG-ratio $\leftrightarrow$
 marginal-bone-loss correlation ($r=0.99$) brackets the clinical value
-($r=0.81$), and reversing the dysbiosis (treatment) restores the ratio — so the
-mechanical driver is now clinically calibrated, not assumed. \normalsize
+($r=0.81$), and reversing the dysbiosis (treatment) restores the ratio — the
+mechanical driver is now clinically calibrated. \normalsize
 
 ---
 
@@ -224,6 +225,8 @@ thin-film stress / dicing-street delamination (DISCO).
 | Gingiva (mucosa) | 3 | 0.45 |
 | Biofilm (+ growth $\varepsilon_g=0.19$) | 1.0 | 0.45 |
 
+\footnotesize
 **BCs:** bone fully fixed on the crop faces ($U_{1,2,3}=0$). **Interfaces:** osseointegration = \*TIE, crown tied to abutment top, frictional contact $\mu=0.3$ only for the de-integrated variant.
 **Load:** ISO 14801, 100 N at 30$^\circ$ (lat/ax = 0.577). Step 1 = growth eigenstrain, Step 2 = occlusal (with crown: at the **occlusal table z=38** = moment arm).
 **Elements:** assembly = C3D4 (${\sim}270$k), ISO-14801 coupon = C3D10 (linear under-predicts the concentration by 9–15%), convergence $\pm7\%$. Units mm-N-MPa. Full spec in `FEM_CONDITIONS.md`.
+\normalsize
