@@ -17,7 +17,7 @@ SILVA_DIR="${DATA_DIR}/silva_db"
 OUT_DIR="${NIFE_DIR}/results/joshi_16s_profiles"
 RUNS_JSON="${DATA_DIR}/prjna1192962_amplicon_runs.json"
 SILVA_FA="${SILVA_DIR}/SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz"
-SILVA_IDX="${SILVA_DIR}/silva138_ssu_nr99.mmi"
+SILVA_IDX="${SILVA_DIR}/silva138_genus_named.mmi"  # genus-named: RNAME=genus|class|flag|acc
 SRA_TMP="/tmp/sra_joshi_$$"
 NCPU=8
 
