@@ -1,0 +1,86 @@
+{
+  "theta": 0.1,
+  "n_pairs": 45,
+  "n_M_pairs": 36,
+  "note": "Descriptive/consistency (small n); Fisher p = effect direction, not powered.",
+  "raw": {
+    "mode": "raw",
+    "theta": 0.1,
+    "by_type": {
+      "facilitation": {
+        "agree": 4,
+        "n": 4,
+        "frac": 1.0
+      },
+      "competition": {
+        "agree": 4,
+        "n": 5,
+        "frac": 0.8
+      },
+      "fisher_p": 0.5555555555555556
+    },
+    "by_metabolic": {
+      "in_M": {
+        "agree": 8,
+        "n": 9,
+        "frac": 0.8888888888888888
+      },
+      "not_M": {
+        "agree": 0,
+        "n": 0,
+        "frac": NaN
+      },
+      "fisher_p": null
+    },
+    "wconc": {
+      "facilitation": 0.8645097111284443,
+      "competition": 0.5905445149081111,
+      "in_M": 0.7884046448268246,
+      "not_M": -0.9961510394025813
+    },
+    "metabolic_both_facilitation": {
+      "k": 4,
+      "n_strong_M": 9
+    }
+  },
+  "sym": {
+    "mode": "sym",
+    "theta": 0.1,
+    "by_type": {
+      "facilitation": {
+        "agree": 2,
+        "n": 3,
+        "frac": 0.6666666666666666
+      },
+      "competition": {
+        "agree": 1,
+        "n": 2,
+        "frac": 0.5
+      },
+      "fisher_p": 0.7
+    },
+    "by_metabolic": {
+      "in_M": {
+        "agree": 3,
+        "n": 5,
+        "frac": 0.6
+      },
+      "not_M": {
+        "agree": 0,
+        "n": 0,
+        "frac": NaN
+      },
+      "fisher_p": null
+    },
+    "wconc": {
+      "facilitation": -0.620909790380933,
+      "competition": -0.26401147736287617,
+      "in_M": -0.5482187187485852,
+      "not_M": -0.9664866572449432
+    },
+    "metabolic_both_facilitation": {
+      "k": 2,
+      "n_strong_M": 5
+    }
+  }
+}
