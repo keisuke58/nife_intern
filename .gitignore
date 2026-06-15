@@ -146,3 +146,6 @@ results/**/*.vti
 
 # Blender render intermediates (regenerable)
 masterarbeit_ansys_fem/figures/blender_geom/
+
+# ParaView intermediate smoothed meshes (regenerable)
+masterarbeit_ansys_fem/figures/_smooth_*.ply
