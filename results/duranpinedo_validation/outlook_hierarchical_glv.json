@@ -1,0 +1,249 @@
+{
+  "settings": {
+    "maxiter": 150,
+    "rk4_substeps": 8,
+    "lambdas": [
+      0.0,
+      0.003,
+      0.03,
+      1.0
+    ]
+  },
+  "sweep": [
+    {
+      "lambda_dev": 0.0,
+      "rmse_dk": 0.05292736436367375,
+      "rmse_dp": 0.06004236939858662,
+      "norm_delta_dk": 5.253728610956099,
+      "norm_delta_dp": 10.097319102221354,
+      "shared_strong_pairs": 25,
+      "Adk_Adp_strong_agree": [
+        22,
+        25
+      ]
+    },
+    {
+      "lambda_dev": 0.003,
+      "rmse_dk": 0.05582281417612998,
+      "rmse_dp": 0.06334248832434153,
+      "norm_delta_dk": 0.03656921777627458,
+      "norm_delta_dp": 0.09197392524561762,
+      "shared_strong_pairs": 18,
+      "Adk_Adp_strong_agree": [
+        18,
+        18
+      ]
+    },
+    {
+      "lambda_dev": 0.03,
+      "rmse_dk": 0.055932867839687206,
+      "rmse_dp": 0.06341467508015726,
+      "norm_delta_dk": 0.002885947228786328,
+      "norm_delta_dp": 0.010214355459146498,
+      "shared_strong_pairs": 20,
+      "Adk_Adp_strong_agree": [
+        20,
+        20
+      ]
+    },
+    {
+      "lambda_dev": 1.0,
+      "rmse_dk": 0.05834635572556779,
+      "rmse_dp": 0.06479423836639094,
+      "norm_delta_dk": 0.00028853257938150835,
+      "norm_delta_dp": 0.0012860820905895571,
+      "shared_strong_pairs": 12,
+      "Adk_Adp_strong_agree": [
+        12,
+        12
+      ]
+    }
+  ],
+  "shared_backbone_lam0.03": [
+    {
+      "pair": [
+        "Actinobacteria",
+        "Bacilli"
+      ],
+      "A_shared_ij": -0.8216599210647003,
+      "A_shared_ji": 0.4573150565438054
+    },
+    {
+      "pair": [
+        "Actinobacteria",
+        "Bacteroidia"
+      ],
+      "A_shared_ij": 1.1102689051522119,
+      "A_shared_ji": 0.03917224306138655
+    },
+    {
+      "pair": [
+        "Actinobacteria",
+        "Betaproteobacteria"
+      ],
+      "A_shared_ij": 0.10470024693014955,
+      "A_shared_ji": -0.29600101032087506
+    },
+    {
+      "pair": [
+        "Actinobacteria",
+        "Clostridia"
+      ],
+      "A_shared_ij": 0.14570666727138737,
+      "A_shared_ji": -0.0750330601152087
+    },
+    {
+      "pair": [
+        "Actinobacteria",
+        "Fusobacteriia"
+      ],
+      "A_shared_ij": -0.2772214618331655,
+      "A_shared_ji": -0.15352422921444653
+    },
+    {
+      "pair": [
+        "Actinobacteria",
+        "Gammaproteobacteria"
+      ],
+      "A_shared_ij": 0.8895660728819641,
+      "A_shared_ji": 0.16871905676350965
+    },
+    {
+      "pair": [
+        "Actinobacteria",
+        "Negativicutes"
+      ],
+      "A_shared_ij": -0.2964409636625722,
+      "A_shared_ji": -0.07032106388011759
+    },
+    {
+      "pair": [
+        "Actinobacteria",
+        "Other"
+      ],
+      "A_shared_ij": 0.3682520423478246,
+      "A_shared_ji": -0.13013533985824963
+    },
+    {
+      "pair": [
+        "Bacilli",
+        "Bacteroidia"
+      ],
+      "A_shared_ij": -0.04838656111096572,
+      "A_shared_ji": 0.4026020394557946
+    },
+    {
+      "pair": [
+        "Bacilli",
+        "Betaproteobacteria"
+      ],
+      "A_shared_ij": -0.44918572398714857,
+      "A_shared_ji": 0.20423483956694205
+    },
+    {
+      "pair": [
+        "Bacilli",
+        "Clostridia"
+      ],
+      "A_shared_ij": -0.6266775677351883,
+      "A_shared_ji": -0.0036952308786666432
+    },
+    {
+      "pair": [
+        "Bacilli",
+        "Fusobacteriia"
+      ],
+      "A_shared_ij": 0.6141487089714092,
+      "A_shared_ji": -0.0836459414099288
+    },
+    {
+      "pair": [
+        "Bacilli",
+        "Gammaproteobacteria"
+      ],
+      "A_shared_ij": -0.5536127675700568,
+      "A_shared_ji": 0.42612437037421497
+    },
+    {
+      "pair": [
+        "Bacilli",
+        "Negativicutes"
+      ],
+      "A_shared_ij": 0.2807129786333194,
+      "A_shared_ji": 0.0008993066916002583
+    },
+    {
+      "pair": [
+        "Bacilli",
+        "Other"
+      ],
+      "A_shared_ij": 0.6350511779895391,
+      "A_shared_ji": 0.33727483832216926
+    },
+    {
+      "pair": [
+        "Bacteroidia",
+        "Betaproteobacteria"
+      ],
+      "A_shared_ij": 0.10807564780750857,
+      "A_shared_ji": 0.04534479252958684
+    },
+    {
+      "pair": [
+        "Bacteroidia",
+        "Clostridia"
+      ],
+      "A_shared_ij": 0.39239232759468345,
+      "A_shared_ji": 0.05340196696552045
+    },
+    {
+      "pair": [
+        "Bacteroidia",
+        "Gammaproteobacteria"
+      ],
+      "A_shared_ij": 0.44201993873765333,
+      "A_shared_ji": -0.12257128697925807
+    },
+    {
+      "pair": [
+        "Bacteroidia",
+        "Other"
+      ],
+      "A_shared_ij": -0.6032812256970012,
+      "A_shared_ji": -0.24069299493419913
+    },
+    {
+      "pair": [
+        "Clostridia",
+        "Gammaproteobacteria"
+      ],
+      "A_shared_ij": -0.04005122442290653,
+      "A_shared_ji": 0.16644446702056165
+    },
+    {
+      "pair": [
+        "Fusobacteriia",
+        "Other"
+      ],
+      "A_shared_ij": 0.050358174121021816,
+      "A_shared_ji": -0.1845673319854273
+    },
+    {
+      "pair": [
+        "Gammaproteobacteria",
+        "Negativicutes"
+      ],
+      "A_shared_ij": 0.14773690275413892,
+      "A_shared_ji": 0.0013761422013937332
+    },
+    {
+      "pair": [
+        "Gammaproteobacteria",
+        "Other"
+      ],
+      "A_shared_ij": -0.1929059371066586,
+      "A_shared_ji": 0.3063059301811326
+    }
+  ],
+  "note": "Deterministic partial-pooling prototype for the hierarchical-Bayesian Outlook. lambda_dev->0 ~ separate fits; large ~ forced-shared (V4). delta norm shows how much each cohort deviates from the shared backbone."
+}
