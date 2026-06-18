@@ -316,12 +316,20 @@ def main():
         pc.set_facecolor(np.clip(base * sh[:, None], 0, 1))
         axB.add_collection3d(pc)
     label3d(axB, *imp_xyz, "crown", "#222222")
-    # moment-arm delta vs the no-crown baseline
-    pk_crown = peri_implant_bone_peak(FIELD)
-    pk_gen = peri_implant_bone_peak(GEN_FIELD) if GEN_FIELD.exists() else None
+    # moment-arm delta vs the no-crown baseline -- reported at QUADRATIC order (C3D10) when available
+    # (the linear-C3D4 mesh is kept only for the 3-D shading, whose vM index map follows the C3D4 conn).
+    # C3D10 re-solve: both crestal p95 rise a uniform ~9%, so the moment-arm RATIO is order-robust
+    # (x1.57 -> x1.56); the C3D10 absolutes (29/19 MPa) are the more accurate ones. See FEM_CONDITIONS S7.
+    FIELD_Q = FEMDIR / "tier2b_crown_q_field.json"
+    GEN_FIELD_Q = FEMDIR / "tier2b_generic_q_field.json"
+    crown_src = FIELD_Q if FIELD_Q.exists() else FIELD
+    gen_src = GEN_FIELD_Q if GEN_FIELD_Q.exists() else GEN_FIELD
+    order_tag = "C3D10" if FIELD_Q.exists() else "C3D4"
+    pk_crown = peri_implant_bone_peak(crown_src)
+    pk_gen = peri_implant_bone_peak(gen_src) if gen_src.exists() else None
     if pk_gen:
         axB.text2D(0.02, 0.04,
-                   r"crestal peri-implant bone $\sigma_\mathrm{vM}$ (p95):" + "\n"
+                   r"crestal peri-implant bone $\sigma_\mathrm{vM}$ (p95, %s):" % order_tag + "\n"
                    + r"%.0f $\to$ %.0f MPa ($\times$%.1f) via crown moment arm"
                    % (pk_gen, pk_crown, pk_crown / pk_gen),
                    transform=axB.transAxes, fontsize=5.4, color="#b30000",

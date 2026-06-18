@@ -21,10 +21,10 @@ The **single canonical material set** (defined in `coupling_prototype/tier2b_rea
 |---|---:|---:|---|---|
 | **TI** (Ti-6Al-4V) | 110 000 | 0.34 | implant fixture + abutment | titanium alloy, standard dental-implant FEM (Geng 2001; Sevimay 2005) |
 | **CORTICAL** bone | 13 700 | 0.30 | dense outer / lamina-dura shell (1.8 mm) | cortical mandibular bone (Lin 2010; Sevimay 2005) |
-| **CANCELLOUS** bone | 1 000 | 0.30 | trabecular core | low-density trabecular bone (type III–IV) |
+| **CANCELLOUS** bone | 1 000 | 0.30 | trabecular core | low-density trabecular bone, **type III (D3)** (Sevimay 2005: D3 = 1600, D4 = 690 MPa → 1000 is a D3-leaning value; a D4 ≈ 690 MPa sensitivity case bounds type IV) |
 | **BONE** (single-layer) | 13 700 | 0.30 | used only in the preserved `tier2b_real` job | cortical-equivalent (thin alveolar crest is cortical-dominated) |
-| **DENTIN** | 18 000 | 0.31 | natural neighbour tooth (tooth-24) | human coronal dentin (Lin 2010) |
-| **PDL** | 50 | 0.45 | 0.25 mm periodontal ligament, neighbour tooth | linear-elastic PDL idealisation (Cattaneo 2005 use 50–69 MPa; real PDL is nonlinear → **idealisation, noted**) |
+| **DENTIN** | 18 000 | 0.31 | natural neighbour tooth (tooth-24) | human coronal dentin (Kinney 2003; value also used by Lin 2010) |
+| **PDL** | 50 | 0.45 | 0.25 mm periodontal ligament, neighbour tooth | linear-elastic PDL idealisation; the 50 MPa linear modulus is from **Rees & Jacobsen 1997** (fit to tooth mobility). Real PDL is nonlinear/hyperelastic (Cattaneo 2005) → **idealisation, noted** |
 | **CROWN** (ceramic) | 95 000 | 0.30 | load-bearing restoration | lithium-disilicate-class glass-ceramic (e.max ≈ 95 GPa). Zirconia variant = 210 GPa (design sweep) |
 | **GINGIVA** (mucosa) | 3 | 0.45 | conformal peri-implant/peri-tooth mucosa cuff (radial offset shell over the biofilm) | oral mucosa, ~MPa-scale, near-incompressible |
 | **ENAMEL** | 84 000 | 0.30 | conformal cap on the natural neighbour-tooth clinical crown (CEJ→occlusal) | human enamel |
@@ -113,7 +113,9 @@ conclusion → not a free-edge artefact).
 
 ## 5. Loads (occlusal bite — ISO 14801)
 
-- **Magnitude:** 100 N resultant per crown (physiological molar bite; ISO 14801 worst-case is 30°).
+- **Magnitude:** 100 N resultant per crown — a **standardized, conservative screening load** (clinical
+  molar bite is higher, ~200–800 N; 100 N is the comparative-FEM convention, not a peak physiological
+  bite). ISO 14801 worst-case direction is 30°.
 - **Direction:** **30° oblique** for the generic/crown/coupon jobs → lateral/axial = tan 30° = **0.577**
   (`*CLOAD` components: F3 = −100·cos30 = −86.6 N axial, F1 = +100·sin30 = +50 N lateral). The preserved
   `tier2b_real` job keeps a near-axial 0.2 ratio.
@@ -155,6 +157,32 @@ screw (Ø4.1) is narrower than the natural socket (buccolingual ≈ 8.5 mm) → 
   static; NLGEOM=YES with `*STATIC, STABILIZE=1e-4` for the frictional micromotion variant.
 - **Convergence:** mesh-refinement check on the implant coupon = ±7% on the thread-root peak between
   refinement levels (reported as study (B) of the rigour panel).
+- **Element-formulation robustness (plane-strain thread model, `gen_implant_inp_q.py` /
+  `run_implant_elform.sh` → `fem_implant_elform.pdf`):** the headline thread model uses CPE4 (linear,
+  full-integration) at ν = 0.45 (near-incompressible biofilm). Two textbook artefacts could distort it —
+  **volumetric locking** (full-integration linear quads as ν→0.5) and **root under-resolution** (linear
+  elements under-predicting curved-root concentration). Re-solving the SAME geometry / growth eigenstrain
+  at the headline n108 resolution across **CPE4, CPE4H (linear hybrid), CPE8 (quadratic), CPE8R (quadratic
+  reduced), CPE8RH (quadratic reduced hybrid)** gives an interior interface peak invariant to **±0.9%**
+  (DH thread 609→598–602 arb.), and — the reported quantities — **DH/CH = 2.49–2.53 (±1.8%)** and
+  **thread/flat = 4.07–4.14 (±1.8%)**. The **hybrid points coincide with the standard** ones → *no
+  volumetric locking at ν = 0.45*; the **quadratic points coincide with the linear** ones → the smooth
+  (finite-curvature) sinusoidal thread is *already resolved at n108* (a coarse n72 mesh inflates the peak
+  ~12% — a resolution artefact removed by n108). So the linear-CPE4 headline is neither a locking nor an
+  under-resolution artefact. (The 3-D ISO-14801 coupons still use C3D10 because their thread root is a
+  genuine sharp geometric concentrator, unlike the smooth plane-strain thread.)
+- **Quadratic-tet (C3D10) re-solve of the crowned 3-D assembly (`convert_c3d4_to_c3d10.py` →
+  `tier2b_crown_q` / `tier2b_generic_q`; metric `compare_crown_order.py`):** the one large assembly still
+  on **linear C3D4** was promoted to **C3D10** (274 854 → 280 695 elems / 424 739 nodes; one global
+  edge→mid-node map so the conforming PDL/dentin interface stays watertight; datacheck 0 errors, 33 untied
+  ties vs 44 in the C3D4 baseline; ~37 min each, cpus=1). Scored with the **exact thesis metric**
+  (`crestal_p95_thesis_metric.py`, p95 over bone in the crestal disk r ≤ 3 mm, z ∈ [26,30.5] — verbatim
+  from `fig_implant_crown_fem.py`; the C3D4 values reproduce the published 27.0 / 17.2 MPa, ×1.57
+  headline exactly → metric validated). At C3D10 the crestal bone p95 rises **uniformly ~9%** —
+  **crown 27.0 → 29.4 MPa (+8.9%)**, **bare 17.2 → 18.9 MPa (+9.9%)** — so the **crown moment-arm RATIO is
+  essentially invariant: ×1.57 → ×1.56 (−0.9%)**. The headline **×1.5 moment-arm conclusion is fully
+  order-robust**; only the absolute crestal stresses are ~9% higher, and the **C3D10 values (29 / 19 MPa)
+  are the more accurate ones** (see `notes/fem_element_fidelity_2026-06-18.md`).
 
 ---
 
@@ -163,11 +191,11 @@ screw (Ø4.1) is narrower than the natural socket (buccolingual ≈ 8.5 mm) → 
 | Result | Condition | Value |
 |---|---|---|
 | Dysbiosis stress ratio (DH/CH) | every growth model | **2.3 – 3.3×** (robust across plane-strain/axisym/3D/RVE) |
-| Crown moment arm → crestal bone p95 | tier2b_crown (intact bone), 100 N/30°, load z 32.5 → 38 | 18 → 27 MPa (**×1.5**, p95; abs. max is a crown-insensitive neck singularity) |
+| Crown moment arm → crestal bone p95 | tier2b_crown (intact bone), 100 N/30°, load z 32.5 → 38 | 18 → 27 MPa (**×1.5**, p95; abs. max is a crown-insensitive neck singularity). **At C3D10 (same thesis metric): 19 → 29 MPa, ratio ×1.56 — the ×1.5 conclusion is order-robust (ratio Δ −0.9%); absolute p95 ~9% higher (C3D10 = more accurate). See §7.** |
 | Real-molar crown validation | tier2b_crownreal vs tier2b_crown (both anatomical biofilm) | 24.7 vs 27.0 MPa p95 (**−9%** → parametric crown adequate) |
 | C/I-ratio feedback | coupon sweep + resorption ODE, same severity | crowned reaches point-of-no-return **34 mo vs 55 mo** (38% sooner) |
 | Marginal-bone-loss → stress | coupon, bone 2 → 8 mm | crest 14 → 35 MPa; stiffness 2.7 → 0.7 N/µm |
-| Micromotion (de-integrated) | general contact, 100 N | ~7–8 µm ≪ Brunski 150 µm threshold |
+| Micromotion (de-integrated) | general contact, 100 N | ~7–8 µm ≪ **50–150 µm** tolerated range (Pilliar 1986; Szmukler-Moncler 1998) |
 
 ---
 
