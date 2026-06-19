@@ -99,15 +99,16 @@ def make(lang: str) -> None:
     ang = np.deg2rad([90, 0, -90, 180])
     R = 1.10
     pos = np.c_[R * np.cos(ang), R * np.sin(ang)]
-    BW, BH = 1.02, 0.46
+    BW, BH = 1.30, 0.50
+    NODE_FS = 9.8
     for (x, y), label in zip(pos, t["nodes"]):
         box = FancyBboxPatch((x - BW / 2, y - BH / 2), BW, BH,
                              boxstyle="round,pad=0.02,rounding_size=0.11",
                              fc="white", ec=RED, lw=1.6, zorder=3)
         box.set_path_effects(shadow)
         ax.add_patch(box)
-        ax.text(x, y, label, ha="center", va="center", fontsize=11, color=INK, zorder=4,
-                linespacing=1.35)
+        ax.text(x, y, label, ha="center", va="center", fontsize=NODE_FS, color=INK, zorder=4,
+                linespacing=1.32)
 
     # clockwise reinforcing arrows between consecutive ring nodes
     for i in range(4):
@@ -122,20 +123,20 @@ def make(lang: str) -> None:
                 color=RED, style="italic", zorder=4, linespacing=1.25)
 
     # external trigger feeding the inflammation node (top)
-    tx, ty = -1.55, 1.62
-    trig = FancyBboxPatch((tx - 0.46, ty - 0.21), 0.92, 0.42,
+    tx, ty = -1.50, 1.64
+    trig = FancyBboxPatch((tx - 0.60, ty - 0.23), 1.20, 0.46,
                           boxstyle="round,pad=0.02,rounding_size=0.11", fc=TRIG_SOFT, ec=TRIG,
                           lw=1.5, zorder=3)
     trig.set_path_effects(shadow)
     ax.add_patch(trig)
-    ax.text(tx, ty, t["trigger"], ha="center", va="center", fontsize=10.5, color=TRIG, zorder=4,
-            linespacing=1.35)
-    ax.add_patch(FancyArrowPatch((tx + 0.42, ty - 0.16), (pos[0][0] - 0.46, pos[0][1] + 0.20),
+    ax.text(tx, ty, t["trigger"], ha="center", va="center", fontsize=9.8, color=TRIG, zorder=4,
+            linespacing=1.32)
+    ax.add_patch(FancyArrowPatch((tx + 0.56, ty - 0.16), (pos[0][0] - 0.50, pos[0][1] + 0.22),
                  connectionstyle="arc3,rad=-0.18", arrowstyle="-|>", mutation_scale=20,
                  lw=2.2, color=TRIG, zorder=2, capstyle="round"))
 
     # centre label + tipping annotation
-    ax.text(0, 0.30, t["center"], ha="center", va="center", fontsize=27, fontweight="bold",
+    ax.text(0, 0.32, t["center"], ha="center", va="center", fontsize=22, fontweight="bold",
             color=RED, alpha=0.92, zorder=4, linespacing=1.0)
     ax.text(0, -0.34, t["tipping"], ha="center", va="center", fontsize=9.5, color=INK, zorder=4,
             linespacing=1.4, bbox=dict(boxstyle="round,pad=0.45", fc=TIP_SOFT, ec="#caa94a", lw=0.8))
