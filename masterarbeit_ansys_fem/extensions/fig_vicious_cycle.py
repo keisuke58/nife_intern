@@ -24,11 +24,12 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 OUT = Path(__file__).resolve().parent.parent / "figures"
 OUT.mkdir(exist_ok=True)
 
-RED = "#c0392b"; GREEN = "#27ae60"; INK = "#2c3e50"; TRIG = "#8e44ad"
+RED = "#a93226"; RED_SOFT = "#f9ebea"; GREEN = "#1e8449"; GREEN_SOFT = "#eafaf1"
+INK = "#1c2833"; TRIG = "#6c3483"; TRIG_SOFT = "#f4ecf7"; TIP_SOFT = "#fef9e7"
 
 TEXT = {
     "en": {
-        "font": "DejaVu Sans",
+        "font": "Nimbus Roman",
         "title": "Peri-implantitis mechano-biological vicious cycle",
         "trigger": "Dysbiosis\n(biofilm, GDI ↑)",
         "nodes": [
@@ -43,7 +44,7 @@ TEXT = {
         "edge": ["RANKL/OPG ↑", "bone loss  $L\\uparrow$", "crest stress ↑", "pathological\nmechanostat"],
     },
     "ja": {
-        "font": "Noto Sans CJK JP",
+        "font": "Noto Serif CJK JP",
         "title": "ペリインプラント炎の力学–生物悪循環",
         "trigger": "ディスバイオシス\n(バイオフィルム, GDI ↑)",
         "nodes": [
@@ -61,68 +62,84 @@ TEXT = {
 
 
 def make(lang: str) -> None:
+    import matplotlib.patheffects as pe
     t = TEXT[lang]
     plt.rcParams["font.family"] = t["font"]
-    plt.rcParams["mathtext.fontset"] = "dejavusans"
-    fig, ax = plt.subplots(figsize=(7.4, 7.0))
-    ax.set_xlim(-1.65, 1.65); ax.set_ylim(-1.7, 1.65); ax.axis("off")
+    plt.rcParams["mathtext.fontset"] = "stix"          # serif math to match Times / Mincho
+    plt.rcParams["axes.unicode_minus"] = False
+    shadow = [pe.withSimplePatchShadow(offset=(1.4, -1.4), alpha=0.18)]
+
+    fig, ax = plt.subplots(figsize=(8.2, 8.0))
+    ax.set_xlim(-1.95, 1.95); ax.set_ylim(-2.0, 1.95); ax.axis("off")
     ax.set_aspect("equal")
+
+    # faint circular guide suggesting the cycle
+    ring = plt.Circle((0, 0), 1.10, fill=False, ec=RED, lw=1.0, alpha=0.18, ls=(0, (6, 5)), zorder=0)
+    ax.add_patch(ring)
 
     # four ring nodes at top, right, bottom, left
     ang = np.deg2rad([90, 0, -90, 180])
-    R = 1.05
+    R = 1.10
     pos = np.c_[R * np.cos(ang), R * np.sin(ang)]
+    BW, BH = 1.02, 0.46
     for (x, y), label in zip(pos, t["nodes"]):
-        ax.add_patch(FancyBboxPatch((x - 0.46, y - 0.20), 0.92, 0.40,
-                     boxstyle="round,pad=0.03,rounding_size=0.08",
-                     fc="white", ec=RED, lw=1.8, zorder=3))
-        ax.text(x, y, label, ha="center", va="center", fontsize=9.5, color=INK, zorder=4)
+        box = FancyBboxPatch((x - BW / 2, y - BH / 2), BW, BH,
+                             boxstyle="round,pad=0.02,rounding_size=0.11",
+                             fc="white", ec=RED, lw=1.6, zorder=3)
+        box.set_path_effects(shadow)
+        ax.add_patch(box)
+        ax.text(x, y, label, ha="center", va="center", fontsize=11, color=INK, zorder=4,
+                linespacing=1.35)
 
-    # clockwise reinforcing arrows between consecutive ring nodes (top->right->bottom->left->top)
+    # clockwise reinforcing arrows between consecutive ring nodes
     for i in range(4):
-        p0 = pos[i]; p1 = pos[(i + 1) % 4]
-        a = FancyArrowPatch(_edge(p0, 0.50), _edge(p1, 0.50, incoming=True),
-                            connectionstyle="arc3,rad=-0.32", arrowstyle="-|>",
-                            mutation_scale=22, lw=2.6, color=RED, zorder=2)
+        p0, p1 = pos[i], pos[(i + 1) % 4]
+        a = FancyArrowPatch(_edge(p0), _edge(p1, incoming=True),
+                            connectionstyle="arc3,rad=0.30", arrowstyle="-|>",
+                            mutation_scale=26, lw=3.0, color=RED, zorder=2,
+                            capstyle="round", joinstyle="round")
         ax.add_patch(a)
-        mid = 0.5 * (p0 + p1) * 1.42
-        ax.text(mid[0], mid[1], t["edge"][i], ha="center", va="center", fontsize=8.2,
-                color=RED, style="italic", zorder=4)
+        mid = 0.5 * (p0 + p1) * 2.02
+        ax.text(mid[0], mid[1], t["edge"][i], ha="center", va="center", fontsize=10,
+                color=RED, style="italic", zorder=4, linespacing=1.25)
 
     # external trigger feeding the inflammation node (top)
-    tx, ty = -1.35, 1.42
-    ax.add_patch(FancyBboxPatch((tx - 0.40, ty - 0.18), 0.80, 0.36,
-                 boxstyle="round,pad=0.03,rounding_size=0.08", fc="#f5eef8", ec=TRIG, lw=1.6, zorder=3))
-    ax.text(tx, ty, t["trigger"], ha="center", va="center", fontsize=9.0, color=TRIG, zorder=4)
-    ax.add_patch(FancyArrowPatch((tx + 0.36, ty - 0.10), (pos[0][0] - 0.40, pos[0][1] + 0.16),
-                 connectionstyle="arc3,rad=-0.2", arrowstyle="-|>", mutation_scale=18,
-                 lw=2.0, color=TRIG, zorder=2))
+    tx, ty = -1.55, 1.62
+    trig = FancyBboxPatch((tx - 0.46, ty - 0.21), 0.92, 0.42,
+                          boxstyle="round,pad=0.02,rounding_size=0.11", fc=TRIG_SOFT, ec=TRIG,
+                          lw=1.5, zorder=3)
+    trig.set_path_effects(shadow)
+    ax.add_patch(trig)
+    ax.text(tx, ty, t["trigger"], ha="center", va="center", fontsize=10.5, color=TRIG, zorder=4,
+            linespacing=1.35)
+    ax.add_patch(FancyArrowPatch((tx + 0.42, ty - 0.16), (pos[0][0] - 0.46, pos[0][1] + 0.20),
+                 connectionstyle="arc3,rad=-0.18", arrowstyle="-|>", mutation_scale=20,
+                 lw=2.2, color=TRIG, zorder=2, capstyle="round"))
 
     # centre label + tipping annotation
-    ax.text(0, 0.16, t["center"], ha="center", va="center", fontsize=20, fontweight="bold",
-            color=RED, alpha=0.85, zorder=4)
-    ax.text(0, -0.30, t["tipping"], ha="center", va="center", fontsize=8.0, color=INK, zorder=4,
-            bbox=dict(boxstyle="round,pad=0.3", fc="#fff8e1", ec="0.7", lw=0.6))
+    ax.text(0, 0.30, t["center"], ha="center", va="center", fontsize=27, fontweight="bold",
+            color=RED, alpha=0.92, zorder=4, linespacing=1.0)
+    ax.text(0, -0.34, t["tipping"], ha="center", va="center", fontsize=9.5, color=INK, zorder=4,
+            linespacing=1.4, bbox=dict(boxstyle="round,pad=0.45", fc=TIP_SOFT, ec="#caa94a", lw=0.8))
 
-    # homeostatic counter-loop note (green, faint)
-    ax.text(0, -1.55, t["counter"], ha="center", va="center", fontsize=8.2, color=GREEN, zorder=4,
-            bbox=dict(boxstyle="round,pad=0.25", fc="#eafaf1", ec=GREEN, lw=0.8))
+    # homeostatic counter-loop note (green)
+    ax.text(0, -1.78, t["counter"], ha="center", va="center", fontsize=9.5, color=GREEN, zorder=4,
+            linespacing=1.35, bbox=dict(boxstyle="round,pad=0.35", fc=GREEN_SOFT, ec=GREEN, lw=1.0))
 
-    ax.set_title(t["title"], fontsize=12, color=INK, pad=10)
+    ax.set_title(t["title"], fontsize=14.5, color=INK, pad=14)
     fig.tight_layout()
     for ext in ("pdf", "png"):
-        fig.savefig(OUT / f"fig_vicious_cycle_{lang}.{ext}", dpi=200, bbox_inches="tight")
+        fig.savefig(OUT / f"fig_vicious_cycle_{lang}.{ext}", dpi=220, bbox_inches="tight")
     plt.close(fig)
     print(f"wrote fig_vicious_cycle_{lang}.pdf / .png")
 
 
-def _edge(p, frac, incoming=False):
-    """Offset a point from a node centre toward the ring so arrows start/end at box edges."""
+def _edge(p, incoming=False):
+    """Offset from a node centre so the curved arrow leaves/enters at the box edge cleanly."""
     v = np.array(p, float)
     n = v / (np.linalg.norm(v) + 1e-9)
-    # tangential offset so the curved arrow leaves/enters cleanly
-    tang = np.array([-n[1], n[0]]) * (0.30 if not incoming else -0.30)
-    return tuple(v - n * 0.30 + tang)
+    tang = np.array([-n[1], n[0]]) * (-0.30 if not incoming else 0.30)
+    return tuple(v + n * 0.10 + tang)
 
 
 if __name__ == "__main__":
