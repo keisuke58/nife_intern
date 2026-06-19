@@ -77,6 +77,33 @@ FEM stress map alone---is the work's distinctive contribution: the FEM$\leftrigh
 co-localisation is well established \citep{Oh2002,Chang2018} and serves as grounding, whereas the
 dysbiosis$\rightarrow$inflammation$\rightarrow$loss$\rightarrow$stress feedback is novel.
 
+\paragraph{Uncertainty quantification.} To move the tipping behaviour beyond a single deterministic
+trajectory, the cascade parameters are assigned literature-anchored priors (cytokine resolution,
+osteoclast turnover, RANKL/OPG Hill exponent, mechanical synergy $\lambda$, and a resorption rate
+calibrated to $\sim$0.3~mm/yr early progression) and propagated by Monte-Carlo ($N=600$) together with
+the per-patient GDI scatter. This yields, per patient, a median 36-month bone-loss prediction with a
+90\% credible band and a probability of crossing the mechanical point-of-no-return
+(Fig.~\ref{fig:uq}); the cohort separates into low- and high-risk groups rather than a single curve.
+A global sensitivity analysis (Spearman $\rho$ of each parameter against 36-month loss) ranks the
+osteoclast formation/turnover rates ($k_C,g_C$; $|\rho|\approx0.5$) and the resorption gain ($k_L$)
+above the mechanical synergy ($\lambda$; $|\rho|\approx0.26$): the loop is biology-dominated with a
+moderate, non-negligible mechanical contribution, and the ranking identifies which quantity to
+measure next to tighten the prediction. The tipping point thus persists across the physiological
+prior range (robust), while its exact location remains calibration-dependent (honest scope).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fem_periimplantitis_uq}
+  \caption{Uncertainty quantification of the peri-implantitis cascade. (A) Per-patient 36-month
+  bone-loss prediction: median (dot) with 90\% credible band, driven by the measured GDI(t) of each
+  patient under Monte-Carlo sampling of literature-anchored priors; the dashed line is the mechanical
+  point-of-no-return. (B) The same risk expressed as the probability of crossing that point within
+  36~months. (C) Global sensitivity (|Spearman $\rho$| of each parameter against 36-month loss): the
+  osteoclast formation/turnover rates ($k_C,g_C$) and resorption gain ($k_L$) dominate, above the
+  mechanical synergy ($\lambda$) and Hill exponent ($n$).}
+  \label{fig:uq}
+\end{figure}
+
 \subsection{Clinical grounding (qualitative)}
 Validation follows the field norm of spatial co-localisation rather than quantitative longitudinal
 density fitting (only $\sim$9\% of implant-FEA studies validate at all \citep{Chang2018}). The predicted
