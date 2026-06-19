@@ -39,7 +39,7 @@ TEXT = {
             "Mechanical overload\n(crest > 3000 µε, Frost)",
         ],
         "center": "VICIOUS\nCYCLE",
-        "tipping": "tipping point\n$b_{\\mathrm{crit}}\\approx0.44$,  RANKL:OPG $\\approx2.1$\n12/15 patients $\\rightarrow$ > 2 mm loss",
+        "tipping": "tipping point  (model)\n$b_{\\mathrm{crit}}\\approx0.44$,  RANKL:OPG $\\approx2.1$\n12/15 patients $\\rightarrow$ > 2 mm loss",
         "counter": "homeostasis (TGF-β: OC→OB)\nfails above the tipping point",
         "edge": ["RANKL/OPG ↑", "bone loss  $L\\uparrow$", "crest stress ↑", "pathological\nmechanostat"],
         "gloss_title": "Terms",
@@ -63,7 +63,7 @@ TEXT = {
             "力学的過負荷\n(歯頸部 > 3000 µε, Frost)",
         ],
         "center": "悪循環",
-        "tipping": "ティッピングポイント\n$b_{\\mathrm{crit}}\\approx0.44$,  RANKL:OPG $\\approx2.1$\n15例中12例 → >2 mm 吸収",
+        "tipping": "ティッピングポイント（モデル）\n$b_{\\mathrm{crit}}\\approx0.44$,  RANKL:OPG $\\approx2.1$\n15例中12例 → >2 mm 吸収",
         "counter": "恒常性 (TGF-β: OC→OB)\n閾値を超えると破綻",
         "edge": ["RANKL/OPG ↑", "骨損失 $L\\uparrow$", "歯頸部応力 ↑", "病理的\nメカノスタット"],
         "gloss_title": "用語",
@@ -136,10 +136,10 @@ def make(lang: str) -> None:
                  lw=2.2, color=TRIG, zorder=2, capstyle="round"))
 
     # centre label + tipping annotation
-    ax.text(0, 0.32, t["center"], ha="center", va="center", fontsize=22, fontweight="bold",
+    ax.text(0, 0.55, t["center"], ha="center", va="center", fontsize=21, fontweight="bold",
             color=RED, alpha=0.92, zorder=4, linespacing=1.0)
-    ax.text(0, -0.34, t["tipping"], ha="center", va="center", fontsize=9.5, color=INK, zorder=4,
-            linespacing=1.4, bbox=dict(boxstyle="round,pad=0.45", fc=TIP_SOFT, ec="#caa94a", lw=0.8))
+    ax.text(0, -0.56, t["tipping"], ha="center", va="center", fontsize=9.0, color=INK, zorder=4,
+            linespacing=1.4, bbox=dict(boxstyle="round,pad=0.4", fc=TIP_SOFT, ec="#caa94a", lw=0.8))
 
     # homeostatic counter-loop note (green)
     ax.text(0, -1.78, t["counter"], ha="center", va="center", fontsize=9.5, color=GREEN, zorder=4,
