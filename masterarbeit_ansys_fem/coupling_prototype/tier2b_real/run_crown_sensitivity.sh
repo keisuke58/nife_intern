@@ -33,8 +33,12 @@ rm -f sens_results.jsonl
 
 extract_one() {
     local job=$1 mat=$2 mul=$3 kind=$4
-    "$ABQ" python extract_pimp_field.py "$job" >/dev/null 2>&1 || true
-    python3 - "$job" "$mat" "$mul" "$kind" <<'PY'
+    # extract_tier2b_q.py emits {job}_field.json (x,y,z,mat,vmg,vmo) for C3D4 & C3D10; the old
+    # extract_pimp_field.py (pimp_ prefix / "BONE" elset / r,vm schema) silently produced nothing.
+    "$ABQ" python extract_tier2b_q.py "$job" >"${job}.extract.log" 2>&1 || \
+        echo "  WARN: extract failed for $job (see ${job}.extract.log)"
+    [ -f "${job}_field.json" ] || { echo "  WARN: ${job}_field.json missing — skip $job"; return 0; }
+    python3 - "$job" "$mat" "$mul" "$kind" <<'PY' || echo "  WARN: p95 failed for $job"
 import json, sys, numpy as np
 job, mat, mul, kind = sys.argv[1:]
 T23 = np.array([-69.4, -41.0]); CREST = 29.0
