@@ -11,6 +11,8 @@ A monolithic lithium-disilicate-class ceramic crown (E~95 GPa): cervical emergen
 
 Run in gmsh_env with LD_LIBRARY_PATH=$CONDA_PREFIX/lib:  python mesh_crown.py
 """
+import os
+
 import gmsh
 import numpy as np
 
@@ -21,7 +23,7 @@ Z_MARGIN = 31.0                # crown cervical margin, ~2 mm above bone crest (
 Z_OCC = 38.0                   # occlusal table = adjacent natural-tooth plane (DENTIN top=38.0)
 RAB = 1.8                      # abutment-post radius; crown bore = RAB+gap sheathes the post
 RBORE = 1.85                   # crown internal bore radius (0.05 mm cement gap over the post)
-LC = 0.40                      # crown tet edge (mm)
+LC = float(os.environ.get("CROWN_LC", "0.40"))   # crown tet edge (mm); env-overridable for h-convergence sweeps
 
 
 def meridian():
