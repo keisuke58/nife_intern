@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """
-joshi_Amatrix_validation.py — A matrix validation against Joshi 2025 data.
+joshi_Amatrix_validation.py — A matrix validation against the 127-sample peri-implant Excel.
+
+DATA PROVENANCE NOTE (2026-06-19, see notes/joshi_szafranski_data_source_clarification.md):
+  The 127-sample mSystems Excel this script loads is the **Szafrański et al. 2025** dataset, NOT
+  Joshi. The historical script name predates that clarification; the manuscript citation has been
+  corrected to \\citep{szafranski2025}. The real Joshi (npj 2025 or JDR 2026) external validation
+  is queued in scripts/loo_cv/joshi_jdr2026_severity_validation.py once supplementary data are
+  available.
 
 Three analyses that directly use the Dieckow A matrix:
 

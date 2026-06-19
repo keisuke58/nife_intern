@@ -1,7 +1,17 @@
 #!/usr/bin/env python3
 """
 joshi_attractor_analysis.py
-  Cross-sectional Joshi/mSystems 5-genus data → Hamilton ODE attractor analysis.
+  Cross-sectional 5-genus peri-implant data → Hamilton ODE attractor analysis.
+
+  DATA PROVENANCE NOTE (2026-06-19, see notes/joshi_szafranski_data_source_clarification.md):
+    The Excel file this script loads (Datasets/20260416_mSystems_16S_5genera_all_profiles.xlsx,
+    127 samples × Health/Mucositis/Peri-implantitis × 5 genera) is the **Szafrański et al. 2025
+    mSystems** dataset, NOT a Joshi et al. dataset. The historical "joshi_" prefix in this script
+    name predates that clarification; downstream filenames (fig_joshi_*, joshi_attractor_results.csv)
+    are likewise misleading but preserved for backwards compatibility. The manuscript citation
+    has been corrected to \citep{szafranski2025}. A separate placeholder script
+    (scripts/loo_cv/joshi_jdr2026_severity_validation.py) is queued for the real Joshi JDR 2026
+    (PMC12861548) submucosal severity dataset once supplementary data are obtained.
 
   Steps:
     1. Load mSystems 16S 5-genus × 127 sample Excel (Health / Mucositis / PI)
