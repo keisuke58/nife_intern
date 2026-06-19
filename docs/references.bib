@@ -1899,3 +1899,280 @@
   archivePrefix = {arXiv},
   primaryClass  = {cs.LG},
 }
+
+
+% ============================================================================
+% FEM pillar — bone-biomechanics / dental-implant standard references (added 2026-06-20)
+% mirror of masterarbeit_ansys_fem/refs.bib; see bone_standard_laws.py
+% ============================================================================
+@article{CarterHayes1977,
+  author  = {Carter, D. R. and Hayes, W. C.},
+  title   = {The compressive behavior of bone as a two-phase porous structure},
+  journal = {The Journal of Bone and Joint Surgery. American Volume},
+  year    = {1977}, volume = {59}, number = {7}, pages = {954--962},
+  note    = {E $\propto \rho^3$ apparent-density power law}
+}
+
+@article{Morgan2003,
+  author  = {Morgan, Elise F. and Bayraktar, Harun H. and Keaveny, Tony M.},
+  title   = {Trabecular bone modulus--density relationships depend on anatomic site},
+  journal = {Journal of Biomechanics},
+  year    = {2003}, volume = {36}, number = {7}, pages = {897--904},
+  doi     = {10.1016/S0021-9290(03)00071-X},
+  note    = {Femoral-neck $E = 6850\,\rho_{app}^{1.49}$ (MPa)}
+}
+
+@article{Keyak1998,
+  author  = {Keyak, J. H. and Rossi, S. A. and Jones, K. A. and Skinner, H. B.},
+  title   = {Prediction of femoral fracture load using automated finite element modeling},
+  journal = {Journal of Biomechanics},
+  year    = {1998}, volume = {31}, number = {2}, pages = {125--133},
+  doi     = {10.1016/S0021-9290(97)00123-1},
+  note    = {Canonical piecewise CT-FEM density--modulus relation}
+}
+
+@article{Keller1994,
+  author  = {Keller, T. S.},
+  title   = {Predicting the compressive mechanical behavior of bone},
+  journal = {Journal of Biomechanics},
+  year    = {1994}, volume = {27}, number = {9}, pages = {1159--1168},
+  doi     = {10.1016/0021-9290(94)90056-6},
+  note    = {Ash-density power law $E = 10500\,\rho_{ash}^{2.29}$}
+}
+
+@article{RhoAshmanTurner1993,
+  author  = {Rho, J. Y. and Ashman, R. B. and Turner, C. H.},
+  title   = {Young's modulus of trabecular and cortical bone material: ultrasonic and microtensile measurements},
+  journal = {Journal of Biomechanics},
+  year    = {1993}, volume = {26}, number = {2}, pages = {111--119},
+  doi     = {10.1016/0021-9290(93)90042-D}
+}
+
+@article{Helgason2008,
+  author  = {Helgason, Benedikt and Perilli, Egon and Schileo, Enrico and Taddei, Fulvia and Brynj{\'o}lfsson, Sigur{\dh}ur and Viceconti, Marco},
+  title   = {Mathematical relationships between bone density and mechanical properties: a literature review},
+  journal = {Clinical Biomechanics},
+  year    = {2008}, volume = {23}, number = {2}, pages = {135--146},
+  doi     = {10.1016/j.clinbiomech.2007.08.024},
+  note    = {Review tabulating the density--modulus laws above}
+}
+
+@article{Schileo2008,
+  author  = {Schileo, Enrico and Dall'Ara, Enrico and Taddei, Fulvia and Malandrino, Andrea and Schotkamp, Tom and Baleani, Massimiliano and Viceconti, Marco},
+  title   = {An accurate estimation of bone density improves the accuracy of subject-specific finite element models},
+  journal = {Journal of Biomechanics},
+  year    = {2008}, volume = {41}, number = {11}, pages = {2483--2491},
+  doi     = {10.1016/j.jbiomech.2008.05.017},
+  note    = {$\rho_{ash}/\rho_{app}\approx0.6$; validates Morgan femoral-neck law}
+}
+
+% ─── Frost mechanostat + remodeling theory ───────────────────────────────────
+@article{Frost1987,
+  author  = {Frost, Harold M.},
+  title   = {Bone ``mass'' and the ``mechanostat'': a proposal},
+  journal = {The Anatomical Record},
+  year    = {1987}, volume = {219}, number = {1}, pages = {1--9},
+  doi     = {10.1002/ar.1092190104}
+}
+
+@article{Frost2003,
+  author  = {Frost, Harold M.},
+  title   = {Bone's mechanostat: a 2003 update},
+  journal = {The Anatomical Record Part A},
+  year    = {2003}, volume = {275A}, number = {2}, pages = {1081--1101},
+  doi     = {10.1002/ar.a.10119},
+  note    = {Microstrain windows: MESr~50-100, MESm~1500, MESp~3000, Fx~25000 ue}
+}
+
+@article{Huiskes1987,
+  author  = {Huiskes, R. and Weinans, H. and Grootenboer, H. J. and Dalstra, M. and Fudala, B. and Slooff, T. J.},
+  title   = {Adaptive bone-remodeling theory applied to prosthetic-design analysis},
+  journal = {Journal of Biomechanics},
+  year    = {1987}, volume = {20}, number = {11--12}, pages = {1135--1150},
+  doi     = {10.1016/0021-9290(87)90030-3},
+  note    = {Site-specific SED-per-density stimulus with lazy zone}
+}
+
+@article{Weinans1992,
+  author  = {Weinans, H. and Huiskes, R. and Grootenboer, H. J.},
+  title   = {The behavior of adaptive bone-remodeling simulation models},
+  journal = {Journal of Biomechanics},
+  year    = {1992}, volume = {25}, number = {12}, pages = {1425--1441},
+  doi     = {10.1016/0021-9290(92)90056-7},
+  note    = {Canonical density-rate ODE; k~0.004 J/g; checkerboard instability}
+}
+
+@article{Mullender1994,
+  author  = {Mullender, M. G. and Huiskes, R. and Weinans, H.},
+  title   = {A physiological approach to the simulation of bone remodeling as a self-organizational control process},
+  journal = {Journal of Biomechanics},
+  year    = {1994}, volume = {27}, number = {11}, pages = {1389--1394},
+  doi     = {10.1016/0021-9290(94)90049-3},
+  note    = {Non-local influence function fixing the checkerboard problem}
+}
+
+@article{Huiskes2000,
+  author  = {Huiskes, R. and Ruimerman, R. and van Lenthe, G. H. and Janssen, J. D.},
+  title   = {Effects of mechanical forces on maintenance and adaptation of form in trabecular bone},
+  journal = {Nature},
+  year    = {2000}, volume = {405}, number = {6787}, pages = {704--706},
+  doi     = {10.1038/35015116},
+  note    = {Cell-mediated surface model; resorption from disuse AND microdamage}
+}
+
+% ─── Dental-implant bone-remodeling FEA ──────────────────────────────────────
+@article{Mellal2004,
+  author  = {Mellal, A. and Wiskott, H. W. A. and Botsis, J. and Scherrer, S. S. and Belser, U. C.},
+  title   = {Stimulating effect of implant loading on surrounding bone. Comparison of three numerical models and validation by in vivo data},
+  journal = {Clinical Oral Implants Research},
+  year    = {2004}, volume = {15}, number = {2}, pages = {239--248},
+  doi     = {10.1111/j.1600-0501.2004.01000.x}
+}
+
+@article{Chou2008,
+  author  = {Chou, Hsuan-Yu and Jagodnik, Joshua J. and M{\"u}ft{\"u}, Sinan},
+  title   = {Predictions of bone remodeling around dental implant systems},
+  journal = {Journal of Biomechanics},
+  year    = {2008}, volume = {41}, number = {6}, pages = {1365--1373},
+  doi     = {10.1016/j.jbiomech.2008.01.032},
+  note    = {100 N occlusal, Weinans rule}
+}
+
+@article{Eser2010,
+  author  = {Eser, Atilim and Tonuk, Ergin and Akca, Kivanc and Cehreli, Murat Cavit},
+  title   = {Predicting bone remodeling around tissue- and bone-level dental implants used in reduced bone width},
+  journal = {Medical Engineering \& Physics},
+  year    = {2010}, volume = {32}, number = {1}, pages = {22--31},
+  doi     = {10.1016/j.medengphy.2009.10.004},
+  note    = {VERIFY volume/pages; time-dependent Stanford/Carter--Beaupr\'e theory}
+}
+
+% ─── Clinical MBL, validation, overload debate ───────────────────────────────
+@article{Chang2018,
+  author  = {Chang, Yuan and Tambe, Abhijit A. and Maeda, Yoshinobu and Wada, Masahiro and Gonda, Tomoya},
+  title   = {Finite element analysis of dental implants with validation: to what extent can we expect the model predict clinical outcomes},
+  journal = {International Journal of Implant Dentistry},
+  year    = {2018}, volume = {4}, number = {1}, pages = {7},
+  doi     = {10.1186/s40729-018-0119-5},
+  note    = {Only ~9 percent of implant-FEA papers validate}
+}
+
+@article{Adell1981,
+  author  = {Adell, R. and Lekholm, U. and Rockler, B. and Br{\aa}nemark, P. I.},
+  title   = {A 15-year study of osseointegrated implants in the treatment of the edentulous jaw},
+  journal = {International Journal of Oral Surgery},
+  year    = {1981}, volume = {10}, number = {6}, pages = {387--416},
+  doi     = {10.1016/S0300-9785(81)80077-4},
+  note    = {Steady MBL ~0.1 mm/yr}
+}
+
+@article{Albrektsson1986,
+  author  = {Albrektsson, T. and Zarb, G. and Worthington, P. and Eriksson, A. R.},
+  title   = {The long-term efficacy of currently used dental implants: a review and proposed criteria of success},
+  journal = {The International Journal of Oral \& Maxillofacial Implants},
+  year    = {1986}, volume = {1}, number = {1}, pages = {11--25},
+  note    = {Success criterion: < 0.2 mm/yr MBL after the first year}
+}
+
+@article{Oh2002,
+  author  = {Oh, Tae-Ju and Yoon, Jeffrey and Misch, Carl E. and Wang, Hom-Lay},
+  title   = {The causes of early implant bone loss: myth or science?},
+  journal = {Journal of Periodontology},
+  year    = {2002}, volume = {73}, number = {3}, pages = {322--333},
+  doi     = {10.1902/jop.2002.73.3.322},
+  note    = {Crestal-localisation consensus of marginal bone loss}
+}
+
+@article{Isidor1997,
+  author  = {Isidor, F.},
+  title   = {Histological evaluation of peri-implant bone at implants subjected to occlusal overload or plaque accumulation},
+  journal = {Clinical Oral Implants Research},
+  year    = {1997}, volume = {8}, number = {1}, pages = {1--9},
+  doi     = {10.1111/j.1600-0501.1997.tb00001.x},
+  note    = {Monkey overload model (pro-overload evidence)}
+}
+
+@article{Naert2012,
+  author  = {Naert, Ignace and Duyck, Joke and Vandamme, Katleen},
+  title   = {Occlusal overload and bone/implant loss},
+  journal = {Clinical Oral Implants Research},
+  year    = {2012}, volume = {23}, number = {Suppl 6}, pages = {95--107},
+  doi     = {10.1111/j.1600-0501.2012.02550.x},
+  note    = {Human evidence questions overload as primary MBL cause}
+}
+
+% ─── ISO loading + crestal stress reference values ───────────────────────────
+@misc{ISO14801_2016,
+  author       = {{International Organization for Standardization}},
+  title        = {{ISO 14801:2016} Dentistry --- Implants --- Dynamic loading test for endosseous dental implants},
+  year         = {2016},
+  howpublished = {Standard, Geneva, Switzerland},
+  note         = {Specifies the 30 deg worst-case loading geometry (not a fixed load magnitude)}
+}
+
+@article{GengTanLiu2001,
+  author  = {Geng, Jian-Ping and Tan, Keson B. C. and Liu, Gui-Rong},
+  title   = {Application of finite element analysis in implant dentistry: a review of the literature},
+  journal = {The Journal of Prosthetic Dentistry},
+  year    = {2001}, volume = {85}, number = {6}, pages = {585--598},
+  doi     = {10.1067/mpr.2001.115251}
+}
+
+@article{Sevimay2005,
+  author  = {Sevimay, M. and Turhan, F. and Kili{\c{c}}arslan, M. A. and Eskitascioglu, G.},
+  title   = {Three-dimensional finite element analysis of the effect of different bone quality on stress distribution in an implant-supported crown},
+  journal = {The Journal of Prosthetic Dentistry},
+  year    = {2005}, volume = {93}, number = {3}, pages = {227--234},
+  doi     = {10.1016/j.prosdent.2004.12.019}
+}
+
+@article{Himmlova2004,
+  author  = {Himmlov{\'a}, Lucie and Dost{\'a}lov{\'a}, Tatjana and K{\'a}covsk{\'y}, Alois and Kone{\v{c}}n{\'y}, Svatava},
+  title   = {Influence of implant length and diameter on stress distribution: a finite element analysis},
+  journal = {The Journal of Prosthetic Dentistry},
+  year    = {2004}, volume = {91}, number = {1}, pages = {20--25},
+  doi     = {10.1016/j.prosdent.2003.08.008}
+}
+
+@article{Baggi2008,
+  author  = {Baggi, Luigi and Cappelloni, Ilaria and Di Girolamo, Michele and Maceri, Franco and Vairo, Giuseppe},
+  title   = {The influence of implant diameter and length on stress distribution of osseointegrated implants related to crestal bone geometry: a three-dimensional finite element analysis},
+  journal = {The Journal of Prosthetic Dentistry},
+  year    = {2008}, volume = {99}, number = {6}, pages = {422--431},
+  doi     = {10.1016/S0022-3913(08)60096-1}
+}
+
+@article{Gosai2024,
+  author  = {Gosai, K. N. and Tripathi, V. D. and Yadav, S. and Vyas, D. and Gopinath, P. V. and Parihar, A. S. and Abraham, S.},
+  title   = {Finite element analysis (FEA) of stress distribution in platform-switched short dental implants},
+  journal = {Bioinformation},
+  year    = {2024}, volume = {20}, number = {3}, pages = {248--251},
+  doi     = {10.6026/973206300200248},
+  note    = {Crestal cortical vM ~29.3 MPa at 120 N / 35 deg; sub-crestal placement reduces stress. PMCID: PMC11069601. PDF in docs/refs/}
+}
+
+@article{Talreja2023,
+  author  = {Talreja, others},
+  title   = {Peri-implant strain under functional loading: a finite element / strain-gauge study},
+  journal = {International Journal of Dentistry},
+  year    = {2023}, volume = {2023}, pages = {8851098},
+  note    = {VERIFY author/title; reports 330--2090 ue peri-implant strain}
+}
+
+@article{Gialain2022,
+  author  = {Gialain, I. O. and Silva, L. F. R. and Takano, M. K. G. and Ballester, R. Y. and Roscoe, M. G. and Meira, J. B. C.},
+  title   = {Peri-implant bone resorption risk of anterior maxilla narrow single implants: a finite-element analysis},
+  journal = {Biomaterial Investigations in Dentistry},
+  year    = {2022}, volume = {9}, number = {1}, pages = {92--100},
+  doi     = {10.1080/26415275.2022.2135516},
+  note    = {Frost ep=4000 ue -> overload SED limits Spc=109.6, Spt=10.96 uJ/mm^3. PMCID: PMC9621276. PDF in docs/refs/}
+}
+
+@article{Su2019,
+  author  = {Su, Kaixin and Yuan, Lin and Yang, Jianjun and Du, Jianke},
+  title   = {Numerical Simulation of Mandible Bone Remodeling under Tooth Loading: A Parametric Study},
+  journal = {Scientific Reports},
+  year    = {2019}, volume = {9}, pages = {14887},
+  doi     = {10.1038/s41598-019-51429-w},
+  note    = {S0=0.008 J/g, B*dt=2, lazy zone 15 percent, rho in [0.1,2.2]. PMCID: PMC6797806. PDF in docs/refs/}
+}
