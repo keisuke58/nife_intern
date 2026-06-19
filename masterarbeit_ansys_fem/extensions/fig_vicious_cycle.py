@@ -152,18 +152,22 @@ def make(lang: str) -> None:
     wrap = 104 if lang == "en" else 46                  # CJK glyphs are ~double width
     lines = [textwrap.fill(f"{term} — {defn}", width=wrap, subsequent_indent="      ")
              for term, defn in t["gloss"]]
-    ax.set_ylim(-4.0, 1.95)
+    ax.set_ylim(-4.4, 1.95)
     ax.text(-1.88, -2.08, t["gloss_title"], ha="left", va="top", fontsize=10.5, color=INK,
             fontweight="bold", zorder=4)
-    ax.text(-1.88, -2.34, "\n".join(lines), ha="left", va="top", fontsize=8.4, color=INK, zorder=4,
-            linespacing=1.55,
-            bbox=dict(boxstyle="round,pad=0.55", fc="#fbfcfc", ec="0.78", lw=0.8))
+    gtext = ax.text(-1.88, -2.34, "\n".join(lines), ha="left", va="top", fontsize=8.4, color=INK,
+                    zorder=4, linespacing=1.55,
+                    bbox=dict(boxstyle="round,pad=0.55", fc="#fbfcfc", ec="0.78", lw=0.8))
 
-    # sources / grounding footnote (separates literature mechanisms from this work's model)
+    # sources footnote — placed BELOW the measured glossary-box bottom (height varies EN/JA)
+    fig.canvas.draw()
+    bb = gtext.get_window_extent(renderer=fig.canvas.get_renderer())
+    _, y_bot = ax.transData.inverted().transform((bb.x0, bb.y0))
     sw = 118 if lang == "en" else 54
-    src = "\n".join(textwrap.fill(t["sources"], width=sw).splitlines())
-    ax.text(-1.88, -3.62, src, ha="left", va="top", fontsize=7.4, color="#5d6d7e",
+    src = textwrap.fill(t["sources"], width=sw)
+    ax.text(-1.88, y_bot - 0.28, src, ha="left", va="top", fontsize=7.4, color="#5d6d7e",
             style="italic", zorder=4, linespacing=1.45)
+    ax.set_ylim(y_bot - 1.05, 1.95)
 
     ax.set_title(t["title"], fontsize=14.5, color=INK, pad=14)
     fig.tight_layout()
