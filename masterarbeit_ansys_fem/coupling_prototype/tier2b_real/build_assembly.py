@@ -13,6 +13,8 @@ Couplings (*TIE, ADJUST=YES):  PDL-outer <-> bone socket(24);  implant <-> bone 
 Steps: (1) dysbiotic biofilm growth;  (2) occlusal load on both crowns -> transmitted through bone.
 Units mm, MPa.
 """
+import json
+import os
 import sys
 import numpy as np
 
@@ -193,6 +195,13 @@ def main():
     #                                       keeps the legacy subcrestal bone-carved collar.
     if len(sys.argv) > 3:                 # optional crown Young's modulus override (MPa), design sweep
         MATS["CROWN"] = (float(sys.argv[3]), 0.30)
+    # MATS_OVERRIDE env var: JSON dict {mat_name: [E_MPa, nu]} for sensitivity sweeps. Keeps the headline
+    # workflow unchanged when unset.
+    _mats_override = os.environ.get("MATS_OVERRIDE")
+    if _mats_override:
+        for k, v in json.loads(_mats_override).items():
+            MATS[k] = (float(v[0]), float(v[1]))
+        print("[build_assembly] MATS_OVERRIDE applied:", _mats_override)
     bone = np.load(f"{OUT}/cache_bone.npz")
     dent = np.load(f"{OUT}/cache_dentin.npz")
     imp = np.load(f"{OUT}/{imp_cache}")
