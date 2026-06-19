@@ -42,6 +42,15 @@ TEXT = {
         "tipping": "tipping point\n$b_{\\mathrm{crit}}\\approx0.44$,  RANKL:OPG $\\approx2.1$\n12/15 patients $\\rightarrow$ > 2 mm loss",
         "counter": "homeostasis (TGF-β: OC→OB)\nfails above the tipping point",
         "edge": ["RANKL/OPG ↑", "bone loss  $L\\uparrow$", "crest stress ↑", "pathological\nmechanostat"],
+        "gloss_title": "Terms",
+        "gloss": [
+            ("RANKL / OPG", "receptor activator of NF-κB ligand / osteoprotegerin — their ratio is the master switch for osteoclast (bone-resorbing cell) activation"),
+            ("GDI", "guild dysbiosis index, log(dysbiotic / commensal) — severity of the microbial imbalance"),
+            ("A(L)", "crestal stress-amplification factor as a function of marginal bone loss L (from the FEM bone-loss sweep)"),
+            ("µε (microstrain)", "$10^{-6}$ strain; Frost mechanostat thresholds (>3000 µε = pathological overload → resorption)"),
+            ("TGF-β", "growth factor coupling resorption → formation — the homeostatic counter-loop"),
+            ("$b_{\\mathrm{crit}}$", "dysbiosis level at which the loop tips from arrested to runaway bone loss"),
+        ],
     },
     "ja": {
         "font": "Noto Serif CJK JP",
@@ -57,6 +66,15 @@ TEXT = {
         "tipping": "ティッピングポイント\n$b_{\\mathrm{crit}}\\approx0.44$,  RANKL:OPG $\\approx2.1$\n15例中12例 → >2 mm 吸収",
         "counter": "恒常性 (TGF-β: OC→OB)\n閾値を超えると破綻",
         "edge": ["RANKL/OPG ↑", "骨損失 $L\\uparrow$", "歯頸部応力 ↑", "病理的\nメカノスタット"],
+        "gloss_title": "用語",
+        "gloss": [
+            ("RANKL / OPG", "破骨細胞（骨を溶かす細胞）活性化の分子スイッチ。RANKL:OPG 比が高いほど骨吸収"),
+            ("GDI", "ギルド・ディスバイオシス指数 log(病的菌 / 常在菌) — 微生物の乱れの重症度"),
+            ("A(L)", "辺縁骨損失 L に対する歯頸部応力の増幅率（FEM の骨損失スイープ由来）"),
+            ("µε（マイクロストレイン）", "$10^{-6}$ ひずみ。Frost メカノスタット閾値（>3000 µε = 病理的過負荷 → 吸収）"),
+            ("TGF-β", "骨吸収 → 形成を結ぶ成長因子 — 恒常性カウンターループ"),
+            ("$b_{\\mathrm{crit}}$", "ループが沈静化から暴走的骨損失へ転じるディスバイオシス閾値"),
+        ],
     },
 }
 
@@ -125,6 +143,18 @@ def make(lang: str) -> None:
     # homeostatic counter-loop note (green)
     ax.text(0, -1.78, t["counter"], ha="center", va="center", fontsize=9.5, color=GREEN, zorder=4,
             linespacing=1.35, bbox=dict(boxstyle="round,pad=0.35", fc=GREEN_SOFT, ec=GREEN, lw=1.0))
+
+    # ── glossary / term explanations ──────────────────────────────────────────
+    import textwrap
+    wrap = 104 if lang == "en" else 46                  # CJK glyphs are ~double width
+    lines = [textwrap.fill(f"{term} — {defn}", width=wrap, subsequent_indent="      ")
+             for term, defn in t["gloss"]]
+    ax.set_ylim(-3.55, 1.95)
+    ax.text(-1.88, -2.08, t["gloss_title"], ha="left", va="top", fontsize=10.5, color=INK,
+            fontweight="bold", zorder=4)
+    ax.text(-1.88, -2.34, "\n".join(lines), ha="left", va="top", fontsize=8.4, color=INK, zorder=4,
+            linespacing=1.55,
+            bbox=dict(boxstyle="round,pad=0.55", fc="#fbfcfc", ec="0.78", lw=0.8))
 
     ax.set_title(t["title"], fontsize=14.5, color=INK, pad=14)
     fig.tight_layout()
