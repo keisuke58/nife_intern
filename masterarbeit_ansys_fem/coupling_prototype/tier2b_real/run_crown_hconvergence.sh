@@ -53,9 +53,14 @@ build_and_solve() {
             echo ">>> solve $J ($order)"
             "$ABQ" job="$J" cpus=1 interactive >"${J}.log" 2>&1 || true
             if grep -q COMPLETED "${J}.log"; then
-                "$ABQ" python extract_pimp_field.py "$J" >/dev/null 2>&1 || true
-                # one-line p95 via the EXACT thesis metric (uses ${J}_field.json)
-                python3 - "$J" "$lc" "$kind" "$order" <<'PY'
+                # extract_tier2b_q.py emits ${J}_field.json with x,y,z,mat,vmg,vmo for BOTH C3D4 and
+                # C3D10 inps (extract_pimp_field.py was the wrong extractor — pimp_ prefix, "BONE"
+                # elset, r/vm schema — and silently failed, killing the sweep under set -e).
+                "$ABQ" python extract_tier2b_q.py "$J" >"${J}.extract.log" 2>&1 || \
+                    echo "  WARN: extract failed for $J (see ${J}.extract.log)"
+                if [ -f "${J}_field.json" ]; then
+                    # one-line p95 via the EXACT thesis metric; never fatal to the sweep (|| true)
+                    python3 - "$J" "$lc" "$kind" "$order" <<'PY' || echo "  WARN: p95 failed for $J"
 import json, sys, numpy as np
 job, lc, kind, order = sys.argv[1:]
 T23 = np.array([-69.4, -41.0]); CREST = 29.0
@@ -71,6 +76,9 @@ rec = {"job": job, "lc": float(lc), "kind": kind, "order": order,
 print(json.dumps(rec))
 open("hconv_results.jsonl", "a").write(json.dumps(rec) + "\n")
 PY
+                else
+                    echo "  WARN: ${J}_field.json missing — skipping p95 for $J (sweep continues)"
+                fi
             else
                 echo "$J FAILED"
                 grep -iE "error|abort" "${J}.dat" 2>/dev/null | head -3 || true
