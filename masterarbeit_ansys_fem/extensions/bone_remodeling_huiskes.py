@@ -10,13 +10,16 @@ shows three things:
       peri-implant loading;
   (2) the mechanostat threshold k separates "stable osseointegration" (interface densifies) from
       "stress shielding" (interface resorbs) — the classic implant-FEM clinical translation;
-  (3) Huiskes density updates are mechanistically *equivalent* to a TGF-β-mediated OB activation
-      in the RANKL/OPG model (the thesis disease model). Specifically:
-          formation rate    ≈  +B (S − k(1+w))       ↔   OB activation by TGF-β release
-          resorption rate   ≈  −B (k(1−w) − S)       ↔   RANKL/OPG-driven OC activation
-      so the same SED → density curve is obtained whether one solves the phenomenological Huiskes
-      equation OR the mechanistic RANKL/OPG ODE under stress-modulated dynamics. The agreement is
-      shown in fig_huiskes_vs_rankl_opg.pdf.
+  (3) the phenomenological Huiskes law is the *sharp-threshold limit* of the mechanistic RANKL/OPG
+      remodeling model:
+          formation rate    ≈  +B (S − k(1+w))       ↔   OB activation above the upper threshold
+          resorption rate   ≈  −B (k(1−w) − S)       ↔   RANKL/OPG-driven OC activation below it
+      Writing each lineage as a graded (softplus, width τ) activation gives an ODE that is identical
+      to Huiskes as τ → 0; for a finite biological τ the smooth model converges to the lazy-zone
+      centre and the steady-state density drift vs. Huiskes scales ~linearly with τ (≈3 % at
+      τ = 0.005·k under physiological load — the *measured* value is reported in panel C, not assumed
+      to be zero). See rankl_opg_density_proxy() and notes/bone_remodeling_huiskes_2026-06-19.md.
+      Figure: fig_bone_remodeling_huiskes.pdf.
 
 This gives the thesis access to the "standard language" of dental FEM examiners (Huiskes is
 universally cited) while reusing the mechanistic disease model. The phase-field (B.1) handles
@@ -104,26 +107,66 @@ def converge_to_steady(rho0: np.ndarray, U: np.ndarray, dt: float = 0.5,
     return rho, np.array(hist)
 
 
-def rankl_opg_density_proxy(U: np.ndarray, rho0: np.ndarray, dt: float = 0.5,
-                            n_iter: int = 5000) -> np.ndarray:
-    """Mechanistically-equivalent density predicted from a reduced RANKL/OPG ODE.
+RANKL_TAU_FRAC = 0.005      # graded-activation width as a fraction of K_STIM (→0 recovers Huiskes)
 
-    Mechanism (the disease model's reduced form): TGF-β release from bone matrix during resorption
-    activates osteoblasts (OB); RANKL/OPG ratio modulates osteoclast (OC) activity. We map:
-        dρ/dt ≈ B · ( a_OB · S − a_OC / (1 + exp(−(K − S)/σ)) )
-    The first term is TGF-β-mediated OB formation (linear in stimulus), the second is OC resorption
-    that switches on when SED falls below the mechanostat reference. Calibrate a_OB / a_OC so the
-    Huiskes steady state is matched at S = K (the lazy-zone centre).
+
+def rankl_opg_density_proxy(U: np.ndarray, rho0: np.ndarray, dt: float = 0.5,
+                            n_iter: int = 400000, tol: float = 1e-8,
+                            tau: float | None = None) -> np.ndarray:
+    """Reduced RANKL/OPG remodeling, written as a graded-threshold (smooth) mechanostat.
+
+    Mechanism (the disease model's reduced form): osteoblast (OB) formation activates *above* the
+    upper mechanostat threshold K_hi = K(1+w) (overload → microdamage → TGF-β release → OB
+    recruitment); osteoclast (OC) resorption activates *below* the lower threshold K_lo = K(1−w)
+    (disuse → RANKL/OPG up). Each lineage is recruited *progressively* over a width τ as the stimulus
+    crosses its threshold (graded, not a hard switch):
+
+        dρ/dt = B · [ a_OB · softplus(S − K_hi; τ)  −  a_OC · softplus(K_lo − S; τ) ],
+        softplus(x; τ) = τ·log(1 + e^{x/τ})  →  max(x, 0)  as τ → 0.
+
+    EQUIVALENCE — read carefully (this is the honest, measured statement; see
+    notes/bone_remodeling_huiskes_2026-06-19.md):
+
+      • In the hard-threshold limit τ → 0, softplus → ReLU and this law becomes *identical* to the
+        Huiskes/Frost update (update_density), dead band and all. So the Huiskes law is exactly the
+        sharp-threshold limit of the mechanistic RANKL/OPG model — that is the equivalence.
+
+      • For a finite, biologically graded τ > 0 the softplus tails leak into the lazy zone, so the
+        smooth model has a *single* attractor at the lazy-zone centre S = K (where the two softplus
+        terms balance) rather than Huiskes' whole dead-band interval. The resulting steady-state
+        density drift vs. Huiskes is therefore NOT zero; it scales ~linearly with τ
+        (≈3 % at τ = 0.005·K under physiological load, larger under disuse — panel C reports the
+        measured value). A unique-fixed-point ODE cannot reproduce Huiskes' history-dependent dead
+        band exactly except in the τ → 0 limit; we report the achieved agreement rather than claim
+        spurious pointwise identity.
+
+      a_OB = a_OC = 1 (= the Huiskes formation/resorption gains; no separate calibration constant).
+
+    This replaces an earlier draft whose proxy (linear-OB a_OB=1/K + sigmoid-OC) had NO dead band,
+    a fixed point off the lazy zone, and an explicit-Euler clip-to-clip limit cycle in the resorption
+    tail — it reported a meaningless 63 % "drift". The three defects (dead band / calibration /
+    stability) are fixed here; the residual few-percent drift below is real and τ-controlled.
+
+    Integrates to steady state (tol-based early stop); convergence is slow because the lazy-zone
+    drive is O(τ), hence the high n_iter ceiling.
     """
-    a_OB = 1.0 / K_STIM
-    a_OC = 1.0
-    sigma = LAZY_W * K_STIM
+    K_hi = K_STIM * (1.0 + LAZY_W)
+    K_lo = K_STIM * (1.0 - LAZY_W)
+    if tau is None:
+        tau = RANKL_TAU_FRAC * K_STIM
+    a_OB = a_OC = 1.0
+
+    def softplus(x: np.ndarray) -> np.ndarray:
+        return tau * np.logaddexp(0.0, x / tau)   # numerically stable τ·log(1+e^{x/τ})
+
     rho = rho0.copy()
     for _ in range(n_iter):
         S = stimulus(U, rho)
-        d_form = B_RATE * a_OB * (S - K_STIM)
-        d_res = -B_RATE * a_OC / (1.0 + np.exp((S - K_STIM) / sigma))
-        rho = np.clip(rho + dt * (d_form + d_res), RHO_MIN, RHO_MAX)
+        drho = B_RATE * (a_OB * softplus(S - K_hi) - a_OC * softplus(K_lo - S))
+        rho_new = np.clip(rho + dt * drho, RHO_MIN, RHO_MAX)
+        if np.linalg.norm(rho_new - rho) / max(np.linalg.norm(rho), 1e-12) < tol:
+            return rho_new
+        rho = rho_new
     return rho
 
 
@@ -160,16 +203,27 @@ def main() -> None:
     axes[1].legend(fontsize=9)
     axes[1].grid(True, lw=0.4, alpha=0.4)
 
-    # Panel C: Huiskes vs RANKL/OPG-proxy equivalence
-    rho_rankl = rankl_opg_density_proxy(U_norm, rho0)
+    # Panel C: Huiskes IS the sharp-threshold limit of the RANKL/OPG mechanostat.
+    # Headline graded width, plus a near-limit τ to show convergence to Huiskes as τ → 0.
+    tau_head = RANKL_TAU_FRAC * K_STIM
+    tau_limit = 0.001 * K_STIM
+    rho_rankl = rankl_opg_density_proxy(U_norm, rho0, tau=tau_head)
+    rho_limit = rankl_opg_density_proxy(U_norm, rho0, tau=tau_limit)
+    rel = lambda a, b: float(np.linalg.norm(a - b) / np.linalg.norm(a)) * 100.0
+    rel_err = rel(rho_norm, rho_rankl)
+    rel_lim = rel(rho_norm, rho_limit)
     axes[2].plot(z, rho_norm, "k-", lw=2.0, label="Huiskes (1987/2000)")
-    axes[2].plot(z, rho_rankl, "r--", lw=2.0, label="RANKL/OPG ODE proxy")
+    axes[2].plot(z, rho_rankl, "r--", lw=2.0,
+                 label=fr"RANKL/OPG, $\tau$={RANKL_TAU_FRAC:.3f}·k  (|Δ|={rel_err:.1f}%)")
+    axes[2].plot(z, rho_limit, color="#1f77b4", ls=":", lw=1.8,
+                 label=fr"RANKL/OPG, $\tau$=0.001·k  (|Δ|={rel_lim:.1f}%)")
     axes[2].set_xlabel("depth z [mm]")
     axes[2].set_ylabel(r"steady-state $\rho$ [g/cm³]")
-    rel_err = float(np.linalg.norm(rho_norm - rho_rankl) / np.linalg.norm(rho_norm)) * 100.0
-    axes[2].set_title(f"(C) Equivalence: Huiskes ↔ RANKL/OPG  (|Δ|={rel_err:.2f} %)",
-                      fontsize=11, loc="left")
-    axes[2].legend(fontsize=9)
+    axes[2].set_title(r"(C) Huiskes = $\tau\!\to\!0$ limit of RANKL/OPG", fontsize=11, loc="left")
+    axes[2].annotate(r"graded threshold $\tau\!\to\!0$" "\n" r"$\Rightarrow$ exact Huiskes ($|\Delta|\to 0$)",
+                     xy=(0.97, 0.05), xycoords="axes fraction", ha="right", va="bottom", fontsize=8,
+                     bbox=dict(boxstyle="round", fc="#fffbe6", ec="0.6", lw=0.5))
+    axes[2].legend(fontsize=8, loc="upper right")
     axes[2].grid(True, lw=0.4, alpha=0.4)
 
     fig.suptitle("Bone remodeling — Huiskes/Frost mechanostat for peri-implant bone density",
@@ -178,7 +232,8 @@ def main() -> None:
     fig.savefig(OUT / "fig_bone_remodeling_huiskes.pdf")
     fig.savefig(OUT / "fig_bone_remodeling_huiskes.png", dpi=200)
     print(f"wrote {(OUT / 'fig_bone_remodeling_huiskes.pdf').name}")
-    print(f"Huiskes / RANKL-OPG-proxy relative norm diff = {rel_err:.3f} %")
+    print(f"RANKL/OPG vs Huiskes drift: tau={RANKL_TAU_FRAC:.3f}*k -> {rel_err:.2f}% ; "
+          f"tau=0.001*k -> {rel_lim:.2f}%  (-> 0 as tau -> 0)")
 
 
 if __name__ == "__main__":
