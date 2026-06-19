@@ -51,6 +51,7 @@ TEXT = {
             ("TGF-β", "growth factor coupling resorption → formation — the homeostatic counter-loop"),
             ("$b_{\\mathrm{crit}}$", "dysbiosis level at which the loop tips from arrested to runaway bone loss"),
         ],
+        "sources": "Mechanisms: Frost 1987/2003 (mechanostat) · Lemaire 2004, Pivonka 2008, Boyce & Xing 2007 (RANKL/OPG) · Oh 2002 (crestal MBL).   Loop closure & A(L) from FEM: this work (model).",
     },
     "ja": {
         "font": "Noto Serif CJK JP",
@@ -75,6 +76,7 @@ TEXT = {
             ("TGF-β", "骨吸収 → 形成を結ぶ成長因子 — 恒常性カウンターループ"),
             ("$b_{\\mathrm{crit}}$", "ループが沈静化から暴走的骨損失へ転じるディスバイオシス閾値"),
         ],
+        "sources": "機構の根拠: Frost 1987/2003（メカノスタット）· Lemaire 2004, Pivonka 2008, Boyce & Xing 2007（RANKL/OPG）· Oh 2002（歯頸部骨吸収）.   ループ閉合・A(L)〔FEM〕: 本研究（モデル）.",
     },
 }
 
@@ -150,12 +152,18 @@ def make(lang: str) -> None:
     wrap = 104 if lang == "en" else 46                  # CJK glyphs are ~double width
     lines = [textwrap.fill(f"{term} — {defn}", width=wrap, subsequent_indent="      ")
              for term, defn in t["gloss"]]
-    ax.set_ylim(-3.55, 1.95)
+    ax.set_ylim(-4.0, 1.95)
     ax.text(-1.88, -2.08, t["gloss_title"], ha="left", va="top", fontsize=10.5, color=INK,
             fontweight="bold", zorder=4)
     ax.text(-1.88, -2.34, "\n".join(lines), ha="left", va="top", fontsize=8.4, color=INK, zorder=4,
             linespacing=1.55,
             bbox=dict(boxstyle="round,pad=0.55", fc="#fbfcfc", ec="0.78", lw=0.8))
+
+    # sources / grounding footnote (separates literature mechanisms from this work's model)
+    sw = 118 if lang == "en" else 54
+    src = "\n".join(textwrap.fill(t["sources"], width=sw).splitlines())
+    ax.text(-1.88, -3.62, src, ha="left", va="top", fontsize=7.4, color="#5d6d7e",
+            style="italic", zorder=4, linespacing=1.45)
 
     ax.set_title(t["title"], fontsize=14.5, color=INK, pad=14)
     fig.tight_layout()
