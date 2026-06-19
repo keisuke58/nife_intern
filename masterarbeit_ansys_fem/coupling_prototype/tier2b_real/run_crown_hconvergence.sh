@@ -35,8 +35,8 @@ build_and_solve() {
     local crown_job="tier2b_crown_${tag_lc}"
     local generic_job="tier2b_generic_${tag_lc}"
 
-    echo "=== [LC=$lc] regenerate crown mesh ==="
-    CROWN_LC=$lc python mesh_crown.py | tail -2
+    echo "=== [LC=$lc] regenerate crown mesh (via mesh_crown_lc.py wrapper) ==="
+    python mesh_crown_lc.py "$lc" | tail -2
 
     for job_pair in "cache_implant.npz $crown_job crown" "cache_implant_generic.npz $generic_job generic"; do
         read -r cache jobname kind <<<"$job_pair"

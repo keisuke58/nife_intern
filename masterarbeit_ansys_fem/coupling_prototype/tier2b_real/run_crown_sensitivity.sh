@@ -61,7 +61,7 @@ for mat in "${!E_BASE[@]}"; do
         for spec in "cache_implant.npz tier2b_crown_${tag} crown" \
                     "cache_implant_generic.npz tier2b_generic_${tag} generic"; do
             read -r cache jobname kind <<<"$spec"
-            MATS_OVERRIDE="$override" python build_assembly.py "$cache" "$jobname" 2>&1 | tail -2
+            MATS_OVERRIDE="$override" python build_assembly_override.py "$cache" "$jobname" 2>&1 | tail -2
             rm -f "${jobname}.lck"
             "$ABQ" job="$jobname" cpus=1 interactive >"${jobname}.log" 2>&1 || true
             if grep -q COMPLETED "${jobname}.log"; then

@@ -15,8 +15,10 @@ changed; the new scripts add bracketing / cross-checking on top.
 
 ## A1 — h-convergence (crown LC sweep)
 
-**Knob.** `mesh_crown.py` LC (crown tet edge, mm); patched to read `CROWN_LC` env var (default 0.40
-= headline → behaviour unchanged when unset).
+**Knob.** `mesh_crown.py` LC (crown tet edge, mm). The headline `mesh_crown.py` is preserved untouched
+(per the project new-variant convention); a thin wrapper `mesh_crown_lc.py` accepts LC from `sys.argv[1]`,
+monkey-patches `mesh_crown.LC`, and calls `mesh_crown.main()` so the geometry / OCC steps / cache
+filename are byte-identical.
 
 **Sweep.** `run_crown_hconvergence.sh` halves/doubles LC ∈ {0.55, 0.40, 0.30, 0.22}. For each LC the
 crowned and bare-generic jobs are assembled, solved at C3D4 (`build_assembly.py`) AND quadratically
@@ -46,8 +48,10 @@ re-run with LC ∈ {0.22, 0.17, 0.13} until the criteria are met.
 
 ## A2 — Material-parameter OAT sensitivity
 
-**Knob.** New `MATS_OVERRIDE` env var in `build_assembly.py`: JSON `{mat_name: [E_MPa, nu]}`. Applied
-after the existing `sys.argv[3]` CROWN-E override so headline / design sweeps are unaffected.
+**Knob.** Wrapper script `build_assembly_override.py` honours `MATS_OVERRIDE` env var (JSON
+`{mat_name: [E_MPa, nu]}`), mutates `build_assembly.MATS`, then runpy-invokes the headline CLI. The
+headline `build_assembly.py` is preserved untouched; with `MATS_OVERRIDE` unset the wrapper is
+byte-identical to running `build_assembly.py` directly.
 
 **Sweep.** `run_crown_sensitivity.sh` perturbs each of the soft / uncertain materials at E×0.5 and
 E×2.0 (nu fixed at headline value), one at a time, holding all others at headline:
