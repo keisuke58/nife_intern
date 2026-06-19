@@ -80,7 +80,7 @@ that the model correctly reproduces inter-patient community structure, not just 
 trajectories.
 Patient-specific growth vectors $\hat{b}_p$ cluster by community type (CT1/CT2)
 even without explicit CT supervision.
-External validation on 127 independent cross-sectional peri-implant samples~\citep{joshi2025}
+External validation on 127 independent cross-sectional peri-implant samples~\citep{szafranski2025}
 shows that the Dieckow-fitted $\bA$ correctly orders community dysbiosis across health,
 mucositis, and peri-implantitis (Kruskal-Wallis $p<0.0001$, Spearman $\rho=0.46$,
 binary Health vs.\ PI $\rho=0.59$).
@@ -141,7 +141,7 @@ model fit to the Dieckow~et~al.~(2024) longitudinal dataset.
 We evaluate out-of-sample generalisation by leave-one-patient-out (LOO) cross-validation
 using RMSE and Bray-Curtis dissimilarity, compare a Hamilton Normal-Species-Pool (NSP)
 formulation as a mechanistically richer alternative, validate the inferred interaction
-matrix on an independent peri-implant dataset~\citep{joshi2025}, and extend the
+matrix on an independent peri-implant dataset~\citep{szafranski2025}, and extend the
 fitted model to a 1D reaction-diffusion PDE to probe predicted spatial stratification
 along the biofilm depth axis.
 
@@ -422,10 +422,10 @@ trajectories, we apply PCA and Linear Discriminant Analysis (LDA) to the stacked
 predicted and observed W2/W3 compositions ($20 \times 10$ matrix). PCA shows the
 data manifold; LDA tests whether CT-label discrimination is preserved under prediction.
 
-\subsection{External validation: Joshi attractor analysis}
-\label{ssec:joshi}
+\subsection{External validation: Szafra\'{n}ski peri-implant attractor analysis}
+\label{ssec:szafranski_attractor}
 
-Each cross-sectional sample from~\citet{joshi2025} (127 samples: Health/Mucositis/
+Each cross-sectional sample from~\citet{szafranski2025} (127 samples: Health/Mucositis/
 Peri-implantitis) is mapped to the 10-guild simplex: the 5 measured genera
 (Actinomyces, Streptococcus, Porphyromonas, Fusobacterium, Veillonella) are assigned
 to their respective guilds; the remaining 5 guilds are zero-imputed ($\phi=10^{-5}$)
@@ -1357,10 +1357,10 @@ $\text{R/G}_{w3} < -5$ may predict durable remission of at least 6 weeks.
 A potential concern with the relapse projections is that they extrapolate from
 3-week calibration data to 150-day equilibria, with no held-out longitudinal validation.
 To partially address this, we compared the model-predicted long-time R/G ratio distribution
-to the independent peri-implant dataset of Joshi et~al.~\citep{joshi2025}.
+to the independent peri-implant dataset of Szafra\'{n}ski et~al.~\citep{szafranski2025}.
 Across all 10 Dieckow patients, the mean equilibrium R/G ratio predicted by the model is
 $+0.65$ (SD $=0.87$); for 9 of 10 patients the equilibrium R/G ratio falls in the
-peri-implantitis (PI) range of Joshi et~al.\ ($\mu_\mathrm{PI}=+0.53$, $\sigma=1.30$).
+peri-implantitis (PI) range of Szafra\'{n}ski et~al.\ ($\mu_\mathrm{PI}=+0.53$, $\sigma=1.30$).
 By contrast, the mean week-3 R/G ratio for the same patients is $-0.50$, consistent with
 the Joshi mucositis/health range ($\mu_\mathrm{Muc}=-1.74$, $\mu_\mathrm{Health}=-2.09$).
 
