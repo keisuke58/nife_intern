@@ -61,7 +61,7 @@ def main() -> int:
         post /= post.sum() * (Bgrid[1] - Bgrid[0])        # normalise to a density
         return post
 
-    fig, axes = plt.subplots(1, 3, figsize=(14.5, 4.3))
+    fig, axes = plt.subplots(1, 4, figsize=(18.5, 4.3))
 
     # (A) forward maps: the observable and the outcome vs B
     ax = axes[0]; ax.plot(Bgrid, obs_map, color="#2c3e50", lw=2)
@@ -93,6 +93,31 @@ def main() -> int:
     ax.set_xlabel("predicted 36-mo bone loss [mm]"); ax.set_ylabel("posterior density")
     ax.set_title("(C) risk estimate tightens (VoI)", fontsize=11, loc="left")
     ax.legend(fontsize=7.5); ax.grid(True, lw=0.4, alpha=0.4)
+
+    # (D) cohort calibration: infer risk for every real patient from 3 PICF readings, vs the truth
+    inferred, truth, lo, hi = [], [], [], []
+    for b in Bdata:
+        rt, lt = forward(b, A)
+        o = rt + sigma * RNG.standard_normal(3)
+        ll = -0.5 * ((obs_map[None, :] - o[:, None]) / sigma) ** 2
+        post = np.exp(ll.sum(0) - ll.sum(0).max()); post /= post.sum()
+        bs = RNG.choice(Bgrid, size=3000, p=post); ls = np.interp(bs, Bgrid, loss_map)
+        inferred.append(np.median(ls)); truth.append(lt)
+        lo.append(np.percentile(ls, 2.5)); hi.append(np.percentile(ls, 97.5))
+    inferred = np.array(inferred); truth = np.array(truth)
+    axes[3].errorbar(truth, inferred, yerr=[inferred - np.array(lo), np.array(hi) - inferred],
+                     fmt="o", color="#c0392b", ecolor="0.7", ms=6, capsize=2)
+    lim = [0, max(truth.max(), inferred.max()) * 1.05]
+    axes[3].plot(lim, lim, "k--", lw=1.0, label="ideal $y=x$")
+    axes[3].axhline(LOSS_OK_C := 2.0, color="0.6", ls=":", lw=0.8); axes[3].axvline(2.0, color="0.6", ls=":", lw=0.8)
+    acc = float(np.mean((inferred > 2.0) == (truth > 2.0)))
+    from scipy.stats import pearsonr
+    r = pearsonr(truth, inferred)[0]
+    axes[3].set_xlabel("true 36-mo loss [mm]"); axes[3].set_ylabel("inferred (median ± CI95) [mm]")
+    axes[3].set_title(f"(D) cohort calibration\n$r$={r:.2f}, >2 mm acc={acc:.0%} (n={len(truth)})",
+                      fontsize=10, loc="left")
+    axes[3].legend(fontsize=8); axes[3].grid(True, lw=0.4, alpha=0.4)
+    print(f"cohort calibration: Pearson r={r:.2f}, risk-class (>2mm) accuracy={acc:.0%}")
 
     fig.suptitle("PICF inverse problem: RANKL:OPG → posterior peri-implantitis risk (model)", fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.95))
