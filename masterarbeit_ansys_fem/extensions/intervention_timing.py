@@ -39,13 +39,22 @@ def final_loss(B, A, tx_week=None, tx_fac=TX_FAC, block_rankl=0.0):
     return out[-1, 5]
 
 
-def treatment_window(B, A, grid):
-    """Latest debridement time (weeks) that still keeps 36-mo loss < LOSS_OK; nan if untreatable/never-needed."""
-    losses = np.array([final_loss(B, A, tx_week=tw) for tw in grid])
+def treatment_window(B, A, grid, tx_fac=TX_FAC, block_rankl=0.0):
+    """Latest treatment time (weeks) that still keeps 36-mo loss < LOSS_OK, for a given modality
+    (tx_fac = debridement strength; block_rankl = anti-RANKL). inf if never needed, 0 if untreatable."""
+    losses = np.array([final_loss(B, A, tx_week=tw, tx_fac=tx_fac, block_rankl=block_rankl) for tw in grid])
     ok = grid[losses < LOSS_OK]
     if losses[-1] < LOSS_OK and len(ok) == len(grid):
-        return np.inf           # never progresses even untreated
+        return np.inf
     return float(ok.max()) if len(ok) else 0.0
+
+
+# treatment modalities (tx_fac = residual dysbiosis after debridement; block_rankl = anti-RANKL fraction)
+MODALITIES = [
+    ("debridement", dict(tx_fac=TX_FAC, block_rankl=0.0), "#2c3e50"),
+    ("anti-RANKL", dict(tx_fac=1.0, block_rankl=0.6), "#8e44ad"),
+    ("combined", dict(tx_fac=TX_FAC, block_rankl=0.6), "#c0392b"),
+]
 
 
 def main() -> int:
@@ -73,17 +82,18 @@ def main() -> int:
     axes[0].set_title("(A) timing decides the outcome", fontsize=11, loc="left")
     axes[0].legend(fontsize=8); axes[0].grid(True, lw=0.4, alpha=0.4)
 
-    # (B) final loss vs intervention time -> the window
-    losses = np.array([final_loss(Bp, A, tx_week=tw) for tw in grid])
-    axes[1].plot(grid / 4.345, losses, "o-", color="#2c3e50", lw=2)
+    # (B) treatment window by modality: final loss vs intervention time for each modality
+    win = None
+    for name, kw, col in MODALITIES:
+        losses = np.array([final_loss(Bp, A, tx_week=tw, **kw) for tw in grid])
+        w = treatment_window(Bp, A, grid, **kw)
+        wlab = f"{w/4.345:.0f} mo" if np.isfinite(w) else "always safe"
+        axes[1].plot(grid / 4.345, losses, "-", color=col, lw=2, label=f"{name}  (window {wlab})")
+        if name == "debridement":
+            win = w
     axes[1].axhline(LOSS_OK, color="0.5", ls="--", lw=1.0)
-    win = treatment_window(Bp, A, grid)
-    if np.isfinite(win):
-        axes[1].axvline(win / 4.345, color="#c0392b", lw=1.5,
-                        label=f"latest safe treatment ≈ {win/4.345:.0f} mo")
-        axes[1].axvspan(0, win / 4.345, color="#27ae60", alpha=0.12)
     axes[1].set_xlabel("intervention time [months]"); axes[1].set_ylabel("final 36-mo loss [mm]")
-    axes[1].set_title("(B) the treatment window", fontsize=11, loc="left")
+    axes[1].set_title("(B) window by treatment modality", fontsize=11, loc="left")
     axes[1].legend(fontsize=8); axes[1].grid(True, lw=0.4, alpha=0.4)
 
     # (C) per-patient window vs GDI severity
