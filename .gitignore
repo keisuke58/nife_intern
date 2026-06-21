@@ -149,3 +149,10 @@ masterarbeit_ansys_fem/figures/blender_geom/
 
 # ParaView intermediate smoothed meshes (regenerable)
 masterarbeit_ansys_fem/figures/_smooth_*.ply
+
+# Abaqus runtime
+abaqus.rpy
+abaqus.rpy.*
+*.lck
+*.SMABulk
+*.SMAFocus
