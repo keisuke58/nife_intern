@@ -1,7 +1,8 @@
 """Peri-implantitis FEM x REAL IN-VIVO longitudinal data (Dieckow 2024, 10 patients x 3 weeks).
-The clinically-validated guild dysbiosis index
+The literature-anchored guild dysbiosis index (log-ratio form of Gevers 2014 MDI; guild split per
+Socransky 1998 / Abusleme 2013 / Griffen 2012)
    GDI = log(phi_Fuso + phi_Bact + phi_Clos) - log(phi_Bac + phi_Act + phi_Neg)
-(Joshi-validated, rho=0.46 vs clinical severity) is computed PER PATIENT over time from the real guild
+(moderate clinical correlation only, rho=0.46 vs severity -- NOT a strong validation) is computed PER PATIENT over time from the real guild
 abundances, then drives the peri-implant resorption rate amplified by the FEM stress-feedback A(loss)
 of study (1):
    d(loss)/dt = k * relu(GDI - GDI0) * A(loss).

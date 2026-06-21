@@ -2,7 +2,7 @@
 title: "インプラント FEM：ペリインプラント・バイオフィルムの組成分解力学"
 subtitle: "組成 $\\varphi_{Pg}$ → 成長固有ひずみ → インプラント界面残留応力 → 剥離"
 author: "西岡佳祐 — NIFE / SFB TRR-298"
-date: "2026-06-13"
+date: "2026-06-16"
 theme: "Madrid"
 colortheme: "whale"
 aspectratio: 169
@@ -43,6 +43,14 @@ raw 16S → guild $\varphi$ → gLV/Hamilton（＋符号 prior）→ 空間 PDE 
 \vspace{0.4em}
 力学的に何が起きているか：バイオフィルムが Ti 界面で成長し、界面に
 **応力**を生み、やがて**剥離**する。これを連続体力学で定量化する。
+
+---
+
+## 全体像：力学–生物のフィードバック・ループとしてのペリインプラント炎
+
+![](masterarbeit_ansys_fem/figures/fem_concept_overview_ja.pdf){ height=64% }
+
+\footnotesize \textbf{要点：} 柱2（生物 / ODE）と柱1（力学 / FEM）は橋渡し $A(L)$ を介して一つの赤い悪循環を成す：骨吸収 $L$ → $A(L)$ → 歯槽頂応力 $\sigma\uparrow$ → RANKL/OPG → さらなる吸収 — この臨界点（tipping point）が患者ごとのリスクと双安定性を生む。 \normalsize
 
 ---
 

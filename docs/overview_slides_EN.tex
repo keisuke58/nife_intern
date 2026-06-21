@@ -10,7 +10,7 @@
 \subtitle{An umbrella tying ecological ODE inference, metabolic
 simulation, and spatial extension}
 \author{Keisuke Nishioka --- NIFE}
-\date{2026-06-03}
+\date{2026-06-16}
 
 \usepackage{pgfpages}
 \setbeamertemplate{caption}[numbered]
@@ -272,9 +272,9 @@ Heine 2025 & in vitro ODE & --- & the four ODE attractors \\
 
 \vspace{0.3em}
 
-Dieckow gives the primary fit, Duran-Pinedo an independent cohort, Szafrański
-the cross-sectional community types, Heine the in-vitro dynamical
-reference.
+Dieckow gives the primary fit, Duran-Pinedo an independent cohort,
+Szafrański the cross-sectional community types, Heine the in-vitro
+dynamical reference.
 \end{frame}
 
 \begin{frame}[fragile]{The four ODE attractors}
@@ -326,7 +326,7 @@ time-series. Two models compared: \textbf{gLV} (asymmetric \(A\), RMSE
 
 \begin{frame}{Pillar 1 --- interaction inference and honest validation}
 \protect\hypertarget{pillar-1-interaction-inference-and-honest-validation}{}
-\includegraphics[width=\textwidth,height=0.44\textheight]{dieckow_paper/figures/fig2_loo_comparison.png}
+\includegraphics[width=\textwidth,height=0.5\textheight]{dieckow_paper/figures/fig2_loo_comparison.png}
 
 \begin{itemize}
 \tightlist
@@ -345,7 +345,7 @@ time-series. Two models compared: \textbf{gLV} (asymmetric \(A\), RMSE
 
 \begin{frame}{Pillar 1 --- attractor structure validation}
 \protect\hypertarget{pillar-1-attractor-structure-validation}{}
-\includegraphics[width=\textwidth,height=0.58\textheight]{dieckow_paper/figures/fig3_joshi_attractor.png}
+\includegraphics[width=\textwidth,height=0.64\textheight]{dieckow_paper/figures/fig3_joshi_attractor.png}
 
 Fixed points reconstructed from the inferred \(A\) correspond to the
 observed commensal / dysbiotic community types (Joshi attractor
@@ -399,6 +399,35 @@ deep (anaerobic niche). The 0D gLV is extended to a PDE with a
 \(z\)-direction diffusion term.
 \end{frame}
 
+\begin{frame}{Mechanical extension --- the mechano-biology vicious
+cycle}
+\protect\hypertarget{mechanical-extension-the-mechano-biology-vicious-cycle}{}
+\includegraphics[width=\textwidth,height=0.6\textheight]{masterarbeit_ansys_fem/figures/fem_concept_overview.png}
+
+The mechanical consequence of the spatial reorganisation (deep Pg): GDI
+(biology ODE) → inflammation RANKL/OPG → bone loss \(L\) → (bridge
+\(A(L)\)) → crestal stress \(\sigma\uparrow\) → positive feedback to
+RANKL. The two pillars (Pillar 2 biology, Pillar 1 mechanics FEM) close
+into a \textbf{vicious cycle (tipping point / bistability)} that yields
+per-patient risk.
+\end{frame}
+
+\begin{frame}{Mechanical extension --- peri-implant stress analysis}
+\protect\hypertarget{mechanical-extension-peri-implant-stress-analysis}{}
+\includegraphics[width=\textwidth,height=0.64\textheight]{masterarbeit_ansys_fem/figures/fem_implant_crown_section.png}
+
+\begin{enumerate}
+[(A)]
+\tightlist
+\item
+  Restored-implant hemisection anatomy (crown / gingiva / biofilm / Ti /
+  tooth + PDL / cortical + cancellous bone). (B) Occlusal \textbf{von
+  Mises stress \(\sigma_{\mathrm{vM}}\)} section --- stress
+  \textbf{concentrates at the crestal bone}, the entry point of the
+  vicious cycle.
+\end{enumerate}
+\end{frame}
+
 \begin{frame}[fragile]{How the sub-decks connect}
 \protect\hypertarget{how-the-sub-decks-connect}{}
 \begin{itemize}
@@ -418,19 +447,31 @@ deep (anaerobic niche). The 0D gLV is extended to a PDE with a
 \item
   \textbf{FISH pipeline:} CLSM \texttt{.lif} \(\to\) depth profiles (the
   PDE observable).
+\item
+  \textbf{Implant FEM (deck D):} composition \(\to\) growth eigenstrain
+  \(\to\) interface residual stress \(\to\) delamination / crestal
+  stress (the mechanical read-out).
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Status snapshot}
 \protect\hypertarget{status-snapshot}{}
-\begin{longtable}[]{@{}ll@{}}
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.50}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.50}}@{}}
 \toprule
-Item & State \\
+\begin{minipage}[b]{\linewidth}\raggedright
+Item
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+State
+\end{minipage} \\
 \midrule
 \endhead
 Interaction model + validation & \textbf{done} (LOO-RMSE 0.0504,
 \(p=4\times10^{-4}\)) \\
 Spatial diffusion fit & \textbf{running} on HPC \\
+Mechanics FEM (delamination / crestal stress) & \textbf{done} (DH/CH
+3.3×, crestal ×1.5) \\
 GDI / Joshi clinical validation & \textbf{awaiting} metadata \\
 \bottomrule
 \end{longtable}

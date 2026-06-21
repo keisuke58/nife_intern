@@ -300,12 +300,16 @@ for pos, diag in zip(positions, diag_order):
     ax.plot([pos - 0.18, pos + 0.18], [med, med], color='black',
             lw=2.0, zorder=6)
 
-    # mean annotation
+    # mean annotation. For Health, anchor just above the x-axis (axes-fraction
+    # y via get_xaxis_transform); for the others, label the mean in place.
     mn = np.mean(subset)
-    ax.text(pos, ax.get_ylim()[0] if pos==0 else mn,
-            f'mean={mn:.2f}', ha='center', va='top', fontsize=8,
-            color=col, fontweight='bold',
-            transform=ax.get_xaxis_transform() if pos==0 else ax.transData)
+    if pos == 0:
+        ax.text(pos, 0.02, f'mean={mn:.2f}', ha='center', va='bottom',
+                fontsize=8, color=col, fontweight='bold',
+                transform=ax.get_xaxis_transform())
+    else:
+        ax.text(pos, mn, f'mean={mn:.2f}', ha='center', va='top', fontsize=8,
+                color=col, fontweight='bold', transform=ax.transData)
 
 ax.axhline(0, color='black', lw=0.8, ls='--', alpha=0.5,
            label='GDI = 0 (equal dysbiotic/commensal)')

@@ -1,0 +1,5 @@
+reference,lit_band_MPa,load_N,angle_deg,crown_C3D4_judgment,crown_C3D10_judgment,generic_C3D4_judgment,generic_C3D10_judgment,note
+Sahin et al. 2002 (J Dent),16-28,100,30,in band (upper third),above band (29.4 > 28.0),in band (lower third),in band (lower third),premolar crown moment-arm; static FEM with cancellous + cortical layers
+Geng et al. 2004 (J Prosthet Dent),18-35,100,30,in band (middle third),in band (upper third),below band (17.2 < 18.0),in band (lower third),review band; recommends p95 reporting
+Cicciu et al. 2018 (Materials),22-38,150,30,in band (lower third),in band (middle third),below band (17.2 < 22.0),below band (18.9 < 22.0),150 N; scale linearly to 100 N ≈ 15–25 MPa
+Bozkaya et al. 2004 (J Prosthet Dent),14-32,100,30,in band (upper third),in band (upper third),in band (lower third),in band (lower third),thread / neck geometry dependent

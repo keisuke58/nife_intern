@@ -2,7 +2,7 @@
 title: "Implant FEM: Composition-Resolved Mechanics of the Peri-Implant Biofilm"
 subtitle: "Composition $\\varphi_{Pg} \\rightarrow$ growth eigenstrain $\\rightarrow$ implant-interface residual stress $\\rightarrow$ detachment"
 author: "Keisuke Nishioka — NIFE / SFB TRR-298"
-date: "2026-06-13"
+date: "2026-06-16"
 theme: "Madrid"
 colortheme: "whale"
 aspectratio: 169
@@ -43,6 +43,14 @@ supporting the implant.
 \vspace{0.4em}
 Mechanically: the biofilm grows at the Ti interface, generates interface
 **stress**, and eventually **detaches**. We quantify this with continuum mechanics.
+
+---
+
+## Conceptual overview: peri-implantitis as a mechano-biological feedback loop
+
+![](masterarbeit_ansys_fem/figures/fem_concept_overview.pdf){ height=58% }
+
+\footnotesize \textbf{Takeaway:} Pillar 2 (biology/ODE) and Pillar 1 (mechanics/FEM) close into one red vicious cycle through the bridge $A(L)$: bone loss $L$ → $A(L)$ → crestal stress $\sigma\uparrow$ → RANKL/OPG → more loss — a tipping point that yields per-patient risk + bistability. \normalsize
 
 ---
 

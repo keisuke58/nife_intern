@@ -10,7 +10,7 @@
 \title{プロジェクト全体像：口腔バイオフィルムの群集動態モデリング}
 \subtitle{生態 ODE 推定・代謝シミュレーション・空間拡張を束ねる傘}
 \author{西岡佳祐 --- NIFE}
-\date{2026-06-03}
+\date{2026-06-16}
 
 \usepackage{pgfpages}
 \setbeamertemplate{caption}[numbered]
@@ -304,7 +304,7 @@ Heine 2025 の in-vitro 5 菌種（So/An/Vd-Vp/Fn/Pg）時系列に対し ODE
 
 \begin{frame}{柱 1 --- 相互作用推定と誠実な検証}
 \protect\hypertarget{ux67f1-1-ux76f8ux4e92ux4f5cux7528ux63a8ux5b9aux3068ux8aa0ux5b9fux306aux691cux8a3c}{}
-\includegraphics[width=\textwidth,height=0.44\textheight]{dieckow_paper/figures/fig2_loo_comparison.png}
+\includegraphics[width=\textwidth,height=0.52\textheight]{dieckow_paper/figures/fig2_loo_comparison.png}
 
 \begin{itemize}
 \tightlist
@@ -322,7 +322,7 @@ Heine 2025 の in-vitro 5 菌種（So/An/Vd-Vp/Fn/Pg）時系列に対し ODE
 
 \begin{frame}{柱 1 --- アトラクター構造の検証}
 \protect\hypertarget{ux67f1-1-ux30a2ux30c8ux30e9ux30afux30bfux30fcux69cbux9020ux306eux691cux8a3c}{}
-\includegraphics[width=\textwidth,height=0.58\textheight]{dieckow_paper/figures/fig3_joshi_attractor.png}
+\includegraphics[width=\textwidth,height=0.7\textheight]{dieckow_paper/figures/fig3_joshi_attractor.png}
 
 推定した \(A\) から再構成した固定点が、観測された commensal / dysbiotic
 群集型に対応する（Joshi アトラクター解析）。動態は単なる回帰ではなく
@@ -374,6 +374,31 @@ gingivalis} が深部へ沈む（嫌気ニッチ）。0D の gLV を \(z\)
 方向の拡散項付き PDE に拡張する。
 \end{frame}
 
+\begin{frame}{力学拡張 --- 力学--生物連成の悪循環}
+\protect\hypertarget{ux529bux5b66ux62e1ux5f35-ux529bux5b66ux751fux7269ux9023ux6210ux306eux60aaux5faaux74b0}{}
+\includegraphics[width=\textwidth,height=0.6\textheight]{masterarbeit_ansys_fem/figures/fem_concept_overview_ja.png}
+
+空間再編（深部 Pg）の力学的帰結：GDI（生物 ODE）→ 炎症 RANKL/OPG →
+骨吸収 \(L\) →〔橋渡し \(A(L)\)〕→ 歯槽頂応力 \(\sigma\uparrow\) → RANKL
+へ正帰還。柱2（生物）と柱1（力学
+FEM）を結ぶ\textbf{悪循環（分岐・双安定）}として患者ごとのリスクを与える。
+\end{frame}
+
+\begin{frame}{力学拡張 --- インプラント周囲の応力解析}
+\protect\hypertarget{ux529bux5b66ux62e1ux5f35-ux30a4ux30f3ux30d7ux30e9ux30f3ux30c8ux5468ux56f2ux306eux5fdcux529bux89e3ux6790}{}
+\includegraphics[width=\textwidth,height=0.64\textheight]{masterarbeit_ansys_fem/figures/fem_implant_crown_section.png}
+
+\begin{enumerate}
+[(A)]
+\tightlist
+\item
+  修復インプラントのヘミセクション解剖（crown / gingiva / biofilm / Ti /
+  歯 + PDL / 皮質・海綿骨）。(B) 咬合荷重下の \textbf{von Mises 応力
+  \(\sigma_{\mathrm{vM}}\)} 断面 ---
+  応力は\textbf{歯槽頂（crestal）に集中}し、悪循環の起点となる。
+\end{enumerate}
+\end{frame}
+
 \begin{frame}[fragile]{サブデッキの接続}
 \protect\hypertarget{ux30b5ux30d6ux30c7ux30c3ux30adux306eux63a5ux7d9a}{}
 \begin{itemize}
@@ -392,6 +417,9 @@ gingivalis} が深部へ沈む（嫌気ニッチ）。0D の gLV を \(z\)
 \item
   \textbf{FISH パイプライン}：CLSM \texttt{.lif} \(\to\)
   深さプロファイル（PDE の観測量）。
+\item
+  \textbf{Implant FEM（デッキ D）}：組成 \(\to\) 成長固有ひずみ \(\to\)
+  界面残留応力 \(\to\) 剥離・歯槽頂応力（力学的読み出し）。
 \end{itemize}
 \end{frame}
 
@@ -405,6 +433,8 @@ gingivalis} が深部へ沈む（嫌気ニッチ）。0D の gLV を \(z\)
 相互作用モデル + 検証 & \textbf{完了}（LOO-RMSE 0.0504,
 \(p=4\times10^{-4}\)） \\
 空間拡散フィット & HPC で\textbf{実行中} \\
+力学 FEM（剥離・歯槽頂応力） & \textbf{完了}（DH/CH 3.3×, crestal
+×1.5） \\
 GDI / Joshi 臨床検証 & メタデータ\textbf{待ち} \\
 \bottomrule
 \end{longtable}

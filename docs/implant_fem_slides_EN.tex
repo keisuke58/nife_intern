@@ -12,7 +12,7 @@ Biofilm}
 \(\rightarrow\) implant-interface residual stress \(\rightarrow\)
 detachment}
 \author{Keisuke Nishioka --- NIFE / SFB TRR-298}
-\date{2026-06-13}
+\date{2026-06-16}
 
 \usepackage{pgfpages}
 \setbeamertemplate{caption}[numbered]
@@ -194,6 +194,18 @@ Mechanically: the biofilm grows at the Ti interface, generates interface
 continuum mechanics.
 \end{frame}
 
+\begin{frame}{Conceptual overview: peri-implantitis as a
+mechano-biological feedback loop}
+\protect\hypertarget{conceptual-overview-peri-implantitis-as-a-mechano-biological-feedback-loop}{}
+\includegraphics[width=\textwidth,height=0.58\textheight]{masterarbeit_ansys_fem/figures/fem_concept_overview.pdf}
+
+\footnotesize \textbf{Takeaway:} Pillar 2 (biology/ODE) and Pillar 1
+(mechanics/FEM) close into one red vicious cycle through the bridge
+\(A(L)\): bone loss \(L\) → \(A(L)\) → crestal stress \(\sigma\uparrow\)
+→ RANKL/OPG → more loss --- a tipping point that yields per-patient risk
++ bistability. \normalsize
+\end{frame}
+
 \begin{frame}{The idea: a composition-to-mechanics chain}
 \protect\hypertarget{the-idea-a-composition-to-mechanics-chain}{}
 The central causal chain:
@@ -250,9 +262,10 @@ The growth eigenstrain is calibrated from \textbf{CLSM depth profiles}.
 \end{center}
 
 \footnotesize Calibration of the anisotropic depth-growth strain
-\(\varepsilon_{zz}=\beta\,\phi_{Pg}\) from CLSM: dysbiotic biofilm swells with
-P. gingivalis (DH \(\beta\approx+17\), \(r=0.88\)); commensal does not
-(CH \(\beta\approx-10\)). (B) shows the source z-stack thicknesses. \normalsize
+\(\varepsilon_{zz}=\beta\,\phi_{Pg}\) from CLSM: dysbiotic biofilm
+swells with P. gingivalis (DH \(\beta\approx+17\), \(r=0.88\));
+commensal does not (CH \(\beta\approx-10\)). (B) shows the source
+z-stack thicknesses. \normalsize
 \end{frame}
 
 \begin{frame}{Result: residual-stress column \(S_{11}(z)\)}
@@ -293,13 +306,14 @@ Cohesive-interface FEM with \textbf{identical} interface strength:
 \includegraphics[height=0.54\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_implant_thread.pdf}
 \end{center}
 
-\footnotesize Coupled implant--thread interface model (CPE4, real V-thread
-profile). (A) the von Mises field concentrates at the bonded thread flanks;
-(B) the interior-peak interface stress is mesh-converged (the free-edge corner
-singularity is excluded --- it diverges with refinement, the interior plateau
-does not); (C) the thread geometry itself generates the stress --- a flat
-interface stays near baseline; (D) dysbiotic (DH) vs commensal (CH) biofilm
-scales it. Interior peak \(\sigma_\mathrm{vM} \approx 0.6\)--\(0.7\) GPa. \normalsize
+\footnotesize Coupled implant--thread interface model (CPE4, real
+V-thread profile). (A) the von Mises field concentrates at the bonded
+thread flanks; (B) the interior-peak interface stress is mesh-converged
+(the free-edge corner singularity is excluded --- it diverges with
+refinement, the interior plateau does not); (C) the thread geometry
+itself generates the stress --- a flat interface stays near baseline;
+(D) dysbiotic (DH) vs commensal (CH) biofilm scales it. Interior peak
+\(\sigma_\mathrm{vM} \approx 0.6\)--\(0.7\) GPa. \normalsize
 \end{frame}
 
 \begin{frame}{3D hero: full peri-implant assembly}
@@ -311,10 +325,11 @@ scales it. Interior peak \(\sigma_\mathrm{vM} \approx 0.6\)--\(0.7\) GPa. \norma
 
 \footnotesize Left: physically-based (PBR) ParaView render of the full
 peri-implant assembly (implant + crown + alveolar bone), oblique view,
-annotated. Right: updated crown--implant cross-section (load path through the
-abutment). The occlusal load concentrates at the \textbf{crestal peri-implant
-bone} (marginal-bone-loss signature). The composition mechanism
-\textbf{transfers unchanged} into realistic anatomy. \normalsize
+annotated. Right: updated crown--implant cross-section (load path
+through the abutment). The occlusal load concentrates at the
+\textbf{crestal peri-implant bone} (marginal-bone-loss signature). The
+composition mechanism \textbf{transfers unchanged} into realistic
+anatomy. \normalsize
 \end{frame}
 
 \begin{frame}{Crown load transfer: the moment-arm effect}
@@ -363,18 +378,19 @@ ordinal detachment-risk surrogate.
 \end{frame}
 
 \begin{frame}{Disease-model calibration: RANKL/OPG vs clinical GCF}
-\protect\hypertarget{disease-model-calibration-rankl-opg-vs-clinical-gcf}{}
+\protect\hypertarget{disease-model-calibration-ranklopg-vs-clinical-gcf}{}
 \begin{center}
 \includegraphics[height=0.54\textheight,keepaspectratio]{masterarbeit_ansys_fem/figures/fem_periimplantitis_rankl_opg_calib.pdf}
 \end{center}
 
-\footnotesize The biology\(\rightarrow\)bone-loss link is anchored to clinical
-data. The RANKL/OPG inflammatory switch is recalibrated so its dysbiotic
-fold-change matches periodontitis crevicular-fluid (GCF) measurements (median
-\(\approx 17×\); Bostanci / consensus band). The model's RANKL/OPG-ratio
-\(\leftrightarrow\) marginal-bone-loss correlation (\(r=0.99\)) brackets the
-clinical value (\(r=0.81\)), and reversing the dysbiosis (treatment) restores
-the ratio --- the mechanical driver is now clinically calibrated. \normalsize
+\footnotesize The biology\(\rightarrow\)bone-loss link is anchored to
+clinical data. The RANKL/OPG inflammatory switch is recalibrated so its
+dysbiotic fold-change matches periodontitis crevicular-fluid (GCF)
+measurements (median \(\approx 17×\); Bostanci / consensus band). The
+model's RANKL/OPG-ratio \(\leftrightarrow\) marginal-bone-loss
+correlation (\(r=0.99\)) brackets the clinical value (\(r=0.81\)), and
+reversing the dysbiosis (treatment) restores the ratio --- the
+mechanical driver is now clinically calibrated. \normalsize
 \end{frame}
 
 \begin{frame}{Validation, limits \& outlook}
@@ -423,6 +439,7 @@ Biofilm (+ growth \(\varepsilon_g=0.19\)) & 1.0 & 0.45 \\
 \end{longtable}
 
 \footnotesize
+
 \textbf{BCs:} bone fully fixed on the crop faces (\(U_{1,2,3}=0\)).
 \textbf{Interfaces:} osseointegration = *TIE, crown tied to abutment
 top, frictional contact \(\mu=0.3\) only for the de-integrated variant.
@@ -431,8 +448,7 @@ top, frictional contact \(\mu=0.3\) only for the de-integrated variant.
 \textbf{occlusal table z=38} = moment arm). \textbf{Elements:} assembly
 = C3D4 (\({\sim}270\)k), ISO-14801 coupon = C3D10 (linear under-predicts
 the concentration by 9--15\%), convergence \(\pm7\%\). Units mm-N-MPa.
-Full spec in \texttt{FEM\_CONDITIONS.md}.
-\normalsize
+Full spec in \texttt{FEM\_CONDITIONS.md}. \normalsize
 \end{frame}
 
 \end{document}

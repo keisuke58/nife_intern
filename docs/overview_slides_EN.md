@@ -2,7 +2,7 @@
 title: "Project Overview: Modelling Oral-Biofilm Community Dynamics"
 subtitle: "An umbrella tying ecological ODE inference, metabolic simulation, and spatial extension"
 author: "Keisuke Nishioka — NIFE"
-date: "2026-06-03"
+date: "2026-06-16"
 theme: "Madrid"
 colortheme: "whale"
 aspectratio: 169
@@ -145,7 +145,7 @@ Two models compared: **gLV** (asymmetric $A$, RMSE 0.012–0.032) and **Hamilton
 
 ## Pillar 1 — interaction inference and honest validation
 
-![](dieckow_paper/figures/fig2_loo_comparison.png){ height=44% }
+![](dieckow_paper/figures/fig2_loo_comparison.png){ height=50% }
 
 - Best model **LOO-RMSE $= 0.0504$**.
 - Cross-feeding direction independently validated: **$p=4\times10^{-4}$**.
@@ -158,7 +158,7 @@ Two models compared: **gLV** (asymmetric $A$, RMSE 0.012–0.032) and **Hamilton
 
 ## Pillar 1 — attractor structure validation
 
-![](dieckow_paper/figures/fig3_joshi_attractor.png){ height=58% }
+![](dieckow_paper/figures/fig3_joshi_attractor.png){ height=64% }
 
 Fixed points reconstructed from the inferred $A$ correspond to the observed
 commensal / dysbiotic community types (Joshi attractor analysis). The dynamics
@@ -204,6 +204,22 @@ a **spatial reorganisation**: *P. gingivalis* sinks deep (anaerobic niche). The
 
 ---
 
+## Mechanical extension — the mechano-biology vicious cycle
+
+![](masterarbeit_ansys_fem/figures/fem_concept_overview.png){ height=60% }
+
+The mechanical consequence of the spatial reorganisation (deep Pg): GDI (biology ODE) → inflammation RANKL/OPG → bone loss $L$ → (bridge $A(L)$) → crestal stress $\sigma\uparrow$ → positive feedback to RANKL. The two pillars (Pillar 2 biology, Pillar 1 mechanics FEM) close into a **vicious cycle (tipping point / bistability)** that yields per-patient risk.
+
+---
+
+## Mechanical extension — peri-implant stress analysis
+
+![](masterarbeit_ansys_fem/figures/fem_implant_crown_section.png){ height=64% }
+
+(A) Restored-implant hemisection anatomy (crown / gingiva / biofilm / Ti / tooth + PDL / cortical + cancellous bone). (B) Occlusal **von Mises stress $\sigma_{\mathrm{vM}}$** section — stress **concentrates at the crestal bone**, the entry point of the vicious cycle.
+
+---
+
 ## How the sub-decks connect
 
 - **AGORA** (sign prior): the metabolic bridge building $\sgn(F_{ij})\to P_{ij}$.
@@ -213,6 +229,8 @@ a **spatial reorganisation**: *P. gingivalis* sinks deep (anaerobic niche). The
 - **Spatial PDE (deck C):** extends the temporal dynamics to depth-resolved
   reaction–diffusion.
 - **FISH pipeline:** CLSM `.lif` $\to$ depth profiles (the PDE observable).
+- **Implant FEM (deck D):** composition $\to$ growth eigenstrain $\to$ interface
+  residual stress $\to$ delamination / crestal stress (the mechanical read-out).
 
 ---
 
@@ -222,6 +240,7 @@ a **spatial reorganisation**: *P. gingivalis* sinks deep (anaerobic niche). The
 |---|---|
 | Interaction model + validation | **done** (LOO-RMSE 0.0504, $p=4\times10^{-4}$) |
 | Spatial diffusion fit | **running** on HPC |
+| Mechanics FEM (delamination / crestal stress) | **done** (DH/CH 3.3×, crestal ×1.5) |
 | GDI / Joshi clinical validation | **awaiting** metadata |
 
 \vspace{0.3em}

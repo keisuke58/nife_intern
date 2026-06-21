@@ -23,7 +23,8 @@
 
 | 図 | 何を示すか | 種別 |
 |----|-----------|------|
-| [fem_graphical_abstract.pdf](figures/fem_graphical_abstract.pdf) | ①生態→②biofilm解剖→③炎症→④力学悪循環→⑤患者別予測 の一気通貫 | ★ |
+| [fem_concept_overview.pdf](figures/fem_concept_overview.pdf) | **全体の論理構造（模式）**：2本柱(生物ODE/力学FEM)＋橋A(L)＋悪循環ループ。box&arrow、実データなし。人に幹を説明する1枚 | ★ |
+| [fem_graphical_abstract.pdf](figures/fem_graphical_abstract.pdf) | ①生態→②biofilm解剖→③炎症→④力学悪循環→⑤患者別予測 の一気通貫（実データ5パネル） | ★ |
 | [fem_implant_crown_fem.pdf](figures/fem_implant_crown_fem.pdf) | (A)実装解剖（FEM歯肉・エナメル）/ (B)咬合 von Mises、モーメントアームで辺縁骨 17→27 MPa | ★ |
 | [fem_periimplantitis_rankl_opg.pdf](figures/fem_periimplantitis_rankl_opg.pdf) | RANKL/OPG 機構モデル：カスケード・tipping・患者別biomarker・治療 | ★ |
 
@@ -122,9 +123,9 @@ ODE（柱2）: その保存値（A(L)）を読むだけ。だから疾患の図�
 
 ## 5. 用語集（迷ったらここ）
 
-- **GDI** (Gingival Dysbiosis Index): dysbiotic菌/commensal菌の対数比。16Sから計算する「悪化の指標」。疾患ODEの入力。
+- **GDI** (**Guild** Dysbiosis Index): dysbiotic guild/commensal guild の対数比 = log(Bact+Clos+Fuso)−log(Act+Bac+Neg)。16Sから計算する「悪化の指標」。疾患ODEの入力。形式は Gevers 2014 の Microbial Dysbiosis Index と同型（引用可）。振り分けの根拠＝Socransky 1998(red/orange complex)/Abusleme 2013/Griffen 2012/Pérez-Chaparro 2014。**注意：class階級は粗い。Negativicutes(=Veillonella)を commensal 側に置くのは係争点（健常寄りだが歯周炎で増える報告あり）、Bacteroidia は Prevotella(中間)を Porphyromonas/Tannerella と束ねる**→「種レベルの病原体量でなく粗い群集状態シフト」と記述すること。閾値 GDI₀ はコホート相対(40%タイル)＝絶対閾値 GDI=0 ではない点も明記。
 - **dysbiosis**: 細菌叢のバランス崩壊（悪玉優勢）。健常=symbiosis の逆。
-- **RANKL / OPG**: 破骨細胞を作る分子スイッチ。RANKL=アクセル、OPG=ブレーキ（おとり受容体）。**RANKL/OPG比**が骨吸収の master switch。PICF（インプラント周浸出液）で臨床測定できる biomarker。
+- **RANKL / OPG**: 破骨細胞を作る分子スイッチ。RANKL=アクセル、OPG=ブレーキ（おとり受容体）。骨吸収の**機構的ドライバーとしては確立**（osteoimmunology）。PICF（インプラント周浸出液）で測定可能だが、**バイオマーカーとしては議論あり**：Chaparro 2021 メタ解析では RANKL/OPG 比のプール解析で有意差なし → 「機構は確立、定量バイオマーカーは emerging」と控えめに記述すること。
 - **破骨細胞 (osteoclast, OC)** / **骨芽細胞 (osteoblast, OB)**: 骨を壊す/作る細胞。OC>OB で正味骨吸収。
 - **TGF-β カップリング**: 吸収された骨からTGF-βが出てOBを呼ぶ＝「吸収の後に形成」の正常な連動。これが**炎症で破綻（uncoupling）**すると正味骨減少。
 - **モーメントアーム**: クラウンが高いほど、斜め荷重が首部を曲げるテコが長くなる→辺縁骨応力↑。
@@ -133,7 +134,7 @@ ODE（柱2）: その保存値（A(L)）を読むだけ。だから疾患の図�
 - **tipping point / 双安定**: 閾値を超えると後戻りしにくい（健常basinから疾患basinへロック）。「なぜ衛生だけで治らないか」の数理的説明。
 - **mechanostat (Frost)**: 骨は力学刺激で吸収/形成を切り替える。過荷重→吸収、というSED（ひずみエネルギー密度）依存。
 - **saucerization**: インプラント周の皿状の骨欠損（辺縁・頬側から始まる）。
-- **BIC / micromotion**: 骨-インプラント接触率 / 微小動揺。>150µm で線維性被包（失敗）。早中期は閾値下＝力学失敗でなく膜駆動、という結論の根拠。
+- **BIC / micromotion**: 骨-インプラント接触率 / 微小動揺。許容閾値は **50–150µm**（Pilliar 1986; Szmukler-Moncler 1998）でこれを超えると線維性被包（失敗）。早中期は閾値下＝力学失敗でなく膜駆動、という結論の根拠。
 - **p95**: 応力の95パーセンタイル。max は首部の幾何特異点なので、頑健な指標としてp95を使う。
 - **ISO 14801**: インプラント疲労試験規格。100N・30°斜め荷重の根拠。
 - **PONR** (point of no return): 加速領域に入って後戻りできない点。

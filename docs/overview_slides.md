@@ -2,7 +2,7 @@
 title: "プロジェクト全体像：口腔バイオフィルムの群集動態モデリング"
 subtitle: "生態 ODE 推定・代謝シミュレーション・空間拡張を束ねる傘"
 author: "西岡佳祐 — NIFE"
-date: "2026-06-03"
+date: "2026-06-16"
 theme: "Madrid"
 colortheme: "whale"
 aspectratio: 169
@@ -139,7 +139,7 @@ Heine 2025 の in-vitro 5 菌種（So/An/Vd-Vp/Fn/Pg）時系列に対し ODE �
 
 ## 柱 1 — 相互作用推定と誠実な検証
 
-![](dieckow_paper/figures/fig2_loo_comparison.png){ height=44% }
+![](dieckow_paper/figures/fig2_loo_comparison.png){ height=52% }
 
 - ベストモデルの **LOO-RMSE $= 0.0504$**。
 - cross-feeding 方向は独立に検証：**$p=4\times10^{-4}$**。
@@ -152,7 +152,7 @@ Heine 2025 の in-vitro 5 菌種（So/An/Vd-Vp/Fn/Pg）時系列に対し ODE �
 
 ## 柱 1 — アトラクター構造の検証
 
-![](dieckow_paper/figures/fig3_joshi_attractor.png){ height=58% }
+![](dieckow_paper/figures/fig3_joshi_attractor.png){ height=70% }
 
 推定した $A$ から再構成した固定点が、観測された commensal / dysbiotic
 群集型に対応する（Joshi アトラクター解析）。動態は単なる回帰ではなく
@@ -196,6 +196,22 @@ $z$ 方向の拡散項付き PDE に拡張する。
 
 ---
 
+## 力学拡張 — 力学–生物連成の悪循環
+
+![](masterarbeit_ansys_fem/figures/fem_concept_overview_ja.png){ height=60% }
+
+空間再編（深部 Pg）の力学的帰結：GDI（生物 ODE）→ 炎症 RANKL/OPG → 骨吸収 $L$ →〔橋渡し $A(L)$〕→ 歯槽頂応力 $\sigma\uparrow$ → RANKL へ正帰還。柱2（生物）と柱1（力学 FEM）を結ぶ**悪循環（分岐・双安定）**として患者ごとのリスクを与える。
+
+---
+
+## 力学拡張 — インプラント周囲の応力解析
+
+![](masterarbeit_ansys_fem/figures/fem_implant_crown_section.png){ height=64% }
+
+(A) 修復インプラントのヘミセクション解剖（crown / gingiva / biofilm / Ti / 歯 + PDL / 皮質・海綿骨）。(B) 咬合荷重下の **von Mises 応力 $\sigma_{\mathrm{vM}}$** 断面 — 応力は**歯槽頂（crestal）に集中**し、悪循環の起点となる。
+
+---
+
 ## サブデッキの接続
 
 - **AGORA**（符号 prior）：$\sgn(F_{ij})\to P_{ij}$ を構築する代謝側の橋。
@@ -204,6 +220,8 @@ $z$ 方向の拡散項付き PDE に拡張する。
   CS$\leftrightarrow$DH リワイヤリングを解析。
 - **Spatial PDE（デッキ C）**：時間動態を深さ方向の反応拡散に拡張。
 - **FISH パイプライン**：CLSM `.lif` $\to$ 深さプロファイル（PDE の観測量）。
+- **Implant FEM（デッキ D）**：組成 $\to$ 成長固有ひずみ $\to$ 界面残留応力 $\to$
+  剥離・歯槽頂応力（力学的読み出し）。
 
 ---
 
@@ -213,6 +231,7 @@ $z$ 方向の拡散項付き PDE に拡張する。
 |---|---|
 | 相互作用モデル + 検証 | **完了**（LOO-RMSE 0.0504, $p=4\times10^{-4}$） |
 | 空間拡散フィット | HPC で**実行中** |
+| 力学 FEM（剥離・歯槽頂応力） | **完了**（DH/CH 3.3×, crestal ×1.5） |
 | GDI / Joshi 臨床検証 | メタデータ**待ち** |
 
 \vspace{0.3em}
