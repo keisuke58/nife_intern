@@ -1,6 +1,11 @@
 """
 hamilton_ode_jax_nsp_ift.py — NSP ODE with Implicit Function Theorem (IFT) gradient.
 
+5-species Hamilton ODE: 0D core of the Klempt 2024 extension.
+  Klempt 2024 (single-species PDE): φ, c, α_growth coupled in FEM
+  This file (5-species ODE): φᵢ (i=1..5) via Newton iteration + IFT adjoint
+  The IFT custom_vjp enables gradient-based TMCMC (HMC/NUTS) through the ODE.
+
 Instead of differentiating through the Newton iterations (slow to compile due to
 nested lax.scan + jacfwd), use the Implicit Function Theorem:
 

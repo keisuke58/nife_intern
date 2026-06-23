@@ -21,6 +21,18 @@ CP = ROOT / "masterarbeit_ansys_fem" / "coupling_prototype"   # data CSVs / JSON
 OUT.mkdir(exist_ok=True)
 RED, BLUE = "#d62728", "#1f77b4"
 
+# ── 古い PNG を消してから再生成（stale PNG が残らないように）──────────────
+for _old in sorted(OUT.glob("F*.png")):
+    _old.unlink()
+    print(f"  removed old {_old.name}")
+
+def _save(fig, stem: str, dpi: int = 150) -> None:
+    """Save PDF + PNG together so they are always in sync."""
+    fig.savefig(OUT / f"{stem}.pdf", bbox_inches="tight")
+    fig.savefig(OUT / f"{stem}.png", dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  saved {stem}.pdf + .png")
+
 # ---- F2: growth calibration — DH vs CH, with 95% CI + provenance (replaces the bare 5-pt fit) ----
 # DH: paired (phi_Pg from FISH, biofilm thickness h_um from confocal z-stacks), one point per imaging day.
 _cal = json.load(open(CP / "beta_calibration.json"))
@@ -61,7 +73,7 @@ axB.set_xlabel(r"imaging day"); axB.set_ylabel(r"biofilm thickness $h$ ($\mu$m)"
 axB.set_title(r"(B) Source data: CLSM Ti-disc $z$-stacks", fontsize=7.2)
 axB.set_xticks(days); axB.legend(fontsize=6, loc="upper left")
 fig.suptitle(r"Growth calibration: anisotropic depth strain $\varepsilon_{zz}=\beta\,\phi_{Pg}$ from CLSM", fontsize=8)
-fig.savefig(OUT / "F2_growth_calibration.pdf", bbox_inches="tight"); plt.close(fig)
+_save(fig, "F2_growth_calibration")
 
 # ---- F3: finite-strain free-swelling verification (U3_top -> lambda_z-1) ----
 k = np.arange(21); U3 = np.linspace(0.0, 0.3018, 21)
@@ -70,7 +82,7 @@ ax.plot(k, U3, "o-", color=RED, ms=3, lw=1.0)
 ax.axhline(0.30, ls="--", color="0.5", lw=0.8)
 ax.set_xlabel("increment"); ax.set_ylabel(r"top displacement $u_3$")
 ax.set_title(r"Finite-strain free-swelling: $u_3\!\to\!\lambda_z\!-\!1$ (Abaqus)", fontsize=8)
-fig.savefig(OUT / "F3_free_swelling.pdf", bbox_inches="tight"); plt.close(fig)
+_save(fig, "F3_free_swelling")
 
 # ---- F4: substratum-interface residual stress, DH vs CH (tall column H=4w, the headline) ----
 # Socket-free, CLSM-calibrated (iso volume-matched). Stress concentrates in the substratum
@@ -91,7 +103,7 @@ a2.axhspan(0, 0.25, color=RED, alpha=0.07)
 a2.set_xlabel(r"composition $\phi_{Pg}(z)$")
 fig.suptitle(r"Substratum-interface residual stress: DH $\gg$ CH (peak $6.4\times$, mean $10\times$)",
              fontsize=8, y=0.99)
-fig.savefig(OUT / "F4_residual_stress_DHvsCH.pdf", bbox_inches="tight"); plt.close(fig)
+_save(fig, "F4_residual_stress_DHvsCH")
 
 # ---- F5: socket-free column mesh convergence (uniform plateau exact; graded interface +0.27%) ----
 mu = 5000 / (2 * 1.45)
@@ -105,7 +117,7 @@ ax.set_xscale("log", base=2); ax.set_xticks(N); ax.set_xticklabels(N)
 ax.set_xlabel(r"elements through depth $N$"); ax.set_ylabel(r"confined $|\sigma_{xx}|/\mu$")
 ax.set_title(r"Mesh convergence (uniform exact; graded N=16: $+0.27\%$)", fontsize=8)
 ax.legend(fontsize=7, loc="center right")
-fig.savefig(OUT / "F5_mesh_convergence.pdf", bbox_inches="tight"); plt.close(fig)
+_save(fig, "F5_mesh_convergence")
 
 # ---- F6: cohesive delamination DH vs CH (the clinical detachment result) ----
 dx = 4.0 / 12.0
@@ -125,7 +137,7 @@ a2.plot(tn0, delamCH, "s-", color=BLUE, ms=3, lw=1.0, label="CH")
 a2.set_xlabel(r"interface strength $t_n^0$"); a2.set_ylabel(r"delaminated fraction of $L$ (\%)")
 a2.set_title(r"Dysbiosis detaches $\sim$3$\times$ further", fontsize=8)
 a2.legend(fontsize=7, loc="upper right")
-fig.savefig(OUT / "F6_delamination_DHvsCH.pdf", bbox_inches="tight"); plt.close(fig)
+_save(fig, "F6_delamination_DHvsCH")
 
 # ---- F8: growth-induced out-of-plane deflection (imperfection-seeded), DH vs CH ----
 g = np.array([0, .125, .25, .375, .5, .625, .75, .875, 1.0])          # normalized growth (ramp ends at 0.8 step time)
@@ -137,7 +149,7 @@ ax.plot(g, U3_CH, "s-", color=BLUE, ms=3, lw=1.0, label="CH (commensal)")
 ax.set_xlabel(r"normalized growth"); ax.set_ylabel(r"out-of-plane deflection $\max|u_3|$")
 ax.set_title(r"Imperfection-seeded deflection: DH $23\%$ larger", fontsize=8)
 ax.legend(fontsize=7, loc="upper left")
-fig.savefig(OUT / "F8_buckling_DHvsCH.pdf", bbox_inches="tight"); plt.close(fig)
+_save(fig, "F8_buckling_DHvsCH")
 
 # ---- F7: viscoelastic shear-stress relaxation (Burgers->Prony, FE vs analytic) ----
 fe = np.loadtxt(CP / "abaqus" / "s13_relaxation.csv", delimiter=",", skiprows=1)
@@ -154,7 +166,7 @@ ax.axhline(ginf, ls=":", color="0.5", lw=0.8)
 ax.set_xlabel(r"relaxation time $t-t_0$ [s]"); ax.set_ylabel(r"normalized shear stress")
 ax.set_title(r"Biofilm stress relaxation (Burgers$\to$Prony, RMS $9{\times}10^{-4}$)", fontsize=8)
 ax.legend(fontsize=7, loc="lower left"); ax.set_ylim(0, 1.05)
-fig.savefig(OUT / "F7_viscoelastic_relaxation.pdf", bbox_inches="tight"); plt.close(fig)
+_save(fig, "F7_viscoelastic_relaxation")
 
 # ---- F9: bilayer growth-induced wrinkling — DH wrinkles (short lambda), CH only bends ----
 AB = CP / "abaqus"
@@ -177,7 +189,7 @@ a2.plot(pCH["x"], pCH["u3"], "--", color=BLUE, lw=1.0, label=r"CH: $\lambda\!=\!
 a2.set_xlabel(r"position $x$"); a2.set_ylabel(r"surface deflection $u_3$")
 a2.set_title(r"Wavelength selection: DH wrinkles, CH only bends", fontsize=8)
 a2.legend(fontsize=7, loc="upper right")
-fig.savefig(OUT / "F9_wrinkling_DHvsCH.pdf", bbox_inches="tight"); plt.close(fig)
+_save(fig, "F9_wrinkling_DHvsCH")
 
 # ---- F10: patient-specific detachment risk — 10 Dieckow patients on the mechanics risk curve ----
 # Risk curve = cohesive-delamination fraction vs growth driver phi_Pg (clean clinical low-phi branch).
@@ -197,6 +209,6 @@ a2.barh(range(10), risk_pat[order], color=[RED if r > 10 else BLUE for r in risk
 a2.set_yticks(range(10)); a2.set_yticklabels([r"%.3f" % v for v in pg_pat[order]], fontsize=6)
 a2.set_xlabel(r"detachment risk (\%)"); a2.set_ylabel(r"patient $\phi_{Pg}$ (sorted)")
 a2.set_title(r"Risk stratification: one high-Pg patient at risk", fontsize=8)
-fig.savefig(OUT / "F10_patient_risk.pdf", bbox_inches="tight"); plt.close(fig)
+_save(fig, "F10_patient_risk")
 
 print("wrote", *(p.name for p in sorted(OUT.glob("F*.pdf"))))

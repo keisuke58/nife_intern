@@ -49,7 +49,15 @@ def handle_record(tokens):
     E = float(next(it)); nu = float(next(it))
 
     k = int(round(statev[0]))
-    z = coords[2] / ARGS.height                       # normalized depth in [0,1]
+    if ARGS.geometry == "helical":
+        # 3-D helical: depth = r - r_surface(theta, z)
+        x, y, zc = coords[0], coords[1], coords[2]
+        r     = np.sqrt(x ** 2 + y ** 2)
+        theta = np.arctan2(y, x)
+        r_s   = ARGS.R0 + ARGS.amp * 0.5 * (1.0 - np.cos(2.0 * np.pi * zc / ARGS.pitch - theta))
+        z     = np.clip((r - r_s) / ARGS.height, 0.0, 1.0)
+    else:
+        z = np.clip((coords[ARGS.coord_axis] - ARGS.coord_offset) / ARGS.height, 0.0, 1.0)
     phi_pg = float(np.interp(z, ZPROF[0], ZPROF[1]))  # local Pg fraction
     frac = min(k / max(ARGS.nramp, 1), 1.0)           # growth ramp over the step
     Fg = growth_for(phi_pg, frac)
@@ -81,6 +89,16 @@ def main():
                          "depth=substratum-normal anisotropic")
     ap.add_argument("--nramp", type=int, default=20, help="increments to reach full growth")
     ap.add_argument("--height", type=float, default=1.0, help="column physical height (z-norm)")
+    ap.add_argument("--coord-axis", type=int, default=2, dest="coord_axis",
+                    help="COORDS index for depth (2=z for 3-D C3D8 column; 1=y for 2-D C3D8 implant; "
+                         "0=r for CGAX4 axisymmetric)")
+    ap.add_argument("--coord-offset", type=float, default=0.0, dest="coord_offset",
+                    help="subtract before dividing by height (e.g. R0 for CGAX4 axisymmetric)")
+    ap.add_argument("--geometry", default="column", choices=["column", "helical"],
+                    help="column=coord[axis]/height (default); helical=3-D helix depth from surface")
+    ap.add_argument("--R0",    type=float, default=2.0, help="[helical] implant core radius")
+    ap.add_argument("--pitch", type=float, default=1.0, help="[helical] thread pitch")
+    ap.add_argument("--amp",   type=float, default=0.18, help="[helical] thread amplitude")
     ARGS = ap.parse_args()
     p = json.loads(Path(ARGS.profile).read_text())
     ZPROF = (np.array(p["z_norm"]), np.array(p["phi_Pg"]))

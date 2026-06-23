@@ -79,6 +79,37 @@ def relax_free_top(phi_pg, props, tol=1e-10):
     return s, Fzz, lam_z
 
 
+def spatial_tangent_neo_hookean(Fe, E, nu):
+    """Consistent spatial (Eulerian) tangent for compressible neo-Hookean.
+
+    Spatial elasticity tensor (Bonet & Wood §6.5, push-forward of material tangent):
+      c_ijkl = (lam/J)*δ_ij*δ_kl + ((mu - lam*ln(J))/J)*(δ_ik*δ_jl + δ_il*δ_jk)
+
+    Returned as DDSDDE (6×6) in Abaqus Voigt order (11,22,33,12,13,23), engineering shear.
+    At J→1: reduces exactly to elastic_tangent(E, nu) (linear isotropic limit). ✓
+    """
+    mu_e, lam_e = lame(E, nu)
+    J = np.linalg.det(Fe)
+    c_lam = lam_e / J
+    c_mu  = (mu_e - lam_e * np.log(J)) / J   # effective shear modulus; = mu at J=1
+    _v = [(0, 0), (1, 1), (2, 2), (0, 1), (0, 2), (1, 2)]
+    C = np.zeros((6, 6))
+    for I, (i, j) in enumerate(_v):
+        for Jj, (k, l) in enumerate(_v):
+            C[I, Jj] = (c_lam * (i == j) * (k == l)
+                        + c_mu * ((i == k) * (j == l) + (i == l) * (j == k)))
+    return C
+
+
+def stress_and_tangent_from_F(F, phi_pg, props):
+    """Cauchy stress + consistent spatial tangent for total F and current Pg fraction."""
+    Fg, lam_z = growth_gradient(phi_pg, props.get("cond", "DH"))
+    Fe = F @ np.linalg.inv(Fg)
+    sigma   = cauchy_neo_hookean(Fe, props["E"], props["nu"])
+    ddsdde  = spatial_tangent_neo_hookean(Fe, props["E"], props["nu"])
+    return sigma, ddsdde, lam_z
+
+
 def advance(statev, props):
     """One Gauss-point step: advance NSP composition, return updated state + phi_Pg."""
     statev = np.asarray(statev, float)

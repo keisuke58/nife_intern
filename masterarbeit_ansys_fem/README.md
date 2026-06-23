@@ -37,6 +37,19 @@ Soleimani's ANSYS proposal is computational **solid mechanics** (material model 
 4. **Timeline** — submit Page 1 in coming weeks; begin 6-month period in [Month].
 5. **Scheduling** — keep heaviest implementation outside the 3-month NIFE internship + HiWi window.
 
+## 関連フォルダ — JAXFEM との対比
+
+```
+/home/nishioka/IKM_Hiwi/FEM/JAXFEM/          ← 方程式の実験台（純 JAX/NumPy、メッシュなし）
+  felix_complete_reproduction.py               Klempt 2024 Eq.34-36 再現（φ-c-α FD）
+  phase1_klempt_stress.py                      α → eigenstrain → JAX 応力（PASS）
+  ↓  ここで確かめた構成則を …
+/home/nishioka/IKM_Hiwi/nife/masterarbeit_ansys_fem/   ← 本フォルダ（ANSYS Gauss 点へ結合）
+  coupling_prototype/                          UMAT / USERMAT / IPC プロトタイプ
+```
+
+JAXFEM は「正しい式を動かす実験台」、本フォルダは「それを本番 FEM に組み込む修論本体」。
+
 ## Subdirs
 - `notes/`            — meeting notes, decisions, the email thread
 - `coupling_prototype/` — Python↔ANSYS coupling experiments (UserMat / surrogate / IPC)

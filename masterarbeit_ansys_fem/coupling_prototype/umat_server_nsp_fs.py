@@ -20,7 +20,6 @@ import numpy as np
 
 import nsp_mechanics_fs as fs
 import nsp_material_model as nm
-from material_model import elastic_tangent
 
 ARGS = None
 
@@ -43,9 +42,8 @@ def handle_record(tokens):
     g_new = np.asarray(fs._nsp_step_for(props["cond"])(statev), float)
     phi_pg = g_new[fs.PG_INDEX]
 
-    sigma, lam_z = fs.stress_from_F(F, phi_pg, props)
+    sigma, ddsdde, lam_z = fs.stress_and_tangent_from_F(F, phi_pg, props)
     stress = to_voigt(sigma)
-    ddsdde = elastic_tangent(E, nu)            # approximate Jacobian
     out = list(stress) + list(ddsdde.reshape(-1)) + list(g_new)
     return out
 

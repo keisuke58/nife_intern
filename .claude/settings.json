@@ -1,5 +1,19 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit*)",
+            "command": "staged=$(git diff --cached --name-only --diff-filter=A 2>/dev/null | grep -E '(^|/)figures/.*\\.py$' || true); missing=\"\"; for f in $staged; do [ -f \"$f\" ] || continue; if grep -qE 'import matplotlib|from matplotlib|pyplot|plt\\.' \"$f\" && ! grep -qE 'thesis_style|pub_style' \"$f\"; then missing=\"$missing $f\"; fi; done; if [ -n \"$missing\" ]; then printf '{\"systemMessage\":\"figure-style reminder: new figure script(s) import neither thesis_style nor pub_style:%s  (thesis figures should use thesis_style.py)\"}\\n' \"$missing\"; fi; exit 0",
+            "timeout": 15,
+            "statusMessage": "Checking figure style (thesis_style)..."
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Bash",

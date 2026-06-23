@@ -126,6 +126,8 @@
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 \usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.misc}
 \newcommand{\sgn}{\operatorname{sgn}}
 \newcommand{\relu}[1]{\left[#1\right]_{+}}
 \ifLuaTeX
@@ -220,18 +222,25 @@
 LOO-CV 検証 → 4 アトラクター。 \texttt{fit\_*.json} が交換フォーマット。
 \end{frame}
 
-\begin{frame}{コアモデル（簡潔版）}
+\begin{frame}{コアモデル（拡張 Hamilton 原理）}
 \protect\hypertarget{ux30b3ux30a2ux30e2ux30c7ux30ebux7c21ux6f54ux7248}{}
-絶対量 \(x_i\) の一般化 Lotka--Volterra：
-\[\dot{x}_i = x_i\Big(b_i + \sum_{j=1}^{S} A_{ij}\,x_j\Big),\qquad S=10 .\]
 
-単体 \(\sum_i\varphi_i=1\) 上の replicator / Hamilton 形（16S
-は組成データ）：
-\[\dot{\varphi}_i = \varphi_i\Big[(A\varphi+b)_i - \varphi^{\!\top}(A\varphi+b)\Big].\]
+\textbf{内部変数}（Klempt et al., 2025）：
+$\phi_i\in[0,1]$：体積分率，$\psi_i\in[0,1]$：生存率，
+$\bar{\phi}_i:=\phi_i\psi_i$（生存体積分率），$n=5$ 菌種
 
-\textbf{符号 prior}：AGORA cross-feeding フラックス \(F_{ij}\) から
-\[P_{ij}=\operatorname{sgn}(F_{ij})\in\{-1,0,+1\}\] を作り、\(A\)
-の\textbf{符号のみ}を制約（大きさは設計上捨てる）。
+\textbf{自由エネルギー密度}（栄養濃度 $c^*$ 駆動）：
+\[\Psi = -\tfrac{1}{2}c^*\,\bar{\boldsymbol{\phi}}^T\mathbf{A}\,\bar{\boldsymbol{\phi}},
+\qquad \mathbf{A}\in\mathbb{R}^{n\times n}\text{（対称成長行列）}\]
+
+$\delta\mathcal{H}=0$ から支配方程式（各菌種 $i$）：
+\[0 = -c^*\psi_i\bigl(\mathbf{A}\bar{\boldsymbol{\phi}}\bigr)_i
+  + \eta_i\!\left(\dot\phi_i\psi_i^2 + \bar\phi_i\dot\psi_i + \dot\phi_i\right) + \gamma,
+\qquad \sum_{l=0}^{n}\phi_l=1\]
+
+\textbf{符号 prior}：AGORA cross-feeding フラックス $F_{ij}$ から
+$P_{ij}=\operatorname{sgn}(F_{ij})\in\{-1,0,+1\}$ を作り，
+$\mathbf{A}$ の\textbf{符号のみ}を制約（大きさはデータから推定）。
 \end{frame}
 
 \begin{frame}{データセット}
@@ -372,6 +381,11 @@ CLSM-FISH から得た\textbf{深さ分解 5 種プロファイル}を反応拡�
 fit。 dysbiosis は単なる組成変化でなく\textbf{空間的再編成}： \emph{P.
 gingivalis} が深部へ沈む（嫌気ニッチ）。0D の gLV を \(z\)
 方向の拡散項付き PDE に拡張する。
+
+\medskip
+\textbf{限界}：PDE の数値解は収束せず（時間刻み依存・数値不安定）。
+図は深さプロファイルの観測量のみ；PDE フィット自体は本体結果から除外し、
+補足・今後の課題として扱う。
 \end{frame}
 
 \begin{frame}{力学拡張 --- 力学--生物連成の悪循環}
@@ -432,7 +446,7 @@ FEM）を結ぶ\textbf{悪循環（分岐・双安定）}として患者ごと�
 \endhead
 相互作用モデル + 検証 & \textbf{完了}（LOO-RMSE 0.0504,
 \(p=4\times10^{-4}\)） \\
-空間拡散フィット & HPC で\textbf{実行中} \\
+空間拡散フィット & \textbf{収束失敗}（数値不安定，限界あり） \\
 力学 FEM（剥離・歯槽頂応力） & \textbf{完了}（DH/CH 3.3×, crestal
 ×1.5） \\
 GDI / Joshi 臨床検証 & メタデータ\textbf{待ち} \\
@@ -443,8 +457,455 @@ GDI / Joshi 臨床検証 & メタデータ\textbf{待ち} \\
 
 2
 コホート再現と独立な機械論経路（COMETS）により、相互作用の主張は堅固になりつつある。
-残る課題は空間 PDE の収束と臨床メタデータの統合である。
+空間 PDE は数値不安定により収束せず，本体は ODE + Bayesian 推定 + in-vivo 検証で成立させる。
+臨床メタデータ統合は今後の課題。
 \end{frame}
+
+\begin{frame}{修士論文の方向性 --- Python 材料モデルの ANSYS 統合}
+\protect\hypertarget{masterarbeit-direction}{}
+
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\textbf{投稿準備中の論文の材料モデル}（Nishioka et al., IKM 2026）\\[4pt]
+拡張 Hamilton 原理から導出した自由エネルギー密度：
+\[
+\Psi = -\tfrac{1}{2}c^*\,\bar{\boldsymbol{\phi}}^{T}\!\mathbf{A}\,\bar{\boldsymbol{\phi}}
+\]
+$\bar{\phi}_i = \phi_i\psi_i$（生存体積分率），$\mathbf{A}\in\mathbb{R}^{5\times5}$（相互作用行列）\\[4pt]
+$\delta\mathcal{H}=0$ から支配方程式（各菌種 $i$）：
+\[
+0 = -c^*\psi_i(\mathbf{A}\bar{\boldsymbol{\phi}})_i
+  + \eta_i\!\left(\dot\phi_i\psi_i^2 + \bar\phi_i\dot\psi_i + \dot\phi_i\right)
+  + \gamma
+\]
+拘束：$\sum_{l=0}^{n}\phi_l = 1$，Newton 法で時間積分
+\end{column}
+\begin{column}{0.45\textwidth}
+\textbf{ANSYS 統合（修士論文）}\\[6pt]
+\begin{tikzpicture}[
+  boxA/.style={draw,rounded corners,fill=blue!15,text width=3.0cm,align=center,minimum height=0.75cm,font=\small},
+  boxB/.style={draw,rounded corners,fill=orange!20,text width=3.0cm,align=center,minimum height=0.75cm,font=\small},
+  boxC/.style={draw,rounded corners,fill=green!15,text width=3.0cm,align=center,minimum height=0.75cm,font=\small},
+  scale=0.9,transform shape
+]
+  \node[boxA] (fem) at (0,0)
+    {FEM ガウス点\\{\footnotesize (ANSYS UserMat)}};
+  \node[boxB] (py) at (0,-1.6)
+    {Python 呼び出し\\{\footnotesize $(\phi_i,\psi_i)$ $\leftarrow$ ODE}};
+  \node[boxC] (mech) at (0,-3.2)
+    {力学特性更新\\{\footnotesize $S_{11}(\phi),\;E(\phi)$}};
+  \draw[->,thick] (fem) -- node[right,font=\scriptsize]{現象論モデル置換} (py);
+  \draw[->,thick] (py) -- (mech);
+  \draw[->,thick,dashed] (mech.east) to[bend right=50]
+    node[right,font=\scriptsize]{feed back} (fem.east);
+\end{tikzpicture}
+
+\vspace{4pt}
+{\footnotesize
+指導：第1 Soleimani，第2 Geisler\\
+Abaqus フェーズ：2026-05 \textbf{完了} $\checkmark$\\
+ANSYS 移植：2026-08〜（次ステップ）}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Abaqus 実装済み --- プロトタイピングラダー}
+\protect\hypertarget{abaqus-ladder}{}
+
+{\small
+\begin{tabular}{@{}clll@{}}
+\toprule
+ & 内容 & 検証結果 & 状態\\
+\midrule
+1b & Hamilton NSP 単点接線 & 相対誤差 $5\times10^{-5}$ & $\checkmark$\\
+2  & Python $\leftrightarrow$ Fortran ソケット & 誤差 0（丸め以下） & $\checkmark$\\
+3  & Abaqus UMAT 1要素（小ひずみ） & $\sigma_{xx}=E\varepsilon=50.0$ & $\checkmark$\\
+3b & NLGEOM 有限ひずみ成長 & $\lambda_z-1=0.302$，$\sigma_{33}\approx0$ & $\checkmark$\\
+3c & 残留応力カラム（深さグレード） & $S_{11}(z)$: $-136\to-354$ MPa & $\checkmark$\\
+4  & ANSYS USERMAT & スケルトン（$\texttt{usermat.f}$） & $\cdots$\\
+\bottomrule
+\end{tabular}
+}
+
+\vspace{6pt}
+\textbf{Rung 3c の要点}：CLSM 実測 $\phi_{Pg}(z)$ を成長固有ひずみ
+$\gamma(z)=\beta\,\phi_{Pg}(z)$（$\beta=17.2$，DH corr $= 0.88$）に変換し，
+側面拘束カラム（16 要素）で残留応力分布を計算。\\[4pt]
+{\footnotesize
+\textbf{未解決}：応力の絶対値は機械測定で未検証（今後の課題）。\\
+\textbf{次ステップ}：ANSYS ライセンス取得 $\to$ \texttt{usermat.f} 完成 $\to$ Felix の既存モデルに統合。}
+\end{frame}
+
+%% ---------------------------------------------------------------
+%%  追加スライド群: Abaqus 実装詳細（村松先生説明用）
+%% ---------------------------------------------------------------
+
+\begin{frame}{実装アーキテクチャ --- ガウス点カップリング}
+\protect\hypertarget{arch-coupling}{}
+
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textbf{FEM Newton ループ内の流れ}\\[4pt]
+\begin{tikzpicture}[
+  bx/.style={draw,rounded corners,fill=gray!10,text width=3.2cm,align=center,
+             minimum height=0.65cm,font=\small},
+  scale=0.88,transform shape
+]
+  \node[bx,fill=blue!15] (fem)  at (0, 0)   {FEM ソルバー\\{\footnotesize (Abaqus / ANSYS)}};
+  \node[bx,fill=orange!20](umat) at (0,-1.5) {UMAT / USERMAT\\{\footnotesize (Fortran)}};
+  \node[bx,fill=teal!15]  (srv)  at (0,-3.0) {Python サーバー\\{\footnotesize (TCP ソケット)}};
+  \node[bx,fill=green!15] (nsp)  at (0,-4.5) {Hamilton NSP モデル\\{\footnotesize ODE 時間積分}};
+  \draw[->,thick] (fem)  -- node[right,font=\scriptsize]{$\varepsilon,\Delta\varepsilon$, STATEV} (umat);
+  \draw[->,thick] (umat) -- node[right,font=\scriptsize]{send: $\varepsilon,\Delta\varepsilon,\mathbf{g}$} (srv);
+  \draw[->,thick] (srv)  -- node[right,font=\scriptsize]{$\delta\mathcal{H}=0$, Newton} (nsp);
+  \draw[->,thick,dashed] (nsp) to[bend left=45]
+    node[left,font=\scriptsize]{$\mathbf{g}_{\rm new},\phi_{Pg}$} (srv);
+  \draw[->,thick,dashed] (srv) to[bend left=45]
+    node[left,font=\scriptsize]{$\boldsymbol{\sigma}, \mathbf{C}_{\rm alg}$} (umat);
+  \draw[->,thick,dashed] (umat) to[bend left=45]
+    node[left,font=\scriptsize]{更新 STATEV} (fem);
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{UMAT インターフェース}\\[4pt]
+{\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Abaqus & 役割\\
+\midrule
+\texttt{STRAN, DSTRAN} & 全ひずみ + 増分\\
+\texttt{STATEV(12)} & NSP 状態 $\mathbf{g}$\\
+\texttt{STRESS(6)} & Cauchy 応力（Voigt）\\
+\texttt{DDSDDE(6,6)} & 整合接線\\
+\bottomrule
+\end{tabular}
+}\\[8pt]
+\textbf{ANSYS USERMAT との対応}\\[2pt]
+{\small \texttt{STRESS}$\leftrightarrow$\texttt{stress}，
+\texttt{DDSDDE}$\leftrightarrow$\texttt{dsdePl}，
+\texttt{STATEV}$\leftrightarrow$\texttt{ustatev}\\
+Voigt 順序同一 $\Rightarrow$ Rung 3→4 はほぼコピー}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Hamilton NSP モデル --- 単点検証（Rung 1b）}
+\protect\hypertarget{rung1b-nsp}{}
+
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\textbf{NSP 状態ベクトル（STATEV）}\\[2pt]
+$\mathbf{g} = [\phi_1,\ldots,\phi_5,\;\phi_0,\;\psi_1,\ldots,\psi_5,\;\gamma]^\top \in \mathbb{R}^{12}$\\[4pt]
+$\phi_i$：体積分率，$\psi_i$：生存率，$\phi_0$：非生物相，$\gamma$：Lagrange 乗数\\[6pt]
+
+\textbf{1 ステップ更新}（$\delta\mathcal{H}=0$，Newton 法）：
+\[
+0 = -c^*\psi_i(\mathbf{A}\bar{\boldsymbol\phi})_i
+  + \eta_i(\dot\phi_i\psi_i^2 + \bar\phi_i\dot\psi_i + \dot\phi_i) + \gamma
+\]
+\[
+0 = -c^*\phi_i(\mathbf{A}\bar{\boldsymbol\phi})_i
+  + \eta_i(\dot\psi_i\phi_i^2 + \bar\phi_i\dot\phi_i)
+\]
+$\bar\phi_i = \phi_i\psi_i$，拘束 $\sum_{l=0}^{n}\phi_l=1$
+
+\end{column}
+\begin{column}{0.45\textwidth}
+\textbf{整合接線の検証}\\[4pt]
+{\small
+\[
+\mathbf{C}_{\rm alg} = \frac{\partial \boldsymbol\sigma}{\partial \varepsilon}\bigg|_{\mathbf{g}}
+\approx \frac{\boldsymbol\sigma(\varepsilon+h\mathbf{e}_k) - \boldsymbol\sigma(\varepsilon)}{h}
+\]
+}
+各ひずみ経路（$\varepsilon_{11},\varepsilon_{22},\varepsilon_{12}$ 3経路）で
+前進差分（$h=10^{-7}$）と照合：
+
+\vspace{4pt}
+\begin{center}
+\begin{tabular}{@{}lc@{}}
+\toprule
+チェック & 相対誤差\\
+\midrule
+Hamilton NSP 接線 & $5\times10^{-5}$ ✓\\
+プレースホルダー接線 & $<10^{-11}$ ✓\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{4pt}
+{\footnotesize
+NSP の誤差はヤコビアン行列の AD 精度に由来（JAX \texttt{jacfwd}）；
+Newton 収束には十分。}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{成長--力学カップリング（有限ひずみ，Rung 3b）}
+\protect\hypertarget{rung3b-fs}{}
+
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\textbf{乗算的分解}（Bilby--Kröner--Lee）：
+\[
+\mathbf{F} = \mathbf{F}^e \cdot \mathbf{F}^g
+\]
+\textbf{成長勾配}（深さ方向のみ膨張）：
+\[
+\mathbf{F}^g = \mathrm{diag}(1,\;1,\;\lambda_z), \quad
+\lambda_z = 1 + \max(0,\,\beta\,\phi_{Pg}(z) + c_0)
+\]
+CLSM キャリブレーション（DH 系）：
+\[
+\beta = 17.2,\quad c_0 = -1.34,\quad \text{corr}=0.88
+\]
+\textbf{弾性部}（compressible neo-Hookean）：
+\[
+\boldsymbol\sigma = \frac{\mu}{J}(\mathbf{b}^e - \mathbf{I})
+  + \frac{\lambda}{J}\ln J\,\mathbf{I}
+\]
+$\mathbf{b}^e = \mathbf{F}^e(\mathbf{F}^e)^\top$，$J=\det\mathbf{F}^e$
+
+\end{column}
+\begin{column}{0.45\textwidth}
+\textbf{CLSMキャリブレーション}\\[4pt]
+\includegraphics[width=\textwidth]{masterarbeit_ansys_fem/figures/F2_growth_calibration.pdf}
+{\footnotesize
+HOBIC DH 系の膜厚 $h$ vs $\phi_{Pg}$（CLSM 実測）。\\
+$\lambda_z - 1 = \beta\phi_{Pg} + c_0$，$\beta=17.2$，corr $= 0.88$}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{自由膨張・拘束カラム検証（Rung 3, 3b, 3c）}
+\protect\hypertarget{rung3c-verify}{}
+
+\begin{columns}[T]
+\begin{column}{0.38\textwidth}
+\textbf{Rung 3b: 自由膨張（1要素）}\\[4pt]
+\includegraphics[width=\textwidth]{masterarbeit_ansys_fem/figures/F3_free_swelling.pdf}
+{\footnotesize
+$\sigma_{33}=0$（自由端），$U_3^{\rm top} \to 0.302 = \lambda_z-1$ ✓\\
+SDV1（NSP ステップカウンタ）：0→20}
+\end{column}
+\begin{column}{0.58\textwidth}
+\textbf{Rung 3c: 残留応力カラム}\\[4pt]
+\includegraphics[width=\textwidth]{masterarbeit_ansys_fem/figures/F4_residual_stress_DHvsCH.pdf}
+{\footnotesize
+16 要素カラム。深さ方向に $\phi_{Pg}(z)$ を CLSM から入力，側面拘束（$u_x=u_y=0$）。\\
+\textbf{DH（dysbiotic）}：$S_{11}(z)=-136\cdots-354\,\text{MPa}/\mu$ ，深部高 Pg 域で圧縮大。\\
+\textbf{CH（commensal）}：$S_{11}$ 逆符号（Pg 減少 → 収縮）。\\
+$S_{33}\approx 0$（自由表面）✓}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{メッシュ収束・検証まとめ（Rung 3c）}
+\protect\hypertarget{rung3c-conv}{}
+
+\begin{columns}[T]
+\begin{column}{0.45\textwidth}
+\textbf{メッシュ収束（$N=4,8,16,32$）}\\[4pt]
+\includegraphics[width=\textwidth]{masterarbeit_ansys_fem/figures/F5_mesh_convergence.pdf}
+{\footnotesize
+ピーク $|S_{11}|$ vs 要素数。$N=16$ で $<1\%$ 差 → 以降 $N=16$ を採用。}
+\end{column}
+\begin{column}{0.52\textwidth}
+\textbf{検証項目まとめ}\\[4pt]
+{\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Rung & 検証量 & 結果\\
+\midrule
+3  & $\sigma_{xx} = E\varepsilon$ & $50.0$ ✓\\
+3b & $U_3^{\rm top} = \lambda_z - 1$ & $0.302$ ✓\\
+3b & $\sigma_{33}$（自由端）& $\approx 0$ ✓\\
+3b & SDV1 カウンタ & $0\to20$ ✓\\
+3c & $S_{11}(z) \propto \phi_{Pg}(z)$ & DH/CH 逆符号 ✓\\
+3c & $S_{33}\approx0$ & 自由表面 ✓\\
+3c & メッシュ収束 & $N=16$ で $<1\%$ ✓\\
+\bottomrule
+\end{tabular}
+}\\[8pt]
+\textbf{未解決（正直な限界）}\\[2pt]
+{\small
+\begin{itemize}
+\item[$\cdot$] $\sigma$ 絶対値の力学的実測との比較なし
+\item[$\cdot$] バイオフィルム弾性率 $E$ の不確かさ大（Pa〜kPa 域）
+\item[$\cdot$] 双方向カップリング（力学 $\to$ 組成）は今後
+\end{itemize}
+}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{データ橋渡しと臨床への接続}
+\protect\hypertarget{data-bridge}{}
+
+\includegraphics[width=0.92\textwidth,height=0.55\textheight,keepaspectratio]%
+  {masterarbeit_ansys_fem/figures/F1b_data_bridge.pdf}
+
+\vspace{4pt}
+{\small
+\textbf{3 層のデータ橋渡し}（層間の仮定を明示）：
+\begin{enumerate}
+\item \textbf{患者 16S}（組成 $\phi_i$，深さ情報なし）
+  $\xrightarrow{\text{ODE/TMCMC}}$ 相互作用行列 $\mathbf{A}$
+\item \textbf{in-vitro HOBIC CLSM}（$\phi_{Pg}(z)$ 深さプロファイル）
+  $\xrightarrow{\beta=17.2}$ 成長固有ひずみ $\varepsilon^g(z)$
+\item \textbf{Abaqus FEM}（ガウス点カップリング）
+  $\to$ 残留応力分布 $S_{11}(z)$ → 剥離リスク
+\end{enumerate}
+}
+\end{frame}
+
+\begin{frame}{次ステップ --- ANSYS 移植と修士論文}
+\protect\hypertarget{next-steps}{}
+
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textbf{ANSYS 移植（Rung 4）}\\[4pt]
+{\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Abaqus & ANSYS\\
+\midrule
+\texttt{UMAT} & \texttt{USERMAT}\\
+\texttt{STRAN/DSTRAN} & \texttt{eps/deps}\\
+\texttt{STRESS(6)} & \texttt{stress(6)}\\
+\texttt{DDSDDE(6,6)} & \texttt{dsdePl(6,6)}\\
+\texttt{STATEV(12)} & \texttt{ustatev(12)}\\
+\bottomrule
+\end{tabular}
+}\\[6pt]
+Voigt 順序・状態変数次元が同一 $\Rightarrow$\\
+\texttt{usermat.f} スケルトン → socket 橋渡し追加のみ\\[4pt]
+{\footnotesize ブロッカー：ANSYS ライセンス（Geisler 経由で申請中）}
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{修士論文 ロードマップ}\\[4pt]
+{\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+時期 & マイルストーン\\
+\midrule
+2026-05 & Abaqus フェーズ完了 ✓\\
+2026-08 & ANSYS 移植開始\\
+2026-09 & Felix 既存モデルに統合\\
+2026-10 & 双方向カップリング試験\\
+2026-11 & 発表\\
+2026-12 & 提出\\
+\bottomrule
+\end{tabular}
+}\\[8pt]
+\textbf{指導体制}\\[2pt]
+{\small 第1 Soleimani（Hamilton モデル）\\
+第2 Geisler（ANSYS FEM / 既存コード）}
+\end{column}
+\end{columns}
+\end{frame}
+
+%% ---------------------------------------------------------------
+%%  コードスニペット + インプラント適用（新実装）
+%% ---------------------------------------------------------------
+
+\begin{frame}[fragile]{コード: UMAT ソケット通信（Fortran $\leftrightarrow$ Python）}
+\protect\hypertarget{code-umat-socket}{}
+
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+\textbf{Fortran UMAT 送信} (\texttt{umat\_socket\_col.f})\\[2pt]
+{\footnotesize\ttfamily
+\begin{tabbing}
+! ガウス点座標・変形勾配・状態変数を送信\\
+write(req, *) NSTATV, \\
+\quad\quad COORDS(1), COORDS(2), COORDS(3),  \\
+\quad\quad ((DFGRD1(i,j),j=1,3),i=1,3), \\
+\quad\quad (STATEV(i),i=1,NSTATV), \\
+\quad\quad PROPS(1), PROPS(2)   ! E, nu
+\end{tabbing}
+\vspace{-4pt}
+\begin{tabbing}
+! 受信: sigma(6) + C\_alg(36) + statev\_new\\
+read(resp) (STRESS(i),i=1,6), \\
+\quad\quad  ((DDSDDE(i,j),...)), \\
+\quad\quad  (STATEV(i),i=1,NSTATV)
+\end{tabbing}
+}
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{Python サーバー核心} (\texttt{umat\_server\_col.py})\\[2pt]
+{\footnotesize\ttfamily
+\begin{tabbing}
+def handle\_record(tokens):\\
+\quad coords = tokens[1:4]   \# COORDS\\
+\quad F     = tokens[4:13]   \# DFGRD1\\
+\quad statev = tokens[13:14] \# step counter\\
+\\
+\quad \# 深さ正規化 (CPE4: axis=1, C3D8: 2)\\
+\quad z = coords[axis] / height\\
+\quad phi\_pg = interp(z, ZPROF)\\
+\\
+\quad \# F=Fe·Fg → neo-Hookean\\
+\quad Fg = diag(1, 1, 1+beta*phi\_pg)\\
+\quad Fe = F @ inv(Fg)\\
+\quad sigma = cauchy\_neo\_hookean(Fe)\\
+\quad return sigma, C\_alg, step+1
+\end{tabbing}
+}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{インプラントジオメトリへの適用（新規実装）}
+\protect\hypertarget{code-implant-umat}{}
+
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+\textbf{旧: 熱膨張アナログ（per-layer）}\\[2pt]
+{\footnotesize\ttfamily
+\begin{tabbing}
+! Nz 層ごとに別材料を定義\\
+*MATERIAL, NAME=MAT0   ! z=0層\\
+*ELASTIC\\
+\quad 5000.0, 0.45\\
+*EXPANSION, TYPE=ORTHO\\
+\quad 0.0, 0.143, 0.0  ! eps\_yy 固定\\
+*MATERIAL, NAME=MAT1   ! z=1層\\
+...   \# Nz 個繰り返し
+\end{tabbing}
+}
+\textcolor{red}{\small $\Rightarrow$ NSP 動態なし・β 固定・時間発展なし}
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{新: NSP UMAT（\texttt{gen\_implant\_umat\_inp.py}）}\\[2pt]
+{\footnotesize\ttfamily
+\begin{tabbing}
+! 全要素を1材料で統一\\
+*SOLID SECTION, ELSET=BIOFILM,\\
+\quad MATERIAL=NSP\_BIOFILM\\
+*MATERIAL, NAME=NSP\_BIOFILM\\
+*USER MATERIAL, CONSTANTS=5\\
+\quad 5000.0, 0.45, 17.2, -1.34, 1.0\\
+*DEPVAR\\
+\quad 1   \# STATEV(1) = ステップ counter
+\end{tabbing}
+}
+\textcolor{teal}{\small $\Rightarrow$ 各ガウス点で COORDS $\to$ Python $\to$ NSP}\\[4pt]
+{\footnotesize 実行:}\\
+{\footnotesize\ttfamily bash run\_implant\_umat.sh DH thread}
+\end{column}
+\end{columns}
+
+\vspace{6pt}
+\textbf{変更点まとめ}：Nz 個の別材料 → 単一 \texttt{*USER MATERIAL}。
+\texttt{--coord-axis 1}（CPE4 の $y$ 座標を深さとして使用）。
+NLGEOM=YES で有限ひずみ成長。
+\end{frame}
+
+%% ---------------------------------------------------------------
+%%  追加スライド群: ここまで
+%% ---------------------------------------------------------------
 
 \begin{frame}[fragile]{Take-home}
 \protect\hypertarget{take-home}{}
