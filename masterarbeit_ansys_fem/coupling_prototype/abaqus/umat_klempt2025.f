@@ -1,7 +1,8 @@
 c =====================================================================
-c  umat_klempt2025.f  --  Option C: Klempt 2025 multi-species UMAT
+c  umat_klempt2025.f  --  Option C: Klempt 2025 multi-species UMAT v2
 c
 c  Extension of Klempt 2024 to N_SP=5 species (Klempt 2025 arXiv:2509.01274).
+c  v2: adds phi^2-gated stiffness (Klempt 2024 Eq.20: Psi=phi^2*mu/2*...).
 c
 c  Multi-species growth decomposition:
 c    Each species s has its own growth variable alpha_s (from per-species PDE).
@@ -24,8 +25,8 @@ c    [Hole 4]   multi-species UMAT (N=5 species, Klempt 2025 formulation)
 c    [Hole 5]   E = Voigt(phi_i) not constant
 c    [Hole 6]   alpha_s PDE uses exact Eq.36 (no Monod in alpha equation)
 c
-c  PREDEF (10 field variables):
-c    PREDEF(1)  = alpha_So   (from klempt_alpha_s_final_{cond}_So.npy)
+c  PREDEF (11 field variables):
+c    PREDEF(1)  = alpha_So   (per-species growth, species-proportional split)
 c    PREDEF(2)  = alpha_An
 c    PREDEF(3)  = alpha_Vd
 c    PREDEF(4)  = alpha_Fn
@@ -35,17 +36,19 @@ c    PREDEF(7)  = phi_An
 c    PREDEF(8)  = phi_Vd
 c    PREDEF(9)  = phi_Fn
 c    PREDEF(10) = phi_Pg
+c    PREDEF(11) = phi_local_total  (depth-varying total phi from PDE)
 c
-c  PROPS(1) = nu  (Poisson ratio = 0.49, fixed from Klempt Table 2)
+c  PROPS(1) = nu = 0.49
 c  CONSTANTS=1
 c
-c  DEPVAR 6:
+c  DEPVAR 7:
 c    SDV1 = alpha_total = sum_s alpha_s
 c    SDV2 = Je = det(Fe)
-c    SDV3 = E_Voigt [MPa]
-c    SDV4 = s = 1 + alpha_total (growth stretch)
-c    SDV5 = alpha_So   (largest contributor in commensal)
-c    SDV6 = alpha_Vd   (largest contributor in dysbiotic HOBiC)
+c    SDV3 = E_gated [MPa]   (phi^2-gated Voigt E)
+c    SDV4 = s = 1 + alpha_total
+c    SDV5 = alpha_So
+c    SDV6 = alpha_Vd
+c    SDV7 = phi_gate = (phi_local/phi_total)^2
 c
 c  References:
 c    Klempt et al. 2024 BMMB (F=FeFg, neo-Hookean, Table 2)
@@ -63,9 +66,10 @@ c =====================================================================
      2 TIME(2),PREDEF(*),DPRED(*),PROPS(NPROPS),COORDS(3),DROT(3,3),
      3 DFGRD0(3,3),DFGRD1(3,3)
 
-      real*8 nu, lam, mu_sh, E_voigt
+      real*8 nu, lam, mu_sh, E_voigt, E_gated, phi_gate
       real*8 alpha_So, alpha_An, alpha_Vd, alpha_Fn, alpha_Pg
       real*8 phi_So, phi_An, phi_Vd, phi_Fn, phi_Pg
+      real*8 phi_local, phi_total_cond, phi_frac
       real*8 alpha_total, s_iso
       real*8 fe(3,3), be(6), xi(6), detfe, lnJe
       integer i, j
@@ -98,12 +102,22 @@ c === READ SPECIES FRACTIONS (PREDEF 6..10) ================================
       phi_Fn = max(0.d0, PREDEF(9)  + DPRED(9))
       phi_Pg = max(0.d0, PREDEF(10) + DPRED(10))
 
-c === VOIGT STIFFNESS ======================================================
+c === VOIGT STIFFNESS (condition-level) ====================================
       E_voigt = phi_So*E_So + phi_An*E_An + phi_Vd*E_Vd
      #        + phi_Fn*E_Fn + phi_Pg*E_Pg
-      if (E_voigt .lt. 1.0d-10) E_voigt = 1.0d-10
-      mu_sh = E_voigt / (2.d0*(1.d0+nu))
-      lam   = E_voigt*nu / ((1.d0+nu)*(1.d0-2.d0*nu))
+      if (E_voigt .lt. 1.0d-12) E_voigt = 1.0d-12
+
+c === phi^2-GATED E (Klempt 2024 Eq.20) ===================================
+c     phi_local = total biofilm density at Gauss point (PREDEF 11)
+      phi_local      = max(0.d0, PREDEF(11) + DPRED(11))
+      phi_total_cond = phi_So + phi_An + phi_Vd + phi_Fn + phi_Pg
+      phi_frac       = phi_local / max(phi_total_cond, 1.0d-10)
+      phi_gate       = phi_frac * phi_frac
+      E_gated        = phi_gate * E_voigt
+      if (E_gated .lt. 1.0d-12) E_gated = 1.0d-12
+
+      mu_sh = E_gated / (2.d0*(1.d0+nu))
+      lam   = E_gated*nu / ((1.d0+nu)*(1.d0-2.d0*nu))
 
 c === TOTAL GROWTH (Klempt 2025 additive Mandel decomposition) ============
 c     alpha_total = sum_s alpha_s
@@ -178,10 +192,11 @@ c === STATE VARIABLES ========================================================
      #      + mu_sh*(be(1)+be(2)+be(3)-3.d0-2.d0*lnJe)) / 2.d0
       if (NSTATV.ge.1) STATEV(1) = alpha_total
       if (NSTATV.ge.2) STATEV(2) = detfe
-      if (NSTATV.ge.3) STATEV(3) = E_voigt
+      if (NSTATV.ge.3) STATEV(3) = E_gated
       if (NSTATV.ge.4) STATEV(4) = s_iso
       if (NSTATV.ge.5) STATEV(5) = alpha_So
       if (NSTATV.ge.6) STATEV(6) = alpha_Vd
+      if (NSTATV.ge.7) STATEV(7) = phi_gate
 
       RETURN
       END
