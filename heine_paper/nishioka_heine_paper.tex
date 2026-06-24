@@ -86,9 +86,9 @@ peri-implantitis
 \label{sec:intro}
 %==============================================================================
 
-Multi-species biofilms that form on dental implant surfaces are a principal etiological factor in peri-implantitis~\cite{Kolenbrander2010OralMultispecies, Marsh2003Dental}. Recent \textit{in vivo} characterisations indicate that these microbial communities are highly complex, individualized, and dynamically structured over time~\cite{dieckow2024structure, cui2025microbial}.
-In a controlled in vitro study, Heine et al.~\cite{heine2025influence} investigated the temporal dynamics of five representative oral taxa, \textit{Streptococcus oralis} (\textit{So}), \textit{Actinomyces naeslundii} (\textit{An}), \textit{Veillonella} spp.\ (\textit{Vei}; \textit{V.~dispar} in commensal, \textit{V.~parvula} in dysbiotic conditions), \textit{Fusobacterium nucleatum} (\textit{Fn}), and \textit{Porphyromonas gingivalis} (\textit{Pg}), across four experimental conditions defined by community state (commensal vs. dysbiotic) and cultivation mode (static vs. HOBIC reactor).
-Importantly, the two community states incorporated distinct \textit{Porphyromonas gingivalis} strains: the commensal consortium included the avirulent strain \textit{Pg} ATCC 20709, whereas the dysbiotic consortium employed the virulent strain \textit{Pg} W83, which harbors a full complement of gingipain and fimbrial virulence determinants~\cite{heine2025influence}.
+Multi-species biofilms that form on dental implant surfaces are a principal etiological factor in peri-implantitis~\cite{Kolenbrander2010OralMultispecies, Marsh2003Dental}. Recent \textit{in vivo} characterisations indicate that these microbial communities are highly complex, individualized, and dynamically structured over time~\cite{Dieckow2025InVivo, cui2025microbial}.
+In a controlled in vitro study, Heine et al.~\cite{Heine2025PeriImplant} investigated the temporal dynamics of five representative oral taxa, \textit{Streptococcus oralis} (\textit{So}), \textit{Actinomyces naeslundii} (\textit{An}), \textit{Veillonella} spp.\ (\textit{Vei}; \textit{V.~dispar} in commensal, \textit{V.~parvula} in dysbiotic conditions), \textit{Fusobacterium nucleatum} (\textit{Fn}), and \textit{Porphyromonas gingivalis} (\textit{Pg}), across four experimental conditions defined by community state (commensal vs. dysbiotic) and cultivation mode (static vs. HOBIC reactor).
+Importantly, the two community states incorporated distinct \textit{Porphyromonas gingivalis} strains: the commensal consortium included the avirulent strain \textit{Pg} ATCC 20709, whereas the dysbiotic consortium employed the virulent strain \textit{Pg} W83, which harbors a full complement of gingipain and fimbrial virulence determinants~\cite{Heine2025PeriImplant}.
 Building on the extended Hamilton principle~\cite{JunkerBalzani2021ExtendedHamilton}, Klempt et al.~\cite{Klempt2025ContinuumBiofilm} formulated a continuum model in which a symmetric interaction matrix~$\mathbf{A}$ governs species growth, with an optional decay vector~$\mathbf{b}$ for antibiotic effects.
 Fritsch et al.~\cite{Fritsch2025BayesianMicrofilms} subsequently introduced Bayesian updating with surrogate models for biofilm parameter estimation under hybrid uncertainties.
 
@@ -220,7 +220,7 @@ organised into five biologically motivated blocks:
 
 \subsection{Biological interaction network}
 
-The interaction network reported by Heine et al.~\cite{heine2025influence} comprises five experimentally validated species pairs (Figure~\ref{fig:network}).
+The interaction network reported by Heine et al.~\cite{Heine2025PeriImplant} comprises five experimentally validated species pairs (Figure~\ref{fig:network}).
  For an additional five pairs, no direct metabolic exchange or co-aggregation mechanisms have been described. Rather than imposing these absences as hard constraints (i.e., $\theta_k\equiv0$), we estimate the full set of 15 interaction parameters and allow the posterior distribution to infer which interactions are supported by the data.
 
 This framework is made computationally tractable by the fix-$\psi$ strategy (Section~\ref{sec:gpu}), which mitigates posterior multimodality and enables stable convergence in the 15-dimensional parameter space.
@@ -267,10 +267,10 @@ Vei$\to$Pg & pH elevation & Unidirectional\\
 Fn--Pg & Peptide supply & Bidirectional\\
 \bottomrule
 \end{tabular}
-\captionof{table}{Experimentally confirmed species interactions~\cite{heine2025influence}. All 15 parameters are estimated without a priori locking; the posterior concentrates near zero for biologically inactive pairs.}
+\captionof{table}{Experimentally confirmed species interactions~\cite{Heine2025PeriImplant}. All 15 parameters are estimated without a priori locking; the posterior concentrates near zero for biologically inactive pairs.}
 \label{tab:active}
 \end{minipage}
-\caption{Species interaction network~\cite{heine2025influence}. Solid blue: experimentally confirmed pathways. Dotted grey: no known pathway, estimated freely---the posterior determines their magnitude.}
+\caption{Species interaction network~\cite{Heine2025PeriImplant}. Solid blue: experimentally confirmed pathways. Dotted grey: no known pathway, estimated freely---the posterior determines their magnitude.}
 \label{fig:network}
 \end{figure}
 
@@ -301,7 +301,7 @@ p(\yobs\mid\btheta)
 \exp\!\Bigl(-\frac{(y_{\mathrm{obs},i}(t_k)-\hat{y}_i(t_k;\btheta))^2}{2\sigma_{i}^2}\Bigr),
 \label{eq:likelihood}
 \end{equation}
-where $\sigma_{i}$ is a species-specific observation noise derived from the replicate standard deviation of the normalised species fractions at each time point~\cite{heine2025influence} ($N=8$ biological replicates per condition).
+where $\sigma_{i}$ is a species-specific observation noise derived from the replicate standard deviation of the normalised species fractions at each time point~\cite{Heine2025PeriImplant} ($N=8$ biological replicates per condition).
 The noise is averaged over time points to yield a fixed $\sigma_i$ per species per condition, with typical values ranging from $\sigma_i\approx0.05$ (\textit{Fn}, \textit{Pg} in commensal states where fractions are near zero) to $\sigma_i\approx0.20$ (\textit{So} in commensal states where variability is highest).
 The condition-averaged mean noise is $\bar{\sigma}\approx0.11$--$0.12$ across all conditions.
 
@@ -390,7 +390,7 @@ All $N$ particle trajectories are evaluated simultaneously via \texttt{jax.vmap}
 This yields a $\sim$200$\times$ end-to-end speedup (Table~\ref{tab:timing}).
 
 \paragraph{Fix-$\psi$ and iteratively narrowed priors.}
-In Phase~1, the viability fraction $\psi_i(t_k)$ is fixed to the experimentally measured membrane-intact ratios~\cite{heine2025influence}, halving the Jacobian dimension from $2n+2$ to $n+2$ and removing $\psi$-related posterior modes.
+In Phase~1, the viability fraction $\psi_i(t_k)$ is fixed to the experimentally measured membrane-intact ratios~\cite{Heine2025PeriImplant}, halving the Jacobian dimension from $2n+2$ to $n+2$ and removing $\psi$-related posterior modes.
 An initial wide-prior run provides posterior quantiles; the production run uses narrowed bounds $[q_{0.01}-1.5\sigma,\,q_{0.99}+1.5\sigma]$ (clipped to original bounds), concentrating sampling on the high-density region.
 
 \paragraph{Two-phase estimation.}
@@ -459,7 +459,7 @@ $^\dagger$Extrapolated from the 500-particle CPU benchmark assuming linear scali
 \label{sec:results}
 %==============================================================================
 
-The inference is performed under four experimental conditions from Heine et al.~\cite{heine2025influence}: Commensal Static (CS), Commensal HOBIC (CH), Dysbiotic Static (DS), and Dysbiotic HOBIC (DH).
+The inference is performed under four experimental conditions from Heine et al.~\cite{Heine2025PeriImplant}: Commensal Static (CS), Commensal HOBIC (CH), Dysbiotic Static (DS), and Dysbiotic HOBIC (DH).
 Species distribution data ($N=8$ biological replicates per condition, Days~1, 3, 6, 10, 15, 21) were normalised to unit sum at each time point; Day~1 serves as initial condition.
 All 15 interaction parameters are estimated simultaneously for every condition without a priori locking, following the two-phase procedure of Algorithm~\ref{alg:tmcmc}: Phase~1 ($N_p=1{,}000$, fix-$\psi$) identifies $\mathbf{A}$; Phase~2 ($N_p=10{,}000$, free $\psi$) recovers the full joint posterior.
 All runs use a coefficient-of-variation target $\delta_{\mathrm{target}}=1.0$ for the adaptive $\beta$-schedule~\cite{Betz2016TMCMC}, initial proposal scale $\gamma^2=2.38^2/d\approx0.38$~\cite{RobertsRosenthal2001Optimal} (optimal for high-dimensional Gaussian targets), and RW mutation with $K=20$ steps per particle.
@@ -497,7 +497,7 @@ Phase~1 achieves lower or equal species RMSE (upper bound on fit quality), while
 
 Table~\ref{tab:r2_species} reports the per-species $R^2$ for each condition.
 In commensal states (CS, CH), \textit{Fn} and \textit{Pg} fractions are near zero throughout, rendering $R^2$ undefined (total variance $\approx0$); these are marked ``$-$'' in the table.
-In dysbiotic states, the model captures the pathogen dynamics with high fidelity: in Phase~1, DH achieves $R^2>0.8$ for \textit{An}, \textit{Vei}, and \textit{Pg}; in Phase~2, \textit{Vei} drops to~$0.63$ while \textit{An} ($0.86$) and \textit{Pg} ($0.90$) remain above~$0.8$.
+In dysbiotic states, the model captures the pathogen dynamics with high fidelity: in Phase~1, DH achieves $R^2\geq0.8$ for \textit{An}, \textit{Vei}, and \textit{Pg}; in Phase~2, \textit{Vei} drops to~$0.63$ while \textit{An} ($0.86$) and \textit{Pg} ($0.90$) remain above~$0.8$.
 DS achieves $R^2=0.93$ for \textit{Vei} in Phase~1 ($0.91$ in Phase~2) and $0.85$ for \textit{Pg} in both phases.
 So shows negative $R^2$ across all conditions in Phase~2, reflecting a trade-off between the species-fraction and viability likelihood channels: the additional $\psi$-dynamics shift the MAP away from the So-optimal region to accommodate viability constraints.
 Phase~1 (fix-$\psi$) achieves substantially better So fits, confirming that the $R^2<0$ arises from the $\psi$--$\phi$ coupling rather than from a fundamental model limitation.
@@ -519,7 +519,7 @@ DH  & $-0.47$ & $\mathbf{0.83}$ & $\mathbf{0.83}$ & $0.60$ & $\mathbf{0.92}$ & $
 \end{tabular}
 \caption{Per-species $R^2$ for Phase~1 (fix-$\psi$) and Phase~2 (free $\psi$, $N_p=10{,}000$).
 ``$-$'': species fraction $<0.02$ at all time points ($\mathrm{SS}_{\mathrm{tot}}\approx0$), rendering $R^2$ ill-defined; the MAP prediction for these species is $<0.01$ with absolute error below the observation noise~$\sigma_i$.
-Bold: $R^2>0.8$.
+Bold: $R^2\geq0.8$.
 DS maintains $R^2\geq0.85$ for Vei and Pg in both phases. DH retains strong Pg identification ($R^2=0.90$) despite the added $\psi$ degrees of freedom.}
 \label{tab:r2_species}
 \end{table}
@@ -541,7 +541,7 @@ DS (column~3) achieves the best fit (RMSE\,$=$\,0.033) with clear pathogen succe
 In DH (column~4), the model captures the non-linear amplification of \textit{Vei} and \textit{Pg}, including the characteristic pathogen surge driven by bridge-mediated cross-feeding.
 The credible bands widen from CS to DH, reflecting the increasing effective dimensionality.
 The bottom row highlights the distinct \textit{Pg} strains: the avirulent ATCC\,20709 used in commensal conditions remains near zero, whereas the virulent W83 in dysbiotic conditions exhibits the characteristic late-onset surge.
-Similarly, the \textit{Veillonella} row corresponds to \textit{V.~dispar} in commensal and \textit{V.~parvula} in dysbiotic conditions~\cite{heine2025influence}.
+Similarly, the \textit{Veillonella} row corresponds to \textit{V.~dispar} in commensal and \textit{V.~parvula} in dysbiotic conditions~\cite{Heine2025PeriImplant}.
 
 \begin{figure}[p]
 \centering
@@ -551,7 +551,7 @@ Solid lines: MAP $\varphi_i$ trajectory; dashed lines: living fraction $\bar{\va
 Shaded bands: 50\% (dark) and 80\% (light) credible intervals from 100 posterior samples.
 Circles: experimental median ($N=8$ replicates); box plots: inter-replicate variability (IQR).
 Note that \textit{P.~gingivalis} employs different strains: avirulent ATCC\,20709 in commensal conditions and virulent W83 in dysbiotic conditions (indicated by colour).
-\textit{Veillonella} species also differ: \textit{V.~dispar} (commensal) and \textit{V.~parvula} (dysbiotic)~\cite{heine2025influence}.}
+\textit{Veillonella} species also differ: \textit{V.~dispar} (commensal) and \textit{V.~parvula} (dysbiotic)~\cite{Heine2025PeriImplant}.}
 \label{fig:fits_all}
 \end{figure}
 
@@ -631,7 +631,7 @@ Overall, the transition from health to disease corresponds to a structural reorg
 \subsection{Independent validation}
 \label{sec:validation}
 
-We validate the Phase~2 MAP parameters against four measurements from Heine et al.~\cite{heine2025influence} that were \emph{not} used in calibration.
+We validate the Phase~2 MAP parameters against four measurements from Heine et al.~\cite{Heine2025PeriImplant} that were \emph{not} used in calibration.
 
 \textit{pH prediction} (LOO-$R^2 = 0.920$; independent $R^2 = 0.777$):\textit{Model selection.}
 Candidate linear regressors were evaluated by leave-one-out cross-validation (LOO-CV) on $N=90$ HOBIC time points (0.5-day resolution, commensal and dysbiotic combined).
@@ -663,10 +663,10 @@ Applying the fixed $\beta$ coefficients to these ODE-predicted fractions---witho
 
 
 \textit{Gingipain--\textit{Pg} correlation} ($r=0.90$):
-the temporal profile of gingipain (Heine et al.~\cite{heine2025influence}, Fig.~4B), the principal virulence factor of \textit{Pg}, correlates strongly with the predicted Pg trajectory in DH, both exhibiting delayed onset at Day~15--21.
+the temporal profile of gingipain (Heine et al.~\cite{Heine2025PeriImplant}, Fig.~4B), the principal virulence factor of \textit{Pg}, correlates strongly with the predicted Pg trajectory in DH, both exhibiting delayed onset at Day~15--21.
 
 \textit{Metabolic sign consistency}:
-the MAP \textit{So}$\to$\textit{An} coefficient ($a_{12}=+0.76$) is consistent with lactate/succinate cross-feeding, while \textit{So}$\to$\textit{Vei} ($a_{13}=-2.73$) indicates niche competition dominates---ecologically plausible for species sharing metabolic substrates (Heine et al.~\cite{heine2025influence}, Fig.~4C).
+the MAP \textit{So}$\to$\textit{An} coefficient ($a_{12}=+0.76$) is consistent with lactate/succinate cross-feeding, while \textit{So}$\to$\textit{Vei} ($a_{13}=-2.73$) indicates niche competition dominates---ecologically plausible for species sharing metabolic substrates (Heine et al.~\cite{Heine2025PeriImplant}, Fig.~4C).
 
 % \textit{Growth rate parity}:
 % planktonic doubling times (1.68\,h commensal vs.\ 1.64\,h dysbiotic; Fig.~1B) confirm that condition differences arise from community interactions, not individual species fitness.
@@ -775,7 +775,7 @@ Effective dimensionality analysis confirms that all 15 parameters are data-infor
 
 \paragraph{Future work.}
 \begin{itemize}[nosep,leftmargin=*]
-    \item \textbf{External validation:} testing the inferred interactions against independent in-vivo datasets (e.g., Dieckow et al.~\cite{dieckow2024structure}).
+    \item \textbf{External validation:} testing the inferred interactions against independent in-vivo datasets (e.g., Dieckow et al.~\cite{Dieckow2025InVivo}).
     \item \textbf{Spatially resolved inference:} coupling the framework to the continuum PDE biofilm model~\cite{Klempt2025ContinuumBiofilm} to exploit depth-resolved FISH/CLSM imaging.
     % \item \textbf{Direct experimental test of the predicted gating edge:} a leave-one-species-out co-culture omitting \textit{F.\ nucleatum}, to verify that the dysbiotic-HOBIC \textit{Pg} surge collapses as the inferred network predicts.
 \end{itemize}
@@ -801,26 +801,6 @@ are available at \url{https://github.com/keisuke58/Tmcmc202601}.
 % P.J.\ supervised the study and acquired funding.
 % All authors critically reviewed and approved the final manuscript.
 
-% TODO (Funding) — confirm with M.\ Stiesch / P.\ Junker BEFORE submission.
-% Do NOT assert SFB/TRR-298 SIIRI support unless the grant actually covers this work.
-% If funded, uncomment and fill the project number:
-% \section*{Funding}
-% This work was supported by the Deutsche Forschungsgemeinschaft (DFG) through the
-% Collaborative Research Centre SFB/TRR~298 SIIRI (``Safety Integrated and Infection
-% Reactive Implants''; project number~[\,XXXXXXXXX\,]).
-% Otherwise use the journal's no-grant wording, e.g.:
-% \section*{Funding}
-% This research received no specific grant from any funding agency in the public,
-% commercial, or not-for-profit sectors.
-
-% \section*{Funding and acknowledgment}
-% The authors highly acknowledge the funding by the German Research Foundation (Deutsche
-% Forschungsgemeinschaft, DFG) through the project grant SFB/TRR-298-SIIRI– Project-ID
-% 426335750.
-% Funded by the European Union (ERC, Gen-TSM, project number 101124463). Views and opin
-% ions expressed are however those of the author(s) only and do not necessarily reflect those of the
-% European Union or the European Research Council Executive Agency. Neither the European
-% Union nor the granting authority can be held responsible for them.
 
 \section*{Conflict of Interest}
 The authors declare that the research was conducted in the absence of any commercial
