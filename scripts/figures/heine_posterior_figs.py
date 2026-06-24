@@ -15,10 +15,11 @@ Run with TeX Live 2025 on PATH (usetex):
         /home/nishioka/IKM_Hiwi/.venv_jax/bin/python scripts/figures/heine_posterior_figs.py
 
 Outputs (results/heine_repro/): heatmap_A_4cond.{pdf,png}, posterior_violin.{pdf,png},
-umap_A_3d.{pdf,png}.
+paper_posterior_violin_sharey.{pdf,png}, umap_A_3d.{pdf,png}.
 """
 import numpy as np
 import matplotlib
+import matplotlib as mpl
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
@@ -31,7 +32,12 @@ OUT = Path(__file__).resolve().parents[2] / "results" / "heine_repro"
 OUT.mkdir(parents=True, exist_ok=True)
 
 CONDS = ["CS", "CH", "DS", "DH"]
-COND_TITLE = {"CS": "CS", "CH": "CH", "DS": "DS", "DH": "DH"}
+COND_TITLE = {
+    "CS": "Commensal static",
+    "CH": "Commensal HOBIC",
+    "DS": "Dysbiotic static",
+    "DH": "Dysbiotic HOBIC",
+}
 SP = ["S.o", "A.n", "Vd", "F.n", "P.g"]
 
 # theta(20) -> A(5x5 symmetric); index of each unique A entry (cf. hamilton_ode_jax)
@@ -55,31 +61,51 @@ def theta_to_A(theta):
 # ── Fig: MAP interaction-matrix heatmaps (1x4) ────────────────────────────────
 
 def fig_heatmap():
-    fig, axes = plt.subplots(1, 4, figsize=thesis_style(1.0, aspect=0.30))
-    norm = TwoSlopeNorm(vmin=-2.0, vcenter=0.0, vmax=2.0)
+    figsize = thesis_style(1.0, aspect=0.46)
+    # use Times (newtx) for this figure: replace lmodern in preamble
+    _orig = mpl.rcParams.get("text.latex.preamble", "")
+    mpl.rcParams["text.latex.preamble"] = _orig.replace(
+        r"\usepackage{lmodern}", r"\usepackage{newtxtext}")
+    fig, axes = plt.subplots(1, 4, figsize=figsize)
+    # global norm from actual data range across all conditions (no clipping)
+    all_A = [theta_to_A(paper_5sp_theta(ck)) for ck in CONDS]
+    gmax  = float(max(np.abs(A).max() for A in all_A))
+    gmax  = max(gmax, 0.5)
+    norm  = TwoSlopeNorm(vmin=-gmax, vcenter=0.0, vmax=gmax)
+    thresh = 0.60 * gmax          # |val| above this → white text
     im = None
-    for ax, ck in zip(axes, CONDS):
-        A = theta_to_A(paper_5sp_theta(ck))
+    for ax, ck, A in zip(axes, CONDS, all_A):
         im = ax.imshow(A, cmap="RdBu_r", norm=norm, aspect="equal")
-        ax.set_xticks(range(5)); ax.set_xticklabels(SP, rotation=45, ha="right", fontsize=7)
-        ax.set_yticks(range(5)); ax.set_yticklabels(SP if ck == "CS" else [], fontsize=7)
+        ax.set_xlim(-0.6, 4.6); ax.set_ylim(4.6, -0.6)   # padding so edge text fits
+        ax.set_xticks(range(5)); ax.set_xticklabels(SP, rotation=45, ha="right")
+        ax.set_yticks(range(5)); ax.set_yticklabels(SP if ck == "CS" else [])
         ax.set_title(COND_TITLE[ck])
         ax.tick_params(length=0)
-        vmax_abs = np.abs(A).max()
-        thresh = 0.55 * max(0.5, vmax_abs * 0.95)
         for ii in range(5):
             for jj in range(5):
+                if ii > jj:   # mask lower triangle
+                    ax.add_patch(plt.Rectangle((jj - 0.5, ii - 0.5), 1, 1,
+                                               color="white", zorder=2))
+                    continue
                 val = A[ii, jj]
-                if abs(val) > 0.04:
-                    tc = "white" if abs(val) > thresh else "#333333"
-                    ax.text(jj, ii, f"{val:.2f}", ha="center", va="center",
-                            fontsize=4.5, color=tc)
-    cb = fig.colorbar(im, ax=axes, fraction=0.018, pad=0.02)
-    cb.set_label(r"$A_{ij}$")
-    fig.suptitle(r"MAP interaction matrices $\mathbf{A}$ (Phase~2, $N_p=10{,}000$)")
-    fig.savefig(OUT / "heatmap_A_4cond.png", dpi=300, bbox_inches="tight")
+                tc  = "white" if abs(val) > thresh else "#222222"
+                lbl = r"$\mathbf{a}_{" + f"{ii+1}{jj+1}" + r"}$"
+                if abs(val) > 0.005:
+                    vstr = r"\textbf{" + f"{val:.2f}" + r"}"
+                    ax.text(jj, ii, f"{lbl}\n{vstr}", ha="center", va="center",
+                            fontsize=4.5, color=tc, linespacing=1.2, zorder=3)
+                else:
+                    ax.text(jj, ii, lbl, ha="center", va="center",
+                            fontsize=4.5, color="#bbbbbb", zorder=3)
+    # manually position colorbar so it never overlaps DH right edge
+    fig.subplots_adjust(wspace=0.04, right=0.83)
+    cax = fig.add_axes([0.855, 0.28, 0.013, 0.42])
+    cb  = fig.colorbar(im, cax=cax)
+    cb.set_label(r"$A_{ij}$", fontsize=7)
+    fig.savefig(OUT / "heatmap_A_4cond.png", dpi=600, bbox_inches="tight")
     fig.savefig(OUT / "heatmap_A_4cond.pdf", bbox_inches="tight")
     plt.close(fig)
+    mpl.rcParams["text.latex.preamble"] = _orig   # restore preamble
     print("wrote heatmap_A_4cond.{pdf,png}")
 
 
@@ -110,6 +136,54 @@ def fig_violin(n_sub=1500):
     fig.savefig(OUT / "posterior_violin.pdf", bbox_inches="tight")
     plt.close(fig)
     print("wrote posterior_violin.{pdf,png}")
+
+
+# ── Fig: posterior violins — 4 cond rows × 15 entries, sharey ─────────────────
+
+def fig_violin_sharey(n_sub=1500):
+    """3×5 grid: one subplot per interaction entry, 4 condition violins, sharey."""
+    # same as plot_heine_umap_comparison.py COLORS
+    colors = {"CS": "#1f77b4", "CH": "#2ca02c", "DS": "#ff7f0e", "DH": "#d62728"}
+    # Row 0: 5 diagonal entries; rows 1-2: 10 off-diagonal entries
+    fig, axes = plt.subplots(3, 5, figsize=thesis_style(1.0, aspect=0.62), sharey=True)
+    axes_flat = axes.flatten()
+    rng     = np.random.default_rng(0)
+    samples = {ck: paper_5sp_samples(ck) for ck in CONDS}
+    thetas  = {ck: paper_5sp_theta(ck)   for ck in CONDS}
+
+    for k, ((i, j), lab) in enumerate(ENTRIES):
+        ax   = axes_flat[k]
+        pidx = A_IDX[(i, j)]
+        data = [samples[ck][
+                    rng.choice(samples[ck].shape[0],
+                               size=min(n_sub, samples[ck].shape[0]), replace=False),
+                    pidx]
+                for ck in CONDS]
+
+        parts = ax.violinplot(data, positions=range(4), showextrema=False, widths=0.75)
+        for b, ck in zip(parts["bodies"], CONDS):
+            b.set_facecolor(colors[ck]); b.set_alpha(0.90); b.set_edgecolor("none")
+
+        for pos, ck in enumerate(CONDS):
+            ax.plot(pos, thetas[ck][pidx], "*", color="k", ms=3.5, zorder=5)
+
+        ax.axhline(0, color="grey", lw=0.4, ls=":")
+        ax.set_title(f"$a_{{{i+1}{j+1}}}$", pad=2)
+        ax.set_xticks(range(4))
+        ax.set_xticklabels(CONDS, fontsize=5.5, rotation=45, ha="right")
+        ax.tick_params(axis="y", labelsize=6)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+
+    # y-label only on leftmost column
+    for ax in axes[:, 0]:
+        ax.set_ylabel(r"$A_{ij}$")
+    fig.subplots_adjust(hspace=0.45, wspace=0.12, left=0.07, right=0.99,
+                        top=0.97, bottom=0.14)
+    fig.savefig(OUT / "paper_posterior_violin_sharey.png", dpi=600, bbox_inches="tight")
+    fig.savefig(OUT / "paper_posterior_violin_sharey.pdf", bbox_inches="tight")
+    plt.close(fig)
+    print("wrote paper_posterior_violin_sharey.{pdf,png}")
 
 
 # ── Fig: UMAP 3D embedding of A-matrix posterior samples ──────────────────────
@@ -145,5 +219,6 @@ def fig_umap(n_sub=1200):
 if __name__ == "__main__":
     fig_heatmap()
     fig_violin()
+    fig_violin_sharey()
     fig_umap()
     print(f"\nAll outputs in {OUT}")
