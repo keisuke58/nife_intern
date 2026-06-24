@@ -66,10 +66,10 @@ c =====================================================================
      2 TIME(2),PREDEF(*),DPRED(*),PROPS(NPROPS),COORDS(3),DROT(3,3),
      3 DFGRD0(3,3),DFGRD1(3,3)
 
-      real*8 nu, lam, mu_sh, E_voigt, E_gated, phi_gate
+      real*8 nu, lam, mu_sh, E_voigt, E_voigt_norm, E_gated, phi_gate
       real*8 alpha_So, alpha_An, alpha_Vd, alpha_Fn, alpha_Pg
       real*8 phi_So, phi_An, phi_Vd, phi_Fn, phi_Pg
-      real*8 phi_local, phi_total_cond, phi_frac
+      real*8 phi_local, phi_total_cond
       real*8 alpha_total, s_iso
       real*8 fe(3,3), be(6), xi(6), detfe, lnJe
       integer i, j
@@ -108,12 +108,14 @@ c === VOIGT STIFFNESS (condition-level) ====================================
       if (E_voigt .lt. 1.0d-12) E_voigt = 1.0d-12
 
 c === phi^2-GATED E (Klempt 2024 Eq.20) ===================================
-c     phi_local = total biofilm density at Gauss point (PREDEF 11)
-      phi_local      = max(0.d0, PREDEF(11) + DPRED(11))
+c     phi_local in [0,1]: PDE total biofilm density (PREDEF 11)
+c     E_voigt_norm: E at full coverage (phi_total=1), normalized by TMCMC sum
+c     phi_gate = phi_local^2 in [0,1] (Klempt Eq.20 exact: Psi = phi^2 * ...)
+      phi_local      = min(1.0d0, max(0.d0, PREDEF(11) + DPRED(11)))
       phi_total_cond = phi_So + phi_An + phi_Vd + phi_Fn + phi_Pg
-      phi_frac       = phi_local / max(phi_total_cond, 1.0d-10)
-      phi_gate       = phi_frac * phi_frac
-      E_gated        = phi_gate * E_voigt
+      E_voigt_norm   = E_voigt / max(phi_total_cond, 1.0d-10)
+      phi_gate       = phi_local * phi_local
+      E_gated        = phi_gate * E_voigt_norm
       if (E_gated .lt. 1.0d-12) E_gated = 1.0d-12
 
       mu_sh = E_gated / (2.d0*(1.d0+nu))

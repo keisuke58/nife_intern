@@ -56,10 +56,10 @@ c =====================================================================
      3 DFGRD0(3,3),DFGRD1(3,3)
 
       real*8 nu, lam, mu_sh
-      real*8 E_voigt, E_gated, phi_gate
+      real*8 E_voigt, E_voigt_norm, E_gated, phi_gate
       real*8 alpha, s_iso
       real*8 phi_So, phi_An, phi_Vd, phi_Fn, phi_Pg
-      real*8 phi_total_cond, phi_local, phi_frac
+      real*8 phi_total_cond, phi_local
       real*8 fe(3,3), be(6), xi(6), detfe, lnJe
       integer i, j
 
@@ -89,14 +89,15 @@ c === Voigt E (condition-level, at phi_total=1) [MPa] ====================
       if (E_voigt .lt. 1.0d-12) E_voigt = 1.0d-12
 
 c === phi^2-GATED E (Klempt Eq.20: Psi = phi^2 * mu/2 * ...) ============
-c     phi_local = total biofilm density at this Gauss point (depth-varying)
-c     phi_total_cond = condition-level total from TMCMC (= sum phi_i)
-c     gate = (phi_local / phi_total_cond)^2 in [0,1]
-      phi_local      = max(0.d0, PREDEF(7) + DPRED(7))
+c     phi_local in [0,1]: PDE total biofilm density (depth-varying, PREDEF 7)
+c     phi_total_cond: TMCMC sum(phi_i), may be <1 (not all volume is biofilm)
+c     E_voigt_norm: Voigt E normalized to phi_total=1 (E at full coverage)
+c     phi_gate = phi_local^2 in [0,1]  (Klempt Eq.20 exact)
+      phi_local      = min(1.0d0, max(0.d0, PREDEF(7) + DPRED(7)))
       phi_total_cond = phi_So + phi_An + phi_Vd + phi_Fn + phi_Pg
-      phi_frac       = phi_local / max(phi_total_cond, 1.0d-10)
-      phi_gate       = phi_frac * phi_frac
-      E_gated        = phi_gate * E_voigt
+      E_voigt_norm   = E_voigt / max(phi_total_cond, 1.0d-10)
+      phi_gate       = phi_local * phi_local
+      E_gated        = phi_gate * E_voigt_norm
       if (E_gated .lt. 1.0d-12) E_gated = 1.0d-12
 
 c === Lame constants from gated E =========================================
