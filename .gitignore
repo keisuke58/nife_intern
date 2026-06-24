@@ -156,3 +156,4 @@ abaqus.rpy.*
 *.lck
 *.SMABulk
 *.SMAFocus
+*.pid

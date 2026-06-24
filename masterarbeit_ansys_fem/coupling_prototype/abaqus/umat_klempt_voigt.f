@@ -3,9 +3,11 @@ c  umat_klempt_voigt.f  --  Option A: Klempt UMAT + Voigt E(phi_i) v2
 c
 c  Fixes academic hole #1 (phi^2-gated stiffness):
 c    Klempt 2024 Eq.20: Psi = phi^2 * mu/2 * (I:Ce-3) + ...
-c    => E_eff = phi_local^2 / phi_total^2 * E_Voigt   (Klempt exact)
-c    phi_local varies by depth (inner face=full biofilm, outer=planktonic)
-c    phi_local provided via PREDEF(7) (field variable 7)
+c    => E_eff = phi_local^2 * E_mat   where E_mat = E_Voigt / Sigma_phi_i
+c    Derivation: Psi=phi^2*psi_mat, psi_mat = E of pure mix at phi=1
+c                E_mat = E_Voigt(phi_i) / Sigma_phi_i  (normalize to phi=1)
+c                E_gated = phi_local^2 * E_mat          [Klempt Eq.20 exact]
+c    NOTE: old comment "phi_local^2/phi_total^2 * E_Voigt" was WRONG (double-counts phi_total).
 c
 c  Constitutive model:
 c    F = Fe . Fg   (multiplicative growth split, Klempt 2024)
@@ -14,7 +16,8 @@ c    alpha     = PREDEF(1)    [ramped via *Field + AMPLITUDE]
 c    phi_i     = PREDEF(2..6) [TMCMC species fractions, fixed per condition]
 c    phi_local = PREDEF(7)    [depth-varying total phi from PDE, fixed]
 c    E_Voigt   = sum_i phi_i * E_i               [condition-level Voigt]
-c    E_gated   = (phi_local/phi_total)^2 * E_Voigt  [Klempt Eq.20 exact]
+c    E_mat     = E_Voigt / Sigma_phi_i           [species mix at phi=1]
+c    E_gated   = phi_local^2 * E_mat             [Klempt Eq.20 exact]
 c    nu        = PROPS(1) = 0.49
 c
 c  Neo-Hookean on elastic part:
@@ -38,7 +41,7 @@ c    SDV1 = s = 1+alpha
 c    SDV2 = Je = det(Fe)
 c    SDV3 = alpha
 c    SDV4 = E_gated [MPa]   (phi^2-gated Voigt E)
-c    SDV5 = phi_gate = (phi_local/phi_total)^2
+c    SDV5 = phi_gate = phi_local^2  (NOT (phi_local/phi_total)^2; E_mat already normalized)
 c
 c  References:
 c    Klempt 2024 BMMB Eq.20 (phi^2-gated energy density)

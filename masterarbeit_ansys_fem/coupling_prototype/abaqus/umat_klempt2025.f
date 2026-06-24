@@ -5,28 +5,31 @@ c  Extension of Klempt 2024 to N_SP=5 species (Klempt 2025 arXiv:2509.01274).
 c  v2: adds phi^2-gated stiffness (Klempt 2024 Eq.20: Psi=phi^2*mu/2*...).
 c
 c  Multi-species growth decomposition:
-c    Each species s has its own growth variable alpha_s (from per-species PDE).
-c    Additive total growth (Klempt 2025 additive Mandel decomposition):
-c      alpha_total = sum_s alpha_s
-c      Fg = (1 + alpha_total) * I       (isotropic, additive species growth)
-c      Fe = F * Fg^{-1} = F / (1 + alpha_total)
+c    *** SOURCE ATTRIBUTION (verified 2026-06-25) ***
+c    Klempt 2024 (BMMB): F=Fe.Fg, alpha, Eq.20-36 -- ALL mechanics from here
+c    Klempt 2025 (arXiv:2509.01274): biological phi_i interaction scheme ONLY
+c      -- Klempt 2025 has NO alpha/Fg/Mandel decomposition whatsoever
+c    per-species alpha split (alpha_s = alpha_total * phi_s/Sigma_phi):
+c      -- THIS IS NISHIOKA APPROXIMATION, not from either Klempt paper.
+c      -- Justification: at composition equilibrium, alpha_s proportional to phi_s
+c      -- Must be stated as approximation in thesis §5.2
+c
+c    alpha_total = sum_s alpha_s
+c    Fg = (1 + alpha_total) * I    (Klempt 2024 Eq.34-36, isotropic)
+c    Fe = F * Fg^{-1} = F / (1 + alpha_total)
 c
 c  Voigt stiffness:
-c      E_Voigt = sum_s phi_s * E_s      (species-composition-dependent stiffness)
+c      E_Voigt = sum_s phi_s * E_s  (Klempt 2024 Table 2 material params)
+c      E_mat   = E_Voigt / Sigma_phi_s  (species mix normalized to phi=1)
+c      E_gated = phi_local^2 * E_mat   (Klempt 2024 Eq.20: Psi=phi^2*psi_mat)
 c
 c  Full constitutive chain:
-c      F = Fe * Fg  →  Fe = F/s, s=1+alpha_total
-c      W = (mu/2)*(trbe-3) + (lam/2)*(lnJe)^2 - mu*lnJe
+c      F = Fe * Fg  -->  Fe = F/s, s=1+alpha_total
+c      W = (mu/2)*(trbe-3) + (lam/2)*(lnJe)^2 - mu*lnJe  (Klempt 2024 Eq.21)
 c      sigma = ((lam*lnJe-mu)*I + mu*be) / Je
 c
-c  Closes ALL academic holes:
-c    [Hole 1-3] alpha_s from per-species PDE (klempt_pde_multispecies.py)
-c    [Hole 4]   multi-species UMAT (N=5 species, Klempt 2025 formulation)
-c    [Hole 5]   E = Voigt(phi_i) not constant
-c    [Hole 6]   alpha_s PDE uses exact Eq.36 (no Monod in alpha equation)
-c
 c  PREDEF (11 field variables):
-c    PREDEF(1)  = alpha_So   (per-species growth, species-proportional split)
+c    PREDEF(1)  = alpha_So  (alpha_total * phi_So/Sigma_phi -- Nishioka approx)
 c    PREDEF(2)  = alpha_An
 c    PREDEF(3)  = alpha_Vd
 c    PREDEF(4)  = alpha_Fn
@@ -48,11 +51,12 @@ c    SDV3 = E_gated [MPa]   (phi^2-gated Voigt E)
 c    SDV4 = s = 1 + alpha_total
 c    SDV5 = alpha_So
 c    SDV6 = alpha_Vd
-c    SDV7 = phi_gate = (phi_local/phi_total)^2
+c    SDV7 = phi_gate = phi_local^2  (NOT (phi_local/phi_total)^2; E_mat already normalized)
 c
 c  References:
-c    Klempt et al. 2024 BMMB (F=FeFg, neo-Hookean, Table 2)
-c    Klempt et al. 2025 arXiv:2509.01274 (multi-species additive extension)
+c    Klempt et al. 2024 BMMB Eq.20-36: F=FeFg, Psi=phi^2*psi_mat, alpha PDE
+c    Klempt et al. 2025 arXiv:2509.01274: phi_i interaction scheme (bio only)
+c    Nishioka 2026 (this thesis): per-species alpha proportional split (approx)
 c    Phase 3b Voigt stiffness: E_SPECIES = {So:1000,An:800,Vd:600,Fn:200,Pg:10} Pa
 c =====================================================================
       SUBROUTINE UMAT(STRESS,STATEV,DDSDDE,SSE,SPD,SCD,
@@ -121,7 +125,7 @@ c     phi_gate = phi_local^2 in [0,1] (Klempt Eq.20 exact: Psi = phi^2 * ...)
       mu_sh = E_gated / (2.d0*(1.d0+nu))
       lam   = E_gated*nu / ((1.d0+nu)*(1.d0-2.d0*nu))
 
-c === TOTAL GROWTH (Klempt 2025 additive Mandel decomposition) ============
+c === TOTAL GROWTH (Klempt 2024 F=Fe.Fg; alpha split = Nishioka approx) ===
 c     alpha_total = sum_s alpha_s
 c     Fg = (1 + alpha_total) * I  (isotropic, commuting species Fg_s)
       alpha_total = alpha_So + alpha_An + alpha_Vd + alpha_Fn + alpha_Pg

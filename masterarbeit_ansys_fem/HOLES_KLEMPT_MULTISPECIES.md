@@ -1,4 +1,4 @@
-# Klempt Multi-Species FEM — 残穴ロードマップ (2026-06-24)
+# Klempt Multi-Species FEM — 残穴ロードマップ (2026-06-24, 更新 2026-06-25)
 
 TMCMC 5種 → Klempt PDE (Eq.34-36) → conformal FEM パイプラインの残穴を優先順位付きで列挙。
 修論 §5.2 に向けて徐々に潰す。
@@ -7,70 +7,25 @@ TMCMC 5種 → Klempt PDE (Eq.34-36) → conformal FEM パイプラインの残�
 
 ## ✅ 完了済み (参照用)
 
-| 穴 | 内容 | コミット |
+| 穴 | 内容 | コミット / 状態 |
 |---|---|---|
 | PDE 形式 | Klempt Eq.34 完全形 (Allen-Cahn+logistic+k_α·α+chemotaxis) | PDE v2 |
-| ϕ²-gated E | Klempt Eq.20: E_eff = (ϕ_local/ϕ_total)² × E_Voigt | nife `2c782fe` |
+| ϕ²-gated E | Klempt Eq.20: E_eff = ϕ_local² × (E_Voigt/Σφ_i) | nife `954022c` (v3) |
+| phi_gate バグ修正 | TMCMC Σφ_i < 1 でも phi_gate ≤ 1 を保証 (E_voigt_norm) | nife `954022c` |
 | Eq.36 整合 | α̇ = k_α·φ, Monod なし (Felix exact) | PDE v2 |
 | 多種 UMAT (mode C) | 5種 α_s 個別 (Klempt 2025 additive Mandel) | nife `2c782fe` |
 | Voigt E | E = Σφ_i E_i (条件依存) | nife `2c782fe` |
 | k_α,eff 重み | Σφ_i k_α_i (TMCMC 10000p MAP から) | PDE v2 |
 | インプラント geometry | nife に 3D helical screw FEM 完成 (旧 UMAT) | nife existing |
 | RANKL/OPG モデル | 骨リモデリングスタンドアロン実装 | extensions/ |
+| **A1: 歯 FEM v3 PASS** | mode A 全4条件 PASS (CS=120s/CH=131s/DS=130s/DH=311s) | `tooth_klempt_results_A.csv` |
+| **B1: インプラント FEM v3** | mode A 全4条件 PASS (CS=331s/CH=240s/DS=331s/DH=350s) | `implant_klempt_results_A.csv` |
+| **E3: σ(depth) 比較図** | 3×2 figure (thesis_style, teal/orange) · σ^CH/σ^DH = 6.1×(tooth)/4.8×(implant) | `FEM/klempt_depth_comparison.pdf` |
+
+**Felix 完全再現 (felix_complete_reproduction.py v4):** 全5基準 PASS ✅  
+(Fig.2/Fig.5/p>0/Fig.7 layer/Fig.10 obstacle)
 
 ---
-
-## 🔴 Tier A — Abaqus 結果の検証 (QXT 解放待ち)
-
-### A1: 歯 FEM mode A PASS 確認
-
-**状態:** QXT/50 が frontale02 の COPV-GW 明示 3 ジョブ (d077/d078/d079) に占有。自動スタート待ち。
-
-**確認コマンド (次セッション冒頭):**
-```bash
-cat /home/nishioka/IKM_Hiwi/FEM/tooth_klempt_results_A.csv
-cat /home/nishioka/IKM_Hiwi/FEM/tooth_klempt_results_C.csv
-```
-
-**確認ポイント:**
-- 全 4 条件が `PASS` になっているか
-- SDV4 (E_gated) が深さ=0 (inner face) で E_Voigt に近く、深さ=1 (outer) で 0 に近いか
-- SDV5 (phi_gate) が deep → shallow で単調減少するか
-- σ_max (CH) > σ_max (DH) になっているか (α 比 2.01× が応力に反映される)
-
-**ERROR 時の診断:**
-```bash
-grep -A5 "\*\*\*ERROR" /home/nishioka/IKM_Hiwi/FEM/p23_klempt_A_commensal_static.msg | head -30
-```
-よくある原因: PREDEF 変数番号ミスマッチ (`DEPVAR` / `field variable` 宣言数と UMAT 内 PREDEF(N) のズレ)
-
----
-
-## 🟠 Tier B — インプラント FEM への v2 UMAT 移植 (1–2 週)
-
-### B1: gen_implant_umat_klempt_inp.py の作成
-
-**問題:**
-- 既存 `implant_DH_thread.sta`, `implantphi_DH_thread.sta` → `umat_growth_phi` (旧) / socket UMAT を使用
-- ϕ²-gated v2 UMAT (`umat_klempt_voigt.f`, `umat_klempt2025.f`) はまだインプラント mesh に適用されていない
-
-**やること:**
-1. `gen_tooth_klempt_umat_inp.py` の `write_mode_A()` / `write_mode_C()` を参考に、  
-   インプラント mesh (`gen_implant_umat_3d_inp.py` が生成する C3D8 screw+bone assembly) 向けの  
-   `gen_implant_klempt_inp.py` を書く
-2. PREDEF 割り当て:
-   - mode A: PREDEF(1)=α_total(ramp), PREDEF(2..6)=φ_i, **PREDEF(7)=ϕ_local(depth)**
-   - mode C: PREDEF(1..5)=α_s(ramp), PREDEF(6..10)=φ_i, **PREDEF(11)=ϕ_local(depth)**
-3. `run_implant_klempt.sh` で 4条件直列実行
-
-**phi_local の depth 計算 (implant):**
-- tooth では `depth = z / H_tooth` (上から下)
-- implant では `depth = r_biofilm / t_biofilm` (チタン表面からの厚さ方向、螺旋ねじ面から外側)
-- `gen_implant_umat_3d_inp.py` の node 座標から距離を計算して PREDEF(7) / PREDEF(11) を割り当て
-
-**期待される学術的価値:**
-- 歯 (P1_Tooth_23) vs インプラント (Ti screw) で同じ UMAT v2 を使った応力比較
-- Heine2025 の「チタン面上 5 種バイオフィルム」との整合
 
 ---
 
@@ -120,9 +75,16 @@ grep -A5 "\*\*\*ERROR" /home/nishioka/IKM_Hiwi/FEM/p23_klempt_A_commensal_static
 
 ### E2: Ti 表面パラメータ更新 (Heine2025)
 
-**現状:** E_i, k_α_i などはエナメル質ベース (文献値)  
-**Heine2025:** チタン面上 5 種バイオフィルムの成長・付着特性を報告  
-**やること:** RAG で Heine2025 を再検索し、Ti 特有のパラメータを抽出して E_i または k_α_i を更新
+**現状:** E_i, k_α_i などはエナメル質ベース (文献値)
+
+**Heine 2025 確認済み (2026-06-25):**  
+- *Front. Oral Health* 6:1649419 — peri-implant biofilm dysbiosis in vitro  
+- **HOBIC 条件 = Ti grade 4 フローチャンバー上** → CH/DH の phi_i は Ti 表面の実験から推定済 ✅  
+- **Static 条件 = ポリスチレン** → CS/DS は Ti 非特異 ⚠️  
+- 5 菌種 (So/An/Vd/Fn/Pg) は Heine 2025 実験菌種と完全一致。追加種不要。  
+- DS の TMCMC posterior (phi_So=0.944) は Heine Fig.3 の実験 (Vp=50-60% dominant) と乖離 → フィッティング問題として thesis に明示
+
+**thesis での対応:** CH/DH は Ti 対応・CS/DS は参照のみと明記。E2 としての「パラメータ更新」は追加作業不要（HOBIC で既に Ti 上データ使用）。今後 Future Work として Ti 特異的 E_i 文献値への更新を記述。
 
 ### E3: σ(depth) 比較図 (修論用)
 
@@ -135,16 +97,16 @@ python compare_tooth_klempt.py  # (未作成 → B1 後に作る)
 
 ---
 
-## アクション順序
+## アクション順序 (2026-06-25 更新)
 
 ```
-A1 → (QXT 解放後に自動実行中) → 結果確認
-B1 → インプラント inp 生成 → Abaqus 実行
-E3 → B1 の結果から図作成 → 修論 §5.2 図挿入
-C1 → posterior UQ → 修論 §5.3
+✅ A1 完了 → 歯 FEM v3 全4条件 PASS
+✅ B1 完了 → インプラット FEM v3 全4条件 PASS
+✅ E3 完了 → σ(depth) 図 klempt_depth_comparison.pdf (thesis_style)
+✅ E2 確認済 → HOBIC = Ti grade 4 データ → CH/DH は Ti 対応 (Static は非Ti)
+C1 → posterior UQ (K=50) → 修論 §5.3        ← 次のアクション
 E1 → 骨吸収連成 → Outlook 節
 D1 → (時間があれば) → Klempt 2025 完全実装
-E2 → (最後) → Ti パラメータ更新
 ```
 
 ---
