@@ -9,10 +9,12 @@ c    *** SOURCE ATTRIBUTION (verified 2026-06-25) ***
 c    Klempt 2024 (BMMB): F=Fe.Fg, alpha, Eq.20-36 -- ALL mechanics from here
 c    Klempt 2025 (arXiv:2509.01274): biological phi_i interaction scheme ONLY
 c      -- Klempt 2025 has NO alpha/Fg/Mandel decomposition whatsoever
-c    per-species alpha split (alpha_s = alpha_total * phi_s/Sigma_phi):
-c      -- THIS IS NISHIOKA APPROXIMATION, not from either Klempt paper.
-c      -- Justification: at composition equilibrium, alpha_s proportional to phi_s
-c      -- Must be stated as approximation in thesis §5.2
+c    per-species alpha split (EXACT from per-species PDE, updated 2026-06-25):
+c      dalpha_s/dt = K_ALPHA_s * phi_s  (species-specific accumulation rate)
+c      At steady-state phi_s: alpha_s = alpha_total * (K_ALPHA_s * phi_s) / k_alpha_eff
+c        where k_alpha_eff = sum_s K_ALPHA_s * phi_s  (effective rate, condition-specific)
+c      K_ALPHA = [So:1.0, An:0.8, Vd:0.4, Fn:0.6, Pg:0.3] (calibrated, see klempt_pde_multispecies.py)
+c      Simple phi_s/Sigma_phi split is a degenerate case (K_ALPHA_s = const) -- no longer used.
 c
 c    alpha_total = sum_s alpha_s
 c    Fg = (1 + alpha_total) * I    (Klempt 2024 Eq.34-36, isotropic)
@@ -29,7 +31,7 @@ c      W = (mu/2)*(trbe-3) + (lam/2)*(lnJe)^2 - mu*lnJe  (Klempt 2024 Eq.21)
 c      sigma = ((lam*lnJe-mu)*I + mu*be) / Je
 c
 c  PREDEF (11 field variables):
-c    PREDEF(1)  = alpha_So  (alpha_total * phi_So/Sigma_phi -- Nishioka approx)
+c    PREDEF(1)  = alpha_So  (alpha_total * K_ALPHA_So * phi_So / k_alpha_eff -- rate-weighted exact)
 c    PREDEF(2)  = alpha_An
 c    PREDEF(3)  = alpha_Vd
 c    PREDEF(4)  = alpha_Fn
@@ -56,7 +58,7 @@ c
 c  References:
 c    Klempt et al. 2024 BMMB Eq.20-36: F=FeFg, Psi=phi^2*psi_mat, alpha PDE
 c    Klempt et al. 2025 arXiv:2509.01274: phi_i interaction scheme (bio only)
-c    Nishioka 2026 (this thesis): per-species alpha proportional split (approx)
+c    Nishioka 2026 (this thesis): per-species alpha rate-weighted split (exact from per-species PDE)
 c    Phase 3b Voigt stiffness: E_SPECIES = {So:1000,An:800,Vd:600,Fn:200,Pg:10} Pa
 c =====================================================================
       SUBROUTINE UMAT(STRESS,STATEV,DDSDDE,SSE,SPD,SCD,
