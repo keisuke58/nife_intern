@@ -64,10 +64,15 @@ Leave-one-patient-out cross-validation confirms improved generalisation:
 the best model (gLV $\alpha{=}0.25$, L1+L2 prior) achieves LOO-RMSE
 $=0.0490$, a $2.2\%$ improvement over gLV without priors and a $13.5\%$
 improvement over the Hamilton replicator with L1+L2.
+No-prior sign-recovery analysis shows that the symmetric Hamilton replicator
+independently recovers AGORA2 cross-feeding directions at 78.6\% (vs.\ 37.7\%
+chance; permutation $p{=}0.0004$), demonstrating the non-circularity of the
+metabolic prior.
 Retrospective validation on 127 independent peri-implant samples
-(Joshi~et~al.\ 2025) shows that the predicted equilibrium guild-level R/G ratio
-discriminates peri-implantitis from health ($\rho{=}0.46$,
-$p{=}5{\times}10^{-8}$).
+(Joshi~et~al.\ 2025) confirms that the guild-level R/G ratio discriminates
+peri-implantitis severity ($\rho{=}0.460$, $p{=}5.4{\times}10^{-8}$) and
+that the Dieckow-trained model transfers to an independent cohort
+($\rho{=}0.368$, $p{=}2.1{\times}10^{-5}$, equilibrium prediction).
 Biological regime analysis reveals 13 pairs where metabolic and ecological
 evidence converge, 21 prior-constrained but ecologically muted pairs, and 10
 data-driven pairs without metabolic annotation, providing testable predictions
@@ -121,13 +126,18 @@ Our main contributions are:
   \item A three-layer sign constraint integrating AGORA2 FBA into gLV inference,
         achieving 100\% metabolic--ecological sign agreement at $W{=}1.0$.
   \item Demonstration that $W{=}1.0$ is a biologically motivated calibration
-        point (L2-equivalent weight), exhibiting a abrupt transition in sign
+        point (L2-equivalent weight), exhibiting an abrupt transition in sign
         agreement.
+  \item No-prior permutation test showing that the symmetric Hamilton replicator
+        independently recovers AGORA2 cross-feeding signs at 78.6\%
+        (vs.\ 37.7\% chance, $p{=}0.0004$), ruling out circularity.
   \item LOO-CV validation showing 2.2\% RMSE improvement over unconstrained
         gLV and 13.5\% over the Hamilton replicator (L1+L2 only).
   \item Biological regime classification of 45 guild pairs into
         data$+$prior-aligned, prior-constrained-muted, and data-driven
         regimes, with implications for future sampling design.
+  \item External validation on 127 Joshi~et~al.\ (2025) peri-implant samples
+        confirming model transferability ($\rho{=}0.368$, $p{=}2.1{\times}10^{-5}$).
 \end{enumerate}
 
 %% ─────────────────────────────────────────────────────────────────────────────
@@ -397,6 +407,21 @@ gLV interaction units.
 \label{fig:signval}
 \end{figure}
 
+\subsection{No-Prior Sign Recovery: Independent Validation of AGORA Predictions}
+\label{ssec:noPriorSign}
+
+A key concern for sign-constrained inference is circularity: if AGORA2 signs were used to fit the interaction matrix, their \emph{a posteriori} agreement with the fitted $\bA$ provides no independent evidence.
+To rule this out, we performed a \emph{no-prior} leave-one-patient-out fit of the Hamilton model (symmetric $\bA$, $\alpha_{\mathrm{prior}}{=}0.0$, all penalties disabled), then tested whether the unconstrained consensus signs agree with the AGORA2 cross-feeding predictions beyond chance.
+
+For each of 10 LOO folds we fitted the Hamilton replicator without any sign penalty and pooled the per-fold $A_{ij}$ into a per-cell consensus sign.
+The 14 symmetric pairs for which AGORA2 predicts cross-feeding (net flow $F^\mathrm{sym}_{ij}{>}0$; a degenerate prior with all-positive constraints) show a consensus positive sign in \textbf{11/14 (78.6\%)} of cases.
+A cell-level permutation test (shuffle AGORA sign labels across candidate off-diagonal pairs; $n_\mathrm{perm}{=}10{,}000$) yields an expected agreement of 37.7\% under the null, placing the observed value at $z{=}{+}3.79$ ($p{=}0.0004$).
+For comparison, non-AGORA-constrained off-diagonal pairs show only 26.1\% positive signs in the same no-prior fits (consistent with competition dominating pairs not covered by metabolic annotation).
+
+As a negative control, the asymmetric gLV model under the same no-prior LOO yields 38.1\% sign agreement with an equivalent degenerate prior, not different from chance ($p{=}0.96$, $z{=}{-}1.47$), confirming that the independent cross-feeding signal is a property of the \emph{symmetric} Hamilton replicator formulation, not a generic feature of gLV parameter estimation.
+
+These results demonstrate that AGORA2 pFBA cross-feeding directions encode genuine ecological information that time-series fitting independently recovers, validating the non-circularity of the three-layer sign constraint.
+
 \subsection{W\,=\,1.0 Abrupt Transition in Sign Agreement}
 \label{ssec:wSweep}
 
@@ -572,6 +597,32 @@ but measurable stabilisation for borderline pairs.
          \textbf{(C)} Fold-to-fold $A_{ij}$ distributions for the 12 strongest pairs.
          All pairs: SC $\geq 0.70$.}
 \label{fig:stability}
+\end{figure}
+
+\subsection{External Cohort Validation (Joshi~et~al.\ 2025)}
+\label{ssec:joshiValidation}
+
+To test whether the fitted model generalises beyond the Dieckow cohort, we applied the Dieckow-trained interaction matrix $\bA$ to 127 peri-implant microbiome samples from Joshi~et~al.~(2025)~\citep{joshi2025}, which includes three clinical groups: health ($n{=}56$), mucositis ($n{=}39$), and peri-implantitis ($n{=}32$).
+
+We first evaluated the guild-level R/G ratio (Eq.~\eqref{eq:rg}) computed directly from the observed Joshi guild compositions (zero-imputed; $\varepsilon{=}10^{-4}$) as a reference for the diagnostic utility of the guild taxonomy.
+The observed R/G ratio shows a strong positive Spearman correlation with clinical severity
+($\rho{=}0.460$, $p{=}5.4{\times}10^{-8}$, $n{=}127$; Figure~\ref{fig:joshi}A), confirming that the 10-class guild taxonomy captures the commensal-to-dysbiotic gradient in an independent cohort.
+
+To assess model transferability, we used the Dieckow-fitted Hamilton $\bA$ (AGORA $W{=}1.0$) to integrate the Joshi initial compositions forward in time until equilibrium (10{,}000 Euler steps, $\Delta t{=}0.01$\,week), then computed the R/G ratio of the predicted equilibrium state.
+The model-predicted equilibrium R/G ratio correlates with peri-implantitis diagnosis at
+$\rho{=}0.368$ ($p{=}2.1{\times}10^{-5}$; Figure~\ref{fig:joshi}B), demonstrating that the ecological interaction structure learned from 10 implant-abutment patients generalises to a larger independent cohort.
+The attenuation relative to the observed R/G ratio ($\Delta\rho{=}0.09$) likely reflects patient-specific intrinsic growth rates $\bb^{(p)}$ not transferred from the Dieckow cohort.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\linewidth]{fig_joshi_gdi_improved}
+\caption{External validation on Joshi~et~al.\ (2025) peri-implant cohort ($n{=}127$).
+         \textbf{(A)} Observed R/G ratio stratified by diagnosis (health / mucositis /
+         peri-implantitis); Spearman $\rho{=}0.460$, $p{=}5.4{\times}10^{-8}$.
+         \textbf{(B)} Dieckow-model predicted equilibrium R/G ratio (Hamilton $\bA$,
+         AGORA $W{=}1.0$); $\rho{=}0.368$, $p{=}2.1{\times}10^{-5}$.
+         Boxes: median $\pm$ IQR; whiskers: 1.5$\times$IQR.}
+\label{fig:joshi}
 \end{figure}
 
 %% ─────────────────────────────────────────────────────────────────────────────
