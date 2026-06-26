@@ -26,15 +26,21 @@
 %       "Mesh convergence" row (L733).
 % ---------------------------------------------------------------------
 
-(v)~The production growth--stress field is reproduced by a \emph{second, independently
-coded} constitutive routine: an alternative UMAT built on a neo-Hookean rather than a
-Hencky elastic potential, but sharing the same isotropic growth split
-$\bF_{\!g}=(1+\alpha)\bI$, returns the constrained growth-induced stress of the confined
-collar to within $0.1\%$ of the production implementation, confirming that the reported
-stresses carry no implementation-specific artefact.
+(v)~At a representative growth $\alpha=0.1$, the constrained growth-induced stress is
+reproduced to within $0.1\%$ by a \emph{second, independently coded} routine: an
+alternative UMAT built on a neo-Hookean rather than a Hencky elastic potential, but
+sharing the same isotropic growth split $\bF_{\!g}=(1+\alpha)\bI$. The agreement confirms
+that the \emph{growth-kinematics implementation} carries no code-specific artefact; the
+two elastic potentials necessarily diverge at larger strain, so the check is a moderate-
+strain implementation cross-check rather than a constitutive-equivalence claim.
 
 % --- new row for Table~\ref{tab:fem_verification} (place after "Mesh convergence"): ---
-% Implementation cross-check & two UMATs (Hencky vs.\ neo-Hookean) & growth stress within $0.1\%$\\
+% Implementation cross-check & two UMATs (Hencky vs.\ neo-Hookean), $\alpha{=}0.1$ & growth stress within $0.1\%$\\
+%
+% NOTE on the number: confirmed by single-C3D8 Abaqus runs (umat_tangent_test/
+% xcheck_eigenstrain/XCHECK_RESULTS.md): voigt-Hencky 6.375e-5 vs visco-NeoHooke
+% 6.382e-5 MPa = +0.1% at alpha=0.1. The collar growth (eps_g=0.19) is larger, so the
+% two-potential spread there is somewhat wider than 0.1% -- hence the alpha=0.1 qualifier.
 
 
 % =====================================================================
