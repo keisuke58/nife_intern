@@ -1,26 +1,29 @@
 % =====================================================================
-% DRAFT — two small rigor additions for ch5 (FEM integration), to be slotted in
+% DRAFT — one small rigor addition for ch5 (FEM integration), to be slotted in
 % on approval. Thesis body (LUHsummer26/1030_Masterarbeit, chapters/ch5_integration.tex)
 % is FROZEN and lives in the shared master repo — DO NOT edit/push it directly.
 %
-% Both items close the only genuine gaps between the rigor audit
-% (FEM/VERIFICATION_SENSITIVITY_LIMITATIONS.md) and the frozen thesis, which already
-% covers V1/V2/V4, S1/S2/S4, L1/L2 (see the coverage map). Everything else in the
-% audit is either already in the thesis or internal to the JAXFEM working pipeline
-% (k_eff surrogate, DS data fix) and does not belong in the body.
+% Coverage check (rigor audit FEM/VERIFICATION_SENSITIVITY_LIMITATIONS.md vs the frozen
+% thesis): the body ALREADY covers V1/V2/V4, S1/S2/S4, L1/L2, the multi-species E(phi)
+% extension (DollNikutta2022 AFM-anchored), the cohesive-delamination and implant-thread
+% modes, AND a fully verified viscoelastic (Prony relaxation vs analytic, RMS 9e-4,
+% fig:fem_viscoelastic) and poroelastic (Terzaghi, RMS 1.8e-3, fig:fem_poroelastic)
+% treatment. The ONLY genuine gap is the implementation cross-check below.
 %
 % Macros assumed (already defined in the thesis preamble): \bF, \bI.
 % =====================================================================
 
 
 % ---------------------------------------------------------------------
-% ITEM 1 — Implementation cross-check (V3).
+% ITEM 1 — Implementation cross-check (audit V3). The only genuine gap.
 % TARGET: \subsection{Verification}  (label sec:fem_verification).
-%   (a) change the opening "...by four independent checks" -> "five independent checks".
+%   (a) change the opening "...by four independent checks" -> "five independent checks"
+%       (L699 of chapters/ch5_integration.tex).
 %   (b) insert the sentence below as check (v), immediately BEFORE the existing
 %       "Finally, the growth column used for the production results below is
-%        mesh-converged ...".
-%   (c) add the table row below to Table~\ref{tab:fem_verification}.
+%        mesh-converged ..." (L716).
+%   (c) add the table row below to Table~\ref{tab:fem_verification}, after the
+%       "Mesh convergence" row (L733).
 % ---------------------------------------------------------------------
 
 (v)~The production growth--stress field is reproduced by a \emph{second, independently
@@ -34,40 +37,15 @@ stresses carry no implementation-specific artefact.
 % Implementation cross-check & two UMATs (Hencky vs.\ neo-Hookean) & growth stress within $0.1\%$\\
 
 
-% ---------------------------------------------------------------------
-% ITEM 2 — Upgrade the constitutive-extension outlook from "future work" to
-% "implemented and verified" for the viscoelastic case.
-% TARGET: \subsection{Relation to prior art, validation, and limits}
-%   (label sec:fem_validation), the "Outlook" paragraph.
-% ACTION: replace the existing sentence
-%   "And the crude neo-Hookean elastic factor can be replaced by the worm-like-chain
-%    network model of EPS mechanics~\cite{EhretBol2013} for a more physical constitutive
-%    law that captures the strain-stiffening the present model omits."
-% with the sentence below.
-% ---------------------------------------------------------------------
-
-The crude neo-Hookean elastic factor can be refined towards a more physical constitutive
-law along two axes. For the equilibrium response, the worm-like-chain network model of EPS
-mechanics~\cite{EhretBol2013} captures the strain-stiffening the present model omits. For
-the rate-dependent response, a finite-strain viscoelastic extension
-$\bF=\bF_{\!e}\bF_{\!v}\bF_{\!g}$ has already been implemented and verified
-(\texttt{umat\_biofilm\_visco.f}), with the hyperelastic base selectable as either a
-Neo-Hookean or a Mooney--Rivlin potential: its exact algorithmic tangent, obtained by
-deformation-gradient perturbation~\cite{SunChaikof2008}, reproduces a central-difference
-reference to a relative error of $2.4$--$2.9\times10^{-8}$ across the elastic,
-viscoelastic, and Mooney--Rivlin test cases and preserves the quadratic convergence of the
-global Newton solve, so the viscoelastic law is a drop-in replacement rather than an open
-modelling question.
-
-
-% ---------------------------------------------------------------------
-% BIB ADDITION — add to references.bib (key SunChaikof2008 is not yet present):
-% ---------------------------------------------------------------------
-% @article{SunChaikof2008,
-%   author  = {Sun, Wei and Chaikof, Elliot L. and Levenston, Marc E.},
-%   title   = {Numerical Approximation of Tangent Moduli for Finite Element
-%              Implementations of Nonlinear Hyperelastic Material Models},
-%   journal = {Journal of Biomechanical Engineering},
-%   volume  = {130}, number = {6}, pages = {061003}, year = {2008},
-%   doi     = {10.1115/1.2979872}
-% }
+% =====================================================================
+% RETRACTED — viscoelastic / Mooney-Rivlin outlook upgrade.
+% On re-check, the frozen body ALREADY treats viscoelasticity and poroelasticity as
+% verified relaxation channels (Section after sec:fem_delamination: Prony relaxation vs
+% the analytic relaxation modulus, RMS 9e-4, Figure~\ref{fig:fem_viscoelastic};
+% Terzaghi consolidation, RMS 1.8e-3, Figure~\ref{fig:fem_poroelastic}), with the elastic
+% result framed as their common short-time limit. The umat_biofilm_visco.f finite-strain
+% multiplicative viscoelastic UMAT (F=Fe.Fv.Fg, exact perturbation tangent) is a SEPARATE
+% formulation from the thesis's Prony-relaxation treatment; adding it to the Outlook would
+% duplicate / compete with content the body already presents more coherently. No slot-in.
+% (The Neo-Hookean / Mooney-Rivlin selectable base belongs only to that retracted item.)
+% =====================================================================
