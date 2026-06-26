@@ -51,7 +51,8 @@ law along two axes. For the equilibrium response, the worm-like-chain network mo
 mechanics~\cite{EhretBol2013} captures the strain-stiffening the present model omits. For
 the rate-dependent response, a finite-strain viscoelastic extension
 $\bF=\bF_{\!e}\bF_{\!v}\bF_{\!g}$ has already been implemented and verified
-(\texttt{umat\_biofilm\_visco.f}): its exact algorithmic tangent, obtained by
+(\texttt{umat\_biofilm\_visco.f}), with the hyperelastic base selectable as either a
+Neo-Hookean or a Mooney--Rivlin potential: its exact algorithmic tangent, obtained by
 deformation-gradient perturbation~\cite{SunChaikof2008}, reproduces a central-difference
 reference to a relative error of $2.4$--$2.9\times10^{-8}$ across the elastic,
 viscoelastic, and Mooney--Rivlin test cases and preserves the quadratic convergence of the
