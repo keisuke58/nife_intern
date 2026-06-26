@@ -529,7 +529,7 @@ ANSYS 移植：2026-08〜（次ステップ）}
 
 \vspace{6pt}
 \textbf{Rung 3c の要点}：CLSM 実測 $\phi_{Pg}(z)$ を成長固有ひずみ
-$\gamma(z)=\beta\,\phi_{Pg}(z)$（$\beta=17.2$，DH corr $= 0.88$）に変換し，
+$\gamma(z)=\beta\,\phi_{Pg}(z)+c_0$（$\beta=17.2$，$c_0=-1.34$，DH corr $= 0.88$）に変換し，
 側面拘束カラム（16 要素）で残留応力分布を計算。\\[4pt]
 {\footnotesize
 \textbf{未解決}：応力の絶対値は機械測定で未検証（今後の課題）。\\
@@ -847,7 +847,7 @@ def handle\_record(tokens):\\
 \quad phi\_pg = interp(z, ZPROF)\\
 \\
 \quad \# F=Fe·Fg → neo-Hookean\\
-\quad Fg = diag(1, 1, 1+beta*phi\_pg)\\
+\quad Fg = diag(1, 1, 1+max(0, beta*phi\_pg+c0))\\
 \quad Fe = F @ inv(Fg)\\
 \quad sigma = cauchy\_neo\_hookean(Fe)\\
 \quad return sigma, C\_alg, step+1
