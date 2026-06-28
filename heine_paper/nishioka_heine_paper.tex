@@ -41,7 +41,7 @@
 \renewcommand\Affilfont{\small} % Makes affiliations slightly smaller
 
 % Document body
-\author[1]{Keisuke Nishioka}
+\author[1,4]{Keisuke Nishioka}
 \author[1]{Felix Klempt}
 \author[1]{Hendrik Geisler}
 \author[1]{Meisam Soleimani}
@@ -55,6 +55,7 @@
 \affil[1]{Institute of Continuum Mechanics, Leibniz Universit\"at Hannover, Hannover, Germany}
 \affil[2]{Department of Prosthetic Dentistry and Biomedical Materials Science, Hannover Medical School, Hannover, Germany}
 \affil[3]{Lower Saxony Centre for Biomedical Engineering, Implant Research and Development (NIFE), Hannover, Germany}
+\affil[4]{Center for Applied and Computational Mechanics, School of Science for Open and Environmental Systems, Graduate School of Science and Technology, Keio University, Yokohama, Japan}
 
 \date{}
 
@@ -87,12 +88,14 @@ peri-implantitis
 %==============================================================================
 
 Multi-species biofilms that form on dental implant surfaces are a principal etiological factor in peri-implantitis~\cite{Kolenbrander2010OralMultispecies, Marsh2003Dental}. Recent \textit{in vivo} characterisations indicate that these microbial communities are highly complex, individualized, and dynamically structured over time~\cite{Dieckow2025InVivo, cui2025microbial}.
-In a controlled in vitro study, Heine et al.~\cite{Heine2025PeriImplant} investigated the temporal dynamics of five representative oral taxa, \textit{Streptococcus oralis} (\textit{So}), \textit{Actinomyces naeslundii} (\textit{An}), \textit{Veillonella} spp.\ (\textit{Vei}; \textit{V.~dispar} in commensal, \textit{V.~parvula} in dysbiotic conditions), \textit{Fusobacterium nucleatum} (\textit{Fn}), and \textit{Porphyromonas gingivalis} (\textit{Pg}), across four experimental conditions defined by community state (commensal vs. dysbiotic) and cultivation mode (static vs. HOBIC reactor).
+In a controlled in vitro study, Heine et al.~\cite{Heine2025PeriImplant} investigated the temporal dynamics of five representative oral taxa, \textit{Streptococcus oralis} (\textit{So}), \textit{Actinomyces naeslundii} (\textit{An}), \textit{Veillonella} spp.\ (\textit{Vei}; \textit{V.~dispar} in commensal, \textit{V.~parvula} in dysbiotic conditions), \textit{Fusobacterium nucleatum} (\textit{Fn}), and \textit{Porphyromonas gingivalis} (\textit{Pg}), across four experimental conditions defined by community state (commensal vs. dysbiotic) and cultivation mode (static vs. HOBIC reactor~\cite{Kommerein2018HOBIC, Debener2024FlowChamber}).
 Importantly, the two community states incorporated distinct \textit{Porphyromonas gingivalis} strains: the commensal consortium included the avirulent strain \textit{Pg} ATCC 20709, whereas the dysbiotic consortium employed the virulent strain \textit{Pg} W83, which harbors a full complement of gingipain and fimbrial virulence determinants~\cite{Heine2025PeriImplant}.
-Building on the extended Hamilton principle~\cite{JunkerBalzani2021ExtendedHamilton}, Klempt et al.~\cite{Klempt2025ContinuumBiofilm} formulated a continuum model in which a symmetric interaction matrix~$\mathbf{A}$ governs species growth, with an optional decay vector~$\mathbf{b}$ for antibiotic effects.
+The dominant computational framework for inferring species interactions from microbial time-course data is the generalised Lotka--Volterra (gLV) model~\cite{Stein2013gLV, Bucci2016MDSINE, Venturelli2018Deciphering}, which treats all $n(n+1)$ interaction and growth coefficients as free parameters estimated by point or Bayesian inference.
+While gLV has yielded ecological insight in gut and oral communities~\cite{Gonze2018gLV}, it lacks thermodynamic consistency: the asymmetric interaction matrix permits violation of energy balance, and uncertainty quantification is hampered by the high parameter dimensionality relative to the sparse time-series data typical of controlled biofilm experiments.
+Building on the extended Hamilton principle~\cite{JunkerBalzani2021ExtendedHamilton}, Klempt et al.~\cite{Klempt2025ContinuumBiofilm} formulated a continuum model in which a \emph{symmetric} interaction matrix~$\mathbf{A}$ governs species growth --- halving the parameter count from 30 to 15 for five species --- with an optional decay vector~$\mathbf{b}$ for antibiotic effects.
 Fritsch et al.~\cite{Fritsch2025BayesianMicrofilms} subsequently introduced Bayesian updating with surrogate models for biofilm parameter estimation under hybrid uncertainties.
 
-Despite these advances, estimating the 15-dimensional parameter vector (15 interaction parameters) from limited time-course data remains challenging.
+Despite these advances, estimating the 15-dimensional parameter vector from limited time-course data remains challenging.
 Two principal difficulties arise: (i) poor identifiability when data are sparse relative to the parameter dimension---with $N_t=5$ usable time points (Day~1 is consumed as initial condition) and 5 species, one has at most 25 observations for 15 unknowns---and (ii) multimodal posterior landscapes caused by the coupled $\phi_i$--$\psi_i$ dynamics, which render standard MCMC methods inefficient~\cite{RobertCasella2004MonteCarlo}.
 
 In this work we address these challenges through three complementary strategies.
@@ -233,6 +236,7 @@ This framework is made computationally tractable by the fix-$\psi$ strategy (Sec
 \begin{tikzpicture}[scale=0.82, every node/.style={transform shape},
     species/.style={circle, draw, minimum size=0.9cm, font=\footnotesize\bfseries},
     edge/.style={<->, thick, >=Stealth},
+    uniedge/.style={->, thick, blue!70!black, >=Stealth},
     weakedge/.style={<->, thin, gray!60, >=Stealth, densely dotted}
 ]
     \node[species, fill=blue!15] (so) at (0, 2.2) {So};
@@ -243,7 +247,7 @@ This framework is made computationally tractable by the fix-$\psi$ strategy (Sec
     \draw[edge, blue!70!black] (so) -- (an) node[midway, left, font=\tiny] {co-agg};
     \draw[edge, blue!70!black] (so) -- (vei) node[midway, right, font=\tiny] {lactate};
     \draw[edge, blue!70!black] (so) -- (fn) node[midway, right, font=\tiny] {formate};
-    \draw[edge, blue!70!black] (vei) -- (pg) node[midway, left, font=\tiny] {pH};
+    \draw[uniedge] (vei) -- (pg) node[midway, left, font=\tiny] {pH};
     \draw[edge, blue!70!black] (fn) -- (pg) node[midway, right, font=\tiny] {peptides};
     \draw[weakedge] (an) -- (vei);
     \draw[weakedge] (an) -- (fn);
@@ -801,6 +805,9 @@ are available at \url{https://github.com/keisuke58/Tmcmc202601}.
 % P.J.\ supervised the study and acquired funding.
 % All authors critically reviewed and approved the final manuscript.
 
+
+\section*{Acknowledgments}
+The authors acknowledge computational support and scientific expertise provided by the Institut für Kontinuumsmechanik (IKM), Leibniz Universität Hannover, and the Lower Saxony Centre for Biomedical Engineering, Implant Research and Development (NIFE), Hannover. Computational resources of the Multiphysics Materials Computation Research Group (Prof.\ M.\ Muramatsu), Department of Mechanical Engineering, Keio University, are also gratefully acknowledged.
 
 \section*{Conflict of Interest}
 The authors declare that the research was conducted in the absence of any commercial

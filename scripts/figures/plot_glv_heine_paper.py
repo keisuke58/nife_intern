@@ -43,7 +43,7 @@ OUT_DIR     = Path('/home/nishioka/IKM_Hiwi/nife/results/heine2025')
 
 DAYS   = [1, 3, 6, 10, 15, 21]
 N_SP   = 5
-SHORT  = ['So', 'An', 'Vd/Vp', 'Fn', 'Pg']
+SHORT  = ['So', 'An', 'Vei', 'Fn', 'Pg']
 
 # Heine paper colours (≈ blue, green, amber, purple, red)
 COLORS = ['#1f77b4', '#2ca02c', '#ff7f0e', '#9467bd', '#d62728']

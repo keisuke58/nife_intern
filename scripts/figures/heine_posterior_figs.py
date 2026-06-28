@@ -38,7 +38,7 @@ COND_TITLE = {
     "DS": "Dysbiotic static",
     "DH": "Dysbiotic HOBIC",
 }
-SP = ["S.o", "A.n", "Vd", "F.n", "P.g"]
+SP = ["S.o", "A.n", "Vei", "F.n", "P.g"]
 
 # theta(20) -> A(5x5 symmetric); index of each unique A entry (cf. hamilton_ode_jax)
 A_IDX = {  # (i,j) -> theta index (i<=j)
