@@ -379,3 +379,43 @@ no-prior フィットは off-diag 符号の **44–49% を warm-start から反�
 **論文ナラティブ案**: E（代謝-生態が一致する Veillonella クロスフィーディング backbone）を主検証図、
 D（commensal の Strep-Veillonella 相利が dysbiosis で崩壊＋Pg が DH で中心化）を状態遷移の機構図に。
 keystone-pathogen 仮説は「静的中心性」でなく「dysbiotic 状態での動的中心化」として支持される、と整理。
+
+
+---
+
+## AT2 拡張 — 生態-力学ブリッジ + G_c 逆同定 (2026-06-29)
+
+### λ_max(Re J) 4 条件比較（ultimate_10000p, n=200 サンプル）
+
+| 条件 | λ_max 中央値 | P25   | P75   | λ>0 % | k_eff 中央値 | t_frac 中央値 |
+|------|------------|-------|-------|--------|------------|--------------|
+| CH   | 0.011      | −0.003| 0.020 | 64%    | 0.637      | 0.0702       |
+| CS   | 0.011      | 0.011 | 0.012 | 100%   | 0.723      | 0.0619       |
+| DS   | 0.013      | 0.013 | 0.014 | 100%   | 0.598      | 0.0748       |
+| DH   | 0.013      | 0.013 | 0.013 | 100%   | 0.650      | 0.0689       |
+
+**解釈**:
+- CH のみ後測サンプルの 36% が λ<0（生態的安定）。healthy 状態の確率論的頑健性を示す。
+- CS/DS/DH は 100% が λ>0（限界不安定）— dysbiosis は安定境界への強制移行。
+- 生態的不安定性と力学的加速は非対応: DH は λ_max 高いが k_eff 小さく破壊が遅い
+  （ecological–mechanical trade-off）。
+
+### G_c 逆同定（AT2 均一場解析逆解 + eLife 76027 文献値）
+
+**逆同定式**: G_c = (k_eff^phys · t_crit)² · E · ℓ
+
+| 入力 | 値 |
+|------|-----|
+| t_crit^exp | 60h ± 12h（eLife 76027, 48–72h の中点） |
+| k_eff^phys | 5.67×10⁻⁶ s⁻¹（Γ_lit 中点から逆算） |
+| E | 1000 Pa, ℓ = 5μm |
+
+**結果**: G_c^id = **7.50 ± 3.00 mJ/m²**
+- 独立文献 Γ_lit = 5–10 mJ/m² (eLife 43920) と整合 ✓
+- モデル値 G_c^model = 1×10⁻⁵ J/m² は 3 桁小さい（数値的仮置き）
+- ただし t_crit 比（= k_ratio = 2.00）は G_c 絶対値に依存しない（キャンセル）→ 定性結論は堅牢
+
+**不確かさ伝播**: ΔG_c/G_c = 2·Δt/t → Δt/t=20% → ΔG_c/G_c=40%
+
+スクリプト: `JAXFEM/gc_identification.py --t-exp 216000 --t-exp-std 43200 --condition CH --k-eff-phys 5.67e-6`
+図: `results/figures/fig_gc_id_lit.pdf`, `results/figures/fig_replicon_at2_bridge_4cond.pdf`

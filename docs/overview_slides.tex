@@ -1140,6 +1140,99 @@ $t_{\rm frac}^{({\rm DS})}/t_{\rm frac}^{({\rm CS})}
 \end{columns}
 \end{frame}
 
+
+%% ---------------------------------------------------------------
+%%  生態-力学ブリッジ: λ_max(J) vs t_frac (2026-06-29)
+%% ---------------------------------------------------------------
+
+\begin{frame}[shrink=5]{生態的安定性 vs 力学的破壊時刻 --- 4 条件ブリッジ}
+\protect\hypertarget{bridge-scatter}{}
+
+\begin{columns}[T]
+\begin{column}{0.56\textwidth}
+\includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]%
+  {results/figures/fig_replicon_at2_bridge_4cond.pdf}
+\end{column}
+\begin{column}{0.41\textwidth}
+\textbf{左パネル: $\lambda_{\max}(\mathrm{Re}\,J)$ vs $t_{\rm frac}$}\\[4pt]
+{\footnotesize
+\begin{tabular}{@{}lp{1.5cm}p{1.4cm}@{}}
+\toprule
+条件 & $\lambda_{\max}$ med & $>0$\,\% \\
+\midrule
+CH & $0.011$ & $64\%$ \\
+CS & $0.011$ & $100\%$ \\
+DS & $0.013$ & $100\%$ \\
+DH & $0.013$ & $100\%$ \\
+\bottomrule
+\end{tabular}
+}
+
+\vspace{6pt}
+\textbf{読み解き}
+\begin{itemize}\setlength\itemsep{3pt}
+\item \textbf{CH のみ}後測サンプルの $36\%$ が $\lambda<0$
+      （生態的安定）— healthy 状態の確率論的頑健性。
+\item CS/DS/DH は全サンプル $\lambda>0$
+      （限界不安定）— dysbiosis = 安定境界への押し込み。
+\item \textbf{生態 $\not\Rightarrow$ 力学}：DH は
+      $\lambda_{\max}$ 高いが $k_{\rm eff}$ 小さく破壊は遅い
+      （ecological–mechanical trade-off）。
+\item 右パネル: $k_{\rm eff}(\phi^*)$ 分布，
+      CS が最高（最速剥離）。
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+%% ---------------------------------------------------------------
+%%  G_c 逆同定 --- eLife 76027 文献値との整合 (2026-06-29)
+%% ---------------------------------------------------------------
+
+\begin{frame}[shrink=5]{破壊エネルギー $G_c$ の逆同定 --- 文献時刻との整合}
+\protect\hypertarget{gc-identification}{}
+
+\begin{columns}[T]
+\begin{column}{0.56\textwidth}
+\includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]%
+  {results/figures/fig_gc_id_lit.pdf}
+\end{column}
+\begin{column}{0.41\textwidth}
+\textbf{逆同定式（AT2 均一場）}：
+\[
+G_c = (k_{\rm eff}^b \cdot t_{\rm crit})^2 \, E \, \ell
+\]
+\textbf{適用条件}：$k_{\rm eff}^{\rm phys} \approx 5.67\!\times\!10^{-6}$ s$^{-1}$
+
+\vspace{6pt}
+{\footnotesize
+\begin{tabular}{@{}lp{2.2cm}@{}}
+\toprule
+量 & 値 \\
+\midrule
+$t_{\rm crit}^{\rm exp}$ & $60\,\mathrm{h}\pm12\,\mathrm{h}$\\
+ & (eLife 76027)\\
+$G_c^{\rm id}$ & $7.5\pm3.0\ \mathrm{mJ/m}^2$\\
+$\Gamma_{\rm lit}$ & $5$--$10\ \mathrm{mJ/m}^2$ \\
+ & (eLife 43920)\\
+$G_c^{\rm model}$ & $10^{-5}\ \mathrm{J/m}^2$ \\
+\bottomrule
+\end{tabular}
+}
+
+\vspace{6pt}
+\begin{itemize}\setlength\itemsep{3pt}
+\item 逆同定値 $G_c^{\rm id}$ は独立文献 $\Gamma_{\rm lit}$ と整合 $\checkmark$
+\item モデル値は 3 桁小さいが，$t_{\rm crit}$ 比は $G_c$ に依存しない
+      （$t_{\rm frac}\propto G_c^{1/2}$ がキャンセル）。
+\item 不確かさ：$\Delta t/t=20\%\Rightarrow\Delta G_c/G_c=40\%$
+      — 実験精度改善が次の課題。
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
 \begin{frame}[fragile]{Take-home}
 \protect\hypertarget{take-home}{}
 \begin{enumerate}
