@@ -917,7 +917,7 @@ NLGEOM=YES で有限ひずみ成長。
 %%  CZM 説明フレーム (2026-06-29 追記)
 %% ---------------------------------------------------------------
 
-\begin{frame}{Cohesive Zone Model (CZM) とは}
+\begin{frame}[shrink=15]{Cohesive Zone Model (CZM) とは}
 \protect\hypertarget{czm-intro}{}
 
 \begin{columns}[T]
@@ -944,8 +944,8 @@ $\delta \to \delta_c$ で界面要素が消えることでき裂前進を表現�
 \end{column}
 \begin{column}{0.47\textwidth}
 \textbf{AT2 との比較}\\[4pt]
-{\small
-\begin{tabular}{@{}lll@{}}
+{\footnotesize
+\begin{tabular}{@{}lp{1.8cm}p{1.8cm}@{}}
 \toprule
  & CZM & AT2 \\
 \midrule
@@ -958,13 +958,13 @@ $G_c$ 対応 & 直接 $\int T\,d\delta$ & $\ell$ と組み合わせ \\
 \end{tabular}
 }
 
-\vspace{8pt}
+\vspace{4pt}
 \textbf{本研究で AT2 を選んだ理由}：
 \begin{itemize}\setlength\itemsep{2pt}
 \item Klempt の $\Psi_e$ を\textbf{変分的に再利用}（新構成則不要）
 \item き裂経路の事前指定不要
 \item $t_{\rm crit}$ 比の定性結論は両者で一致
-      \mbox{（$G_c$ キャンセル $\Rightarrow$ CZM でも同値）}
+      （$G_c$ キャンセル $\Rightarrow$ CZM でも同値）
 \end{itemize}
 
 {\footnotesize CZM は文献最多数派；AT2 は
@@ -973,7 +973,7 @@ Klempt フレームとの変分整合性で厳密性が高い。}
 \end{columns}
 \end{frame}
 
-\begin{frame}{AT2 phase-field --- Klempt との変分的整合性}
+\begin{frame}[shrink=15]{AT2 phase-field --- Klempt との変分的整合性}
 \protect\hypertarget{at2-klempt-variational}{}
 
 \begin{columns}[T]
@@ -997,14 +997,14 @@ Klempt が計算済みの $\Psi_e$ に劣化関数 $(1-d)^2$ を掛けるだけ�
 \textbf{因果チェーン（一本線）}：
 \[
 k_{\rm eff}\,t \;\to\; \mathbf{F}^g \;\to\; \mathbf{F}^e
-\;\to\; \Psi_e \;\xrightarrow{\Psi_e \ge G_c/(2\ell)}\; d \text{ 核生成}
+\;\to\; \Psi_e \;\xrightarrow{\scriptstyle\Psi_e \ge G_c/(2\ell)}\; d \text{ 核生成}
 \]
 
 \end{column}
 \begin{column}{0.45\textwidth}
 \textbf{CZM との厳密性比較}\\[6pt]
-{\small
-\begin{tabular}{@{}lll@{}}
+{\footnotesize
+\begin{tabular}{@{}lp{2.0cm}p{1.9cm}@{}}
 \toprule
  & AT2 & CZM \\
 \midrule
@@ -1029,7 +1029,7 @@ AT2 は $\Psi_e$ 閾値を Klempt と同一変分枠内で定式化できる点�
 \end{columns}
 \end{frame}
 
-\begin{frame}{AT2 正則化長さ $\ell$ の物理的正当化}
+\begin{frame}[shrink=12]{AT2 正則化長さ $\ell$ の物理的正当化}
 \protect\hypertarget{at2-ell-justify}{}
 
 \begin{columns}[T]
@@ -1073,19 +1073,12 @@ $\sigma_c$ [Pa] & $\ell_{\rm phys}$ [$\mu$m] & \texttt{ELL} 整合\\
 700 & 3.8 & $\checkmark$ \\
 \bottomrule
 \end{tabular}
-}\\[8pt]
+}\\[4pt]
 $G_c^{\rm lit}=5\,\text{mJ/m}^2$，$\sigma_c\approx500\,\text{Pa}$ で
 $\ell=5\,\mu$m は数値的任意パラメータ\textbf{ではない}。\\[6pt]
 
 \textbf{モデル値 $G_c=10^{-5}\,\text{J/m}^2$ の注記}：\\[2pt]
-{\small
-文献値から 3 桁ずれるが，コア主張
-\[
-\frac{t_{\rm crit}({\rm DH})}{t_{\rm crit}({\rm CH})}
-= k_{\rm ratio} = 2.00
-\]
-は $G_c$ の絶対値に依存しない
-（$G_c$ キャンセル）$\Rightarrow$ 定性結果は堅牢。}
+{\small 文献値から 3 桁ずれるが，$t_{\rm crit}^{\rm DH}/t_{\rm crit}^{\rm CH}=2.00$ は $G_c$ 絶対値に依存しない（キャンセル）$\Rightarrow$ 堅牢。}
 \end{column}
 \end{columns}
 \end{frame}
@@ -1095,7 +1088,7 @@ $\ell=5\,\mu$m は数値的任意パラメータ\textbf{ではない}。\\[6pt]
 %%  Species-level k_eff decomposition — 4 conditions (2026-06-29)
 %% ---------------------------------------------------------------
 
-\begin{frame}{種レベル $k_{\rm eff}$ 分解 --- 4 条件比較}
+\begin{frame}[shrink=5]{種レベル $k_{\rm eff}$ 分解 --- 4 条件比較}
 \protect\hypertarget{species-keff-4cond}{}
 
 \begin{columns}[T]
@@ -1110,7 +1103,7 @@ $\kappa_i$（So/An/Vd/Fn/Pg）$= 1.0,\,0.8,\,0.4,\,0.6,\,0.3$
 
 \vspace{6pt}
 \textbf{4条件 TMCMC 後測分布から $n=150$ サンプル積分}：\\[4pt]
-{\small
+{\scriptsize
 \begin{tabular}{@{}lccccc@{}}
 \toprule
 Cond & $k_{\rm eff}$ med & So & An & Vd & Fn/Pg \\
