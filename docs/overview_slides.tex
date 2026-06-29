@@ -907,6 +907,128 @@ NLGEOM=YES で有限ひずみ成長。
 %%  追加スライド群: ここまで
 %% ---------------------------------------------------------------
 
+
+%% ---------------------------------------------------------------
+%%  AT2 phase-field × Klempt 変分的整合性（2026-06-29 追記）
+%% ---------------------------------------------------------------
+
+\begin{frame}{AT2 phase-field --- Klempt との変分的整合性}
+\protect\hypertarget{at2-klempt-variational}{}
+
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\textbf{なぜ Klempt と相性がよいか：同じ $\Psi_e$ を共有}\\[4pt]
+Klempt フレームワーク核心：
+\[
+\mathbf{F} = \mathbf{F}^e\!\cdot\!\mathbf{F}^v\!\cdot\!\mathbf{F}^g
+\;\Rightarrow\; \Psi_e(\mathbf{F}^e)
+\]
+AT2 損傷エネルギー：
+\[
+\mathcal{E}[u,d] = \!\int\!
+\bigl[(1-d)^2\,\Psi_e
++ \tfrac{G_c}{4\ell}\!\bigl(\tfrac{d^2}{\ell}+\ell|\nabla d|^2\bigr)\bigr]\,dV
+\]
+AT2 は新しい構成則を\textbf{追加しない} ---
+Klempt が計算済みの $\Psi_e$ に劣化関数 $(1-d)^2$ を掛けるだけ。
+
+\vspace{6pt}
+\textbf{因果チェーン（一本線）}：
+\[
+k_{\rm eff}\,t \;\to\; \mathbf{F}^g \;\to\; \mathbf{F}^e
+\;\to\; \Psi_e \;\xrightarrow{\Psi_e \ge G_c/(2\ell)}\; d \text{ 核生成}
+\]
+
+\end{column}
+\begin{column}{0.45\textwidth}
+\textbf{CZM との厳密性比較}\\[6pt]
+{\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+ & AT2 & CZM \\
+\midrule
+破壊閾値 & $\Psi_e$（既計算量）& $T=f(\delta)$（別仮定）\\
+追加仮定 & $\ell$ のみ & 則全体 \\
+変分基盤 & $\partial\mathcal{E}/\partial d=0$ & なし \\
+経路指定 & 不要 & 必要 \\
+\bottomrule
+\end{tabular}
+}
+\vspace{8pt}
+
+\textbf{新規性}：Klempt 成長力学 $\times$ AT2 $\times$
+TMCMC 事後サンプルから $k_{\rm eff}(\phi^*)$ を通じた
+破壊時刻予測という縦断的接続は文献未報告。
+
+\vspace{4pt}
+{\footnotesize
+CZM（界面指定型）は最多使用例だが，
+AT2 は $\Psi_e$ 閾値を Klempt と同一変分枠内で定式化できる点で厳密性が高い。}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{AT2 正則化長さ $\ell$ の物理的正当化}
+\protect\hypertarget{at2-ell-justify}{}
+
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+\textbf{AT2 cohesive strength 式（Tanné et al.\ 2018）}：
+\[
+\sigma_c = \sqrt{\frac{3\,E\,G_c}{8\,\ell}}
+\]
+逆解き：$(E,\,G_c,\,\sigma_c)$ から $\ell$ を決定：
+\[
+\ell_{\rm phys} = \frac{3\,E\,G_c}{8\,\sigma_c^2}
+\]
+
+\textbf{バイオフィルム材料値}：
+\begin{itemize}
+\item $E = 1000\,\text{Pa}$，
+      $G_c = 5\,\text{mJ\,m}^{-2}$（文献）
+\item $\sigma_c \approx 500\,\text{Pa}$（口腔 BF 付着強度）
+\end{itemize}
+\[
+\ell_{\rm phys}
+= \frac{3\times10^3\times5\times10^{-3}}{8\times(500)^2}
+\approx 7.5\,\mu\text{m}
+\]
+\[
+\boxed{\ell_{\rm phys}\approx 5\text{--}8\,\mu\text{m}
+\approx \texttt{ELL} = 5\,\mu\text{m} \;\checkmark}
+\]
+
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{自己無撞着性まとめ}\\[4pt]
+{\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+$\sigma_c$ [Pa] & $\ell_{\rm phys}$ [$\mu$m] & \texttt{ELL} 整合\\
+\midrule
+100 & 187 & $\times$ \\
+300 & 20.8 & $\triangle$ \\
+500 & 7.5 & $\checkmark$ \\
+700 & 3.8 & $\checkmark$ \\
+\bottomrule
+\end{tabular}
+}\\[8pt]
+$G_c^{\rm lit}=5\,\text{mJ/m}^2$，$\sigma_c\approx500\,\text{Pa}$ で
+$\ell=5\,\mu$m は数値的任意パラメータ\textbf{ではない}。\\[6pt]
+
+\textbf{モデル値 $G_c=10^{-5}\,\text{J/m}^2$ の注記}：\\[2pt]
+{\small
+文献値から 3 桁ずれるが，コア主張
+\[
+\frac{t_{\rm crit}({\rm DH})}{t_{\rm crit}({\rm CH})}
+= k_{\rm ratio} = 2.00
+\]
+は $G_c$ の絶対値に依存しない
+（$G_c$ キャンセル）$\Rightarrow$ 定性結果は堅牢。}
+\end{column}
+\end{columns}
+\end{frame}
+
 \begin{frame}[fragile]{Take-home}
 \protect\hypertarget{take-home}{}
 \begin{enumerate}
