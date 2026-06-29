@@ -1029,6 +1029,63 @@ $\ell=5\,\mu$m は数値的任意パラメータ\textbf{ではない}。\\[6pt]
 \end{columns}
 \end{frame}
 
+
+%% ---------------------------------------------------------------
+%%  Species-level k_eff decomposition — 4 conditions (2026-06-29)
+%% ---------------------------------------------------------------
+
+\begin{frame}{種レベル $k_{\rm eff}$ 分解 --- 4 条件比較}
+\protect\hypertarget{species-keff-4cond}{}
+
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+\textbf{定式化}：
+\[
+k_{\rm eff}(\phi^*) = \sum_{i=1}^{5}
+  \underbrace{\frac{\phi_i^*}{\sum_j \phi_j^*}}_{\text{組成比}}
+  \cdot \kappa_i
+\]
+$\kappa_i$（So/An/Vd/Fn/Pg）$= 1.0,\,0.8,\,0.4,\,0.6,\,0.3$
+
+\vspace{6pt}
+\textbf{4条件 TMCMC 後測分布から $n=150$ サンプル積分}：\\[4pt]
+{\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Cond & $k_{\rm eff}$ med & So & An & Vd & Fn/Pg \\
+\midrule
+CH & 0.637 & \textbf{0.421} & 0.026 & 0.108 & 0.032/0.067 \\
+CS & \textbf{0.723} & 0.314 & \textbf{0.236} & 0.111 & 0.026/0.021 \\
+DS & \underline{0.598} & 0.125 & 0.182 & 0.075 & \textbf{0.139}/0.069 \\
+DH & 0.650 & 0.248 & 0.141 & 0.000 & \textbf{0.176}/0.085 \\
+\bottomrule
+\end{tabular}
+}
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{読み解き}
+\begin{itemize}\setlength\itemsep{4pt}
+\item \textbf{CS が最速剥離}（$k_{\rm eff}=0.723$）：
+      高 $\kappa$ 種 So+An が共存。
+\item \textbf{DS が最遅}（$k_{\rm eff}=0.598$）：
+      So が少なく，低 $\kappa$ 種 Fn/An が主体。
+\item CH vs DH は\textbf{等価 $k_{\rm eff}$}（$0.637$ vs $0.650$）：
+      異なる生態系が同じ力学応答に収束
+      （ecological degeneracy in mechanics）。
+\item DH では \textbf{Vd が完全消滅}（$= 0.000$）：
+      菌叢再編成の fingerprint。
+\end{itemize}
+
+\vspace{4pt}
+{\footnotesize
+$t_{\rm frac}^{({\rm DS})}/t_{\rm frac}^{({\rm CS})}
+= k_{\rm eff}^{({\rm CS})}/k_{\rm eff}^{({\rm DS})}
+= 0.723/0.598 \approx 1.21$
+（静的条件間の破壊時刻比）。}
+\end{column}
+\end{columns}
+\end{frame}
+
 \begin{frame}[fragile]{Take-home}
 \protect\hypertarget{take-home}{}
 \begin{enumerate}
