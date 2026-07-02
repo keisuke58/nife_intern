@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="600" viewBox="0 0 820 600">
+<defs>
+  <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7"
+          markerHeight="7" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4a4a"/>
+  </marker>
+</defs>
+<rect width="820" height="600" fill="white"/>
+<text x="410.0" y="26" font-family="Helvetica, Arial, sans-serif" font-size="17" font-weight="bold" fill="#111" text-anchor="middle">16S -&gt; guild phi -&gt; LOO-CV data pipeline</text>
+<rect x="60" y="60" width="190" height="74" rx="8" fill="#dce7f7" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="155.0" y="92.0" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a" text-anchor="middle">Raw 16S reads</text>
+<text x="155.0" y="112.0" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1a1a1a" text-anchor="middle">ENA / SRA</text>
+<rect x="300" y="60" width="210" height="74" rx="8" fill="#fce3c8" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="405.0" y="82.0" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a" text-anchor="middle">vsearch</text>
+<text x="405.0" y="102.0" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1a1a1a" text-anchor="middle">merge-&gt;QC-&gt;chimera</text>
+<text x="405.0" y="122.0" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1a1a1a" text-anchor="middle">-&gt; SILVA classify</text>
+<rect x="560" y="60" width="200" height="74" rx="8" fill="#dce7f7" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="660.0" y="92.0" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a" text-anchor="middle">Guild phi array</text>
+<text x="660.0" y="112.0" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1a1a1a" text-anchor="middle">N_pat x T x 10</text>
+<rect x="560" y="250" width="200" height="100" rx="8" fill="#d3ecea" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="660.0" y="295.0" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a" text-anchor="middle">gLV / Hamilton LOO-CV</text>
+<text x="660.0" y="315.0" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1a1a1a" text-anchor="middle">loo_cv_kegg_prior.py</text>
+<rect x="280" y="235" width="210" height="80" rx="8" fill="#e7dcf2" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="385.0" y="260.0" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a" text-anchor="middle">Metabolic sign prior</text>
+<text x="385.0" y="280.0" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1a1a1a" text-anchor="middle">L1/L2 Szafranski + L3 AGORA2</text>
+<text x="385.0" y="300.0" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1a1a1a" text-anchor="middle">constrains sign of A_ij</text>
+<rect x="280" y="345" width="210" height="74" rx="8" fill="#d3ecea" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="385.0" y="377.0" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a" text-anchor="middle">fit_*.json</text>
+<text x="385.0" y="397.0" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1a1a1a" text-anchor="middle">A matrix + b_k</text>
+<rect x="280" y="445" width="200" height="74" rx="8" fill="#daf0d6" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="380.0" y="477.0" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a" text-anchor="middle">LOO-RMSE, BC</text>
+<text x="380.0" y="497.0" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1a1a1a" text-anchor="middle">per-patient</text>
+<rect x="560" y="445" width="200" height="74" rx="8" fill="#daf0d6" stroke="#4a4a4a" stroke-width="1.5"/>
+<text x="660.0" y="477.0" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#1a1a1a" text-anchor="middle">Paper figures</text>
+<text x="660.0" y="497.0" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1a1a1a" text-anchor="middle">vector PDF</text>
+<path d="M 250 97 L 300 97" fill="none" stroke="#4a4a4a" stroke-width="1.8" marker-end="url(#arw)"/>
+<path d="M 510 97 L 560 97" fill="none" stroke="#4a4a4a" stroke-width="1.8" marker-end="url(#arw)"/>
+<path d="M 660 134 L 660 250" fill="none" stroke="#4a4a4a" stroke-width="1.8" marker-end="url(#arw)"/>
+<path d="M 490 272 L 560 285" fill="none" stroke="#4a4a4a" stroke-width="1.8" marker-end="url(#arw)"/>
+<path d="M 490 380 L 560 330" fill="none" stroke="#4a4a4a" stroke-width="1.8" marker-end="url(#arw)"/>
+<text x="512" y="398" font-family="Helvetica, Arial, sans-serif" font-size="11" font-style="italic" fill="#333" text-anchor="middle">--fit-file</text>
+<path d="M 660 350 L 660 445" fill="none" stroke="#4a4a4a" stroke-width="1.8" marker-end="url(#arw)"/>
+<path d="M 570 345 Q 470 420 400 445" fill="none" stroke="#4a4a4a" stroke-width="1.8" marker-end="url(#arw)"/>
+<path d="M 480 482 L 560 482" fill="none" stroke="#4a4a4a" stroke-width="1.8" marker-end="url(#arw)"/>
+</svg>
