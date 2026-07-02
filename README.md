@@ -47,6 +47,18 @@ NGS (shotgun) → MetaPhlAn 4 → init_comp.json → GEM (AGORA) → dFBA → CO
 
 The pipeline models multi-species oral biofilm on implant surfaces, focusing on the transition between commensal and dysbiotic states relevant to peri-implantitis.
 
+Three loosely-coupled modelling pillars share one contract — the 10-guild taxonomy (`GUILD_ORDER`):
+
+![Three modelling pillars](docs/diagrams/fig1_pillars.png)
+
+The ecological inference path — from raw 16S to a cross-validated interaction matrix:
+
+![16S → guild φ → LOO-CV pipeline](docs/diagrams/fig2_pipeline.png)
+
+> Diagram sources (TikZ + editable SVG) and the other two figures — the sign-prior
+> layering and the CS/CH/DS/DH attractors — live in [`docs/diagrams/`](docs/diagrams/)
+> (`docs/pipeline_diagrams.tex` is the `\input`-able LaTeX twin).
+
 ## Quick Start
 
 ```bash
@@ -133,6 +145,7 @@ Key result: `Fn_mu_max` (ST=0.49) and `Vp_Km_lac` dominate dysbiosis — driven 
 | Doc | Purpose |
 |-----|---------|
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Core data flow + three pillars |
+| [docs/diagrams/](docs/diagrams/) | Structure diagrams (TikZ / SVG / PNG) |
 | [docs/PROVENANCE.md](docs/PROVENANCE.md) | Figure regeneration (LIGHT vs HEAVY) |
 | [docs/ZENODO.md](docs/ZENODO.md) | Zenodo archive + citation |
 | [AGENTS.md](AGENTS.md) | AI agent / slash-command entry points |
