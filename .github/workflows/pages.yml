@@ -25,7 +25,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deploy1.outputs.page_url || steps.deploy2.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,10 +37,21 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs
-      - id: deployment
+      # The Pages backend intermittently returns "Deployment failed, try again
+      # later" (a hard failure, not a retryable pending state), especially on
+      # back-to-back deploys. Attempt once, and if it flakes, wait and retry.
+      - id: deploy1
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+        with:
+          timeout: 600000
+          error_count: 15
+      - name: Cool-off before retry
+        if: steps.deploy1.outcome == 'failure'
+        run: sleep 30
+      - id: deploy2
+        if: steps.deploy1.outcome == 'failure'
         uses: actions/deploy-pages@v4
         with:
-          # First-ever deploy can flake with "Deployment failed, try again
-          # later" while the Pages site provisions; give it more attempts.
           timeout: 600000
           error_count: 15
