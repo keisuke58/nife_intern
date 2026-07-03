@@ -120,18 +120,37 @@
       </div>
     </div>
 
-    <!-- guild gLV figure -->
-    <h3>10-Guild gLV Model — Interaction Matrix &amp; Fit Quality</h3>
+    <!-- interaction network (hero) -->
+    <h3>Guild Interaction Network — Metabolic Sign Agreement</h3>
     <div class="figure-block">
-      <img src="assets/guild_glv_paper.png" alt="Guild gLV paper figure">
+      <img src="assets/guild_network.png" alt="Guild interaction network">
       <div class="figure-cap">
-        <strong>Figure.</strong>
-        (a) Inferred 10&times;10 guild interaction matrix A (RdBu colormap; red = cooperative, blue = competitive).
-        Dominant interaction: Actinobacteria&rarr;Bacilli (A&nbsp;=&nbsp;+0.38).
-        (b) Predicted vs observed relative abundance for weeks 2 and 3 (all 10 patients, all 10 guilds;
-        RMSE = 0.055, r = 0.954).
-        (c) Per-patient stacked bars: observed (solid) and predicted (hatched) for weeks 1&ndash;3.
-        Model fitted by JAX Adam (5000 epochs, &lambda; = 10<sup>&minus;3</sup>).
+        <strong>Figure.</strong> Directed 10-guild interaction network (Hamilton + KEGG prior).
+        Edge width &prop; |A<sub>ij</sub>| (threshold 0.04); green = KEGG-consistent, red = discordant,
+        grey = unconstrained. All <strong>11/11</strong> metabolically-constrained pairs agree in sign.
+      </div>
+    </div>
+
+    <!-- interaction matrix (thesis) -->
+    <h3>10-Guild gLV Interaction Matrix A</h3>
+    <div class="figure-block">
+      <img src="assets/dieckow_Amatrix.png" alt="gLV interaction matrix A (thesis)">
+      <div class="figure-cap">
+        <strong>Figure.</strong> Mean interaction matrix A over the 10 LOO folds
+        (gLV, &alpha; = 0.25, L1+L2 metabolic prior; mean LOO-RMSE = 0.0490).
+        Green boxes = sign matches the metabolic prior, red = discordant.
+        Dominant Actinobacteria&harr;Bacilli coupling (+3.37 / +2.79).
+      </div>
+    </div>
+
+    <!-- LOO fits (thesis) -->
+    <h3>Leave-One-Patient-Out Predictions</h3>
+    <div class="figure-block">
+      <img src="assets/dieckow_loo_fits.png" alt="Per-patient LOO predictions (thesis)">
+      <div class="figure-cap">
+        <strong>Figure.</strong> Held-out W2/W3 predictions (&times;) vs observed guild abundances
+        (bars, W1&ndash;W3) for each of the 10 patients; per-panel LOO-RMSE
+        (mean 0.049, r = 0.954).
       </div>
     </div>
 
