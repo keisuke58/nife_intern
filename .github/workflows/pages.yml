@@ -30,8 +30,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+        with:
+          # Auto-enable Pages (Actions source) if it isn't already, so a fresh
+          # repo doesn't need the manual Settings toggle.
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # First-ever deploy can flake with "Deployment failed, try again
+          # later" while the Pages site provisions; give it more attempts.
+          timeout: 600000
+          error_count: 15
