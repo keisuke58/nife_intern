@@ -85,6 +85,7 @@
       <a href="#dieckow">Dieckow in-vivo</a>
       <a href="#heine">Heine in-vitro</a>
       <a href="#pipeline">Data Pipeline</a>
+      <a href="#comets">COMETS / dFBA</a>
       <a href="https://github.com/keisuke58/nife_intern">GitHub</a>
     </nav>
   </div>
@@ -122,7 +123,7 @@
     <!-- guild gLV figure -->
     <h3>10-Guild gLV Model — Interaction Matrix &amp; Fit Quality</h3>
     <div class="figure-block">
-      <img src="../results/dieckow_cr/guild_glv_paper.png" alt="Guild gLV paper figure">
+      <img src="assets/guild_glv_paper.png" alt="Guild gLV paper figure">
       <div class="figure-cap">
         <strong>Figure.</strong>
         (a) Inferred 10&times;10 guild interaction matrix A (RdBu colormap; red = cooperative, blue = competitive).
@@ -216,7 +217,7 @@
     </p>
 
     <div class="figure-block">
-      <img src="../results/heine2025/glv_heine_fit_paper.png" alt="Heine gLV paper figure">
+      <img src="assets/glv_heine_fit_paper.png" alt="Heine gLV paper figure">
       <div class="figure-cap">
         <strong>Figure.</strong>
         Top row: gLV replicator trajectory fits (lines) with observed IQR (shading) and median (dots)
@@ -338,6 +339,54 @@
           <tr><td>Mean identity</td><td>~98.4% (CCS vs SILVA)</td></tr>
         </tbody>
       </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── COMETS / dFBA ───────────────────────────────────────── -->
+<section id="comets">
+  <div class="container">
+    <h2>COMETS / dFBA — Mechanistic Cross-Validation</h2>
+    <p style="color:var(--muted);margin-bottom:24px">
+      Genome-scale dynamic flux-balance simulation of a 5-species community
+      (S.&nbsp;oralis, A.&nbsp;naeslundii, V.&nbsp;parvula, F.&nbsp;nucleatum, P.&nbsp;gingivalis),
+      cross-validating the ecological interaction signs against AGORA metabolic models.
+      Fallback chain: COMETS Java &rarr; AGORA-calibrated Monod dFBA (primary) &rarr; mock logistic.
+      Entry point <code>comets/run_comets_pipeline.py --step A|B|C</code>.
+    </p>
+
+    <div class="card-grid">
+      <div class="figure-block">
+        <img src="assets/comets_A_0d.png" alt="Step A 0D comparison">
+        <div class="figure-cap"><strong>Step A — 0D.</strong>
+          Well-mixed parameter sweep: healthy vs dysbiotic community trajectories.</div>
+      </div>
+      <div class="figure-block">
+        <img src="assets/comets_B_spatial.png" alt="Step B 2D spatial comparison">
+        <div class="figure-cap"><strong>Step B — 2D spatial.</strong>
+          Lattice dFBA with diffusion; healthy vs diseased spatial structure.</div>
+      </div>
+      <div class="figure-block">
+        <img src="assets/comets_C_patient.png" alt="Step C patient-specific">
+        <div class="figure-cap"><strong>Step C — patient-specific.</strong>
+          Initialised from a MetaPhlAn <code>init_comp.json</code> (patient A3).</div>
+      </div>
+      <div class="figure-block">
+        <img src="assets/comets_sobol.png" alt="Sobol sensitivity">
+        <div class="figure-cap"><strong>Sobol sensitivity.</strong>
+          Total-effect indices, N=256, 12 parameters.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:8px">
+      <p style="font-size:13px">
+        <strong>Key result.</strong> <code>Fn_mu_max</code> (S<sub>T</sub>&nbsp;=&nbsp;0.49) and
+        <code>Vp_Km_lac</code> dominate the transition to dysbiosis &mdash; driven by the
+        <em>lactate cross-feeding bridge</em>, not by <em>P.&nbsp;gingivalis</em> directly.
+        This is a mechanistic echo of the conserved Vd&ndash;Pg / Fn&ndash;Pg mutualistic backbone
+        recovered by the ecological gLV fit.
+      </p>
     </div>
 
   </div>
