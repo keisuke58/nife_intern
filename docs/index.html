@@ -86,6 +86,7 @@
       <a href="#heine">Heine in-vitro</a>
       <a href="#pipeline">Data Pipeline</a>
       <a href="#comets">COMETS / dFBA</a>
+      <a href="#fem">FEM coupling</a>
       <a href="https://github.com/keisuke58/nife_intern">GitHub</a>
     </nav>
   </div>
@@ -405,6 +406,67 @@
         <em>lactate cross-feeding bridge</em>, not by <em>P.&nbsp;gingivalis</em> directly.
         This is a mechanistic echo of the conserved Vd&ndash;Pg / Fn&ndash;Pg mutualistic backbone
         recovered by the ecological gLV fit.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── FEM / bio-mechanical coupling ───────────────────────── -->
+<section id="fem">
+  <div class="container">
+    <h2>FEM Coupling — Ecology &rarr; Host &rarr; Mechanics</h2>
+    <p style="color:var(--muted);margin-bottom:24px">
+      Closing the loop: the ecological ODE composition drives a biofilm
+      growth/swelling <em>eigenstrain</em> that is evaluated at each finite-element
+      Gauss point, feeding peri-implant bone-loss mechanics. Prototyped in
+      <strong>Abaqus</strong> (UMAT &harr; Python material-model server); the
+      <strong>ANSYS USERMAT port</strong> reuses the same wire protocol and is in progress.
+      FEM framework courtesy of Felix / IKM.
+    </p>
+
+    <div class="figure-block">
+      <img src="assets/fem_abstract.png" alt="From microbiome to peri-implant bone-loss risk">
+      <div class="figure-cap">
+        <strong>Figure.</strong> End-to-end concept: real longitudinal ecology &rarr;
+        biofilm in the sulcus &rarr; inflammatory tipping point &rarr; mechanical feedback
+        &rarr; per-patient bone-loss prediction (Bayesian UQ).
+      </div>
+    </div>
+
+    <div class="figure-block">
+      <img src="assets/fem_concept.png" alt="Mechano-biological feedback loop">
+      <div class="figure-cap">
+        <strong>Figure.</strong> The mechano-biological vicious cycle. Pillar 2 (ODE biology,
+        guild dysbiosis index &rarr; RANKL/OPG &rarr; bone loss L) couples to Pillar 1
+        (FEM mechanics, occlusal load &rarr; crestal stress) through the single bridge
+        A(L) = crestal-stress amplification vs. bone loss.
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="figure-block">
+        <img src="assets/fem_abaqus_mises.png" alt="Abaqus von Mises stress">
+        <div class="figure-cap"><strong>FEM solve (Abaqus).</strong>
+          Von Mises stress in an implant-thread biofilm layer under the
+          dysbiotic (DH) growth eigenstrain — the Python material model called
+          per Gauss point.</div>
+      </div>
+      <div class="figure-block">
+        <img src="assets/fem_residual_stress.png" alt="Residual stress DH vs CH">
+        <div class="figure-cap"><strong>Result.</strong>
+          Substratum-interface residual stress: dysbiotic (DH) &gt;&gt; commensal (CH)
+          (peak 6.4&times;, mean 10&times;), tracking the depth profile of
+          <em>P. gingivalis</em> composition &phi;<sub>Pg</sub>(z).</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:8px">
+      <p style="font-size:13px">
+        <strong>Master's thesis direction.</strong> Replace the phenomenological
+        constitutive model in the existing (Felix / IKM) ANSYS finite-element
+        framework with this ecological-ODE material model, called at each Gauss
+        point &mdash; building directly on the HiWi / research-project work.
       </p>
     </div>
 
