@@ -40,8 +40,46 @@
 ### 自由エネルギー密度 (Eq. 20)
 
 ```
-Ψ = ϕ·(μ/2)(I:C^e − 3) + (β̄/2)|∇_X ϕ|² + (d̄/2)|∇_X c|² − k̄_α·α·ϕ
+Ψ = ϕ²·(μ/2)(I:C^e − 3) + (β̄/2)|∇_X ϕ|² + (d̄/2)|∇_X c|² − k̄_α·α·ϕ
 ```
+
+> **訂正 (2026-08-17, 原論文 PDF で照合):** 弾性項は **ϕ²（二乗）** であり、
+> 以前ここに書かれていた ϕ 線形は転記ミス。本文の言明:
+> *"only the biofilm with the biofilm state variable ϕ is linked **quadratically**
+> to this term. It is worth mentioning that the nonlinear dependence causes a
+> **non-convexity** of the related condensed energy. In turn, **localization of ϕ
+> is intended**."*
+> → ϕ² は恣意的なゲーティングではなく、**非凸性によって ϕ を局在化させる（界面を鋭くする）
+> ための意図的な設計**。実装 `phi_gate = phi_local**2` (nife `954022c`) はこれと整合し正しい。
+
+### ⚠️ Monod の位置（誤解しやすい点）
+
+Monod は **α の式には無い**。**ϕ の式 (Eq. 34) の成長項**に入る:
+
+```
+Eq. 34: ϕ̇ − β∇²ϕ − k_α·α + |∇_X ϕ|·(r·c/(k+c))·n_∇ϕ·n_∇c = 0   ← Monod はここ
+Eq. 35: ċ − d∇²c + g·ϕ = 0
+Eq. 36: α̇ − k_α·ϕ = 0                                          ← Monod なし（Gauss点ローカル）
+```
+
+### 🔑 神経を使うべき仮定: 力学→成長カップリングが「導出されているのに切られている」
+
+Hamilton 原理から出る ϕ の停留条件 (Eq. 30) には力学項が**自然に現れる**:
+
+```
+Eq. 30: η_ϕ·ϕ̇ − β̄∇²ϕ − k̄_α·α + r̃(c)·o(∇ϕ,∇c) + ϕ·μ·(I:C^e − 3) = 0
+                                                  ~~~~~~~~~~~~~~~~~~~ 力学フィードバック
+```
+
+しかし Eq. 33 で **μ が他パラメータより桁違いに小さいと仮定して落とされる**
+（本文: *"the mechanical stiffness μ is assumed to be orders of magnitude smaller
+than every other parameter. Thus, mechanical influence on the growth in Eq. 30 is
+neglected"*）。原論文自身は Chu et al. (2018) を引いて「応力があるところで成長が起きる」
+相関を認めた上で無視している。
+
+→ **修論の狙い目**: 我々の FEM 節が現象論的に描いている「メカノバイオ悪循環」は、
+この項を**復活させれば変分的に整合な形で閉じる**。μ を CLSM/AFM で較正して
+「切って良い仮定だったか」を定量評価するのは、既存枠組みへの正当な貢献になる。
 
 ### 運動学
 
