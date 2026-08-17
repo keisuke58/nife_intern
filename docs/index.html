@@ -514,6 +514,65 @@
       </p>
     </div>
 
+    <h3>Builds on — the IKM biofilm-growth lineage</h3>
+    <div class="card">
+      <table>
+        <thead><tr><th>Reference</th><th>What it establishes</th><th>Open item we pick up</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Klempt, Soleimani &amp; Junker</strong><br>
+              <span style="color:var(--muted);font-size:12px">PAMM 22:1, e202200054 (2023)</span></td>
+            <td>Combines the two prominent growth families &mdash; volumetric
+              (kinematic split <strong>F</strong>&nbsp;=&nbsp;<strong>F</strong><sub>e</sub><strong>F</strong><sub>g</sub>)
+              and density-based (&phi; evolution). Isotropic
+              <strong>F</strong><sub>g</sub>&nbsp;=&nbsp;&alpha;<strong>I</strong>, Monod growth
+              &alpha;&#775;&nbsp;=&nbsp;K<sub>1</sub>c/(K<sub>2</sub>+c); &phi;<sup>2</sup>-gated
+              stiffness; 8-node brick user element (AceGen &rarr; <strong>ANSYS</strong>) with
+              &alpha; as a local internal variable <em>at the Gauss points</em>.</td>
+            <td>Its own closing section names <strong>anisotropic growth</strong> as future work
+              &rarr; our &xi;-sweep sensitivity study.</td>
+          </tr>
+          <tr>
+            <td><strong>Klempt, Soleimani, Wriggers &amp; Junker</strong><br>
+              <span style="color:var(--muted);font-size:12px">Biomech. Model. Mechanobiol. (2024)</span></td>
+            <td>Hamilton principle-based, diffusion-driven biofilm growth; monolithic
+              u&ndash;c&ndash;&phi; coupling.</td>
+            <td>Same variational family as our Hamilton replicator &mdash; the ecological ODE
+              enters as the Gauss-point growth law.</td>
+          </tr>
+          <tr>
+            <td><strong>Klempt, Geisler, Soleimani &amp; Junker</strong><br>
+              <span style="color:var(--muted);font-size:12px">Arch. Appl. Mech. 96(8):164 (2026);
+              arXiv:2509.01274</span></td>
+            <td>Continuum <strong>multi-species</strong> growth model with a novel interaction scheme.</td>
+            <td>We supply the interactions from <em>patient data</em> (10-guild / 5-species
+              TMCMC posterior) instead of assumed couplings.</td>
+          </tr>
+          <tr>
+            <td><strong>Mukherjee, Klempt, Fuchs, Doll-Nikutta, Soleimani, Wriggers <em>et al.</em></strong><br>
+              <span style="color:var(--muted);font-size:12px">Microbiol. Spectr. 13(10), e00410-25 (2025)</span></td>
+            <td><em>P.&nbsp;gingivalis</em> biofilm development on <strong>titanium surfaces</strong>
+              &mdash; a hybrid <em>in vitro&ndash;in silico</em> study.</td>
+            <td>The direct experiment&harr;FEM precedent on our exact system; our CLSM Ti-disc
+              &phi;<sub>Pg</sub>(z) calibration sits in the same setting.</td>
+          </tr>
+          <tr>
+            <td><strong>Fritsch, Geisler, Grashorn, Klempt, Soleimani, Broggi <em>et al.</em></strong><br>
+              <span style="color:var(--muted);font-size:12px">Computational Mechanics</span></td>
+            <td><strong>Bayesian updating</strong> of constitutive parameters under hybrid
+              uncertainties with a novel <strong>surrogate model</strong>, applied to biofilms.</td>
+            <td>The ready-made vehicle for our posterior&rarr;FEM UQ (Outlook&nbsp;3) &mdash;
+              feed the TMCMC posterior through the group's own updating/surrogate machinery.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="color:var(--muted);font-size:12px;margin-top:10px">
+        In short: the growth law evaluated at each Gauss point is precisely the slot this
+        internship's ecological ODE fills, and the two extensions we propose &mdash; growth
+        anisotropy and multi-species coupling &mdash; are open items on the group's own roadmap.
+      </p>
+    </div>
+
     <h3>Outlook — sharpening rigor with the data in hand</h3>
     <div class="card-grid">
       <div class="card">
@@ -527,7 +586,9 @@
             delamination (2&ndash;3&times;) for <em>any</em> &xi; &rarr; robustness of the anisotropy assumption.</li>
           <li><strong>Bayesian UQ.</strong> Propagate the 10,000-sample TMCMC posterior (Ch.&nbsp;3)
             straight into the FEM growth input &rarr; interface-stress / delamination-length
-            <em>90% credible bands</em>, turning unidentified parameters into reliability-engineered predictions.</li>
+            <em>90% credible bands</em>, turning unidentified parameters into reliability-engineered
+            predictions &mdash; reusing the group's own Bayesian-updating + surrogate framework
+            (Fritsch, Geisler, Grashorn, Klempt <em>et al.</em>) rather than a bespoke pipeline.</li>
           <li><strong>Asymmetric dissipation.</strong> Keep the free energy symmetric, extend the
             dissipation potential to admit A<sub>ij</sub>&nbsp;&ne;&nbsp;A<sub>ji</sub> within the Hamilton form.</li>
         </ul>
