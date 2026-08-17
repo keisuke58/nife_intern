@@ -92,6 +92,19 @@
   </div>
 </header>
 
+<!-- acknowledgement -->
+<div style="border-bottom:1px solid var(--border); background:var(--surface)">
+  <div class="container" style="padding:14px 24px">
+    <p style="font-size:13px;color:var(--muted);margin:0">
+      <strong style="color:var(--text)">Thank you, NIFE.</strong>
+      With gratitude to the NIFE team and the SIIRI / SFB&nbsp;TRR-298 consortium for hosting this
+      internship &mdash; Prof.&nbsp;Meike&nbsp;Stiesch's group (MHH), Dr.&nbsp;Katharina&nbsp;Szafra&#324;ski,
+      Dr.&nbsp;Rumjhum&nbsp;Mukherjee and Dr.&nbsp;Pallavi&nbsp;Joshi (experimental collaboration),
+      Hendrik (thesis supervision), and Felix&nbsp;/&nbsp;IKM (finite-element framework).
+    </p>
+  </div>
+</div>
+
 <!-- ── Dieckow ─────────────────────────────────────────────── -->
 <section id="dieckow">
   <div class="container">
@@ -500,6 +513,42 @@
         point &mdash; building directly on the HiWi / research-project work.
       </p>
     </div>
+
+    <h3>Outlook — sharpening rigor with the data in hand</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="badge badge-blue" style="margin-bottom:8px">Achievable now (mechanics + math)</div>
+        <ul style="font-size:13px;margin:0;padding-left:18px;line-height:1.7">
+          <li><strong>5-species mixing stiffness.</strong> Voigt/Reuss law from the measured depth
+            profiles: E<sub>eff</sub>(z) = &Sigma; E<sub>i</sub>&thinsp;&phi;<sub>i</sub>(z) &mdash;
+            captures stiffness heterogeneity <em>and</em> growth from existing data.</li>
+          <li><strong>Growth-anisotropy sensitivity.</strong> Sweep the in-plane/out-of-plane
+            growth ratio &xi;&nbsp;&isin;&nbsp;[0,1]; show DH &gt; CH in residual stress &amp;
+            delamination (2&ndash;3&times;) for <em>any</em> &xi; &rarr; robustness of the anisotropy assumption.</li>
+          <li><strong>Bayesian UQ.</strong> Propagate the 10,000-sample TMCMC posterior (Ch.&nbsp;3)
+            straight into the FEM growth input &rarr; interface-stress / delamination-length
+            <em>90% credible bands</em>, turning unidentified parameters into reliability-engineered predictions.</li>
+          <li><strong>Asymmetric dissipation.</strong> Keep the free energy symmetric, extend the
+            dissipation potential to admit A<sub>ij</sub>&nbsp;&ne;&nbsp;A<sub>ji</sub> within the Hamilton form.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="badge badge-orange" style="margin-bottom:8px">Requires new measurements</div>
+        <ul style="font-size:13px;margin:0;padding-left:18px;line-height:1.7">
+          <li><strong>Absolute moduli &amp; interfacial fracture energy</strong> &mdash;
+            depth-resolved AFM / micro-channel shear-detachment.</li>
+          <li><strong>True transport coefficients (D<sub>i</sub>, u) &amp; continuous time-derivatives</strong>
+            &mdash; non-destructive confocal live imaging.</li>
+          <li><strong>Metabolic flux magnitude</strong> &mdash; local metabolite concentrations
+            and biomass yields to scale the cross-feeding couplings.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="color:var(--muted);font-size:12px;margin-top:10px">
+      Absolute physical values and continuous kinetics need new experiments (AFM, live imaging);
+      but within the current data, multi-species mixing, growth-anisotropy sensitivity, and
+      posterior-to-FEM uncertainty propagation still tighten mechanical rigor and robustness.
+    </p>
 
   </div>
 </section>
