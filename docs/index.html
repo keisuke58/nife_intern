@@ -591,13 +591,18 @@
             (Fritsch, Geisler, Grashorn, Klempt <em>et al.</em>) rather than a bespoke pipeline.</li>
           <li><strong>Asymmetric dissipation.</strong> Keep the free energy symmetric, extend the
             dissipation potential to admit A<sub>ij</sub>&nbsp;&ne;&nbsp;A<sub>ji</sub> within the Hamilton form.</li>
-          <li><strong>Reinstate the mechano-growth term.</strong> The Hamilton stationarity condition
-            for &phi; (Klempt&nbsp;2024, Eq.&nbsp;30) <em>derives</em> a mechanical feedback
-            &phi;&thinsp;&mu;&thinsp;(<strong>I</strong>&nbsp;:&nbsp;<strong>C</strong><sub>e</sub>&nbsp;&minus;&nbsp;3),
-            which is then dropped on the assumption that &mu; is orders of magnitude
-            smaller than every other parameter. Restoring it closes our mechano-biological
-            vicious cycle <em>variationally</em> instead of phenomenologically &mdash; and
-            calibrating &mu; tests whether that assumption was safe.</li>
+          <li><strong>Reinstate the derived mechano-growth term.</strong> The stationarity condition
+            for &phi; (Klempt&nbsp;2024, Eq.&nbsp;30) <em>derives</em> a mechanical coupling
+            &phi;&thinsp;&mu;&thinsp;(<strong>I</strong>&nbsp;:&nbsp;<strong>C</strong><sub>e</sub>&nbsp;&minus;&nbsp;3)
+            &mdash; simply &part;/&part;&phi; of the &phi;<sup>2</sup> elastic term already in Eq.&nbsp;20 &mdash;
+            which Eq.&nbsp;33 then drops by assuming &mu; is orders of magnitude smaller than
+            everything else. Because that energy penalty grows with &phi;, the term is
+            <em>self-limiting</em>: dense biofilm is discouraged where the matrix is elastically
+            distorted. Our two-way prototype currently emulates this with an ad-hoc stress throttle
+            K(&sigma;)&nbsp;=&nbsp;1/(1+(&sigma;<sub>vM</sub>/&sigma;<sub>c</sub>)<sup>2</sup>);
+            swapping in the derived term removes the free parameter &sigma;<sub>c</sub> and buys
+            thermodynamic consistency. Note this is a <em>material-point</em> loop, distinct from the
+            organ-level bone-loss cycle A(L) above.</li>
         </ul>
       </div>
       <div class="card">
